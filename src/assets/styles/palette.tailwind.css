@@ -1,0 +1,75 @@
+@import 'tailwindcss';
+@theme {
+  --color-primary: #ff4500; /* Orange Red - Llamativo y energético */
+  --color-primary-light: #ff6d33; /* Soft Orange - Cálido */
+  --color-primary-dark: #c23600; /* Dark Orange - Profundidad */
+  --color-secondary: #0077ff; /* Bright Blue - Confiabilidad y tecnología */
+  --color-secondary-light: #4da6ff; /* Soft Blue - Suaviza la energía del naranja */
+  --color-secondary-dark: #004bb3; /* Deep Blue - Autoridad */
+  --color-accent: #ffcc00; /* Bright Yellow - Urgencia y resaltes */
+  --color-neutral-white: #ffffff;
+  --color-neutral-dark: #222222;
+  --color-neutral-gray: #b0b0b0;
+  --color-background: #f7f7f7;
+  --color-success: #29a745;
+  --color-error: #d32f2f;
+}
+
+/* styles.css */
+@layer utilities {
+  .bg-primary {
+    background-color: var(--color-primary);
+  }
+  .text-primary {
+    color: var(--color-primary);
+  }
+  .bg-secondary {
+    background-color: var(--color-secondary);
+  }
+  .text-secondary {
+    color: var(--color-secondary);
+  }
+  /* Agrega más clases según tus necesidades */
+}
+
+@layer utilities {
+  @layer utilities {
+    .gradient-left {
+      background: linear-gradient(
+        to right,
+        var(--color-secondary) 10%,
+        /* Azul claro */ var(--color-secondary-light) 30%,
+        /* Azul medio */ var(--color-primary) 60%,
+        /* Morado principal */ var(--color-primary-dark) 90% /* Morado oscuro */
+      );
+      opacity: 50%;
+    }
+  }
+
+  .gradient-right {
+    background: linear-gradient(
+      to bottom,
+      var(--color-background-purple),
+      var(--color-background),
+      var(--color-neutral-white)
+    );
+  }
+}
+
+@layer utilities {
+  .gradient-dashboard {
+    background: linear-gradient(
+      to bottom right,
+      #eafdff,
+      /* Azul primario en la esquina superior izquierda */ #f3e7fe,
+      /* Morado intermedio */ #f3e7fb /* Rosado/Morado pastel */
+    );
+  }
+}
+
+/*Primary Color calendar*/
+.rdp-root {
+  --rdp-accent-color: var(
+    --color-primary
+  ) !important  ; /* Change the accent color to indigo. */
+}

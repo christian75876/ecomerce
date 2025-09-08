@@ -1,0 +1,27 @@
+@font-face {
+  font-family: 'Urbanist';
+  src: url('/src/assets/media/fonts/urbanist/Urbanist-Regular.woff2')
+    format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Urbanist';
+  src: url('/src/assets/media/fonts/urbanist/Urbanist-Bold.woff2')
+    format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Urbanist';
+  src: url('/src/assets/media/fonts/urbanist/Urbanist-Italic.woff2')
+    format('woff2');
+  font-weight: 400;
+  font-style: italic;
+}
+
+body {
+  font-family: 'Urbanist', sans-serif;
+}

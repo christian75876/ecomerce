@@ -1,0 +1,36 @@
+{
+  "name": "Hot-Ecomerce",
+  "short_name": "Ecomerce",
+  "description": "Plataforma enfocada en la venta de productos.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#9d53fe",
+  "background_color": "#f6f6f6",
+  "orientation": "portrait",
+  "manifest_version": 3,
+  "version": "1.0.1",
+  "icons": [
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ]
+}
