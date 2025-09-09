@@ -7,6 +7,7 @@ import Loader from '../../atoms/loader/SimpleLoader';
 import { DropDownMenuForm, IOption } from '../common/DropDownMenuForm';
 import { useRoles } from '@/application/useCases/users/useRoles';
 import { useState } from 'react';
+import { is } from 'react-day-picker/locale';
 
 interface RegisterFormProps {
   onSubmit: (data: IRegisterForm) => void;
@@ -18,14 +19,14 @@ const AuthFormRegister = ({
   isLoading = false
 }: RegisterFormProps) => {
   const [disabled, setDisabled] = useState<boolean>(false);
-  const { control, handleSubmit } = useFormValidation(
+  const { control, handleSubmit, formState: { isValid } } = useFormValidation(
     registerSchema({ isAdmin: false }),
-    disabled,
+    false,
     {
       email: '',
       password: '',
       password_confirm: '',
-      role_id: '0'
+      role_id: '1'
     }
   );
 
@@ -35,13 +36,12 @@ const AuthFormRegister = ({
     error: isRolesError
   } = useRoles(setDisabled);
 
+  const isSubmitDisabled = isLoading || isRolesLoading || !isValid;
+
+
   return (
     <form
-      onSubmit={handleSubmit(async () => {
-        setDisabled(true);
-        onSubmit;
-        setDisabled(false);
-      })}
+      onSubmit={handleSubmit(onSubmit)}
       className='space-y-4'
     >
       <FormField
@@ -76,7 +76,7 @@ const AuthFormRegister = ({
         fullWidth
         variant='primary'
         type='submit'
-        disabled={isLoading || disabled}
+        disabled={isSubmitDisabled}
       >
         {(isLoading || isRolesLoading) && !isRolesError ? (
           <Loader color='primary' />

@@ -1,5 +1,6 @@
 import { useLogout } from '@/application/useCases/auth/useLogout';
 import LogoWithText from '@/presentation/ui/molecules/common/LogoWithText';
+import { ROUTES } from '@/shared/constants/routes';
 import { isAuthenticated } from '@/shared/utils/checkIsUserAuthenticated.util';
 
 import Box from '@atoms/box/SimpleBox';
@@ -32,7 +33,7 @@ const DesktopHeaderLayout = () => {
         ) : (
           <button
             className='p-2 rounded-full bg-gray-200'
-            onClick={() => navigate('/login')}
+            onClick={() => navigate(`${ROUTES.PUBLIC.LOGIN}`)}
           >
             👤 {/* Foto de perfil */} Login
           </button>

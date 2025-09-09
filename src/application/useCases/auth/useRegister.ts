@@ -34,5 +34,5 @@ export const useRegister = () => {
     }
   };
 
-  return { handleRegister, isloading, error };
+  return { handleRegister, isloadingRegister: isloading, error };
 };

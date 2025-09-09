@@ -1,7 +1,7 @@
-import LoginCointainer from '@organisms/auth/LoginContainer';
+import AuthContainer from "@/presentation/ui/organisms/auth/AuthContainer";
 
 const Login = () => {
-  return <LoginCointainer />;
+  return <AuthContainer />;
 };
 
 export default Login;

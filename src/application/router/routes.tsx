@@ -11,9 +11,9 @@ const LoginPage = lazy(
 const NotFound = lazy(
   () => import('@presentation/pages/public/404/NotFoundPage')
 );
-const RegisterPage = lazy(
-  () => import('@presentation/pages/public/auth/RegisterPage')
-);
+// const RegisterPage = lazy(
+//   () => import('@presentation/pages/public/auth/RegisterPage')
+// );
 
 // Private pages
 const AdminDashboard = lazy(
@@ -46,7 +46,7 @@ export type AppRoute = RouteObject & {
 export const routes: AppRoute[] = [
   // Rutas Públicas
   { path: ROUTES.PUBLIC.LOGIN, element: <LoginPage /> },
-  { path: ROUTES.PUBLIC.REGISTER, element: <RegisterPage /> },
+  // { path: ROUTES.PUBLIC.REGISTER, element: <RegisterPage /> },
   { path: ROUTES.PUBLIC.NOT_FOUND, element: <NotFound /> },
   {
     path: ROUTES.PUBLIC.HOME,

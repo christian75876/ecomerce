@@ -1,6 +1,8 @@
+// Scene.ts
 import {
   Clock,
   Float32BufferAttribute,
+  Group,
   Raycaster,
   Scene as ThreeScene,
   Vector2,
@@ -13,7 +15,7 @@ import Galaxy from './Galaxy';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import Planet from './CosmicBackground/Planet';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { Starfield } from './CosmicBackground/Starfield';
+import Storage from './CosmicBackground/Storage';
 
 function easeInOutCubic(t: number) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -28,12 +30,26 @@ export default class Scene extends ThreeScene {
   private planet!: Planet;
   private raycaster!: Raycaster;
   private mouse = new Vector2();
-  private tmp = new Vector3();
-  private autoZoomActive = false;
-  private autoZoomDuration = 0;
-  private autoZoomElapsed = 0;
-  private autoZoomStart = new Vector3();
-  private autoZoomEnd = new Vector3();
+
+  // ---- vuelo genérico (posición y target) ----
+  private flying = false;
+  private flyDur = 0;
+  private flyElapsed = 0;
+  private camStart = new Vector3();
+  private camEnd = new Vector3();
+  private tgtStart = new Vector3();
+  private tgtEnd = new Vector3();
+
+  // ---- tienda ----
+  private storage!: Storage;
+  private storeAnchor = new Group();
+  private STORE_POS = new Vector3(80, 6, -40); // <- coloca la tienda donde quieras
+  private STORE_CAM_POS = new Vector3(70, 10, -20); // <- cámara cuando entras a la tienda
+  private STORE_LOOK_AT = this.STORE_POS.clone(); // <- mira hacia el anchor (tienda)
+
+  // ---- planeta (para volver) ----
+  private PLANET_CAM_POS = new Vector3(0, 8, 22);
+  private PLANET_LOOK_AT = new Vector3(0, 0, 0);
 
   constructor(renderer: WebGLRenderer, container: HTMLElement) {
     super();
@@ -68,64 +84,101 @@ export default class Scene extends ThreeScene {
     this.controls.enableDamping = true;
     this.controls.target.set(0, 0, 0);
     this.controls.update();
+
     this.renderer.domElement.addEventListener(
       'pointermove',
       this.onPointerMove,
       { passive: true }
     );
+
+    // Planeta (asumo que Planet añade su object3d a la escena)
     this.planet = new Planet(this, loader);
+
+    // ---- Tienda: ancla y modelo ----
+    this.add(this.storeAnchor);
+    this.storeAnchor.position.copy(this.STORE_POS);
+
+    this.storage = new Storage(this, loader);
+    this.storage.whenReady().then(() => {
+      // CUELGA el storage del anchor de tienda (para mover todo el conjunto si quieres)
+      this.storeAnchor.add(this.storage.object3d);
+      this.storage.object3d.position.set(0, 0, 0); // relativo al anchor
+      this.storage.object3d.lookAt(
+        this.STORE_POS.clone().add(new Vector3(0, 0, 1))
+      ); // orientación suave
+    });
+
     this.renderer.setAnimationLoop(this.update);
-    this.beginAutoZoom(8, 1.8, 6, 40);
+
+    // primer enfoque (si quieres animación inicial hacia planet)
+    this.focusPlanet(1.8);
   }
 
-  public beginAutoZoom(
-    targetDistance = 12,
-    duration = 2.5,
-    topOffsetY = 6,
-    maxStartDistance = 40
-  ) {
-    if (!this.controls) return;
+  // ---------- API pública para UI ----------
+  /** Llévame a la tienda */
+  public focusStore(duration = 1.6) {
+    this.beginFlyTo(this.STORE_CAM_POS, this.STORE_LOOK_AT, duration);
+  }
 
-    const target = this.controls.target;
-    const dir = this.camera.position.clone().sub(target).normalize();
-    const currentDist = this.camera.position.distanceTo(target);
+  /** Llévame al planeta (o vista principal) */
+  public focusPlanet(duration = 1.6) {
+    this.beginFlyTo(this.PLANET_CAM_POS, this.PLANET_LOOK_AT, duration);
+  }
 
-    // 1) Si empieza muy lejos, acércala de una a un radio tope (p.e. 40)
-    if (currentDist > maxStartDistance) {
-      this.camera.position.copy(target).addScaledVector(dir, maxStartDistance);
-      this.camera.lookAt(target);
-    }
+  // ---------- Vuelo genérico ----------
+  private beginFlyTo(camEnd: Vector3, lookAtEnd: Vector3, duration = 1.6) {
+    this.flying = true;
+    this.flyElapsed = 0;
+    this.flyDur = Math.max(0.01, duration);
 
-    // 2) Configurar el lerp desde la POSICIÓN ACTUAL (ya “cerca”) hasta el destino
-    this.autoZoomStart.copy(this.camera.position);
-    this.autoZoomEnd.copy(target).addScaledVector(dir, targetDistance);
-    this.autoZoomEnd.y += topOffsetY;
+    // origen = estado actual
+    this.camStart.copy(this.camera.position);
+    this.camEnd.copy(camEnd);
 
-    this.autoZoomDuration = Math.max(0.01, duration);
-    this.autoZoomElapsed = 0;
-    this.autoZoomActive = true;
+    this.tgtStart.copy(this.controls.target);
+    this.tgtEnd.copy(lookAtEnd);
+
     this.controls.enabled = false;
   }
 
+  private stepFly(dt: number) {
+    if (!this.flying) return;
+
+    this.flyElapsed += dt;
+    const tRaw = Math.min(1, this.flyElapsed / this.flyDur);
+    const t = easeInOutCubic(tRaw);
+
+    // interpolar posición de cámara y target
+    this.camera.position.lerpVectors(this.camStart, this.camEnd, t);
+    this.controls.target.lerpVectors(this.tgtStart, this.tgtEnd, t);
+
+    this.camera.lookAt(this.controls.target);
+
+    if (tRaw >= 1) {
+      this.flying = false;
+      this.controls.enabled = true;
+      this.controls.update();
+    }
+  }
+
+  // ---------- Input ----------
   private onPointerMove = (ev: PointerEvent) => {
     const rect = this.renderer.domElement.getBoundingClientRect();
+    const mouse = this.mouse;
+    mouse.x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
 
-    this.mouse.x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
-    this.mouse.y = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
-
-    this.raycaster.setFromCamera(this.mouse, this.camera);
+    this.raycaster.setFromCamera(mouse, this.camera);
     const hitGalaxy = this.raycaster.intersectObject(this.galaxy.points, false);
     if (hitGalaxy.length > 0) {
       const p = hitGalaxy[0].point.clone();
       this.galaxy.points.worldToLocal(p);
       this.galaxy.attract(p, 25, 10);
-    }
 
-    if (hitGalaxy.length > 0) {
-      const hit = hitGalaxy[0];
       const pos = this.galaxy.points.geometry.getAttribute(
         'position'
       ) as Float32BufferAttribute;
+      const hit = hitGalaxy[0];
       if (typeof hit.index === 'number') {
         const i3 = hit.index * 3;
         pos.array[i3 + 1] += 20;
@@ -135,23 +188,13 @@ export default class Scene extends ThreeScene {
     }
   };
 
+  // ---------- Loop ----------
   private update = () => {
     const dt = this.clock.getDelta();
-    if (this.autoZoomActive) {
-      this.autoZoomElapsed += dt;
-      const tRaw = Math.min(1, this.autoZoomElapsed / this.autoZoomDuration);
-      const t = easeInOutCubic(tRaw);
 
-      this.camera.position.lerpVectors(this.autoZoomStart, this.autoZoomEnd, t);
+    // vuelo de cámara/target
+    this.stepFly(dt);
 
-      this.camera.lookAt(this.controls.target);
-
-      if (tRaw >= 1) {
-        this.autoZoomActive = false;
-        this.controls.enabled = true;
-        this.controls.update();
-      }
-    }
     this.galaxy.update?.(dt);
     this.controls.update();
     this.renderer.render(this, this.camera);
