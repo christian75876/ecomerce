@@ -5,7 +5,7 @@ const TermsText = () => {
   return (
     <Typography
       variant='p'
-      className='text-sm text-neutral-dark text-center mt-4'
+      className='text-sm text-white text-center mt-4'
     >
       Al continuar, aceptas nuestros{' '}
       <Link to='#' className='text-primary hover:underline'>

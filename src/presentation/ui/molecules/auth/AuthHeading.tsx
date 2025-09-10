@@ -15,10 +15,10 @@ const AuthHeading: React.FC<AuthHeadingProps> = ({
 }) => {
   return (
     <Box className='mb-5 mt-7'>
-      <Typography variant='h1' className='text-4xl font-bold text-neutral-dark'>
+      <Typography variant='h1' className='text-4xl font-bold text-white'>
         {title}
       </Typography>
-      <Typography variant='p' className='text-neutral-dark mt-2'>
+      <Typography variant='p' className='text-white mt-2'>
         {subtitle}{' '}
         {highlight && (
           <span className='text-primary font-semibold'>{highlight}</span>

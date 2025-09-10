@@ -56,6 +56,7 @@ export default function ThreeRoot({ onReady }: ThreeRootProps) {
         width: '100%',
         height: '100vh',
         overflowY: 'auto', // permite scroll si tu escena reacciona al scroll
+        backgroundColor: 'black', // o el color que quieras
       }}
     >
       <canvas

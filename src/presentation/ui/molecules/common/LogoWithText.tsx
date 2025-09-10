@@ -33,13 +33,13 @@ const LogoWithText = ({
       <Box>
         <Typography
           variant='p'
-          className={`font-semibold text-neutral-dark leading-tight ${sizeClasses[size].title}`}
+          className={`font-semibold text-white leading-tight ${sizeClasses[size].title}`}
         >
           {title}
         </Typography>
         <Typography
           variant='p'
-          className={`text-neutral-dark ${sizeClasses[size].subtitle}`}
+          className={`text-white ${sizeClasses[size].subtitle}`}
         >
           {subtitle}
         </Typography>

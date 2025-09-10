@@ -1,4 +1,3 @@
-// Scene.ts
 import {
   Clock,
   Float32BufferAttribute,
@@ -16,6 +15,8 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import Planet from './CosmicBackground/Planet';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import Storage from './CosmicBackground/Storage';
+import { ACESFilmicToneMapping, SRGBColorSpace } from 'three';
+import Sun from './CosmicBackground/Sun';
 
 function easeInOutCubic(t: number) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -31,7 +32,6 @@ export default class Scene extends ThreeScene {
   private raycaster!: Raycaster;
   private mouse = new Vector2();
 
-  // ---- vuelo genérico (posición y target) ----
   private flying = false;
   private flyDur = 0;
   private flyElapsed = 0;
@@ -40,23 +40,31 @@ export default class Scene extends ThreeScene {
   private tgtStart = new Vector3();
   private tgtEnd = new Vector3();
 
-  // ---- tienda ----
   private storage!: Storage;
   private storeAnchor = new Group();
-  private STORE_POS = new Vector3(80, 6, -40); // <- coloca la tienda donde quieras
-  private STORE_CAM_POS = new Vector3(70, 10, -20); // <- cámara cuando entras a la tienda
-  private STORE_LOOK_AT = this.STORE_POS.clone(); // <- mira hacia el anchor (tienda)
 
-  // ---- planeta (para volver) ----
-  private PLANET_CAM_POS = new Vector3(0, 8, 22);
+  private STORE_POS = new Vector3(70, 10, -40);
+
+  private STORE_CAM_POS = new Vector3(68, 10, -20);
+
+  // Target base (antes de offsets)
+  private STORE_LOOK_AT = this.STORE_POS.clone();
+
+  private STORE_LATERAL_OFFSET = 8;
+  private STORE_VERTICAL_OFFSET = 3;
+
+  private PLANET_CAM_POS = new Vector3(0, 2, 8);
   private PLANET_LOOK_AT = new Vector3(0, 0, 0);
+  private sun!: Sun;
+  private sunRight!: Sun;
+  private sunLeft!: Sun;
 
   constructor(renderer: WebGLRenderer, container: HTMLElement) {
     super();
     this.renderer = renderer;
 
     this.camera = new Camara(container);
-    this.camera.position.set(0, 10, 120);
+    this.camera.position.set(0, 5, 60);
     this.camera.updateProjectionMatrix();
 
     const luces = new Luces(this);
@@ -82,6 +90,10 @@ export default class Scene extends ThreeScene {
     const loader = new GLTFLoader();
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
+    this.controls.enableZoom = true;
+    this.controls.enablePan = true;
+    this.controls.minDistance = 2;
+    this.controls.maxDistance = 200;
     this.controls.target.set(0, 0, 0);
     this.controls.update();
 
@@ -91,47 +103,55 @@ export default class Scene extends ThreeScene {
       { passive: true }
     );
 
-    // Planeta (asumo que Planet añade su object3d a la escena)
     this.planet = new Planet(this, loader);
 
-    // ---- Tienda: ancla y modelo ----
     this.add(this.storeAnchor);
     this.storeAnchor.position.copy(this.STORE_POS);
 
     this.storage = new Storage(this, loader);
     this.storage.whenReady().then(() => {
-      // CUELGA el storage del anchor de tienda (para mover todo el conjunto si quieres)
       this.storeAnchor.add(this.storage.object3d);
-      this.storage.object3d.position.set(0, 0, 0); // relativo al anchor
+      this.storage.object3d.position.set(0, 0, 0);
       this.storage.object3d.lookAt(
         this.STORE_POS.clone().add(new Vector3(0, 0, 1))
-      ); // orientación suave
+      );
     });
-
+    this.sun = new Sun(this, 0xffbb66);
+    this.sun.setPosition(70, 17.5, -40);
+    this.sunRight = new Sun(this, 0xffbb66);
+    this.sunRight.setPosition(70 + 6, 17.5, -40);
+    this.sunLeft = new Sun(this, 0xffbb66);
+    this.sunLeft.setPosition(70 - 5, 17.5, -40);
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.toneMapping = ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.3;
+    this.renderer.outputColorSpace = SRGBColorSpace;
+    this.renderer.shadowMap.enabled = true;
     this.renderer.setAnimationLoop(this.update);
-
-    // primer enfoque (si quieres animación inicial hacia planet)
     this.focusPlanet(1.8);
   }
 
-  // ---------- API pública para UI ----------
-  /** Llévame a la tienda */
-  public focusStore(duration = 1.6) {
-    this.beginFlyTo(this.STORE_CAM_POS, this.STORE_LOOK_AT, duration);
+  public focusStore(duration = 1.0) {
+    this.setStoreVisible(true);
+    this.flyToWithOffset(
+      this.STORE_CAM_POS,
+      this.STORE_LOOK_AT,
+      this.STORE_LATERAL_OFFSET,
+      this.STORE_VERTICAL_OFFSET,
+      duration
+    );
   }
 
-  /** Llévame al planeta (o vista principal) */
   public focusPlanet(duration = 1.6) {
+    this.setStoreVisible(false);
     this.beginFlyTo(this.PLANET_CAM_POS, this.PLANET_LOOK_AT, duration);
   }
 
-  // ---------- Vuelo genérico ----------
   private beginFlyTo(camEnd: Vector3, lookAtEnd: Vector3, duration = 1.6) {
     this.flying = true;
     this.flyElapsed = 0;
     this.flyDur = Math.max(0.01, duration);
 
-    // origen = estado actual
     this.camStart.copy(this.camera.position);
     this.camEnd.copy(camEnd);
 
@@ -141,6 +161,30 @@ export default class Scene extends ThreeScene {
     this.controls.enabled = false;
   }
 
+  private flyToWithOffset(
+    camEnd: Vector3,
+    lookAtEnd: Vector3,
+    lateral = 0,
+    vertical = 0,
+    duration = 1.0
+  ) {
+    const viewDir = new Vector3().subVectors(lookAtEnd, camEnd).normalize();
+
+    const right = new Vector3()
+      .crossVectors(viewDir, this.camera.up)
+      .normalize();
+    const up = this.camera.up.clone().normalize();
+
+    const shift = new Vector3()
+      .addScaledVector(right, lateral)
+      .addScaledVector(up, vertical);
+
+    const camEndShifted = camEnd.clone().add(shift);
+    const lookAtShifted = lookAtEnd.clone().add(shift);
+
+    this.beginFlyTo(camEndShifted, lookAtShifted, duration);
+  }
+
   private stepFly(dt: number) {
     if (!this.flying) return;
 
@@ -148,7 +192,6 @@ export default class Scene extends ThreeScene {
     const tRaw = Math.min(1, this.flyElapsed / this.flyDur);
     const t = easeInOutCubic(tRaw);
 
-    // interpolar posición de cámara y target
     this.camera.position.lerpVectors(this.camStart, this.camEnd, t);
     this.controls.target.lerpVectors(this.tgtStart, this.tgtEnd, t);
 
@@ -161,7 +204,6 @@ export default class Scene extends ThreeScene {
     }
   }
 
-  // ---------- Input ----------
   private onPointerMove = (ev: PointerEvent) => {
     const rect = this.renderer.domElement.getBoundingClientRect();
     const mouse = this.mouse;
@@ -188,13 +230,15 @@ export default class Scene extends ThreeScene {
     }
   };
 
-  // ---------- Loop ----------
+  private setStoreVisible(v: boolean) {
+    this.storeAnchor.visible = v;
+  }
+
   private update = () => {
     const dt = this.clock.getDelta();
 
-    // vuelo de cámara/target
     this.stepFly(dt);
-
+    this.storage?.update(dt);
     this.galaxy.update?.(dt);
     this.controls.update();
     this.renderer.render(this, this.camera);
