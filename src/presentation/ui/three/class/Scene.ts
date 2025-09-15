@@ -31,7 +31,6 @@ export default class Scene extends ThreeScene {
   private planet!: Planet;
   private raycaster!: Raycaster;
   private mouse = new Vector2();
-
   private flying = false;
   private flyDur = 0;
   private flyElapsed = 0;
@@ -39,20 +38,13 @@ export default class Scene extends ThreeScene {
   private camEnd = new Vector3();
   private tgtStart = new Vector3();
   private tgtEnd = new Vector3();
-
   private storage!: Storage;
   private storeAnchor = new Group();
-
   private STORE_POS = new Vector3(70, 10, -40);
-
   private STORE_CAM_POS = new Vector3(68, 10, -20);
-
-  // Target base (antes de offsets)
   private STORE_LOOK_AT = this.STORE_POS.clone();
-
   private STORE_LATERAL_OFFSET = 8;
   private STORE_VERTICAL_OFFSET = 3;
-
   private PLANET_CAM_POS = new Vector3(0, 2, 8);
   private PLANET_LOOK_AT = new Vector3(0, 0, 0);
   private sun!: Sun;
@@ -133,6 +125,7 @@ export default class Scene extends ThreeScene {
 
   public focusStore(duration = 1.0) {
     this.setStoreVisible(true);
+    this.setSunsVisible(true);
     this.flyToWithOffset(
       this.STORE_CAM_POS,
       this.STORE_LOOK_AT,
@@ -144,6 +137,7 @@ export default class Scene extends ThreeScene {
 
   public focusPlanet(duration = 1.6) {
     this.setStoreVisible(false);
+    this.setSunsVisible(false);
     this.beginFlyTo(this.PLANET_CAM_POS, this.PLANET_LOOK_AT, duration);
   }
 
@@ -232,6 +226,12 @@ export default class Scene extends ThreeScene {
 
   private setStoreVisible(v: boolean) {
     this.storeAnchor.visible = v;
+  }
+
+  private setSunsVisible(v: boolean) {
+    if (this.sun) this.sun.object3d.visible = v;
+    if (this.sunRight) this.sunRight.object3d.visible = v;
+    if (this.sunLeft) this.sunLeft.object3d.visible = v;
   }
 
   private update = () => {

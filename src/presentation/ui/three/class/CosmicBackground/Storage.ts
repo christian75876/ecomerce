@@ -8,18 +8,10 @@ import {
   AnimationClip,
   LoopRepeat,
   PointLight,
-  Color,
   Mesh,
   SpotLight,
   Vector3,
-  Box3,
-  Light,
-  SphereGeometry,
-  AdditiveBlending,
-  MeshStandardMaterial,
-  MeshPhysicalMaterial,
-  DoubleSide,
-  SRGBColorSpace
+  Box3
 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 

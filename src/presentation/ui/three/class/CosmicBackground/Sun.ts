@@ -11,7 +11,7 @@ import {
 } from 'three';
 
 export default class Sun {
-  private group: Group;
+  public group: Group;
   private core: Mesh;
   private light: PointLight;
   private time = 0;
@@ -61,5 +61,9 @@ export default class Sun {
   public setColor(hex: number) {
     (this.core.material as MeshBasicMaterial).color = new Color(hex);
     this.light.color.set(hex);
+  }
+
+  public get object3d(): Group {
+    return this.group;
   }
 }
