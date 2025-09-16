@@ -30,7 +30,7 @@ class ClientHTTP {
 
     if (!this.instances.has(key)) {
       const instance = axios.create({
-        baseURL: config.baseURL || 'http://127.0.0.1:3400/api/',
+        baseURL: config.baseURL || 'http://localhost:3000/api/',
         headers: {
           'Content-Type': config.json
             ? 'application/json'

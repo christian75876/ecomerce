@@ -7,7 +7,7 @@ import Loader from '../../atoms/loader/SimpleLoader';
 import { DropDownMenuForm, IOption } from '../common/DropDownMenuForm';
 import { useRoles } from '@/application/useCases/users/useRoles';
 import { useState } from 'react';
-import { is } from 'react-day-picker/locale';
+import FaceEnrollWithMesh from '../common/FaceEnrollWithMesh';
 
 interface RegisterFormProps {
   onSubmit: (data: IRegisterForm) => void;
@@ -19,16 +19,16 @@ const AuthFormRegister = ({
   isLoading = false
 }: RegisterFormProps) => {
   const [disabled, setDisabled] = useState<boolean>(false);
-  const { control, handleSubmit, formState: { isValid } } = useFormValidation(
-    registerSchema({ isAdmin: false }),
-    false,
-    {
-      email: '',
-      password: '',
-      password_confirm: '',
-      role_id: '1'
-    }
-  );
+  const {
+    control,
+    handleSubmit,
+    formState: { isValid }
+  } = useFormValidation(registerSchema({ isAdmin: false }), false, {
+    email: '',
+    password: '',
+    password_confirm: '',
+    role_id: '1'
+  });
 
   const {
     roles,
@@ -38,12 +38,10 @@ const AuthFormRegister = ({
 
   const isSubmitDisabled = isLoading || isRolesLoading || !isValid;
 
+  const [isFaceEnroll, setIsFaceEnroll] = useState(false);
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className='space-y-4'
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
       <FormField
         name='email'
         label='Correo'
@@ -65,13 +63,15 @@ const AuthFormRegister = ({
         type='password'
         placeholder='Confirma tu contraseña'
       />
+
       <DropDownMenuForm
-        label={'Selecciona tu rol'}
-        name={'role_id'}
+        label='Selecciona tu rol'
+        name='role_id'
         control={control}
         options={roles.data as IOption[]}
-        defaultValue={'Selecciona un rol'}
+        defaultValue='Selecciona un rol'
       />
+
       <Button
         fullWidth
         variant='primary'
@@ -84,6 +84,28 @@ const AuthFormRegister = ({
           'Registrarse'
         )}
       </Button>
+
+      {/* Sección de registro facial */}
+      <div className='pt-2 border-t'>
+        <div className='flex items-center justify-between'>
+          <h3 className='text-sm font-medium'>Registro facial (opcional)</h3>
+          <Button
+            type='button'
+            variant={isFaceEnroll ? 'secondary' : 'primary'}
+            onClick={() => setIsFaceEnroll(v => !v)}
+          >
+            {isFaceEnroll ? 'Ocultar' : 'Registrar rostro'}
+          </Button>
+        </div>
+
+        {isFaceEnroll && (
+          <FaceEnrollWithMesh
+            open={isFaceEnroll}
+            onClose={() => setIsFaceEnroll(false)}
+            userId='user_demo_1'
+          />
+        )}
+      </div>
     </form>
   );
 };
