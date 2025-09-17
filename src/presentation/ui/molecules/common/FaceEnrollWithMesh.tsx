@@ -12,7 +12,8 @@ export default function FaceEnrollWithMesh({
   userId,
   open,
   onClose,
-}: { userId: string; open: boolean; onClose: () => void }) {
+  onComplete
+}: { userId?: string | number; open: boolean; onClose: () => void; onComplete?: (result: { descriptors: number[][]; previews: string[] }) => void; }) {
   if (!open) return null; // Modal controlado por el padre
 
   const { videoRef, error } = useUserMedia();
@@ -142,7 +143,8 @@ export default function FaceEnrollWithMesh({
   };
 
   const reset = () => { setVectors([]); setPreviews([]); setMsg(null); setStep("capture"); };
-  const submit = async () => { /* TODO: POST al backend */ setStep("done"); setMsg(`¡Registro listo para ${userId}! Guardaste ${vectors.length} descriptores.`); };
+  const submit = async () => { if (onComplete) onComplete({ descriptors: vectors, previews });
+    onClose(); };
 
   if (error) return <div className="p-4">⚠️ {error}</div>;
 

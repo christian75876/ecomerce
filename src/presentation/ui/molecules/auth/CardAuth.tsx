@@ -1,9 +1,9 @@
+// /presentation/ui/molecules/auth/CardAuth.tsx
 import React from 'react';
 import Box from '../../atoms/box/SimpleBox';
 import Button from '../../atoms/button/SimpleButton';
 import AuthFormLogin from './AuthFormLogin';
 import AuthFormRegister from './AuthFormRegister';
-
 import { ILoginRequest } from '@/application/dtos/auth/login/request/LoginRequest';
 import { IRegisterForm } from '@/application/dtos/auth/register/register/RegisterRequest';
 
@@ -11,7 +11,7 @@ type CardAuthProps = {
   isRegister: boolean;
   setIsRegister?: (value: boolean) => void;
   onSubmitLogin: (data: ILoginRequest) => void;
-  onSubmitRegister: (data: IRegisterForm) => void;
+  onSubmitRegister: (data: IRegisterForm, faceVectors: number[][]) => void; // ⬅️ actualizado
   isLoading: boolean;
 };
 
@@ -20,7 +20,7 @@ const CardAuth = ({
   setIsRegister,
   onSubmitLogin,
   onSubmitRegister,
-  isLoading
+  isLoading,
 }: CardAuthProps) => {
   return (
     <Box>
