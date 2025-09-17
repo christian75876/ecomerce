@@ -10,6 +10,8 @@ import { ILoginResp } from '@/application/dtos/auth/login/response/LoginResponse
 import { logError } from '../errors/ErrorLogger';
 import { IRegisterRequest } from '@/application/dtos/auth/register/register/RegisterRequest';
 import { IRegisterResp } from '@/application/dtos/auth/register/response/RegisterResponse';
+import { ILoginFaceRequest } from '@/domain/validations/auth/loginFace/LoginFaceRequest';
+import { ILoginFaceResp } from '@/domain/validations/auth/loginFace/LoginfaceResponse';
 
 export class AuthRepository {
   /**
@@ -54,5 +56,16 @@ export class AuthRepository {
     // ); //TODO: Implement this in the backend
     console.log('Dummy function: Invalidating token...');
     localStorage.removeItem('token');
+  }
+
+  static async loginByFace(
+    payload: ILoginFaceRequest
+  ): Promise<ILoginFaceResp> {
+    return ErrorHandler.handleApiErrors(
+      () => publicClientHTTP.post<ILoginFaceResp>('/auth/login-face', payload),
+      msg => {
+        logError(msg, 'client');
+      }
+    );
   }
 }

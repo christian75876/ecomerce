@@ -6,6 +6,8 @@ import Button from '@atoms/button/SimpleButton';
 import FormField from '@molecules/forms/FormField';
 import { ILoginRequest } from '@/application/dtos/auth/login/request/LoginRequest';
 import Loader from '../../atoms/loader/SimpleLoader';
+import FaceLoginWithMesh from './FaceLoginWithMesh';
+import { useState } from 'react';
 
 interface AuthFormLoginProps {
   onSubmit: (data: ILoginRequest) => void;
@@ -18,7 +20,7 @@ const AuthFormLogin = ({ onSubmit, isLoading = false }: AuthFormLoginProps) => {
     password: ''
   }, 
 );
-
+const [openFace, setOpenFace] = useState(false);
   
  
 
@@ -46,6 +48,14 @@ const AuthFormLogin = ({ onSubmit, isLoading = false }: AuthFormLoginProps) => {
       <Button fullWidth variant='primary' type='submit' disabled={!isValid || isLoading}>
         {isLoading ? <Loader color='primary' /> : 'Ingresar'}
       </Button>
+
+         <div className="text-center">
+        <button type="button" className="text-sm underline" onClick={() => setOpenFace(true)}>
+          Iniciar sesión con rostro
+        </button>
+      </div>
+
+      <FaceLoginWithMesh open={openFace} onClose={() => setOpenFace(false)} />
     </form>
   );
 };
