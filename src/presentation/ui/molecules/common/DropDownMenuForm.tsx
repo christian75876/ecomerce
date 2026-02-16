@@ -1,9 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import Box from '../../atoms/box/SimpleBox';
 import { Control, Controller, FieldValues, Path } from 'react-hook-form';
 import Label from '../../atoms/label/SimpleLabel';
 import ErrorMessage from '../../atoms/error-message/SimpleErrorMessage';
 import clsx from 'clsx';
+import Icon from '../../atoms/icon/SimpleIcon';
 
 export interface IOption {
   id: string;
@@ -21,9 +22,6 @@ interface IDropdownMenuForm<TForm extends FieldValues> {
   showLabel?: boolean;
 }
 
-/**
- * A dropdown menu for using in forms.
- */
 export const DropDownMenuForm = <TForm extends FieldValues>({
   label,
   name,
@@ -36,16 +34,10 @@ export const DropDownMenuForm = <TForm extends FieldValues>({
 }: IDropdownMenuForm<TForm>) => {
   const optionsWithDefault = useMemo(() => {
     if (options.filter(item => item.name === defaultValue).length === 0) {
-      return [
-        {
-          id: '',
-          name: defaultValue
-        },
-        ...options
-      ];
+      return [{ id: '', name: defaultValue }, ...options];
     }
     return [...options];
-  }, [options]);
+  }, [options, defaultValue]);
 
   return (
     <Box className={boxClassName}>
@@ -57,29 +49,25 @@ export const DropDownMenuForm = <TForm extends FieldValues>({
           {label}
         </Label>
       )}
+
       <Controller
         name={name}
         control={control}
         rules={{ required: 'Role is required' }}
-        render={({ field, fieldState }) => {
-          console.log('field.values: ', field.value);
-          return (
-            <>
+        render={({ field, fieldState }) => (
+          <>
+            <div className='relative group'>
               <select
-                className={clsx(
-                  'w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-all bg-white placeholder:text-gray-400 placeholder:italic',
-                  fieldState.error
-                    ? 'border-red-500 focus:ring-red-500'
-                    : 'border-gray-300 focus:ring-primary',
-                  dropDownClassName,
-                  !field.value
-                    ? 'text-gray-500'
-                    : 'text-gray-900'
-                )}
                 id={name}
                 {...field}
-                value={field.value}
-                onChange={e => field.onChange(e.target.value)}
+                className={clsx(
+                  'w-full px-4 py-3 border rounded-lg bg-white',
+                  'appearance-none pr-12',
+                  'focus:outline-none focus:ring-2',
+                  fieldState.error
+                    ? 'border-red-500 focus:ring-red-500'
+                    : 'border-gray-300 focus:ring-primary'
+                )}
               >
                 {optionsWithDefault.map(({ id, name }) => (
                   <option key={id} value={id}>
@@ -87,12 +75,19 @@ export const DropDownMenuForm = <TForm extends FieldValues>({
                   </option>
                 ))}
               </select>
-              {fieldState.error && (
-                <ErrorMessage message={fieldState.error.message} />
-              )}
-            </>
-          );
-        }}
+
+              <span className='pointer-events-none absolute inset-y-0 right-3 flex items-center'>
+                <span className='transition-transform duration-200 group-focus-within:rotate-180'>
+                  <Icon name='bx-chevron-down' size={20} />
+                </span>
+              </span>
+            </div>
+
+            {fieldState.error && (
+              <ErrorMessage message={fieldState.error.message} />
+            )}
+          </>
+        )}
       />
     </Box>
   );

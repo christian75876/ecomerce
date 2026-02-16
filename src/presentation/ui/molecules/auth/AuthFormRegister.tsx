@@ -4,9 +4,9 @@ import { useFormValidation } from '@/shared/hooks/useFormValidation';
 import FormField from '../forms/FormField';
 import Button from '../../atoms/button/SimpleButton';
 import Loader from '../../atoms/loader/SimpleLoader';
-import { DropDownMenuForm, IOption } from '../common/DropDownMenuForm';
 import { useRoles } from '@/application/useCases/users/useRoles';
 import { useState } from 'react';
+import { DropDownMenuForm, IOption } from '../common/DropDownMenuForm';
 
 interface RegisterFormProps {
   onSubmit: (data: IRegisterForm) => void;
