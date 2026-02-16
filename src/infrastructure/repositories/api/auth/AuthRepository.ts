@@ -10,6 +10,8 @@ import { ILoginResp } from '@/application/dtos/auth/login/response/LoginResponse
 import { logError } from '../errors/ErrorLogger';
 import { IRegisterRequest } from '@/application/dtos/auth/register/register/RegisterRequest';
 import { IRegisterResp } from '@/application/dtos/auth/register/response/RegisterResponse';
+import { IVerifyEmailRequest } from '@/application/dtos/auth/verify-email/request/VerifyEmailRequest';
+import { IVerifyEmailResp } from '@/application/dtos/auth/verify-email/response/VerifyEmailResponse';
 
 export class AuthRepository {
   /**
@@ -29,6 +31,17 @@ export class AuthRepository {
   static async register(userData: IRegisterRequest): Promise<IRegisterResp> {
     return ErrorHandler.handleApiErrors(
       () => publicClientHTTP.post<IRegisterResp>('/auth/register', userData),
+      msg => {
+        logError(msg, 'client');
+      }
+    );
+  }
+
+  static async verifyEmail(
+    payload: IVerifyEmailRequest
+  ): Promise<IVerifyEmailResp> {
+    return ErrorHandler.handleApiErrors(
+      () => publicClientHTTP.post<IVerifyEmailResp>('/auth/verify-email', payload),
       msg => {
         logError(msg, 'client');
       }

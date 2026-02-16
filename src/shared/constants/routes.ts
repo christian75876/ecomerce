@@ -2,6 +2,7 @@ export const ROUTES = {
   PUBLIC: {
     LOGIN: '/auth',
     REGISTER: '/register',
+    VERIFY_EMAIL: '/verify-email',
     NOT_FOUND: '*',
     HOME: '/home'
   },

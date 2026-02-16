@@ -8,6 +8,9 @@ import { RouteObject } from 'react-router-dom';
 const LoginPage = lazy(
   () => import('@presentation/pages/public/auth/LoginPage')
 );
+const VerifyEmailPage = lazy(
+  () => import('@presentation/pages/public/auth/VerifyEmailPage')
+);
 const NotFound = lazy(
   () => import('@presentation/pages/public/404/NotFoundPage')
 );
@@ -36,6 +39,7 @@ export type AppRoute = RouteObject & {
   path: string;
   element: React.ReactNode;
   private?: boolean;
+  publicOnly?: boolean;
   layout?: React.ComponentType<{
     children: React.ReactNode;
     hasGradient?: boolean;
@@ -46,6 +50,11 @@ export type AppRoute = RouteObject & {
 export const routes: AppRoute[] = [
   // Rutas Públicas
   { path: ROUTES.PUBLIC.LOGIN, element: <LoginPage /> },
+  {
+    path: ROUTES.PUBLIC.VERIFY_EMAIL,
+    element: <VerifyEmailPage />,
+    publicOnly: false
+  },
   // { path: ROUTES.PUBLIC.REGISTER, element: <RegisterPage /> },
   { path: ROUTES.PUBLIC.NOT_FOUND, element: <NotFound /> },
   {

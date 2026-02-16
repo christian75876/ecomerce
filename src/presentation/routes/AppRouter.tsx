@@ -26,6 +26,7 @@ const AppRouter = () => {
                   path,
                   element,
                   private: isPrivate,
+                  publicOnly,
                   layout: Layout,
                   hasGradient
                 }) => {
@@ -34,17 +35,20 @@ const AppRouter = () => {
                   ) : (
                     element
                   );
+
+                  const RouteElement = isPrivate ? (
+                    <PrivateRoute>{WrappedElement}</PrivateRoute>
+                  ) : publicOnly === false ? (
+                    WrappedElement
+                  ) : (
+                    <PublicRoute>{WrappedElement}</PublicRoute>
+                  );
+
                   return (
                     <Route
                       key={path}
                       path={path}
-                      element={
-                        isPrivate ? (
-                          <PrivateRoute>{WrappedElement}</PrivateRoute>
-                        ) : (
-                          <PublicRoute>{WrappedElement}</PublicRoute>
-                        )
-                      }
+                      element={RouteElement}
                     />
                   );
                 }
