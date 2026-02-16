@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '@/shared/constants/routes';
 
 /**
  * Handles unauthorized access errors (401).
@@ -29,7 +30,7 @@ export const useHandleUnauthorized = () => {
   useEffect(() => {
     const handleLogout = () => {
       handleUnauthorized();
-      navigate('/login');
+      navigate(ROUTES.PUBLIC.LOGIN);
     };
 
     window.addEventListener('logout', handleLogout);

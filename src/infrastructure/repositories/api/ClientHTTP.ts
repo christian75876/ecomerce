@@ -14,6 +14,12 @@ interface HttpClientConfig {
  */
 class ClientHTTP {
   private static instances = new Map<string, AxiosInstance>();
+  private static normalizeBaseURL(url: string): string {
+    return url.endsWith('/') ? url : `${url}/`;
+  }
+  private static defaultBaseURL = this.normalizeBaseURL(
+    import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:3000/api/'
+  );
 
   /**
    * Private constructor to prevent direct instantiation.
@@ -30,7 +36,7 @@ class ClientHTTP {
 
     if (!this.instances.has(key)) {
       const instance = axios.create({
-        baseURL: config.baseURL || 'http://127.0.0.1:3400/api/',
+        baseURL: this.normalizeBaseURL(config.baseURL || this.defaultBaseURL),
         headers: {
           'Content-Type': config.json
             ? 'application/json'

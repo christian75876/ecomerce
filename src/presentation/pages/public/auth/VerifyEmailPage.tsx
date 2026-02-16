@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useVerifyEmail } from '@/application/useCases/auth/useVerifyEmail';
 import { ROUTES } from '@/shared/constants/routes';
@@ -10,6 +10,7 @@ const VerifyEmailPage = () => {
   const navigate = useNavigate();
   const { verifyEmail, isLoading, error } = useVerifyEmail();
   const [status, setStatus] = useState<VerifyStatus>('loading');
+  const hasRequestedRef = useRef(false);
 
   const token = useMemo(() => searchParams.get('token')?.trim() || '', [searchParams]);
 
@@ -17,6 +18,9 @@ const VerifyEmailPage = () => {
     let mounted = true;
 
     const runVerification = async () => {
+      if (hasRequestedRef.current) return;
+      hasRequestedRef.current = true;
+
       if (!token) {
         if (mounted) setStatus('error');
         return;
@@ -24,7 +28,14 @@ const VerifyEmailPage = () => {
 
       const response = await verifyEmail(token);
       if (!mounted) return;
-      setStatus(response ? 'success' : 'error');
+      if (response) {
+        setStatus('success');
+        window.setTimeout(() => {
+          navigate(ROUTES.PUBLIC.LOGIN, { replace: true });
+        }, 1000);
+        return;
+      }
+      setStatus('error');
     };
 
     void runVerification();
@@ -51,13 +62,13 @@ const VerifyEmailPage = () => {
           <>
             <h1 className='text-2xl font-semibold mb-3'>Correo verificado</h1>
             <p className='text-neutral-gray mb-6'>
-              Tu cuenta ya está activa. Ahora puedes iniciar sesión.
+              Tu cuenta ya está activa. Redirigiendo a iniciar sesión...
             </p>
             <button
               className='rounded-lg bg-primary px-5 py-2 text-neutral-white hover:opacity-90 transition'
-              onClick={() => navigate(ROUTES.PUBLIC.LOGIN)}
+              onClick={() => navigate(ROUTES.PUBLIC.LOGIN, { replace: true })}
             >
-              Ir a iniciar sesión
+              Ir ahora
             </button>
           </>
         )}

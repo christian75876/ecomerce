@@ -1,5 +1,8 @@
 import * as yup from 'yup';
 
+const uuidV4Regex =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export const registerSchema = ({ isAdmin }: { isAdmin: boolean }) =>
   yup.object({
     email: yup
@@ -18,9 +21,9 @@ export const registerSchema = ({ isAdmin }: { isAdmin: boolean }) =>
       ? yup
           .string()
           .required('El rol es obligatorio')
-          .oneOf(['2', '3'], 'El rol debe ser Comprador o Vendedor')
+          .matches(uuidV4Regex, 'El rol seleccionado no es válido')
       : yup
           .string()
           .required('El rol es obligatorio')
-          .oneOf(['1'], 'El rol debe ser Administrador')
+          .matches(uuidV4Regex, 'El rol seleccionado no es válido')
   });

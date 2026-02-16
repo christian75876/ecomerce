@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import Box from '../../atoms/box/SimpleBox';
 import { Control, Controller, FieldValues, Path } from 'react-hook-form';
 import Label from '../../atoms/label/SimpleLabel';
@@ -34,23 +34,14 @@ export const DropDownMenuForm = <TForm extends FieldValues>({
   boxClassName = 'w-full mb-5',
   showLabel = false
 }: IDropdownMenuForm<TForm>) => {
-  useEffect(() => {
-    if (options.filter(item => item.name === defaultValue).length === 0) {
-      options.unshift({
-        id: '0',
-        name: defaultValue
-      });
-    }
-  }, []);
-
   const optionsWithDefault = useMemo(() => {
     if (options.filter(item => item.name === defaultValue).length === 0) {
       return [
-        ...options,
         {
-          id: '0',
+          id: '',
           name: defaultValue
-        }
+        },
+        ...options
       ];
     }
     return [...options];
@@ -81,7 +72,7 @@ export const DropDownMenuForm = <TForm extends FieldValues>({
                     ? 'border-red-500 focus:ring-red-500'
                     : 'border-gray-300 focus:ring-primary',
                   dropDownClassName,
-                  field.value === '0' || !field.value
+                  !field.value
                     ? 'text-gray-500'
                     : 'text-gray-900'
                 )}

@@ -4,13 +4,14 @@ import { routes } from '@application/router/routes';
 import RouteFallback from '@organisms/navigation/RouteFallback';
 import PageTransitionLayout from '@presentation/ui/layouts/PageTransitionLayout';
 import { isAuthenticated } from '@/shared/utils/checkIsUserAuthenticated.util';
+import { ROUTES } from '@/shared/constants/routes';
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  return isAuthenticated() ? children : <Navigate to='/login' replace />;
+  return isAuthenticated() ? children : <Navigate to={ROUTES.PUBLIC.LOGIN} replace />;
 };
 
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-  return isAuthenticated() ? <Navigate to='/dashboard' replace /> : children;
+  return isAuthenticated() ? <Navigate to={ROUTES.PRIVATE.DASHBOARD} replace /> : children;
 };
 
 const AppRouter = () => {

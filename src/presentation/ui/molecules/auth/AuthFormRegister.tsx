@@ -7,7 +7,6 @@ import Loader from '../../atoms/loader/SimpleLoader';
 import { DropDownMenuForm, IOption } from '../common/DropDownMenuForm';
 import { useRoles } from '@/application/useCases/users/useRoles';
 import { useState } from 'react';
-import { is } from 'react-day-picker/locale';
 
 interface RegisterFormProps {
   onSubmit: (data: IRegisterForm) => void;
@@ -26,7 +25,7 @@ const AuthFormRegister = ({
       email: '',
       password: '',
       password_confirm: '',
-      role_id: '1'
+      role_id: ''
     }
   );
 
@@ -36,7 +35,7 @@ const AuthFormRegister = ({
     error: isRolesError
   } = useRoles(setDisabled);
 
-  const isSubmitDisabled = isLoading || isRolesLoading || !isValid;
+  const isSubmitDisabled = isLoading || isRolesLoading || !isValid || disabled;
 
 
   return (
