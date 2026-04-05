@@ -5,10 +5,13 @@ import ProductInformation from '../../molecules/products/ProductInformation';
 import ProductActions from '../../molecules/products/ProductActions';
 import { usePublicProductDetail } from '@/application/useCases/products/usePublicProductDetail';
 import Box from '../../atoms/box/SimpleBox';
+import ProductReviews from './ProductReviews';
+import { useCart } from '@/shared/hooks/useCart';
 
 const ProductDetails = () => {
   const { productId } = useParams<{ productId: string }>();
   const { product, loading, error } = usePublicProductDetail(productId);
+  const { addItem } = useCart();
 
   if (loading) {
     return <Typography>Cargando detalle del producto...</Typography>;
@@ -25,19 +28,33 @@ const ProductDetails = () => {
   return (
     <>
       <ProductHeader title={`Detalle del producto`} />
-      <Box className='grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]'>
-        <ProductInformation
-          product={{
-            name: product.name,
-            price: Number(product.price).toFixed(2),
-            description: product.description,
-            imageUrl:
-              product.imageUrl ||
-              'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80',
-            category: product.category?.name,
-          }}
-        />
-        <ProductActions price={Number(product.price)} />
+      <Box className='space-y-8'>
+        <Box className='grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]'>
+          <ProductInformation
+            product={{
+              name: product.name,
+              price: Number(product.price).toFixed(2),
+              description: product.description,
+              imageUrl:
+                product.imageUrl ||
+                'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80',
+              category: product.category?.name,
+            }}
+          />
+          <ProductActions
+            price={Number(product.price)}
+            onPrimaryAction={() =>
+              addItem({
+                productId: product.id,
+                name: product.name,
+                price: Number(product.price),
+                imageUrl: product.imageUrl,
+              })
+            }
+          />
+        </Box>
+
+        <ProductReviews productId={product.id} />
       </Box>
     </>
   );

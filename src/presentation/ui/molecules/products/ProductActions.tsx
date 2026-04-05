@@ -6,9 +6,14 @@ import Box from '../../atoms/box/SimpleBox';
 interface ProductActionsProps {
   price: number;
   onPrimaryAction?: () => void;
+  primaryLabel?: string;
 }
 
-const ProductActions = ({ price, onPrimaryAction }: ProductActionsProps) => {
+const ProductActions = ({
+  price,
+  onPrimaryAction,
+  primaryLabel = 'Agregar al carrito',
+}: ProductActionsProps) => {
   return (
     <Box className='rounded-[1.5rem] border border-neutral-gray/20 bg-white p-6 shadow-sm'>
       <Typography variant='p' className='text-sm text-neutral-dark/65'>
@@ -23,7 +28,7 @@ const ProductActions = ({ price, onPrimaryAction }: ProductActionsProps) => {
         rightIcon={<Icon name='bx-cart-add' />}
         onClick={onPrimaryAction}
       >
-        ${price.toFixed(2)}
+        {primaryLabel} · ${price.toFixed(2)}
       </Button>
     </Box>
   );

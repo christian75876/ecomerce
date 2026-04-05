@@ -1,21 +1,35 @@
 import OrderTimelineCard from '@molecules/dashboard/OrderTimelineCard';
 
-const DashboardLatestOrder = () => {
-  const lastOrder = {
-    orderId: '#54hD-t780yb5',
-    statusList: [
-      { label: 'Despachado', date: 'Hace 2 min', completed: true },
-      { label: 'En Camino', date: 'Hace 1 hora', completed: false },
-      { label: 'Completado', date: 'Pendiente', completed: false }
-    ]
-  };
+const orderStatusSteps = ['PENDING', 'PAID', 'PREPARING', 'SHIPPED', 'DELIVERED'];
+
+const DashboardLatestOrder = ({
+  latestOrders,
+}: {
+  latestOrders: Array<{
+    id: string;
+    status: string;
+    total: number;
+    customerName: string;
+  }>;
+}) => {
+  if (latestOrders.length === 0) {
+    return null;
+  }
+
+  const lastOrder = latestOrders[0];
+  const currentIndex = orderStatusSteps.indexOf(lastOrder.status);
 
   return (
     <OrderTimelineCard
-      orderId={lastOrder.orderId}
-      statusList={lastOrder.statusList.map(item => ({
-        label: item.label,
-        status: item.completed ? 'completed' : 'pending'
+      orderId={`#${lastOrder.id.slice(0, 8)}`}
+      statusList={orderStatusSteps.map((status, index) => ({
+        label: status,
+        status:
+          index < currentIndex
+            ? 'completed'
+            : index === currentIndex
+              ? 'current'
+              : 'pending',
       }))}
     />
   );

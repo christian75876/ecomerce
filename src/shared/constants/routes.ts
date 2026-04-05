@@ -4,7 +4,9 @@ export const ROUTES = {
     REGISTER: '/register',
     VERIFY_EMAIL: '/verify-email',
     NOT_FOUND: '*',
-    HOME: '/home'
+    HOME: '/home',
+    CART: '/cart',
+    PRODUCT_DETAILS: '/product/:productId'
   },
   PRIVATE: {
     DASHBOARD: '/dashboard',
@@ -15,7 +17,6 @@ export const ROUTES = {
     TRACKING: '/tracking',
     SETTINGS: '/settings',
     PRODUCTS: '/products',
-    CART: '/cart',
     PROFILE: '/profile',
     DETAILS: '/product/:productId',
     STORE: '/stores'

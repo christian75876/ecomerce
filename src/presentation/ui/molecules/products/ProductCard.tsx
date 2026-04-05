@@ -4,6 +4,7 @@ import Card from '../../atoms/card/SimpleCard';
 import Icon from '../../atoms/icon/SimpleIcon';
 import Image from '../../atoms/image/SimpleImage';
 import Link from '../../atoms/link/Simplelink';
+import { ROUTES } from '@/shared/constants/routes';
 
 interface ProductCardProps {
   image: string;
@@ -57,6 +58,9 @@ const ProductCard = ({
             Agregar
           </Button>
         </Box>
+        <Link to={ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', id)} className='mt-4 text-sm font-medium text-primary'>
+          Ver detalle
+        </Link>
       </Box>
     </Card>
   );

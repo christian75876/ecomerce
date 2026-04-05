@@ -14,6 +14,9 @@ const VerifyEmailPage = lazy(
 const NotFound = lazy(
   () => import('@presentation/pages/public/404/NotFoundPage')
 );
+const CartPage = lazy(
+  () => import('@presentation/pages/public/cart/CartPage')
+);
 // const RegisterPage = lazy(
 //   () => import('@presentation/pages/public/auth/RegisterPage')
 // );
@@ -73,7 +76,20 @@ export const routes: AppRoute[] = [
     path: ROUTES.PUBLIC.HOME,
     element: <HomePage />,
     layout: DashboardLayout,
-    hasGradient: true
+    hasGradient: true,
+    publicOnly: false
+  },
+  {
+    path: ROUTES.PUBLIC.CART,
+    element: <CartPage />,
+    layout: DashboardLayout,
+    publicOnly: false
+  },
+  {
+    path: ROUTES.PUBLIC.PRODUCT_DETAILS,
+    element: <ProductDetailPage />,
+    layout: DashboardLayout,
+    publicOnly: false
   },
 
   // Rutas Privadas con Layout
@@ -125,10 +141,4 @@ export const routes: AppRoute[] = [
     private: true,
     layout: DashboardLayout
   },
-  {
-    path: ROUTES.PRIVATE.DETAILS,
-    element: <ProductDetailPage />,
-    private: true,
-    layout: DashboardLayout
-  }
 ];

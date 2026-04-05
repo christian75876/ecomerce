@@ -12,24 +12,21 @@ import Box from '@atoms/box/SimpleBox';
 import Card from '@atoms/card/SimpleCard';
 import Typography from '@atoms/typography/SimpleTypography';
 
-const DashboardChart = () => {
-  //TODO: Fetch Stats Chart
-  const data = [
-    { year: '2016', value: 5000 },
-    { year: '2017', value: 15000 },
-    { year: '2018', value: 30000 },
-    { year: '2019', value: 50000 },
-    { year: '2020', value: 10000 },
-    { year: '2021', value: 30000 },
-    { year: '2022', value: 50000 },
-    { year: '2023', value: 70000 }
-  ];
+const DashboardChart = ({
+  salesByDay,
+}: {
+  salesByDay: Array<{ label: string; total: number }>;
+}) => {
+  const data = salesByDay.map((item) => ({
+    year: item.label,
+    value: item.total,
+  }));
 
   return (
     <Card className='p-6 w-full h-full'>
       <Box className='flex justify-between items-center mb-4'>
         <Typography variant='h3' className='font-semibold text-3xl text-gray-900 mb-5'>
-          Incremento de Envíos
+          Ventas de los últimos 7 días
         </Typography>
       </Box>
 

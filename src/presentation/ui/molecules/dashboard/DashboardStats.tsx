@@ -1,25 +1,23 @@
 import DashboardStatCard from '@molecules/dashboard/DashboardStatCard';
 import Box from '@atoms/box/SimpleBox';
+import { IDashboardSummary } from '@/application/dtos/dashboard/response/DashboardResponse';
 
-const DashboardStats = () => {
-  //TODO: Fetch Stats for backend
+const DashboardStats = ({ summary }: { summary: IDashboardSummary }) => {
   const stats = [
     {
       icon: 'bx-cube',
-      title: 'Envíos Totales',
-      value: 19329,
-      trendIcon: 'bx-trending-up',
-      trendColor: 'text-gray-500'
+      title: 'Productos totales',
+      value: summary.totalProducts,
     },
     {
-      icon: 'bx-send',
-      title: 'Paquetes entregados',
-      value: 7000,
+      icon: 'bx-error-circle',
+      title: 'Stock bajo',
+      value: summary.lowStockProducts,
       trendIcon: 'bx-trending-down',
-      trendColor: 'text-red-500'
+      trendColor: 'text-red-500',
     },
-    { icon: 'bx-package', title: 'En tránsito', value: 12000 },
-    { icon: 'bx-time', title: 'Paquetes pendientes', value: 345 }
+    { icon: 'bx-dollar-circle', title: 'Ventas del día', value: Math.round(summary.salesToday) },
+    { icon: 'bx-time', title: 'Pedidos pendientes', value: summary.pendingOrders }
   ];
 
   return (

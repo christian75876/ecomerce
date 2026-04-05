@@ -1,5 +1,11 @@
 export interface ICreateOrderRequest {
-  customerId: string;
+  customerId?: string;
+  customer?: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string;
+  };
   items: Array<{
     productId: string;
     quantity: number;
