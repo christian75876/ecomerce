@@ -63,4 +63,10 @@ export class ProductRepository {
       }),
     );
   }
+
+  static async getProductById(id: string): Promise<IProductResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      publicClientHTTP.get<IProductResp>(`/products/${id}`),
+    );
+  }
 }

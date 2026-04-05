@@ -9,6 +9,7 @@ interface ProductCardProps {
   image: string;
   name: string;
   price: string;
+  description?: string;
   id: string;
   onAddToCart: () => void;
 }
@@ -17,45 +18,46 @@ const ProductCard = ({
   image,
   name,
   price,
+  description,
   onAddToCart,
   id
 }: ProductCardProps) => {
   return (
-    <Card className='flex !p-0 shadow-lg rounded-lg hover:shadow-xl transition-all duration-300'>
-      
-      <Box className='relative w-1/3 h-full mb-4 mr-4'>
+    <Card className='flex h-full flex-col overflow-hidden !p-0 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl'>
+      <Box className='relative h-52 w-full'>
         <Link to={`/product/${id}`}>
           <Image
             src={image}
             alt={name}
-            className='rounded-lg h-full object-cover'
+            className='h-full w-full object-cover'
           />
         </Link>
       </Box>
 
-      <Box className='flex flex-col flex-grow p-2 overflow-hidden'>
-        <h3 className='text-xl font-semibold text-primary mt-4 truncate'>
+      <Box className='flex flex-1 flex-col p-5'>
+        <h3 className='truncate text-xl font-semibold text-primary'>
           {name}
         </h3>
-        <Box className='flex flex-row flex-grow'>
+        {description ? (
+          <p className='mt-2 line-clamp-2 text-sm text-neutral-dark/65'>
+            {description}
+          </p>
+        ) : null}
+        <Box className='mt-5 flex items-end justify-between gap-4'>
           <Box className='flex flex-col justify-center'>
-            <p className='text-sm text-gray-600 mb-1'>Precio x unidad</p>
+            <p className='mb-1 text-sm text-gray-600'>Precio x unidad</p>
             <span className='text-lg font-bold text-gray-900'>${price}</span>
           </Box>
-          <Box className='flex justify-between items-center'>
-            <Button
-              variant='primary'
-              className='ml-3 mr-2 mt-0'
-              size='sm'
-              onClick={onAddToCart}
-              leftIcon={<Icon name='bx-plus-circle' className='text-sm' />}
-            >
-              Agregar
-            </Button>
-          </Box>
+          <Button
+            variant='primary'
+            size='sm'
+            onClick={onAddToCart}
+            leftIcon={<Icon name='bx-plus-circle' className='text-sm' />}
+          >
+            Agregar
+          </Button>
         </Box>
       </Box>
-
     </Card>
   );
 };

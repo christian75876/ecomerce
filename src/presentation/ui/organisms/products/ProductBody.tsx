@@ -1,49 +1,47 @@
+import { IProduct } from '@/application/dtos/products/response/ProductResponse';
 import ProductCard from '../../molecules/products/ProductCard';
+import Box from '../../atoms/box/SimpleBox';
+import Typography from '../../atoms/typography/SimpleTypography';
 
-const ProductBody = () => {
-  // Datos simulados de productos
-  const products = [
-    {
-      id: '1',
-      image:
-        'https://www.theboxcompany.com.my/wp-content/uploads/2022/07/Malaysia-Rectangular-Kraft-Box.jpg',
-      name: 'Producto 1 de Producto',
-      description: 'Descripción del producto 1',
-      price: '10.00'
-    },
-    {
-      id: '2',
-      image:
-        'https://www.theboxcompany.com.my/wp-content/uploads/2022/07/Malaysia-Rectangular-Kraft-Box.jpg',
-      name: 'Producto 2',
-      description: 'Descripción del producto 2',
-      price: '20.00'
-    },
-    {
-      id: '3',
-      image:
-        'https://www.theboxcompany.com.my/wp-content/uploads/2022/07/Malaysia-Rectangular-Kraft-Box.jpg',
-      name: 'Producto 3',
-      description: 'Descripción del producto 3',
-      price: '30.00'
-    }
-  ];
+interface ProductBodyProps {
+  products: IProduct[];
+  loading?: boolean;
+  emptyMessage?: string;
+  onAddToCart?: (productId: string) => void;
+}
 
-  // Función para manejar la acción de agregar al carrito
-  const handleAddToCart = (productId: string) => {
-    console.log('Producto agregado al carrito:', productId);
-  };
+const fallbackImage =
+  'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80';
+
+const ProductBody = ({
+  products,
+  loading = false,
+  emptyMessage = 'No hay productos disponibles en este momento.',
+  onAddToCart,
+}: ProductBodyProps) => {
+  if (loading) {
+    return <Typography>Cargando productos...</Typography>;
+  }
+
+  if (products.length === 0) {
+    return (
+      <Box className='rounded-3xl border border-dashed border-neutral-gray/30 bg-white px-6 py-14 text-center'>
+        <Typography>{emptyMessage}</Typography>
+      </Box>
+    );
+  }
 
   return (
-    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+    <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
       {products.map(product => (
         <ProductCard
           id={product.id}
           key={product.id}
-          image={product.image}
+          image={product.imageUrl || fallbackImage}
           name={product.name}
-          price={product.price}
-          onAddToCart={() => handleAddToCart(product.id)}
+          description={product.description}
+          price={Number(product.price).toFixed(2)}
+          onAddToCart={() => onAddToCart?.(product.id)}
         />
       ))}
     </div>

@@ -1,28 +1,44 @@
-import IconButton from '../../atoms/button/IconButton';
-import Button from '../../atoms/button/SimpleButton';
-import Icon from '../../atoms/icon/SimpleIcon';
-import Image from '../../atoms/image/SimpleImage';
 import Typography from '../../atoms/typography/SimpleTypography';
 import ProductHeader from '../../molecules/products/ProductHeader';
 import { useParams } from 'react-router-dom';
 import ProductInformation from '../../molecules/products/ProductInformation';
 import ProductActions from '../../molecules/products/ProductActions';
+import { usePublicProductDetail } from '@/application/useCases/products/usePublicProductDetail';
+import Box from '../../atoms/box/SimpleBox';
 
 const ProductDetails = () => {
   const { productId } = useParams<{ productId: string }>();
+  const { product, loading, error } = usePublicProductDetail(productId);
 
-  const product = {
-    name: "Producto de Ejemplo",
-    price: "29.99",
-    description: "Este es un producto de ejemplo. Es una molécula que sirve para fines demostrativos.",
-    imageUrl: "https://www.upack.in/media/catalog/product/cache/434b5723752bfe2768a169417576f99a/u/p/upkj233p310_2.jpg",
-  };
+  if (loading) {
+    return <Typography>Cargando detalle del producto...</Typography>;
+  }
+
+  if (error || !product) {
+    return (
+      <Box className='rounded-3xl border border-red-200 bg-red-50 px-6 py-10 text-center text-red-600'>
+        {error || 'Producto no encontrado'}
+      </Box>
+    );
+  }
 
   return (
     <>
       <ProductHeader title={`Detalle del producto`} />
-      <ProductInformation product={product} />
-      <ProductActions/>
+      <Box className='grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]'>
+        <ProductInformation
+          product={{
+            name: product.name,
+            price: Number(product.price).toFixed(2),
+            description: product.description,
+            imageUrl:
+              product.imageUrl ||
+              'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80',
+            category: product.category?.name,
+          }}
+        />
+        <ProductActions price={Number(product.price)} />
+      </Box>
     </>
   );
 };
