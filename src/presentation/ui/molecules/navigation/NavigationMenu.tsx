@@ -5,6 +5,10 @@ import clsx from 'clsx';
 
 const navItems = [
   { label: 'Dashboard', path: '/dashboard', icon: 'bx-home' },
+  { label: 'Categorías', path: '/categories', icon: 'bx-category' },
+  { label: 'Inventario', path: '/inventory', icon: 'bx-box' },
+  { label: 'POS', path: '/pos', icon: 'bx-credit-card' },
+  { label: 'Pedidos', path: '/orders', icon: 'bx-receipt' },
   { label: 'Rastrear', path: '/tracking', icon: 'bx-package' },
   { label: 'Ajustes', path: '/settings', icon: 'bx-cog' },
   { label: 'Tiendas', path: '/stores', icon: 'bx-store' },

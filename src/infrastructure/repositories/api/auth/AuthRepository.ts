@@ -6,7 +6,10 @@ import {
 } from '@/infrastructure/repositories/api/ClientHTTP';
 //application Imports
 import { ILoginRequest } from '@/application/dtos/auth/login/request/LoginRequest';
-import { ILoginResp } from '@/application/dtos/auth/login/response/LoginResponse';
+import {
+  IAuthMeResp,
+  ILoginResp
+} from '@/application/dtos/auth/login/response/LoginResponse';
 import { logError } from '../errors/ErrorLogger';
 import { IRegisterRequest } from '@/application/dtos/auth/register/register/RegisterRequest';
 import { IRegisterResp } from '@/application/dtos/auth/register/response/RegisterResponse';
@@ -52,9 +55,9 @@ export class AuthRepository {
    * Fetches the authenticated user data.
    * @returns {Promise<AuthResponse>} - The authenticated user details.
    */
-  static async getAuthenticatedUser(): Promise<ILoginResp> {
+  static async getAuthenticatedUser(): Promise<IAuthMeResp> {
     return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.get<ILoginResp>('/auth/me')
+      authenticatedClientHTTP.get<IAuthMeResp>('/auth/me')
     );
   }
 
@@ -66,6 +69,5 @@ export class AuthRepository {
     //   authenticatedClientHTTP.post('/auth/logout')
     // ); //TODO: Implement this in the backend
     console.log('Dummy function: Invalidating token...');
-    localStorage.removeItem('token');
   }
 }

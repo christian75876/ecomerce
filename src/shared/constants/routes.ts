@@ -8,6 +8,10 @@ export const ROUTES = {
   },
   PRIVATE: {
     DASHBOARD: '/dashboard',
+    CATEGORIES: '/categories',
+    INVENTORY: '/inventory',
+    POS: '/pos',
+    ORDERS: '/orders',
     TRACKING: '/tracking',
     SETTINGS: '/settings',
     PRODUCTS: '/products',

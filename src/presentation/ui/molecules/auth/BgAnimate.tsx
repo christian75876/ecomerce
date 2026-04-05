@@ -4,7 +4,7 @@ type Axis = "xy" | "x" | "y";
 type Mode = "attract" | "repel";
 
 type BlobCfg = {
-  ref: React.RefObject<HTMLSpanElement>;
+  ref: React.RefObject<HTMLSpanElement | null>;
   mode: Mode;             
   axis?: Axis;           
   strength: number;       

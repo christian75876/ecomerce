@@ -6,6 +6,7 @@ import { ROUTES } from '@/shared/constants/routes';
 import { ILoginRequest } from '@/application/dtos/auth/login/request/LoginRequest';
 import { ILoginResp } from '@/application/dtos/auth/login/response/LoginResponse';
 import { AuthRepository } from '@/infrastructure/repositories/api/auth/AuthRepository';
+import { authSession } from '@/shared/utils/authSession';
 
 export const useLogin = () => {
   const [isloading, setIsLoading] = useState<boolean>(false);
@@ -19,14 +20,16 @@ export const useLogin = () => {
     setError(null);
     try {
       const response = await AuthRepository.login(credentials);
+      authSession.setToken(response.data.token);
+      authSession.setUser(response.data.user);
       navigation(ROUTES.PRIVATE.DASHBOARD);
-      localStorage.setItem('token', response.data.token);
       return response;
     } catch (_err: unknown) {
-      setError('Error desconocido');
+      const message =
+        _err instanceof Error ? _err.message : 'No fue posible iniciar sesión';
+      setError(message);
       return null;
     } finally {
-      // navigation(ROUTES.PRIVATE.DASHBOARD)
       setIsLoading(false);
     }
   };
