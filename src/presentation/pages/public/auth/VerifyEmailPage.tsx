@@ -43,7 +43,7 @@ const VerifyEmailPage = () => {
     return () => {
       mounted = false;
     };
-  }, [token, verifyEmail]);
+  }, [navigate, token, verifyEmail]);
 
   return (
     <div className='min-h-screen bg-neutral-black text-neutral-white flex items-center justify-center px-6'>

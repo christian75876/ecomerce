@@ -5,7 +5,7 @@ import {
 import { AuthRepository } from '@/infrastructure/repositories/api/auth/AuthRepository';
 import { ROUTES } from '@/shared/constants/routes';
 import { SnackbarUtilities } from '@/shared/utils/SnackbarManager';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export const useRegister = () => {
@@ -14,7 +14,7 @@ export const useRegister = () => {
   const navigation = useNavigate();
 
   const handleRegister = async ({
-    password_confirm,
+    password_confirm: _passwordConfirm,
     ...registerData
   }: IRegisterForm) => {
     setError(null);
@@ -26,7 +26,7 @@ export const useRegister = () => {
       navigation(ROUTES.PUBLIC.LOGIN);
       SnackbarUtilities.success(response.message, 'top', 'center');
       return response;
-    } catch (_err: unknown) {
+    } catch {
       setError('Error desconocido');
       return null;
     } finally {

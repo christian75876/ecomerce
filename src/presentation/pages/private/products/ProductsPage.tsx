@@ -1,25 +1,29 @@
-import { IProductRequest } from "@/application/dtos/products/request/ProductRequest";
-import { useSearchBar } from "@/application/useCases/products/useSearchBar";
-import SearchBar from "@/presentation/ui/molecules/products/SearchBar"
-import ProductBody from "@/presentation/ui/organisms/products/ProductBody"
-import ProductHeader from "@/presentation/ui/molecules/products/ProductHeader"
+import { useProductsManagement } from '@/application/useCases/products/useProductsManagement';
+import { ProductsManagementView } from '@/presentation/ui/organisms/products/ProductsManagementView';
 
 const ProductsPage = () => {
+  const productsManagement = useProductsManagement();
 
-    const { isloading, handleSearch } = useSearchBar();
+  return (
+    <ProductsManagementView
+      products={productsManagement.products}
+      categories={productsManagement.categories}
+      form={productsManagement.form}
+      editingId={productsManagement.editingId}
+      search={productsManagement.search}
+      selectedCategoryId={productsManagement.selectedCategoryId}
+      loading={productsManagement.loading}
+      submitting={productsManagement.submitting}
+      error={productsManagement.error}
+      onSearchChange={productsManagement.setSearch}
+      onCategoryFilterChange={productsManagement.setSelectedCategoryId}
+      onFormChange={productsManagement.updateForm}
+      onSubmit={productsManagement.submitForm}
+      onEdit={productsManagement.startEditing}
+      onToggleStatus={productsManagement.toggleStatus}
+      onReset={productsManagement.resetForm}
+    />
+  );
+};
 
-    const onSubmit = (data: IProductRequest) => {
-      handleSearch(data);
-    };
-    
-
-    return (
-        <>
-        <ProductHeader title="Seleccionar productos" />
-        <SearchBar onSubmit={onSubmit} isLoading={isloading} />
-        <ProductBody/>
-        </>
-    )
-}
-
-export default ProductsPage
+export default ProductsPage;

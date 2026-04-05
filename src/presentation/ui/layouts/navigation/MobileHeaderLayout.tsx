@@ -6,10 +6,12 @@ import { ROUTES } from '@/shared/constants/routes';
 
 const navItems = [
   { label: 'Inicio', path: ROUTES.PRIVATE.DASHBOARD, icon: 'bx-home' },
+  { label: 'Categorías', path: ROUTES.PRIVATE.CATEGORIES, icon: 'bx-category' },
+  { label: 'Inventario', path: ROUTES.PRIVATE.INVENTORY, icon: 'bx-box' },
+  { label: 'POS', path: ROUTES.PRIVATE.POS, icon: 'bx-credit-card' },
+  { label: 'Pedidos', path: ROUTES.PRIVATE.ORDERS, icon: 'bx-receipt' },
   { label: 'Productos', path: ROUTES.PRIVATE.PRODUCTS, icon: 'bx-shopping-bag' },
-  { label: 'Carrito', path: ROUTES.PRIVATE.CART, icon: 'bx-cart' },
-  { label: 'Perfil', path: ROUTES.PRIVATE.PROFILE, icon: 'bx-user' },
-  { label: 'Tiendas', path: ROUTES.PRIVATE.STORE, icon: 'bx-store' }
+  { label: 'Ajustes', path: ROUTES.PRIVATE.SETTINGS, icon: 'bx-cog' }
 ];
 
 const MobileHeaderLayout = () => {

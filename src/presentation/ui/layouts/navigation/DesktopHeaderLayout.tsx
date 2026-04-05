@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 
 const DesktopHeaderLayout = () => {
   const navigate = useNavigate();
-  const { handleLogout, isLoading, error } = useLogout();
+  const { handleLogout } = useLogout();
 
   return (
     <Box className='w-full flex items-center justify-between px-8 py-4'>

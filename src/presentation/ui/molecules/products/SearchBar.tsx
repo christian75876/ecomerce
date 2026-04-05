@@ -1,22 +1,22 @@
 import FormField from '../forms/FormField';
 import { useFormValidation } from '@/shared/hooks/useFormValidation';
 import { searchBar } from '@/domain/validations/products/SearchBar';
-import { IProductRequest } from '@/application/dtos/products/request/ProductRequest';
+import { IProductsQuery } from '@/application/dtos/products/request/ProductRequest';
 import Icon from '../../atoms/icon/SimpleIcon';
 
 interface SearchBarProps {
-  onSubmit: (data: IProductRequest) => void;
+  onSubmit: (data: IProductsQuery) => void;
   isLoading?: boolean;
 }
 
 const SearchBar = ({ onSubmit, isLoading = false }: SearchBarProps) => {
-  const { control, handleSubmit } = useFormValidation(searchBar, {
+  const { control, handleSubmit } = useFormValidation(searchBar, isLoading, {
     search: ''
   });
 
   const handleFormSubmit = (data: { search: string }) => {
-    const requestData: IProductRequest = {
-      name: data.search
+    const requestData: IProductsQuery = {
+      search: data.search
     };
 
     onSubmit(requestData);

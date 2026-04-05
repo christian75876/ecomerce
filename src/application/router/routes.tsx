@@ -14,6 +14,9 @@ const VerifyEmailPage = lazy(
 const NotFound = lazy(
   () => import('@presentation/pages/public/404/NotFoundPage')
 );
+const CartPage = lazy(
+  () => import('@presentation/pages/public/cart/CartPage')
+);
 // const RegisterPage = lazy(
 //   () => import('@presentation/pages/public/auth/RegisterPage')
 // );
@@ -30,6 +33,18 @@ const SettingsPage = lazy(
 );
 const ProductsPage = lazy(
   () => import('@presentation/pages/private/products/ProductsPage')
+);
+const CategoriesPage = lazy(
+  () => import('@presentation/pages/private/categories/CategoriesPage')
+);
+const InventoryPage = lazy(
+  () => import('@presentation/pages/private/inventory/InventoryPage')
+);
+const PosPage = lazy(
+  () => import('@presentation/pages/private/pos/PosPage')
+);
+const OrdersPage = lazy(
+  () => import('@presentation/pages/private/orders/OrdersPage')
 );
 const ProductDetailPage = lazy(
   () => import('@presentation/pages/private/products/ProductDetailPage')
@@ -61,7 +76,20 @@ export const routes: AppRoute[] = [
     path: ROUTES.PUBLIC.HOME,
     element: <HomePage />,
     layout: DashboardLayout,
-    hasGradient: true
+    hasGradient: true,
+    publicOnly: false
+  },
+  {
+    path: ROUTES.PUBLIC.CART,
+    element: <CartPage />,
+    layout: DashboardLayout,
+    publicOnly: false
+  },
+  {
+    path: ROUTES.PUBLIC.PRODUCT_DETAILS,
+    element: <ProductDetailPage />,
+    layout: DashboardLayout,
+    publicOnly: false
   },
 
   // Rutas Privadas con Layout
@@ -84,15 +112,33 @@ export const routes: AppRoute[] = [
     layout: DashboardLayout
   },
   {
+    path: ROUTES.PRIVATE.CATEGORIES,
+    element: <CategoriesPage />,
+    private: true,
+    layout: DashboardLayout
+  },
+  {
+    path: ROUTES.PRIVATE.INVENTORY,
+    element: <InventoryPage />,
+    private: true,
+    layout: DashboardLayout
+  },
+  {
+    path: ROUTES.PRIVATE.POS,
+    element: <PosPage />,
+    private: true,
+    layout: DashboardLayout
+  },
+  {
+    path: ROUTES.PRIVATE.ORDERS,
+    element: <OrdersPage />,
+    private: true,
+    layout: DashboardLayout
+  },
+  {
     path: ROUTES.PRIVATE.PRODUCTS,
     element: <ProductsPage />,
     private: true,
     layout: DashboardLayout
   },
-  {
-    path: ROUTES.PRIVATE.DETAILS,
-    element: <ProductDetailPage />,
-    private: true,
-    layout: DashboardLayout
-  }
 ];

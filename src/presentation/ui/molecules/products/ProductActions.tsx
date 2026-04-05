@@ -1,20 +1,34 @@
-import Box from '../../atoms/box/SimpleBox';
 import Button from '../../atoms/button/SimpleButton';
 import Icon from '../../atoms/icon/SimpleIcon';
 import Typography from '../../atoms/typography/SimpleTypography';
+import Box from '../../atoms/box/SimpleBox';
 
-const ProductActions = () => {
+interface ProductActionsProps {
+  price: number;
+  onPrimaryAction?: () => void;
+  primaryLabel?: string;
+}
+
+const ProductActions = ({
+  price,
+  onPrimaryAction,
+  primaryLabel = 'Agregar al carrito',
+}: ProductActionsProps) => {
   return (
-    <Box>
-      <Typography variant='p'>Precio de reventa</Typography>
+    <Box className='rounded-[1.5rem] border border-neutral-gray/20 bg-white p-6 shadow-sm'>
+      <Typography variant='p' className='text-sm text-neutral-dark/65'>
+        Precio del producto
+      </Typography>
       <Button
-        title='Descargar Historial'
-        size='sm'
+        title='Agregar al carrito'
+        size='md'
         fullWidth
         variant='outlinePrimary'
-        rightIcon={<Icon name='bx-download' />}
+        className='mt-3'
+        rightIcon={<Icon name='bx-cart-add' />}
+        onClick={onPrimaryAction}
       >
-        $1.500
+        {primaryLabel} · ${price.toFixed(2)}
       </Button>
     </Box>
   );

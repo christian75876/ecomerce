@@ -1,5 +1,6 @@
 import { AuthRepository } from '@/infrastructure/repositories/api/auth/AuthRepository';
 import { ROUTES } from '@/shared/constants/routes';
+import { authSession } from '@/shared/utils/authSession';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,10 +14,13 @@ export const useLogout = () => {
     setError(null);
     try {
       await AuthRepository.logout();
+      authSession.clear();
       navigation(ROUTES.PUBLIC.HOME);
       return null;
     } catch (_err: unknown) {
-      setError('Error desconocido');
+      setError(
+        _err instanceof Error ? _err.message : 'No fue posible cerrar sesión'
+      );
       return null;
     } finally {
       setIsLoading(false);

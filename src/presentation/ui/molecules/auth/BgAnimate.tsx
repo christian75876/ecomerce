@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useLayoutEffect } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 
 type Axis = "xy" | "x" | "y";
 type Mode = "attract" | "repel";
 
 type BlobCfg = {
-  ref: React.RefObject<HTMLSpanElement>;
+  ref: React.RefObject<HTMLSpanElement | null>;
   mode: Mode;             
   axis?: Axis;           
   strength: number;       
@@ -29,20 +29,19 @@ const BgAnimate: React.FC = () => {
     { x: 0, y: 0 },
   ]);
 
-  const cfg: BlobCfg[] = [
-    // se ACERCA al mouse (parallax suave), reacciona en XY
-    { ref: b1, mode: "attract", axis: "xy", strength: 0.18, damp: 0.09, amp: 12, speed: 0.30, phase: 0.0, minScale: 0.95, maxScale: 1.15 },
-    // se ALEJA del mouse (repulsión), sólo en X
-    { ref: b2, mode: "repel",   axis: "x",  strength: 0.20, damp: 0.10, amp: 10, speed: 0.25, phase: 1.3, minScale: 0.92, maxScale: 1.05 },
-    // se ACERCA, sólo en Y (sube/baja al pasar)
-    { ref: b3, mode: "attract", axis: "y",  strength: 0.14, damp: 0.08, amp: 14, speed: 0.20, phase: 2.7, minScale: 0.96, maxScale: 1.10 },
-    // se ALEJA, en XY pero más nervioso
-    { ref: b4, mode: "repel",   axis: "xy", strength: 0.26, damp: 0.11, amp:  8, speed: 0.35, phase: 4.1, minScale: 0.9,  maxScale: 1.06 },
-  ];
+  const cfg = useMemo<BlobCfg[]>(
+    () => [
+      { ref: b1, mode: "attract", axis: "xy", strength: 0.18, damp: 0.09, amp: 12, speed: 0.30, phase: 0.0, minScale: 0.95, maxScale: 1.15 },
+      { ref: b2, mode: "repel", axis: "x", strength: 0.20, damp: 0.10, amp: 10, speed: 0.25, phase: 1.3, minScale: 0.92, maxScale: 1.05 },
+      { ref: b3, mode: "attract", axis: "y", strength: 0.14, damp: 0.08, amp: 14, speed: 0.20, phase: 2.7, minScale: 0.96, maxScale: 1.10 },
+      { ref: b4, mode: "repel", axis: "xy", strength: 0.26, damp: 0.11, amp: 8, speed: 0.35, phase: 4.1, minScale: 0.9, maxScale: 1.06 },
+    ],
+    [],
+  );
 
   const cur = useRef(cfg.map(() => ({ x: 0, y: 0 })));
 
-  const recalcAnchors = () => {
+  const recalcAnchors = useCallback(() => {
     cfg.forEach((c, i) => {
       const el = c.ref.current;
       if (!el) return;
@@ -50,15 +49,14 @@ const BgAnimate: React.FC = () => {
       anchors.current[i].x = r.left + r.width / 2;
       anchors.current[i].y = r.top + r.height / 2;
     });
-  };
+  }, [cfg]);
 
   useLayoutEffect(() => {
     recalcAnchors();
     const onResize = () => recalcAnchors();
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [recalcAnchors]);
 
   useEffect(() => {
     const reduce =
@@ -124,7 +122,7 @@ const BgAnimate: React.FC = () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("pointermove", onMove);
     };
-  }, []);
+  }, [cfg]);
 
   return (
     <div

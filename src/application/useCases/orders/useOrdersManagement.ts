@@ -1,0 +1,176 @@
+import { useEffect, useState } from 'react';
+import { ICustomer } from '@/application/dtos/customers/response/CustomerResponse';
+import { IOrder } from '@/application/dtos/orders/response/OrderResponse';
+import { IProduct } from '@/application/dtos/products/response/ProductResponse';
+import { CustomersRepository } from '@/infrastructure/repositories/api/customers/CustomersRepository';
+import { OrdersRepository } from '@/infrastructure/repositories/api/orders/OrdersRepository';
+import { ProductRepository } from '@/infrastructure/repositories/api/products/ProductsRepository';
+
+export const ORDER_STATUSES = [
+  'PENDING',
+  'PAID',
+  'PREPARING',
+  'SHIPPED',
+  'DELIVERED',
+  'CANCELLED',
+] as const;
+
+export type CartRow = {
+  productId: string;
+  quantity: number;
+};
+
+export const useOrdersManagement = () => {
+  const [customers, setCustomers] = useState<ICustomer[]>([]);
+  const [products, setProducts] = useState<IProduct[]>([]);
+  const [orders, setOrders] = useState<IOrder[]>([]);
+  const [customerId, setCustomerId] = useState('');
+  const [newCustomer, setNewCustomer] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+  });
+  const [cartRows, setCartRows] = useState<CartRow[]>([
+    { productId: '', quantity: 1 },
+  ]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadScreen = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const [customersResponse, productsResponse, ordersResponse] =
+        await Promise.all([
+          CustomersRepository.getCustomers(),
+          ProductRepository.getProducts({ active: true }),
+          OrdersRepository.getOrders(),
+        ]);
+      setCustomers(customersResponse.data);
+      setProducts(productsResponse.data);
+      setOrders(ordersResponse.data);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'No fue posible cargar pedidos',
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadScreen();
+  }, []);
+
+  const createCustomer = async () => {
+    if (
+      !newCustomer.firstName.trim() ||
+      !newCustomer.lastName.trim() ||
+      !newCustomer.email.trim()
+    ) {
+      setError('Completa nombre, apellido y correo del cliente');
+      return false;
+    }
+
+    setSubmitting(true);
+    setError(null);
+    try {
+      const response = await CustomersRepository.createCustomer(newCustomer);
+      setCustomerId(response.data.id);
+      setNewCustomer({ firstName: '', lastName: '', email: '', phone: '' });
+      await loadScreen();
+      return true;
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'No fue posible crear el cliente',
+      );
+      return false;
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const updateCartRow = (index: number, patch: Partial<CartRow>) => {
+    setCartRows((current) =>
+      current.map((row, rowIndex) =>
+        rowIndex === index ? { ...row, ...patch } : row,
+      ),
+    );
+  };
+
+  const addCartRow = () => {
+    setCartRows((current) => [...current, { productId: '', quantity: 1 }]);
+  };
+
+  const createOrder = async () => {
+    const validItems = cartRows.filter((row) => row.productId && row.quantity > 0);
+
+    if (!customerId || validItems.length === 0) {
+      setError('Selecciona cliente y al menos un producto');
+      return false;
+    }
+
+    setSubmitting(true);
+    setError(null);
+    try {
+      await OrdersRepository.createOrder({
+        customerId,
+        items: validItems,
+      });
+      setCartRows([{ productId: '', quantity: 1 }]);
+      await loadScreen();
+      return true;
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'No fue posible crear el pedido',
+      );
+      return false;
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const changeOrderStatus = async (
+    orderId: string,
+    status: (typeof ORDER_STATUSES)[number],
+  ) => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      await OrdersRepository.updateOrderStatus(orderId, { status });
+      await loadScreen();
+      return true;
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'No fue posible actualizar el estado del pedido',
+      );
+      return false;
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return {
+    customers,
+    products,
+    orders,
+    customerId,
+    newCustomer,
+    cartRows,
+    loading,
+    submitting,
+    error,
+    setCustomerId,
+    setNewCustomer,
+    updateCartRow,
+    addCartRow,
+    createCustomer,
+    createOrder,
+    changeOrderStatus,
+  };
+};
