@@ -5,4 +5,4 @@ export interface ICreateCustomerRequest {
   phone?: string;
 }
 
-export interface IUpdateCustomerRequest extends Partial<ICreateCustomerRequest> {}
+export type IUpdateCustomerRequest = Partial<ICreateCustomerRequest>;

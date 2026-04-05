@@ -15,4 +15,4 @@ export interface ICreateProductRequest {
   isActive?: boolean;
 }
 
-export interface IUpdateProductRequest extends Partial<ICreateProductRequest> {}
+export type IUpdateProductRequest = Partial<ICreateProductRequest>;

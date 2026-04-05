@@ -42,19 +42,21 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    await createReview({
+    const wasCreated = await createReview({
       customerId: form.customerId,
       rating: Number(form.rating),
       comment: form.comment.trim(),
       images: form.images,
     });
 
-    setForm({
-      customerId: '',
-      rating: '5',
-      comment: '',
-      images: [],
-    });
+    if (wasCreated) {
+      setForm({
+        customerId: '',
+        rating: '5',
+        comment: '',
+        images: [],
+      });
+    }
   };
 
   return (

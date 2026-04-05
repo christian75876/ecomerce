@@ -44,7 +44,7 @@ export const useProductReviews = (productId?: string) => {
 
   const createReview = async (payload: ICreateReviewRequest) => {
     if (!productId) {
-      return;
+      return false;
     }
 
     setSubmitting(true);
@@ -53,10 +53,12 @@ export const useProductReviews = (productId?: string) => {
     try {
       await ReviewsRepository.createReview(productId, payload);
       await loadReviews();
+      return true;
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'No fue posible crear la reseña',
       );
+      return false;
     } finally {
       setSubmitting(false);
     }

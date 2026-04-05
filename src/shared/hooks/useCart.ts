@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 
 export interface CartItem {
   productId: string;
@@ -9,45 +9,62 @@ export interface CartItem {
 }
 
 const CART_KEY = 'public_cart';
+const CART_EVENT = 'cart-updated';
+
+const readItems = (): CartItem[] => {
+  const stored = localStorage.getItem(CART_KEY);
+  if (!stored) {
+    return [];
+  }
+
+  try {
+    return JSON.parse(stored) as CartItem[];
+  } catch {
+    localStorage.removeItem(CART_KEY);
+    return [];
+  }
+};
+
+const writeItems = (items: CartItem[]) => {
+  localStorage.setItem(CART_KEY, JSON.stringify(items));
+  window.dispatchEvent(new Event(CART_EVENT));
+};
+
+const subscribe = (callback: () => void) => {
+  const handler = () => callback();
+  window.addEventListener(CART_EVENT, handler);
+  window.addEventListener('storage', handler);
+
+  return () => {
+    window.removeEventListener(CART_EVENT, handler);
+    window.removeEventListener('storage', handler);
+  };
+};
 
 export const useCart = () => {
-  const [items, setItems] = useState<CartItem[]>([]);
-
-  useEffect(() => {
-    const stored = localStorage.getItem(CART_KEY);
-    if (!stored) {
-      return;
-    }
-
-    try {
-      setItems(JSON.parse(stored) as CartItem[]);
-    } catch {
-      localStorage.removeItem(CART_KEY);
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem(CART_KEY, JSON.stringify(items));
-  }, [items]);
+  const items = useSyncExternalStore(subscribe, readItems, () => []);
 
   const addItem = (item: Omit<CartItem, 'quantity'>) => {
-    setItems((current) => {
-      const existing = current.find((entry) => entry.productId === item.productId);
-      if (existing) {
-        return current.map((entry) =>
+    const current = readItems();
+    const existing = current.find((entry) => entry.productId === item.productId);
+
+    if (existing) {
+      writeItems(
+        current.map((entry) =>
           entry.productId === item.productId
             ? { ...entry, quantity: entry.quantity + 1 }
             : entry,
-        );
-      }
+        ),
+      );
+      return;
+    }
 
-      return [...current, { ...item, quantity: 1 }];
-    });
+    writeItems([...current, { ...item, quantity: 1 }]);
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
-    setItems((current) =>
-      current
+    writeItems(
+      readItems()
         .map((item) =>
           item.productId === productId ? { ...item, quantity } : item,
         )
@@ -55,7 +72,7 @@ export const useCart = () => {
     );
   };
 
-  const clear = () => setItems([]);
+  const clear = () => writeItems([]);
 
   const total = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
