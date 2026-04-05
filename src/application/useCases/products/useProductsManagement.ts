@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ICategory } from '@/application/dtos/categories/response/CategoryResponse';
 import {
   ICreateProductRequest,
-  IUpdateProductRequest,
 } from '@/application/dtos/products/request/ProductRequest';
 import { IProduct } from '@/application/dtos/products/response/ProductResponse';
 import { CategoriesRepository } from '@/infrastructure/repositories/api/categories/CategoriesRepository';
@@ -39,12 +38,12 @@ export const useProductsManagement = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadCategories = async () => {
+  const loadCategories = useCallback(async () => {
     const response = await CategoriesRepository.getCategories(true);
     setCategories(response.data);
-  };
+  }, []);
 
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -61,7 +60,7 @@ export const useProductsManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [search, selectedCategoryId]);
 
   useEffect(() => {
     void Promise.all([loadCategories(), loadProducts()]).catch((err: unknown) => {
@@ -70,11 +69,11 @@ export const useProductsManagement = () => {
       );
       setLoading(false);
     });
-  }, []);
+  }, [loadCategories, loadProducts]);
 
   useEffect(() => {
     void loadProducts();
-  }, [search, selectedCategoryId]);
+  }, [loadProducts]);
 
   const updateForm = <K extends keyof ProductFormState>(
     key: K,

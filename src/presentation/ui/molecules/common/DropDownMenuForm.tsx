@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import Box from '../../atoms/box/SimpleBox';
 import { Control, Controller, FieldValues, Path } from 'react-hook-form';
 import Label from '../../atoms/label/SimpleLabel';
@@ -64,6 +64,7 @@ export const DropDownMenuForm = <TForm extends FieldValues>({
                   'w-full px-4 py-3 border rounded-lg bg-white',
                   'appearance-none pr-12',
                   'focus:outline-none focus:ring-2',
+                  dropDownClassName,
                   fieldState.error
                     ? 'border-red-500 focus:ring-red-500'
                     : 'border-gray-300 focus:ring-primary'

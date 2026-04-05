@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ReviewsRepository } from '@/infrastructure/repositories/api/reviews/ReviewsRepository';
 import { ICreateReviewRequest } from '@/application/dtos/reviews/request/ReviewRequest';
 import { IProductReviewsData } from '@/application/dtos/reviews/response/ReviewResponse';
@@ -17,7 +17,7 @@ export const useProductReviews = (productId?: string) => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadReviews = async () => {
+  const loadReviews = useCallback(async () => {
     if (!productId) {
       setLoading(false);
       return;
@@ -36,11 +36,11 @@ export const useProductReviews = (productId?: string) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [productId]);
 
   useEffect(() => {
     void loadReviews();
-  }, [productId]);
+  }, [loadReviews]);
 
   const createReview = async (payload: ICreateReviewRequest) => {
     if (!productId) {

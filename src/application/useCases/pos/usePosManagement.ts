@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { IProduct } from '@/application/dtos/products/response/ProductResponse';
 import { ISale } from '@/application/dtos/sales/response/SaleResponse';
 import { ProductRepository } from '@/infrastructure/repositories/api/products/ProductsRepository';
@@ -18,7 +18,7 @@ export const usePosManagement = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadScreen = async () => {
+  const loadScreen = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -34,11 +34,11 @@ export const usePosManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [search]);
 
   useEffect(() => {
     void loadScreen();
-  }, [search]);
+  }, [loadScreen]);
 
   const addToCart = (product: IProduct) => {
     setCart((current) => {

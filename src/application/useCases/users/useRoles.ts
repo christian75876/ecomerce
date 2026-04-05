@@ -17,18 +17,18 @@ export const useRoles = (setDisabled: (disabled: boolean) => void) => {
     try {
       const response = await UsersRepository.getRoles();
       setRoles(response);
-    } catch (_err: unknown) {
+    } catch {
       setError('Error desconocido');
       setDisabled(true);
       return null;
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [setDisabled]);
 
   useEffect(() => {
-    handleGetRoles();
-  }, []);
+    void handleGetRoles();
+  }, [handleGetRoles]);
 
   return { roles, isLoading, error };
 };

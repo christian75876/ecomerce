@@ -16,7 +16,7 @@ export const useSearchBar = () => {
     try {
       const response = await ProductRepository.getProducts(search);
       return response;
-    } catch (error: unknown) {
+    } catch {
       setError('Error desconocido al obtener Productos');
       return null;
     } finally {
