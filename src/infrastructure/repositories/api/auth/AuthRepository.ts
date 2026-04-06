@@ -13,6 +13,8 @@ import {
 import { logError } from '../errors/ErrorLogger';
 import { IRegisterRequest } from '@/application/dtos/auth/register/register/RegisterRequest';
 import { IRegisterResp } from '@/application/dtos/auth/register/response/RegisterResponse';
+import { IRegisterCustomerRequest } from '@/application/dtos/auth/register/customer/RegisterCustomerRequest';
+import { IRegisterCustomerResp } from '@/application/dtos/auth/register/customer/RegisterCustomerResponse';
 import { IVerifyEmailRequest } from '@/application/dtos/auth/verify-email/request/VerifyEmailRequest';
 import { IVerifyEmailResp } from '@/application/dtos/auth/verify-email/response/VerifyEmailResponse';
 
@@ -34,6 +36,21 @@ export class AuthRepository {
   static async register(userData: IRegisterRequest): Promise<IRegisterResp> {
     return ErrorHandler.handleApiErrors(
       () => publicClientHTTP.post<IRegisterResp>('/auth/register', userData),
+      msg => {
+        logError(msg, 'client');
+      }
+    );
+  }
+
+  static async registerCustomer(
+    userData: IRegisterCustomerRequest,
+  ): Promise<IRegisterCustomerResp> {
+    return ErrorHandler.handleApiErrors(
+      () =>
+        publicClientHTTP.post<IRegisterCustomerResp>(
+          '/auth/register-customer',
+          userData,
+        ),
       msg => {
         logError(msg, 'client');
       }

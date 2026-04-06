@@ -41,6 +41,8 @@ const ProductBody = ({
           name={product.name}
           description={product.description}
           price={Number(product.price).toFixed(2)}
+          storeName={product.store?.name}
+          storeSlug={product.store?.slug}
           onAddToCart={() => onAddToCart?.(product.id)}
         />
       ))}

@@ -4,15 +4,23 @@ import {
   ICreateProductRequest,
 } from '@/application/dtos/products/request/ProductRequest';
 import { IProduct } from '@/application/dtos/products/response/ProductResponse';
+import { IStore } from '@/application/dtos/stores/response/StoreResponse';
+import { ISupplier } from '@/application/dtos/suppliers/response/SupplierResponse';
 import { CategoriesRepository } from '@/infrastructure/repositories/api/categories/CategoriesRepository';
 import { ProductRepository } from '@/infrastructure/repositories/api/products/ProductsRepository';
+import { StoresRepository } from '@/infrastructure/repositories/api/stores/StoresRepository';
+import { SuppliersRepository } from '@/infrastructure/repositories/api/suppliers/SuppliersRepository';
 
 export type ProductFormState = {
   name: string;
   description: string;
   sku: string;
   price: string;
+  cost: string;
   categoryId: string;
+  storeId: string;
+  supplierId: string;
+  initialStock: string;
   imageUrl: string;
   showStock: boolean;
 };
@@ -22,7 +30,11 @@ export const initialProductFormState: ProductFormState = {
   description: '',
   sku: '',
   price: '',
+  cost: '',
   categoryId: '',
+  storeId: '',
+  supplierId: '',
+  initialStock: '',
   imageUrl: '',
   showStock: false,
 };
@@ -30,6 +42,8 @@ export const initialProductFormState: ProductFormState = {
 export const useProductsManagement = () => {
   const [products, setProducts] = useState<IProduct[]>([]);
   const [categories, setCategories] = useState<ICategory[]>([]);
+  const [stores, setStores] = useState<IStore[]>([]);
+  const [suppliers, setSuppliers] = useState<ISupplier[]>([]);
   const [form, setForm] = useState<ProductFormState>(initialProductFormState);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -41,6 +55,16 @@ export const useProductsManagement = () => {
   const loadCategories = useCallback(async () => {
     const response = await CategoriesRepository.getCategories(true);
     setCategories(response.data);
+  }, []);
+
+  const loadStores = useCallback(async () => {
+    const response = await StoresRepository.getStores({ active: true });
+    setStores(response.data);
+  }, []);
+
+  const loadSuppliers = useCallback(async () => {
+    const response = await SuppliersRepository.getSuppliers();
+    setSuppliers(response.data.filter((supplier) => supplier.isActive));
   }, []);
 
   const loadProducts = useCallback(async () => {
@@ -63,13 +87,13 @@ export const useProductsManagement = () => {
   }, [search, selectedCategoryId]);
 
   useEffect(() => {
-    void Promise.all([loadCategories(), loadProducts()]).catch((err: unknown) => {
+    void Promise.all([loadCategories(), loadStores(), loadSuppliers()]).catch((err: unknown) => {
       setError(
         err instanceof Error ? err.message : 'No fue posible cargar el módulo',
       );
       setLoading(false);
     });
-  }, [loadCategories, loadProducts]);
+  }, [loadCategories, loadStores, loadSuppliers]);
 
   useEffect(() => {
     void loadProducts();
@@ -96,14 +120,25 @@ export const useProductsManagement = () => {
       !currentForm.description.trim() ||
       !currentForm.sku.trim() ||
       !currentForm.price ||
-      !currentForm.categoryId
+      !currentForm.categoryId ||
+      !currentForm.storeId
     ) {
-      setError('Completa nombre, descripción, SKU, precio y categoría');
+      setError('Completa nombre, descripción, SKU, precio, categoría y tienda');
       return null;
     }
 
     if (Number(currentForm.price) < 0) {
       setError('El precio no puede ser negativo');
+      return null;
+    }
+
+    if (currentForm.cost && Number(currentForm.cost) < 0) {
+      setError('El costo no puede ser negativo');
+      return null;
+    }
+
+    if (currentForm.initialStock && Number(currentForm.initialStock) < 0) {
+      setError('El stock inicial no puede ser negativo');
       return null;
     }
 
@@ -113,6 +148,12 @@ export const useProductsManagement = () => {
       sku: currentForm.sku.trim(),
       price: Number(currentForm.price),
       categoryId: currentForm.categoryId,
+      storeId: currentForm.storeId,
+      supplierId: currentForm.supplierId || undefined,
+      cost: currentForm.cost ? Number(currentForm.cost) : undefined,
+      initialStock: currentForm.initialStock
+        ? Number(currentForm.initialStock)
+        : undefined,
       imageUrl: currentForm.imageUrl.trim() || undefined,
       showStock: currentForm.showStock,
       isActive: true,
@@ -155,7 +196,11 @@ export const useProductsManagement = () => {
       description: product.description,
       sku: product.sku,
       price: String(product.price),
+      cost: product.cost ? String(product.cost) : '',
       categoryId: product.categoryId,
+      storeId: product.storeId ?? '',
+      supplierId: product.supplierId ?? '',
+      initialStock: '',
       imageUrl: product.imageUrl ?? '',
       showStock: product.showStock,
     });
@@ -183,6 +228,8 @@ export const useProductsManagement = () => {
   return {
     products,
     categories,
+    stores,
+    suppliers,
     form,
     editingId,
     search,

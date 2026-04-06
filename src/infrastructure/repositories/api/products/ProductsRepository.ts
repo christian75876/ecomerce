@@ -25,6 +25,10 @@ export class ProductRepository {
       params.set('categoryId', query.categoryId);
     }
 
+    if (query.storeId) {
+      params.set('storeId', query.storeId);
+    }
+
     if (typeof query.active === 'boolean') {
       params.set('active', String(query.active));
     }

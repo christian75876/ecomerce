@@ -8,6 +8,8 @@ const ProductsPage = () => {
     <ProductsManagementView
       products={productsManagement.products}
       categories={productsManagement.categories}
+      stores={productsManagement.stores}
+      suppliers={productsManagement.suppliers}
       form={productsManagement.form}
       editingId={productsManagement.editingId}
       search={productsManagement.search}

@@ -1,5 +1,7 @@
 import { ICategory } from '@/application/dtos/categories/response/CategoryResponse';
 import { IProduct } from '@/application/dtos/products/response/ProductResponse';
+import { IStore } from '@/application/dtos/stores/response/StoreResponse';
+import { ISupplier } from '@/application/dtos/suppliers/response/SupplierResponse';
 import { ProductFormState } from '@/application/useCases/products/useProductsManagement';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
@@ -10,6 +12,8 @@ import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 interface ProductsManagementViewProps {
   products: IProduct[];
   categories: ICategory[];
+  stores: IStore[];
+  suppliers: ISupplier[];
   form: ProductFormState;
   editingId: string | null;
   search: string;
@@ -32,6 +36,8 @@ interface ProductsManagementViewProps {
 export const ProductsManagementView = ({
   products,
   categories,
+  stores,
+  suppliers,
   form,
   editingId,
   search,
@@ -59,8 +65,8 @@ export const ProductsManagementView = ({
           Productos
         </Typography>
         <Typography className="max-w-3xl text-neutral-dark/70">
-          Gestiona el catálogo comercial con SKU único, categoría, precio,
-          visibilidad y publicación de stock para el catálogo.
+          Gestiona el catálogo comercial con SKU único, tienda, proveedor,
+          costo, stock inicial y visibilidad de stock en el catálogo.
         </Typography>
       </Box>
 
@@ -118,21 +124,87 @@ export const ProductsManagementView = ({
               </Box>
             </Box>
 
+            <Box className="grid gap-4 md:grid-cols-2">
+              <Box>
+                <Label htmlFor="product-cost">Costo opcional</Label>
+                <Input
+                  id="product-cost"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.cost}
+                  onChange={(event) => onFormChange('cost', event.target.value)}
+                  disabled={submitting}
+                />
+              </Box>
+              <Box>
+                <Label htmlFor="product-stock">Stock inicial opcional</Label>
+                <Input
+                  id="product-stock"
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={form.initialStock}
+                  onChange={(event) =>
+                    onFormChange('initialStock', event.target.value)
+                  }
+                  disabled={submitting || Boolean(editingId)}
+                />
+              </Box>
+            </Box>
+
+            <Box className="grid gap-4 md:grid-cols-2">
+              <Box>
+                <Label htmlFor="product-category">Categoría</Label>
+                <select
+                  id="product-category"
+                  value={form.categoryId}
+                  onChange={(event) =>
+                    onFormChange('categoryId', event.target.value)
+                  }
+                  disabled={submitting}
+                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="">Selecciona una categoría</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </Box>
+              <Box>
+                <Label htmlFor="product-store">Tienda</Label>
+                <select
+                  id="product-store"
+                  value={form.storeId}
+                  onChange={(event) => onFormChange('storeId', event.target.value)}
+                  disabled={submitting}
+                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="">Selecciona una tienda</option>
+                  {stores.map((store) => (
+                    <option key={store.id} value={store.id}>
+                      {store.name}
+                    </option>
+                  ))}
+                </select>
+              </Box>
+            </Box>
+
             <Box>
-              <Label htmlFor="product-category">Categoría</Label>
+              <Label htmlFor="product-supplier">Proveedor opcional</Label>
               <select
-                id="product-category"
-                value={form.categoryId}
-                onChange={(event) =>
-                  onFormChange('categoryId', event.target.value)
-                }
+                id="product-supplier"
+                value={form.supplierId}
+                onChange={(event) => onFormChange('supplierId', event.target.value)}
                 disabled={submitting}
                 className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="">Selecciona una categoría</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
+                <option value="">Sin proveedor asociado</option>
+                {suppliers.map((supplier) => (
+                  <option key={supplier.id} value={supplier.id}>
+                    {supplier.name}
                   </option>
                 ))}
               </select>
@@ -252,12 +324,20 @@ export const ProductsManagementView = ({
                       </span>
                     </Box>
                     <Typography className="text-sm text-neutral-dark/70">
-                      SKU: {product.sku} · Categoría: {product.category.name}
+                      SKU: {product.sku} · Categoría: {product.category.name} ·
+                      Tienda: {product.store?.name ?? 'Sin tienda'}
                     </Typography>
                     <Typography className="text-sm text-neutral-dark/70">
-                      ${Number(product.price).toFixed(2)} · Stock visible:{' '}
+                      ${Number(product.price).toFixed(2)} · Costo:{' '}
+                      {product.cost ? `$${Number(product.cost).toFixed(2)}` : 'N/D'} ·
+                      Stock visible:{' '}
                       {product.showStock ? 'Sí' : 'No'}
                     </Typography>
+                    {product.supplier ? (
+                      <Typography className="text-sm text-neutral-dark/70">
+                        Proveedor: {product.supplier.name}
+                      </Typography>
+                    ) : null}
                     <Typography className="text-sm text-neutral-dark/75">
                       {product.description}
                     </Typography>

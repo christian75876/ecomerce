@@ -10,18 +10,33 @@ export interface CartItem {
 
 const CART_KEY = 'public_cart';
 const CART_EVENT = 'cart-updated';
+const EMPTY_ITEMS: CartItem[] = [];
+
+let cachedRaw = '';
+let cachedItems: CartItem[] = EMPTY_ITEMS;
 
 const readItems = (): CartItem[] => {
   const stored = localStorage.getItem(CART_KEY);
   if (!stored) {
-    return [];
+    cachedRaw = '';
+    cachedItems = EMPTY_ITEMS;
+    return cachedItems;
+  }
+
+  if (stored === cachedRaw) {
+    return cachedItems;
   }
 
   try {
-    return JSON.parse(stored) as CartItem[];
+    const parsed = JSON.parse(stored) as CartItem[];
+    cachedRaw = stored;
+    cachedItems = Array.isArray(parsed) ? parsed : EMPTY_ITEMS;
+    return cachedItems;
   } catch {
     localStorage.removeItem(CART_KEY);
-    return [];
+    cachedRaw = '';
+    cachedItems = EMPTY_ITEMS;
+    return cachedItems;
   }
 };
 
@@ -42,7 +57,7 @@ const subscribe = (callback: () => void) => {
 };
 
 export const useCart = () => {
-  const items = useSyncExternalStore(subscribe, readItems, () => []);
+  const items = useSyncExternalStore(subscribe, readItems, () => EMPTY_ITEMS);
 
   const addItem = (item: Omit<CartItem, 'quantity'>) => {
     const current = readItems();

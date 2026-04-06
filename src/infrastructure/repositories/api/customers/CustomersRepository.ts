@@ -1,8 +1,10 @@
 import {
   ICreateCustomerRequest,
+  IRegisterCustomerPaymentRequest,
   IUpdateCustomerRequest,
 } from '@/application/dtos/customers/request/CustomerRequest';
 import {
+  ICustomerCreditResp,
   ICustomerResp,
   ICustomersResp,
 } from '@/application/dtos/customers/response/CustomerResponse';
@@ -34,6 +36,24 @@ export class CustomersRepository {
   ): Promise<ICustomerResp> {
     return ErrorHandler.handleApiErrors(() =>
       authenticatedClientHTTP.patch<ICustomerResp>(`/customers/${id}`, payload),
+    );
+  }
+
+  static async getCustomerCredit(id: string): Promise<ICustomerCreditResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.get<ICustomerCreditResp>(`/customers/${id}/credit`),
+    );
+  }
+
+  static async registerCustomerPayment(
+    id: string,
+    payload: IRegisterCustomerPaymentRequest,
+  ): Promise<ICustomerCreditResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.post<ICustomerCreditResp>(
+        `/customers/${id}/payments`,
+        payload,
+      ),
     );
   }
 }

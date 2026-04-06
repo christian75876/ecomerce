@@ -5,6 +5,7 @@ import Icon from '../../atoms/icon/SimpleIcon';
 import Image from '../../atoms/image/SimpleImage';
 import Link from '../../atoms/link/Simplelink';
 import { ROUTES } from '@/shared/constants/routes';
+import Typography from '../../atoms/typography/SimpleTypography';
 
 interface ProductCardProps {
   image: string;
@@ -12,6 +13,8 @@ interface ProductCardProps {
   price: string;
   description?: string;
   id: string;
+  storeName?: string;
+  storeSlug?: string;
   onAddToCart: () => void;
 }
 
@@ -21,7 +24,9 @@ const ProductCard = ({
   price,
   description,
   onAddToCart,
-  id
+  id,
+  storeName,
+  storeSlug,
 }: ProductCardProps) => {
   return (
     <Card className='flex h-full flex-col overflow-hidden !p-0 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl'>
@@ -39,6 +44,16 @@ const ProductCard = ({
         <h3 className='truncate text-xl font-semibold text-primary'>
           {name}
         </h3>
+        {storeName && storeSlug ? (
+          <Link
+            to={ROUTES.PUBLIC.STORE_DETAILS.replace(':slug', storeSlug)}
+            className='mt-2 inline-flex text-sm font-medium text-neutral-dark/70'
+          >
+            <Typography className='text-sm text-neutral-dark/70'>
+              Tienda: {storeName}
+            </Typography>
+          </Link>
+        ) : null}
         {description ? (
           <p className='mt-2 line-clamp-2 text-sm text-neutral-dark/65'>
             {description}

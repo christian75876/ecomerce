@@ -17,9 +17,15 @@ const NotFound = lazy(
 const CartPage = lazy(
   () => import('@presentation/pages/public/cart/CartPage')
 );
-// const RegisterPage = lazy(
-//   () => import('@presentation/pages/public/auth/RegisterPage')
-// );
+const StoresPage = lazy(
+  () => import('@presentation/pages/public/stores/StoresPage')
+);
+const StoreDetailPage = lazy(
+  () => import('@presentation/pages/public/stores/StoreDetailPage')
+);
+const RegisterPage = lazy(
+  () => import('@presentation/pages/public/auth/RegisterPage')
+);
 
 // Private pages
 const AdminDashboard = lazy(
@@ -49,6 +55,24 @@ const OrdersPage = lazy(
 const ProductDetailPage = lazy(
   () => import('@presentation/pages/private/products/ProductDetailPage')
 );
+const StoresAdminPage = lazy(
+  () => import('@presentation/pages/private/stores/StoresPage')
+);
+const SuppliersPage = lazy(
+  () => import('@presentation/pages/private/suppliers/SuppliersPage')
+);
+const PurchasesPage = lazy(
+  () => import('@presentation/pages/private/purchases/PurchasesPage')
+);
+const CustomersPage = lazy(
+  () => import('@presentation/pages/private/customers/CustomersPage')
+);
+const CashPage = lazy(
+  () => import('@presentation/pages/private/cash/CashPage')
+);
+const AuditPage = lazy(
+  () => import('@presentation/pages/private/audit/AuditPage')
+);
 
 export type AppRoute = RouteObject & {
   path: string;
@@ -70,7 +94,7 @@ export const routes: AppRoute[] = [
     element: <VerifyEmailPage />,
     publicOnly: false
   },
-  // { path: ROUTES.PUBLIC.REGISTER, element: <RegisterPage /> },
+  { path: ROUTES.PUBLIC.REGISTER, element: <RegisterPage /> },
   { path: ROUTES.PUBLIC.NOT_FOUND, element: <NotFound /> },
   {
     path: ROUTES.PUBLIC.HOME,
@@ -82,6 +106,18 @@ export const routes: AppRoute[] = [
   {
     path: ROUTES.PUBLIC.CART,
     element: <CartPage />,
+    layout: DashboardLayout,
+    publicOnly: false
+  },
+  {
+    path: ROUTES.PUBLIC.STORES,
+    element: <StoresPage />,
+    layout: DashboardLayout,
+    publicOnly: false
+  },
+  {
+    path: ROUTES.PUBLIC.STORE_DETAILS,
+    element: <StoreDetailPage />,
     layout: DashboardLayout,
     publicOnly: false
   },
@@ -138,6 +174,42 @@ export const routes: AppRoute[] = [
   {
     path: ROUTES.PRIVATE.PRODUCTS,
     element: <ProductsPage />,
+    private: true,
+    layout: DashboardLayout
+  },
+  {
+    path: ROUTES.PRIVATE.STORES,
+    element: <StoresAdminPage />,
+    private: true,
+    layout: DashboardLayout
+  },
+  {
+    path: ROUTES.PRIVATE.SUPPLIERS,
+    element: <SuppliersPage />,
+    private: true,
+    layout: DashboardLayout
+  },
+  {
+    path: ROUTES.PRIVATE.PURCHASES,
+    element: <PurchasesPage />,
+    private: true,
+    layout: DashboardLayout
+  },
+  {
+    path: ROUTES.PRIVATE.CUSTOMERS,
+    element: <CustomersPage />,
+    private: true,
+    layout: DashboardLayout
+  },
+  {
+    path: ROUTES.PRIVATE.CASH,
+    element: <CashPage />,
+    private: true,
+    layout: DashboardLayout
+  },
+  {
+    path: ROUTES.PRIVATE.AUDIT,
+    element: <AuditPage />,
     private: true,
     layout: DashboardLayout
   },

@@ -1,6 +1,7 @@
 export interface IProductsQuery {
   search?: string;
   categoryId?: string;
+  storeId?: string;
   active?: boolean;
 }
 
@@ -10,6 +11,10 @@ export interface ICreateProductRequest {
   sku: string;
   price: number;
   categoryId: string;
+  storeId?: string;
+  cost?: number;
+  initialStock?: number;
+  supplierId?: string;
   imageUrl?: string;
   showStock?: boolean;
   isActive?: boolean;

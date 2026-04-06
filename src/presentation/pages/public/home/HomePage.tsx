@@ -9,7 +9,16 @@ import { ROUTES } from '@/shared/constants/routes';
 import { useCart } from '@/shared/hooks/useCart';
 
 export const HomePage = () => {
-  const { products, search, setSearch, loading, error } = usePublicCatalog();
+  const {
+    products,
+    categories,
+    search,
+    selectedCategoryId,
+    setSearch,
+    setSelectedCategoryId,
+    loading,
+    error,
+  } = usePublicCatalog();
   const { addItem, items } = useCart();
 
   return (
@@ -17,7 +26,7 @@ export const HomePage = () => {
       <Box className='rounded-[2rem] bg-[linear-gradient(135deg,_#fff4ec_0%,_#ffffff_55%,_#edf5ff_100%)] px-6 py-10 shadow-sm'>
         <ProductHeader title='Catálogo de productos' />
         <Typography className='mt-3 max-w-2xl text-neutral-dark/70'>
-          Explora productos activos, revisa precios y entra al detalle para continuar la compra.
+          Explora productos activos por categoría, revisa precios y entra al detalle para continuar la compra.
         </Typography>
         <Box className='mt-4 flex items-center justify-between gap-4'>
           <Typography className='text-sm text-neutral-dark/65'>
@@ -33,6 +42,33 @@ export const HomePage = () => {
           placeholder='Buscar producto por nombre'
           className='mt-6 max-w-xl'
         />
+        <Box className='mt-6 flex flex-wrap gap-3'>
+          <button
+            type='button'
+            onClick={() => setSelectedCategoryId('')}
+            className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+              selectedCategoryId === ''
+                ? 'bg-primary text-white'
+                : 'bg-white text-neutral-dark shadow-sm'
+            }`}
+          >
+            Todas
+          </button>
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              type='button'
+              onClick={() => setSelectedCategoryId(category.id)}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                selectedCategoryId === category.id
+                  ? 'bg-primary text-white'
+                  : 'bg-white text-neutral-dark shadow-sm'
+              }`}
+            >
+              {category.name}
+            </button>
+          ))}
+        </Box>
       </Box>
 
       {error ? (
