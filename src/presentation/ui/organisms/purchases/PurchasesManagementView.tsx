@@ -8,6 +8,7 @@ import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Label from '@/presentation/ui/atoms/label/SimpleLabel';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
+import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 
 interface PurchasesManagementViewProps {
   purchases: IPurchase[];
@@ -114,6 +115,26 @@ export const PurchasesManagementView = ({
                     <Input type='number' min='1' value={item.quantity} onChange={(event) => onItemChange(index, 'quantity', event.target.value)} placeholder='Cantidad' />
                     <Input type='number' min='0' step='0.01' value={item.unitCost} onChange={(event) => onItemChange(index, 'unitCost', event.target.value)} placeholder='Costo unitario' />
                   </Box>
+                  <Box className='grid gap-3 md:grid-cols-2'>
+                    <Input
+                      type='date'
+                      value={item.expiresAt}
+                      onChange={(event) => onItemChange(index, 'expiresAt', event.target.value)}
+                      placeholder='Vencimiento'
+                    />
+                    <Input
+                      value={item.batchCode}
+                      onChange={(event) => onItemChange(index, 'batchCode', event.target.value)}
+                      placeholder='Código de lote'
+                    />
+                  </Box>
+                  {item.productId ? (
+                    <Typography className='text-sm text-neutral-dark/65'>
+                      {products.find((product) => product.id === item.productId)?.isPerishable
+                        ? 'Producto perecedero: el vencimiento es obligatorio.'
+                        : 'Producto no perecedero: el vencimiento es opcional.'}
+                    </Typography>
+                  ) : null}
                   {items.length > 1 ? <Button type='button' variant='danger' onClick={() => onRemoveItem(index)}>Eliminar ítem</Button> : null}
                 </Box>
               ))}
@@ -132,7 +153,7 @@ export const PurchasesManagementView = ({
               <Box key={purchase.id} className='rounded-2xl border border-neutral-gray/20 px-5 py-4'>
                 <Typography variant='h3' className='text-lg font-semibold'>{purchase.supplier.name}</Typography>
                 <Typography className='mt-1 text-sm text-neutral-dark/65'>
-                  {purchase.store.name} · Total ${Number(purchase.total).toFixed(2)} · Saldo ${Number(purchase.balance).toFixed(2)}
+                  {purchase.store.name} · Total {formatCurrencyCOP(purchase.total)} · Saldo {formatCurrencyCOP(purchase.balance)}
                 </Typography>
               </Box>
             ))}

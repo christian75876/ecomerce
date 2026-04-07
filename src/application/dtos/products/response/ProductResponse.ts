@@ -13,6 +13,8 @@ export interface IProduct {
   imageUrl: string | null;
   isActive: boolean;
   showStock: boolean;
+  isPerishable: boolean;
+  trackBatches: boolean;
   categoryId: string;
   storeId: string | null;
   supplierId: string | null;

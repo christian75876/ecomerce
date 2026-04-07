@@ -20,29 +20,29 @@ const DesktopHeaderLayout = () => {
   const roleLabel = getAuthenticatedRole();
 
   return (
-    <Box className='w-full flex items-center justify-between px-8 py-4'>
+    <Box className='surface-card sticky top-3 z-40 mx-auto mt-3 flex w-full items-center justify-between rounded-[1.6rem] px-4 py-3 sm:px-6'>
       <LogoWithText title='Hot' subtitle='Ecomerce' size='sm' />
       <NavigationMenu />
       <Box className='flex items-center gap-4'>
         {showAdminActions ? <NotificationDropdown /> : null}
         {authenticated ? (
           <Box className='hidden rounded-full bg-neutral-dark/5 px-3 py-2 text-sm font-medium text-neutral-dark/70 md:block'>
-            {roleLabel === 'buyer' ? 'Comprador' : 'Panel de tienda'}
+            {roleLabel === 'buyer' ? 'Comprador' : 'Operación interna'}
           </Box>
         ) : null}
         {authenticated ? (
           <button
-            className='p-2 rounded-full bg-gray-200'
+            className='rounded-full bg-neutral-dark/5 px-3 py-2 text-sm font-semibold text-neutral-dark/75 transition hover:bg-neutral-dark/10'
             onClick={handleLogout}
           >
-            👤 Logout
+            Salir
           </button>
         ) : (
           <button
-            className='p-2 rounded-full bg-gray-200'
+            className='rounded-full bg-neutral-dark/5 px-3 py-2 text-sm font-semibold text-neutral-dark/75 transition hover:bg-neutral-dark/10'
             onClick={() => navigate(`${ROUTES.PUBLIC.LOGIN}`)}
           >
-            👤 Login
+            Entrar
           </button>
         )}
       </Box>

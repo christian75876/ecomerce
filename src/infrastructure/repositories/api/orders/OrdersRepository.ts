@@ -33,4 +33,16 @@ export class OrdersRepository {
       authenticatedClientHTTP.patch<IOrderResp>(`/orders/${id}/status`, payload),
     );
   }
+
+  static async getMyOrders(): Promise<IOrdersResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.get<IOrdersResp>('/orders/me'),
+    );
+  }
+
+  static async getMyOrderById(id: string): Promise<IOrderResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.get<IOrderResp>(`/orders/me/${id}`),
+    );
+  }
 }

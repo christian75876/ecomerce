@@ -7,6 +7,8 @@ interface ProductBodyProps {
   products: IProduct[];
   loading?: boolean;
   emptyMessage?: string;
+  favoriteIds?: string[];
+  onToggleFavorite?: (productId: string) => void;
   onAddToCart?: (productId: string) => void;
 }
 
@@ -17,6 +19,8 @@ const ProductBody = ({
   products,
   loading = false,
   emptyMessage = 'No hay productos disponibles en este momento.',
+  favoriteIds = [],
+  onToggleFavorite,
   onAddToCart,
 }: ProductBodyProps) => {
   if (loading) {
@@ -32,7 +36,7 @@ const ProductBody = ({
   }
 
   return (
-    <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
+    <div className='grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3'>
       {products.map(product => (
         <ProductCard
           id={product.id}
@@ -43,6 +47,10 @@ const ProductBody = ({
           price={Number(product.price).toFixed(2)}
           storeName={product.store?.name}
           storeSlug={product.store?.slug}
+          isFavorite={favoriteIds.includes(product.id)}
+          onToggleFavorite={
+            onToggleFavorite ? () => onToggleFavorite(product.id) : undefined
+          }
           onAddToCart={() => onAddToCart?.(product.id)}
         />
       ))}

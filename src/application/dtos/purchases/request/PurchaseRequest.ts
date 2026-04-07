@@ -8,5 +8,7 @@ export interface ICreatePurchaseRequest {
     productId: string;
     quantity: number;
     unitCost: number;
+    expiresAt?: string;
+    batchCode?: string;
   }>;
 }

@@ -1,9 +1,11 @@
 import { ICreateReviewRequest } from '@/application/dtos/reviews/request/ReviewRequest';
 import {
   IProductReviewsResp,
+  IReviewEligibilityResp,
   IReviewResp,
 } from '@/application/dtos/reviews/response/ReviewResponse';
 import {
+  authenticatedClientHTTP,
   multiPartClientHTTP,
   publicClientHTTP,
 } from '@/infrastructure/repositories/api/ClientHTTP';
@@ -23,7 +25,6 @@ export class ReviewsRepository {
     payload: ICreateReviewRequest,
   ): Promise<IReviewResp> {
     const formData = new FormData();
-    formData.append('customerId', payload.customerId);
     formData.append('rating', String(payload.rating));
     formData.append('comment', payload.comment);
 
@@ -35,6 +36,16 @@ export class ReviewsRepository {
       multiPartClientHTTP.post<IReviewResp>(
         `/products/${productId}/reviews`,
         formData,
+      ),
+    );
+  }
+
+  static async getMyReviewEligibility(
+    productId: string,
+  ): Promise<IReviewEligibilityResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.get<IReviewEligibilityResp>(
+        `/products/${productId}/reviews/me`,
       ),
     );
   }

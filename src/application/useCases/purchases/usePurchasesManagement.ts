@@ -12,12 +12,16 @@ export type PurchaseItemForm = {
   productId: string;
   quantity: string;
   unitCost: string;
+  expiresAt: string;
+  batchCode: string;
 };
 
 const emptyItem: PurchaseItemForm = {
   productId: '',
   quantity: '1',
   unitCost: '',
+  expiresAt: '',
+  batchCode: '',
 };
 
 export const usePurchasesManagement = () => {
@@ -98,6 +102,8 @@ export const usePurchasesManagement = () => {
         productId: item.productId,
         quantity: Number(item.quantity),
         unitCost: Number(item.unitCost),
+        expiresAt: item.expiresAt || undefined,
+        batchCode: item.batchCode.trim() || undefined,
       }));
 
     if (normalizedItems.length === 0) {

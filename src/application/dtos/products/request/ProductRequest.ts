@@ -18,6 +18,9 @@ export interface ICreateProductRequest {
   imageUrl?: string;
   showStock?: boolean;
   isActive?: boolean;
+  isPerishable?: boolean;
+  trackBatches?: boolean;
+  initialExpiresAt?: string;
 }
 
 export type IUpdateProductRequest = Partial<ICreateProductRequest>;

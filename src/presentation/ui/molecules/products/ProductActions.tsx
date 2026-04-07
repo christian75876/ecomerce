@@ -2,6 +2,7 @@ import Button from '../../atoms/button/SimpleButton';
 import Icon from '../../atoms/icon/SimpleIcon';
 import Typography from '../../atoms/typography/SimpleTypography';
 import Box from '../../atoms/box/SimpleBox';
+import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 
 interface ProductActionsProps {
   price: number;
@@ -15,20 +16,26 @@ const ProductActions = ({
   primaryLabel = 'Agregar al carrito',
 }: ProductActionsProps) => {
   return (
-    <Box className='rounded-[1.5rem] border border-neutral-gray/20 bg-white p-6 shadow-sm'>
-      <Typography variant='p' className='text-sm text-neutral-dark/65'>
-        Precio del producto
+    <Box className='surface-panel rounded-[1.75rem] p-6'>
+      <Typography variant='span' className='text-xs uppercase tracking-[0.24em] text-neutral-dark/50'>
+        Acción rápida
+      </Typography>
+      <Typography variant='h3' className='mt-3 text-xl'>
+        Llévalo ahora
+      </Typography>
+      <Typography variant='p' className='mt-2 text-sm text-neutral-dark/65'>
+        Compra en segundos o guárdalo para revisar más tarde.
       </Typography>
       <Button
         title='Agregar al carrito'
-        size='md'
+        size='lg'
         fullWidth
-        variant='outlinePrimary'
-        className='mt-3'
+        variant='primary'
+        className='mt-5'
         rightIcon={<Icon name='bx-cart-add' />}
         onClick={onPrimaryAction}
       >
-        {primaryLabel} · ${price.toFixed(2)}
+        {primaryLabel} · {formatCurrencyCOP(price)}
       </Button>
     </Box>
   );

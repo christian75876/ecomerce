@@ -21,7 +21,7 @@ const DashboardLayout = ({
     >
       {isMobile ? <MobileHeaderLayout /> : <DesktopHeaderLayout />}
 
-      <main className={`flex-1 p-6 ${isMobile ? 'pb-25' : ''}`}>
+      <main className={`mx-auto flex-1 w-full max-w-[1440px] px-4 py-6 sm:px-6 lg:px-8 ${isMobile ? 'pb-28' : 'pb-10'}`}>
         {children}
       </main>
     </Box>

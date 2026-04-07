@@ -23,6 +23,12 @@ const StoresPage = lazy(
 const StoreDetailPage = lazy(
   () => import('@presentation/pages/public/stores/StoreDetailPage')
 );
+const FavoritesPage = lazy(
+  () => import('@presentation/pages/public/favorites/FavoritesPage')
+);
+const MyOrdersPage = lazy(
+  () => import('@presentation/pages/public/orders/MyOrdersPage')
+);
 const RegisterPage = lazy(
   () => import('@presentation/pages/public/auth/RegisterPage')
 );
@@ -118,6 +124,24 @@ export const routes: AppRoute[] = [
   {
     path: ROUTES.PUBLIC.STORE_DETAILS,
     element: <StoreDetailPage />,
+    layout: DashboardLayout,
+    publicOnly: false
+  },
+  {
+    path: ROUTES.PUBLIC.FAVORITES,
+    element: <FavoritesPage />,
+    layout: DashboardLayout,
+    publicOnly: false
+  },
+  {
+    path: ROUTES.PUBLIC.MY_ORDERS,
+    element: <MyOrdersPage />,
+    layout: DashboardLayout,
+    publicOnly: false
+  },
+  {
+    path: ROUTES.PUBLIC.MY_ORDER_DETAILS,
+    element: <MyOrdersPage />,
     layout: DashboardLayout,
     publicOnly: false
   },

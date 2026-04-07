@@ -8,6 +8,9 @@ export const ROUTES = {
     STORES: '/stores',
     STORE_DETAILS: '/stores/:slug',
     CART: '/cart',
+    FAVORITES: '/favorites',
+    MY_ORDERS: '/my-orders',
+    MY_ORDER_DETAILS: '/my-orders/:orderId',
     PRODUCT_DETAILS: '/product/:productId'
   },
   PRIVATE: {

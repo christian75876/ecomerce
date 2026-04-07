@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ReviewsRepository } from '@/infrastructure/repositories/api/reviews/ReviewsRepository';
 import { ICreateReviewRequest } from '@/application/dtos/reviews/request/ReviewRequest';
-import { IProductReviewsData } from '@/application/dtos/reviews/response/ReviewResponse';
+import {
+  IProductReviewsData,
+  IReviewEligibility,
+} from '@/application/dtos/reviews/response/ReviewResponse';
+import { authSession } from '@/shared/utils/authSession';
 
 const emptyReviews: IProductReviewsData = {
   reviews: [],
@@ -13,6 +17,7 @@ const emptyReviews: IProductReviewsData = {
 
 export const useProductReviews = (productId?: string) => {
   const [reviewsData, setReviewsData] = useState<IProductReviewsData>(emptyReviews);
+  const [eligibility, setEligibility] = useState<IReviewEligibility | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +47,24 @@ export const useProductReviews = (productId?: string) => {
     void loadReviews();
   }, [loadReviews]);
 
+  const loadEligibility = useCallback(async () => {
+    if (!productId || !authSession.getToken()) {
+      setEligibility(null);
+      return;
+    }
+
+    try {
+      const response = await ReviewsRepository.getMyReviewEligibility(productId);
+      setEligibility(response.data);
+    } catch {
+      setEligibility(null);
+    }
+  }, [productId]);
+
+  useEffect(() => {
+    void loadEligibility();
+  }, [loadEligibility]);
+
   const createReview = async (payload: ICreateReviewRequest) => {
     if (!productId) {
       return false;
@@ -53,6 +76,7 @@ export const useProductReviews = (productId?: string) => {
     try {
       await ReviewsRepository.createReview(productId, payload);
       await loadReviews();
+      await loadEligibility();
       return true;
     } catch (err) {
       setError(
@@ -66,6 +90,7 @@ export const useProductReviews = (productId?: string) => {
 
   return {
     reviewsData,
+    eligibility,
     loading,
     submitting,
     error,

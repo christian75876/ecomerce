@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { useState } from 'react';
 import Box from '@atoms/box/SimpleBox';
 import Icon from '@atoms/icon/SimpleIcon';
 import Typography from '@atoms/typography/SimpleTypography';
@@ -6,51 +7,113 @@ import { ROUTES } from '@/shared/constants/routes';
 import {
   canAccessAdminPanel,
   isAuthenticated,
+  isBuyerSession,
 } from '@/shared/utils/checkIsUserAuthenticated.util';
 
-const adminNavItems = [
+const adminPrimaryNavItems = [
   { label: 'Inicio', path: ROUTES.PRIVATE.DASHBOARD, icon: 'bx-home' },
-  { label: 'Tiendas', path: ROUTES.PRIVATE.STORES, icon: 'bx-store' },
-  { label: 'Categorías', path: ROUTES.PRIVATE.CATEGORIES, icon: 'bx-category' },
-  { label: 'Inventario', path: ROUTES.PRIVATE.INVENTORY, icon: 'bx-box' },
   { label: 'POS', path: ROUTES.PRIVATE.POS, icon: 'bx-credit-card' },
   { label: 'Pedidos', path: ROUTES.PRIVATE.ORDERS, icon: 'bx-receipt' },
-  { label: 'Productos', path: ROUTES.PRIVATE.PRODUCTS, icon: 'bx-shopping-bag' },
-  { label: 'Ajustes', path: ROUTES.PRIVATE.SETTINGS, icon: 'bx-cog' }
 ];
 
-const publicNavItems = [
+const adminMoreNavItems = [
+  { label: 'Tiendas', path: ROUTES.PRIVATE.STORES, icon: 'bx-store' },
+  { label: 'Productos', path: ROUTES.PRIVATE.PRODUCTS, icon: 'bx-shopping-bag' },
+  { label: 'Categorías', path: ROUTES.PRIVATE.CATEGORIES, icon: 'bx-category' },
+  { label: 'Inventario', path: ROUTES.PRIVATE.INVENTORY, icon: 'bx-box' },
+  { label: 'Clientes y cartera', path: ROUTES.PRIVATE.CUSTOMERS, icon: 'bx-group' },
+  { label: 'Compras', path: ROUTES.PRIVATE.PURCHASES, icon: 'bx-package' },
+  { label: 'Proveedores', path: ROUTES.PRIVATE.SUPPLIERS, icon: 'bx-briefcase' },
+  { label: 'Caja', path: ROUTES.PRIVATE.CASH, icon: 'bx-wallet' },
+  { label: 'Auditoría', path: ROUTES.PRIVATE.AUDIT, icon: 'bx-history' },
+  { label: 'Ajustes', path: ROUTES.PRIVATE.SETTINGS, icon: 'bx-cog' },
+];
+
+const publicPrimaryNavItems = [
   { label: 'Inicio', path: ROUTES.PUBLIC.HOME, icon: 'bx-home' },
   { label: 'Tiendas', path: ROUTES.PUBLIC.STORES, icon: 'bx-store' },
   { label: 'Carrito', path: ROUTES.PUBLIC.CART, icon: 'bx-cart' },
-  { label: 'Login', path: ROUTES.PUBLIC.LOGIN, icon: 'bx-user' },
+];
+
+const publicMoreNavItems = [
+  { label: 'Favoritos', path: ROUTES.PUBLIC.FAVORITES, icon: 'bx-heart' },
+  { label: 'Mis pedidos', path: ROUTES.PUBLIC.MY_ORDERS, icon: 'bx-receipt' },
+  { label: 'Entrar', path: ROUTES.PUBLIC.LOGIN, icon: 'bx-user' },
 ];
 
 const MobileHeaderLayout = () => {
-  const navItems =
-    isAuthenticated() && canAccessAdminPanel() ? adminNavItems : publicNavItems;
+  const [showMore, setShowMore] = useState(false);
+  const adminView = isAuthenticated() && canAccessAdminPanel();
+  const buyerView = isBuyerSession();
+  const primaryNavItems = adminView ? adminPrimaryNavItems : publicPrimaryNavItems;
+  const moreNavItems = adminView
+    ? adminMoreNavItems
+    : publicMoreNavItems.filter((item) => {
+        if (!isAuthenticated() && item.path !== ROUTES.PUBLIC.LOGIN) {
+          return false;
+        }
+        if (item.path === ROUTES.PUBLIC.MY_ORDERS && !buyerView) {
+          return false;
+        }
+        return true;
+      });
 
   return (
-    <Box className='fixed z-50 bottom-0 w-full bg-white shadow-md py-3'>
-      <Box className='flex justify-around'>
-        {navItems.map(({ label, path, icon }) => (
-          <NavLink
-            key={path}
-            to={path}
-            className={({ isActive }) =>
-              `flex flex-col items-center text-sm transition-all ${
-                isActive ? 'text-primary' : 'text-gray-600'
-              }`
-            }
+    <>
+      {showMore ? (
+        <Box className='fixed inset-0 z-50 bg-neutral-dark/35 backdrop-blur-[2px]' onClick={() => setShowMore(false)}>
+          <Box
+            className='absolute inset-x-3 bottom-24 rounded-[1.75rem] border border-neutral-gray/20 bg-white p-4 shadow-[0_24px_60px_rgba(15,23,42,0.18)]'
+            onClick={(event) => event.stopPropagation()}
           >
-            <Icon name={icon} className='text-2xl' />
-            <Typography variant='p' className='mt-1'>
-              {label}
+            <Typography variant='h3'>Más opciones</Typography>
+            <Box className='mt-4 grid grid-cols-2 gap-2'>
+              {moreNavItems.map(({ label, path, icon }) => (
+                <NavLink
+                  key={path}
+                  to={path}
+                  onClick={() => setShowMore(false)}
+                  className='flex items-center gap-3 rounded-2xl bg-background px-4 py-3 text-sm font-medium text-neutral-dark/75'
+                >
+                  <Icon name={icon} className='text-xl' />
+                  {label}
+                </NavLink>
+              ))}
+            </Box>
+          </Box>
+        </Box>
+      ) : null}
+      <Box className='surface-card fixed inset-x-3 bottom-3 z-50 rounded-[1.5rem] py-3'>
+        <Box className='flex justify-around'>
+          {primaryNavItems.map(({ label, path, icon }) => (
+            <NavLink
+              key={path}
+              to={path}
+              className={({ isActive }) =>
+                `flex flex-col items-center text-sm transition-all ${
+                  isActive ? 'text-primary' : 'text-gray-600'
+                }`
+              }
+            >
+              <Icon name={icon} className='text-2xl' />
+              <Typography variant='p' className='mt-1 text-xs'>
+                {label}
+              </Typography>
+            </NavLink>
+          ))}
+          <button
+            type='button'
+            onClick={() => setShowMore((current) => !current)}
+            className='flex flex-col items-center text-sm text-gray-600 transition-all'
+          >
+            <Icon name='bx-grid-alt' className='text-2xl' />
+            <Typography variant='p' className='mt-1 text-xs'>
+              Más
             </Typography>
-          </NavLink>
-        ))}
+          </button>
+        </Box>
       </Box>
-    </Box>
+    </>
   );
 };
 

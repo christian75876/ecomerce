@@ -25,10 +25,13 @@ export interface IPurchase {
     quantity: number;
     unitCost: number;
     lineTotal: number;
+    expiresAt: string | null;
+    batchCode: string | null;
     product: {
       id: string;
       name: string;
       sku: string;
+      isPerishable?: boolean;
     };
   }>;
 }

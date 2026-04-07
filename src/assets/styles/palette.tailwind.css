@@ -1,18 +1,18 @@
 @import 'tailwindcss';
 @theme {
-  --color-primary: #ff4500; /* Orange Red - Llamativo y energético */
-  --color-primary-light: #ff6d33; /* Soft Orange - Cálido */
-  --color-primary-dark: #c23600; /* Dark Orange - Profundidad */
-  --color-secondary: #0077ff; /* Bright Blue - Confiabilidad y tecnología */
-  --color-secondary-light: #4da6ff; /* Soft Blue - Suaviza la energía del naranja */
-  --color-secondary-dark: #004bb3; /* Deep Blue - Autoridad */
-  --color-accent: #ffcc00; /* Bright Yellow - Urgencia y resaltes */
+  --color-primary: #f97316;
+  --color-primary-light: #fb923c;
+  --color-primary-dark: #c2410c;
+  --color-secondary: #0f766e;
+  --color-secondary-light: #14b8a6;
+  --color-secondary-dark: #115e59;
+  --color-accent: #0f172a;
   --color-neutral-white: #ffffff;
-  --color-neutral-dark: #222222;
-  --color-neutral-gray: #b0b0b0;
-  --color-background: #f7f7f7;
-  --color-success: #29a745;
-  --color-error: #d32f2f;
+  --color-neutral-dark: #101828;
+  --color-neutral-gray: #d0d5dd;
+  --color-background: #f8fafc;
+  --color-success: #16a34a;
+  --color-error: #dc2626;
 }
 
 /* styles.css */
@@ -59,11 +59,27 @@
 @layer utilities {
   .gradient-dashboard {
     background: linear-gradient(
-      to bottom right,
-      #eafdff,
-      /* Azul primario en la esquina superior izquierda */ #f3e7fe,
-      /* Morado intermedio */ #f3e7fb /* Rosado/Morado pastel */
+      180deg,
+      #fcfcfd 0%,
+      #f8fafc 100%
     );
+  }
+
+  .surface-card {
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(16, 24, 40, 0.08);
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+    backdrop-filter: blur(10px);
+  }
+
+  .surface-panel {
+    background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.98) 100%);
+    border: 1px solid rgba(16, 24, 40, 0.08);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.1);
+  }
+
+  .text-balance {
+    text-wrap: balance;
   }
 }
 

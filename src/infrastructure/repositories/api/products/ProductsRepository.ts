@@ -4,6 +4,9 @@ import {
   IUpdateProductRequest,
 } from '@/application/dtos/products/request/ProductRequest';
 import {
+  IMarketplaceSectionsResp,
+} from '@/application/dtos/products/response/MarketplaceResponse';
+import {
   IProductResp,
   IProductsResp,
 } from '@/application/dtos/products/response/ProductResponse';
@@ -71,6 +74,18 @@ export class ProductRepository {
   static async getProductById(id: string): Promise<IProductResp> {
     return ErrorHandler.handleApiErrors(() =>
       publicClientHTTP.get<IProductResp>(`/products/${id}`),
+    );
+  }
+
+  static async getRelatedProducts(id: string): Promise<IProductsResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      publicClientHTTP.get<IProductsResp>(`/products/${id}/related`),
+    );
+  }
+
+  static async getMarketplaceSections(): Promise<IMarketplaceSectionsResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      publicClientHTTP.get<IMarketplaceSectionsResp>('/products/featured/sections'),
     );
   }
 }

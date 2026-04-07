@@ -23,6 +23,9 @@ export type ProductFormState = {
   initialStock: string;
   imageUrl: string;
   showStock: boolean;
+  isPerishable: boolean;
+  trackBatches: boolean;
+  initialExpiresAt: string;
 };
 
 export const initialProductFormState: ProductFormState = {
@@ -37,6 +40,9 @@ export const initialProductFormState: ProductFormState = {
   initialStock: '',
   imageUrl: '',
   showStock: false,
+  isPerishable: false,
+  trackBatches: true,
+  initialExpiresAt: '',
 };
 
 export const useProductsManagement = () => {
@@ -142,6 +148,16 @@ export const useProductsManagement = () => {
       return null;
     }
 
+    if (
+      currentForm.isPerishable &&
+      currentForm.initialStock &&
+      Number(currentForm.initialStock) > 0 &&
+      !currentForm.initialExpiresAt
+    ) {
+      setError('Los productos perecederos requieren vencimiento para el stock inicial');
+      return null;
+    }
+
     return {
       name: currentForm.name.trim(),
       description: currentForm.description.trim(),
@@ -156,6 +172,9 @@ export const useProductsManagement = () => {
         : undefined,
       imageUrl: currentForm.imageUrl.trim() || undefined,
       showStock: currentForm.showStock,
+      isPerishable: currentForm.isPerishable,
+      trackBatches: currentForm.trackBatches,
+      initialExpiresAt: currentForm.initialExpiresAt || undefined,
       isActive: true,
     };
   };
@@ -203,6 +222,9 @@ export const useProductsManagement = () => {
       initialStock: '',
       imageUrl: product.imageUrl ?? '',
       showStock: product.showStock,
+      isPerishable: product.isPerishable,
+      trackBatches: product.trackBatches,
+      initialExpiresAt: '',
     });
     setError(null);
   };

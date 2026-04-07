@@ -26,32 +26,33 @@ const Button: React.FC<ButtonProps> = ({
   return (
     <button
       className={clsx(
-        'flex items-center justify-center gap-2 rounded-lg transition-all duration-300',
+        'inline-flex items-center justify-center gap-2 rounded-2xl transition-all duration-200',
         'focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer',
+        'font-semibold tracking-[0.01em] shadow-sm active:scale-[0.99]',
         'whitespace-nowrap',
         {
-          'px-3 py-1 text-sm': size === 'sm',
-          'px-5 py-2 text-md': size === 'md',
-          'px-6 py-3 text-lg': size === 'lg',
+          'px-3.5 py-2 text-sm': size === 'sm',
+          'px-5 py-3 text-sm': size === 'md',
+          'px-6 py-3.5 text-base': size === 'lg',
 
           'w-full': fullWidth,
           'w-auto': !fullWidth,
 
           'bg-primary text-neutral-white hover:bg-primary-dark focus:ring-primary-light':
             variant === 'primary' && !disabled,
-          'bg-secondary text-neutral-dark hover:bg-secondary-dark focus:ring-secondary-light':
+          'bg-secondary text-neutral-white hover:bg-secondary-dark focus:ring-secondary-light':
             variant === 'secondary' && !disabled,
-          'border border-neutral-gray text-neutral-dark hover:bg-neutral-gray focus:ring-neutral-gray':
+          'border border-neutral-gray bg-white text-neutral-dark hover:border-neutral-dark/20 hover:bg-neutral-white focus:ring-neutral-gray':
             variant === 'outline' && !disabled,
-          'border border-primary text-primary hover:bg-primary-dark focus:ring-primary-light':
+          'border border-primary/20 bg-primary/5 text-primary hover:bg-primary hover:text-white focus:ring-primary-light':
             variant === 'outlinePrimary' && !disabled,
           'bg-red-600 text-white hover:bg-red-700 focus:ring-red-400':
             variant === 'danger' && !disabled,
-          'bg-neutral-white text-primary hover:bg-neutral-gray focus:ring-primary-light':
+          'bg-white text-primary hover:bg-primary/5 focus:ring-primary-light':
             variant === 'ghost' && !disabled,
-          'bg-primary-opacity text-primary hover:bg-primary-dark focus:ring-primary-light':
+          'bg-primary/10 text-primary hover:bg-primary/15 focus:ring-primary-light':
             variant === 'primary-opacity' && !disabled,
-          'bg-neutral-gray text-neutral-dark opacity-50 cursor-not-allowed':
+          'bg-neutral-gray text-neutral-dark opacity-50 cursor-not-allowed shadow-none':
             disabled,
         },
         className

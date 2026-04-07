@@ -4,6 +4,7 @@ import { IProduct } from '@/application/dtos/products/response/ProductResponse';
 
 export const usePublicProductDetail = (productId?: string) => {
   const [product, setProduct] = useState<IProduct | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<IProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,8 +20,12 @@ export const usePublicProductDetail = (productId?: string) => {
       setError(null);
 
       try {
-        const response = await ProductRepository.getProductById(productId);
-        setProduct(response.data);
+        const [productResponse, relatedResponse] = await Promise.all([
+          ProductRepository.getProductById(productId),
+          ProductRepository.getRelatedProducts(productId),
+        ]);
+        setProduct(productResponse.data);
+        setRelatedProducts(relatedResponse.data);
       } catch (err) {
         setError(
           err instanceof Error
@@ -37,6 +42,7 @@ export const usePublicProductDetail = (productId?: string) => {
 
   return {
     product,
+    relatedProducts,
     loading,
     error,
   };

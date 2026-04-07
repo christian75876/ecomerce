@@ -8,6 +8,7 @@ import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Label from '@/presentation/ui/atoms/label/SimpleLabel';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
+import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 
 interface ProductsManagementViewProps {
   products: IProduct[];
@@ -65,8 +66,8 @@ export const ProductsManagementView = ({
           Productos
         </Typography>
         <Typography className="max-w-3xl text-neutral-dark/70">
-          Gestiona el catálogo comercial con SKU único, tienda, proveedor,
-          costo, stock inicial y visibilidad de stock en el catálogo.
+          Gestiona el catálogo comercial con tipo de producto, manejo por lotes,
+          SKU único, proveedor base y stock inicial opcional.
         </Typography>
       </Box>
 
@@ -152,6 +153,49 @@ export const ProductsManagementView = ({
                 />
               </Box>
             </Box>
+
+            <Box className="grid gap-4 md:grid-cols-2">
+              <label className="flex items-center gap-3 rounded-2xl border border-neutral-gray/20 px-4 py-3 text-sm text-neutral-dark">
+                <input
+                  type="checkbox"
+                  checked={form.isPerishable}
+                  onChange={(event) =>
+                    onFormChange('isPerishable', event.target.checked)
+                  }
+                  disabled={submitting}
+                />
+                Producto perecedero
+              </label>
+
+              <label className="flex items-center gap-3 rounded-2xl border border-neutral-gray/20 px-4 py-3 text-sm text-neutral-dark">
+                <input
+                  type="checkbox"
+                  checked={form.trackBatches}
+                  onChange={(event) =>
+                    onFormChange('trackBatches', event.target.checked)
+                  }
+                  disabled={submitting}
+                />
+                Gestionar inventario por lotes
+              </label>
+            </Box>
+
+            {form.isPerishable ? (
+              <Box>
+                <Label htmlFor="product-initial-expiration">
+                  Vencimiento del stock inicial
+                </Label>
+                <Input
+                  id="product-initial-expiration"
+                  type="date"
+                  value={form.initialExpiresAt}
+                  onChange={(event) =>
+                    onFormChange('initialExpiresAt', event.target.value)
+                  }
+                  disabled={submitting || Boolean(editingId)}
+                />
+              </Box>
+            ) : null}
 
             <Box className="grid gap-4 md:grid-cols-2">
               <Box>
@@ -328,10 +372,14 @@ export const ProductsManagementView = ({
                       Tienda: {product.store?.name ?? 'Sin tienda'}
                     </Typography>
                     <Typography className="text-sm text-neutral-dark/70">
-                      ${Number(product.price).toFixed(2)} · Costo:{' '}
-                      {product.cost ? `$${Number(product.cost).toFixed(2)}` : 'N/D'} ·
+                      {formatCurrencyCOP(product.price)} · Costo:{' '}
+                      {product.cost ? formatCurrencyCOP(product.cost) : 'N/D'} ·
                       Stock visible:{' '}
                       {product.showStock ? 'Sí' : 'No'}
+                    </Typography>
+                    <Typography className="text-sm text-neutral-dark/70">
+                      Tipo: {product.isPerishable ? 'Perecedero' : 'No perecedero'} ·
+                      Lotes: {product.trackBatches ? 'Sí' : 'No'}
                     </Typography>
                     {product.supplier ? (
                       <Typography className="text-sm text-neutral-dark/70">
