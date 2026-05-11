@@ -39,6 +39,28 @@ export type InlineProductForm = {
   trackBatches: boolean;
 };
 
+export type PurchasePaymentForm = {
+  amount: string;
+  note: string;
+  paidAt: string;
+};
+
+export type PurchaseEditForm = {
+  purchaseDate: string;
+  note: string;
+};
+
+export type PurchaseCancelForm = {
+  reason: string;
+};
+
+export type PurchaseListFilters = {
+  search: string;
+  supplierId: string;
+  dateFrom: string;
+  dateTo: string;
+};
+
 const emptyItem: PurchaseItemForm = {
   productId: '',
   quantity: '1',
@@ -68,6 +90,36 @@ const emptyProductForm: InlineProductForm = {
   trackBatches: true,
 };
 
+const emptyPaymentForm: PurchasePaymentForm = {
+  amount: '',
+  note: '',
+  paidAt: '',
+};
+
+const emptyEditForm: PurchaseEditForm = {
+  purchaseDate: '',
+  note: '',
+};
+
+const emptyCancelForm: PurchaseCancelForm = {
+  reason: '',
+};
+
+const toDateTimeLocal = (value: string | null | undefined) => {
+  if (!value) {
+    return '';
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return '';
+  }
+
+  const offset = parsed.getTimezoneOffset();
+  const local = new Date(parsed.getTime() - offset * 60_000);
+  return local.toISOString().slice(0, 16);
+};
+
 export const usePurchasesManagement = () => {
   const [purchases, setPurchases] = useState<IPurchase[]>([]);
   const [suppliers, setSuppliers] = useState<ISupplier[]>([]);
@@ -91,20 +143,36 @@ export const usePurchasesManagement = () => {
   const [productSubmitting, setProductSubmitting] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
   const [productTargetIndex, setProductTargetIndex] = useState<number | null>(null);
+  const [selectedPurchase, setSelectedPurchase] = useState<IPurchase | null>(null);
+  const [isPurchaseDetailModalOpen, setIsPurchaseDetailModalOpen] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailSubmitting, setDetailSubmitting] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
+  const [paymentForm, setPaymentForm] = useState<PurchasePaymentForm>(emptyPaymentForm);
+  const [editForm, setEditForm] = useState<PurchaseEditForm>(emptyEditForm);
+  const [cancelForm, setCancelForm] = useState<PurchaseCancelForm>(emptyCancelForm);
+  const [filters, setFilters] = useState<PurchaseListFilters>({
+    search: '',
+    supplierId: '',
+    dateFrom: '',
+    dateTo: '',
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage] = useState(10);
 
-  const loadScreen = async () => {
+  const loadStaticData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const [purchasesResponse, suppliersResponse, storesResponse, productsResponse, categoriesResponse] =
+      const [suppliersResponse, storesResponse, productsResponse, categoriesResponse] =
         await Promise.all([
-          PurchasesRepository.getPurchases(),
           SuppliersRepository.getSuppliers(),
           StoresRepository.getStores(),
           ProductRepository.getProducts(),
           CategoriesRepository.getCategories(true),
         ]);
-      setPurchases(purchasesResponse.data);
       setSuppliers(suppliersResponse.data.filter((item) => item.isActive));
       setStores(storesResponse.data.filter((item) => item.isActive));
       setProducts(productsResponse.data);
@@ -116,8 +184,50 @@ export const usePurchasesManagement = () => {
     }
   };
 
+  const loadPurchases = async (
+    page = currentPage,
+    activeFilters = filters,
+    preserveLoadingState = false,
+  ) => {
+    if (!preserveLoadingState) {
+      setLoading(true);
+    }
+    setError(null);
+
+    try {
+      const purchasesResponse = await PurchasesRepository.getPurchases({
+        page,
+        limit: itemsPerPage,
+        search: activeFilters.search.trim() || undefined,
+        supplierId: activeFilters.supplierId || undefined,
+        dateFrom: activeFilters.dateFrom || undefined,
+        dateTo: activeFilters.dateTo || undefined,
+      });
+
+      setPurchases(purchasesResponse.data.items);
+      setCurrentPage(purchasesResponse.data.pagination.currentPage);
+      setTotalPages(purchasesResponse.data.pagination.totalPages);
+      setTotalItems(purchasesResponse.data.pagination.totalItems);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No fue posible cargar compras');
+    } finally {
+      if (!preserveLoadingState) {
+        setLoading(false);
+      }
+    }
+  };
+
   useEffect(() => {
-    void loadScreen();
+    void (async () => {
+      await loadStaticData();
+      await loadPurchases(1, {
+        search: '',
+        supplierId: '',
+        dateFrom: '',
+        dateTo: '',
+      }, true);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const updateItem = (index: number, key: keyof PurchaseItemForm, value: string) => {
@@ -154,6 +264,29 @@ export const usePurchasesManagement = () => {
     setProductTargetIndex(null);
   };
 
+  const hydratePurchaseDetail = (purchase: IPurchase) => {
+    setSelectedPurchase(purchase);
+    setPaymentForm({
+      amount: purchase.balance > 0 ? String(purchase.balance) : '',
+      note: '',
+      paidAt: '',
+    });
+    setEditForm({
+      purchaseDate: toDateTimeLocal(purchase.purchaseDate),
+      note: purchase.note ?? '',
+    });
+    setCancelForm(emptyCancelForm);
+  };
+
+  const replacePurchaseInState = (nextPurchase: IPurchase) => {
+    setPurchases((current) =>
+      current.map((purchase) =>
+        purchase.id === nextPurchase.id ? nextPurchase : purchase,
+      ),
+    );
+    hydratePurchaseDetail(nextPurchase);
+  };
+
   const availableProducts = products.filter(
     (product) => !storeId || product.storeId === storeId,
   );
@@ -185,13 +318,13 @@ export const usePurchasesManagement = () => {
       await PurchasesRepository.createPurchase({
         supplierId,
         storeId,
-        purchaseDate,
+        purchaseDate: new Date(purchaseDate).toISOString(),
         paidAmount: paidAmount ? Number(paidAmount) : undefined,
         note: note.trim() || undefined,
         items: normalizedItems,
       });
       resetForm();
-      await loadScreen();
+      await loadPurchases(1, filters);
       return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No fue posible registrar compra');
@@ -221,6 +354,35 @@ export const usePurchasesManagement = () => {
     setModalError(null);
     setProductTargetIndex(index);
     setIsProductModalOpen(true);
+  };
+
+  const openPurchaseDetailModal = async (purchaseId: string) => {
+    setDetailLoading(true);
+    setDetailError(null);
+    setIsPurchaseDetailModalOpen(true);
+
+    try {
+      const response = await PurchasesRepository.getPurchaseById(purchaseId);
+      hydratePurchaseDetail(response.data);
+    } catch (err) {
+      setSelectedPurchase(null);
+      setDetailError(
+        err instanceof Error ? err.message : 'No fue posible cargar el detalle',
+      );
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const closePurchaseDetailModal = () => {
+    setIsPurchaseDetailModalOpen(false);
+    setSelectedPurchase(null);
+    setDetailError(null);
+    setDetailLoading(false);
+    setDetailSubmitting(false);
+    setPaymentForm(emptyPaymentForm);
+    setEditForm(emptyEditForm);
+    setCancelForm(emptyCancelForm);
   };
 
   const createSupplierInline = async () => {
@@ -308,6 +470,140 @@ export const usePurchasesManagement = () => {
     }
   };
 
+  const updatePaymentForm = (key: keyof PurchasePaymentForm, value: string) => {
+    setPaymentForm((current) => ({ ...current, [key]: value }));
+  };
+
+  const updateEditForm = (key: keyof PurchaseEditForm, value: string) => {
+    setEditForm((current) => ({ ...current, [key]: value }));
+  };
+
+  const updateCancelForm = (key: keyof PurchaseCancelForm, value: string) => {
+    setCancelForm((current) => ({ ...current, [key]: value }));
+  };
+
+  const updateFilters = (key: keyof PurchaseListFilters, value: string) => {
+    setFilters((current) => ({ ...current, [key]: value }));
+  };
+
+  const applyFilters = async () => {
+    await loadPurchases(1, filters);
+  };
+
+  const clearFilters = async () => {
+    const nextFilters = {
+      search: '',
+      supplierId: '',
+      dateFrom: '',
+      dateTo: '',
+    };
+    setFilters(nextFilters);
+    await loadPurchases(1, nextFilters);
+  };
+
+  const changePage = async (page: number) => {
+    if (page < 1 || page > totalPages || page === currentPage) {
+      return;
+    }
+
+    await loadPurchases(page, filters);
+  };
+
+  const submitPurchasePayment = async () => {
+    if (!selectedPurchase) {
+      return false;
+    }
+
+    if (!paymentForm.amount || Number(paymentForm.amount) <= 0) {
+      setDetailError('El abono debe ser mayor a cero');
+      return false;
+    }
+
+    setDetailSubmitting(true);
+    setDetailError(null);
+    try {
+      const response = await PurchasesRepository.registerPurchasePayment(
+        selectedPurchase.id,
+        {
+          amount: Number(paymentForm.amount),
+          note: paymentForm.note.trim() || undefined,
+          paidAt: paymentForm.paidAt
+            ? new Date(paymentForm.paidAt).toISOString()
+            : undefined,
+        },
+      );
+      replacePurchaseInState(response.data);
+      setPaymentForm({
+        amount: response.data.balance > 0 ? String(response.data.balance) : '',
+        note: '',
+        paidAt: '',
+      });
+      return true;
+    } catch (err) {
+      setDetailError(
+        err instanceof Error ? err.message : 'No fue posible registrar el abono',
+      );
+      return false;
+    } finally {
+      setDetailSubmitting(false);
+    }
+  };
+
+  const submitPurchaseEdit = async () => {
+    if (!selectedPurchase) {
+      return false;
+    }
+
+    if (!editForm.purchaseDate) {
+      setDetailError('La fecha de compra es obligatoria');
+      return false;
+    }
+
+    setDetailSubmitting(true);
+    setDetailError(null);
+    try {
+      const response = await PurchasesRepository.updatePurchase(
+        selectedPurchase.id,
+        {
+          purchaseDate: new Date(editForm.purchaseDate).toISOString(),
+          note: editForm.note.trim() || undefined,
+        },
+      );
+      replacePurchaseInState(response.data);
+      return true;
+    } catch (err) {
+      setDetailError(
+        err instanceof Error ? err.message : 'No fue posible editar la compra',
+      );
+      return false;
+    } finally {
+      setDetailSubmitting(false);
+    }
+  };
+
+  const submitPurchaseCancel = async () => {
+    if (!selectedPurchase) {
+      return false;
+    }
+
+    setDetailSubmitting(true);
+    setDetailError(null);
+    try {
+      const response = await PurchasesRepository.cancelPurchase(selectedPurchase.id, {
+        reason: cancelForm.reason.trim() || undefined,
+      });
+      replacePurchaseInState(response.data);
+      return true;
+    } catch (err) {
+      setDetailError(
+        err instanceof Error ? err.message : 'No fue posible cancelar la compra',
+      );
+      return false;
+    } finally {
+      setDetailSubmitting(false);
+    }
+  };
+
   return {
     purchases,
     suppliers,
@@ -330,6 +626,14 @@ export const usePurchasesManagement = () => {
     supplierSubmitting,
     productSubmitting,
     modalError,
+    selectedPurchase,
+    isPurchaseDetailModalOpen,
+    detailLoading,
+    detailSubmitting,
+    detailError,
+    paymentForm,
+    editForm,
+    cancelForm,
     setSupplierId,
     setStoreId,
     setPurchaseDate,
@@ -341,12 +645,29 @@ export const usePurchasesManagement = () => {
     submitForm,
     openSupplierModal,
     openProductModal,
+    openPurchaseDetailModal,
     closeSupplierModal: resetSupplierModal,
     closeProductModal: resetProductModal,
+    closePurchaseDetailModal,
     updateSupplierForm,
     updateProductForm,
+    updatePaymentForm,
+    updateEditForm,
+    updateCancelForm,
     createSupplierInline,
     createProductInline,
-    reload: loadScreen,
+    submitPurchasePayment,
+    submitPurchaseEdit,
+    submitPurchaseCancel,
+    filters,
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    updateFilters,
+    applyFilters,
+    clearFilters,
+    changePage,
+    reload: () => loadPurchases(currentPage, filters),
   };
 };

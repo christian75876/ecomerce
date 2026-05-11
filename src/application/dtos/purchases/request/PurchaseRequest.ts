@@ -12,3 +12,27 @@ export interface ICreatePurchaseRequest {
     batchCode?: string;
   }>;
 }
+
+export interface IUpdatePurchaseRequest {
+  purchaseDate?: string;
+  note?: string;
+}
+
+export interface IRegisterPurchasePaymentRequest {
+  amount: number;
+  note?: string;
+  paidAt?: string;
+}
+
+export interface ICancelPurchaseRequest {
+  reason?: string;
+}
+
+export interface IGetPurchasesQuery {
+  search?: string;
+  supplierId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  page?: number;
+  limit?: number;
+}
