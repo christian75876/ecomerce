@@ -11,6 +11,7 @@ const VerifyEmailPage = () => {
   const { verifyEmail, isLoading, error } = useVerifyEmail();
   const [status, setStatus] = useState<VerifyStatus>('loading');
   const hasRequestedRef = useRef(false);
+  const redirectTimeoutRef = useRef<number | null>(null);
 
   const token = useMemo(() => searchParams.get('token')?.trim() || '', [searchParams]);
 
@@ -30,9 +31,6 @@ const VerifyEmailPage = () => {
       if (!mounted) return;
       if (response) {
         setStatus('success');
-        window.setTimeout(() => {
-          navigate(ROUTES.PUBLIC.LOGIN, { replace: true });
-        }, 1000);
         return;
       }
       setStatus('error');
@@ -42,8 +40,27 @@ const VerifyEmailPage = () => {
 
     return () => {
       mounted = false;
+      if (redirectTimeoutRef.current) {
+        window.clearTimeout(redirectTimeoutRef.current);
+      }
     };
-  }, [navigate, token, verifyEmail]);
+  }, [token, verifyEmail]);
+
+  useEffect(() => {
+    if (status !== 'success') {
+      return;
+    }
+
+    redirectTimeoutRef.current = window.setTimeout(() => {
+      navigate(ROUTES.PUBLIC.LOGIN, { replace: true });
+    }, 1200);
+
+    return () => {
+      if (redirectTimeoutRef.current) {
+        window.clearTimeout(redirectTimeoutRef.current);
+      }
+    };
+  }, [navigate, status]);
 
   return (
     <div className='min-h-screen bg-neutral-black text-neutral-white flex items-center justify-center px-6'>
@@ -51,10 +68,10 @@ const VerifyEmailPage = () => {
         {status === 'loading' && (
           <>
             <h1 className='text-2xl font-semibold mb-3'>Verificando correo</h1>
-            <p className='text-neutral-gray'>
-              Estamos validando tu token de verificación.
-            </p>
-            {isLoading && <p className='mt-4 text-sm text-neutral-gray'>Un momento...</p>}
+            <p className=''>Estamos validando tu token de verificación.</p>
+            {isLoading && (
+              <p className='mt-4 text-sm text-neutral-gray'>Un momento...</p>
+            )}
           </>
         )}
 
@@ -75,7 +92,9 @@ const VerifyEmailPage = () => {
 
         {status === 'error' && (
           <>
-            <h1 className='text-2xl font-semibold mb-3'>No se pudo verificar</h1>
+            <h1 className='text-2xl font-semibold mb-3'>
+              No se pudo verificar
+            </h1>
             <p className='text-neutral-gray mb-2'>
               El token es inválido, expiró o faltó en la URL.
             </p>

@@ -10,6 +10,10 @@ import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Label from '@/presentation/ui/atoms/label/SimpleLabel';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
+import FeatureMetricCard from '@/presentation/ui/templates/feature/FeatureMetricCard';
+import FeaturePanel from '@/presentation/ui/templates/feature/FeaturePanel';
+import FeatureScreen from '@/presentation/ui/templates/feature/FeatureScreen';
+import FeatureScreenHeader from '@/presentation/ui/templates/feature/FeatureScreenHeader';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 
 interface InventoryManagementViewProps {
@@ -77,24 +81,16 @@ export const InventoryManagementView = ({
   };
 
   return (
-    <Box className='space-y-8'>
-      <Box className='flex flex-col gap-3'>
-        <Typography variant='h1' className='text-3xl font-bold'>
-          Inventario y lotes
-        </Typography>
-        <Typography className='max-w-4xl text-neutral-dark/70'>
-          El inventario ahora se calcula por lotes. Cada ingreso crea una capa con costo,
-          proveedor y vencimiento opcional, y el stock total del producto sale de sus
-          existencias disponibles.
-        </Typography>
-      </Box>
+    <FeatureScreen>
+      <FeatureScreenHeader
+        title='Inventario y lotes'
+        description='El inventario ahora se calcula por lotes. Cada ingreso crea una capa con costo, proveedor y vencimiento opcional, y el stock total del producto sale de sus existencias disponibles.'
+      />
 
       <Box className='grid gap-6 xl:grid-cols-[430px_minmax(0,1fr)]'>
-        <Box className='surface-card p-6'>
-          <Typography variant='h2' className='text-xl font-semibold'>
-            {movementType === 'IN' ? 'Nuevo ingreso por lote' : 'Ajuste de inventario'}
-          </Typography>
-
+        <FeaturePanel
+          title={movementType === 'IN' ? 'Nuevo ingreso por lote' : 'Ajuste de inventario'}
+        >
           <form onSubmit={handleSubmit} className='mt-6 space-y-4'>
             <Box>
               <Label htmlFor='inventory-product'>Producto</Label>
@@ -239,40 +235,25 @@ export const InventoryManagementView = ({
               {submitting ? 'Guardando...' : movementType === 'IN' ? 'Registrar lote' : 'Aplicar ajuste'}
             </Button>
           </form>
-        </Box>
+        </FeaturePanel>
 
         <Box className='space-y-6'>
           <Box className='grid gap-4 lg:grid-cols-3'>
-            <Box className='surface-card p-5'>
-              <Typography variant='span' className='text-neutral-dark/55'>
-                Productos con stock
-              </Typography>
-              <Typography variant='h2' className='mt-3 text-3xl'>
-                {inventory.filter((item) => item.stock > 0).length}
-              </Typography>
-            </Box>
-            <Box className='surface-card p-5'>
-              <Typography variant='span' className='text-neutral-dark/55'>
-                Lotes activos
-              </Typography>
-              <Typography variant='h2' className='mt-3 text-3xl'>
-                {batches.filter((batch) => batch.availableQuantity > 0).length}
-              </Typography>
-            </Box>
-            <Box className='surface-card p-5'>
-              <Typography variant='span' className='text-neutral-dark/55'>
-                Próximos vencimientos
-              </Typography>
-              <Typography variant='h2' className='mt-3 text-3xl'>
-                {expiringBatches.length}
-              </Typography>
-            </Box>
+            <FeatureMetricCard
+              label='Productos con stock'
+              value={inventory.filter((item) => item.stock > 0).length}
+            />
+            <FeatureMetricCard
+              label='Lotes activos'
+              value={batches.filter((batch) => batch.availableQuantity > 0).length}
+            />
+            <FeatureMetricCard
+              label='Próximos vencimientos'
+              value={expiringBatches.length}
+            />
           </Box>
 
-          <Box className='surface-card p-6'>
-            <Typography variant='h2' className='text-xl font-semibold'>
-              Inventario general
-            </Typography>
+          <FeaturePanel title='Inventario general'>
             <Box className='mt-5 overflow-x-auto'>
               {loading ? (
                 <Typography>Cargando inventario...</Typography>
@@ -310,13 +291,10 @@ export const InventoryManagementView = ({
                 </table>
               )}
             </Box>
-          </Box>
+          </FeaturePanel>
 
           <Box className='grid gap-6 xl:grid-cols-2'>
-            <Box className='surface-card p-6'>
-              <Typography variant='h2' className='text-xl font-semibold'>
-                Lotes y vencimientos
-              </Typography>
+            <FeaturePanel title='Lotes y vencimientos'>
               <Box className='mt-5 space-y-3'>
                 {batches.slice(0, 10).map((batch) => (
                   <Box key={batch.id} className='rounded-2xl border border-neutral-gray/20 px-4 py-4'>
@@ -342,12 +320,9 @@ export const InventoryManagementView = ({
                   </Box>
                 ))}
               </Box>
-            </Box>
+            </FeaturePanel>
 
-            <Box className='surface-card p-6'>
-              <Typography variant='h2' className='text-xl font-semibold'>
-                Alertas de vencimiento
-              </Typography>
+            <FeaturePanel title='Alertas de vencimiento'>
               <Box className='mt-5 space-y-3'>
                 {expiringBatches.length === 0 ? (
                   <Typography>No hay lotes próximos a vencer.</Typography>
@@ -365,13 +340,10 @@ export const InventoryManagementView = ({
                   ))
                 )}
               </Box>
-            </Box>
+            </FeaturePanel>
           </Box>
 
-          <Box className='surface-card p-6'>
-            <Typography variant='h2' className='text-xl font-semibold'>
-              Movimientos recientes
-            </Typography>
+          <FeaturePanel title='Movimientos recientes'>
             <Box className='mt-5 space-y-3'>
               {loading ? (
                 <Typography>Cargando movimientos...</Typography>
@@ -399,9 +371,9 @@ export const InventoryManagementView = ({
                 ))
               )}
             </Box>
-          </Box>
+          </FeaturePanel>
         </Box>
       </Box>
-    </Box>
+    </FeatureScreen>
   );
 };

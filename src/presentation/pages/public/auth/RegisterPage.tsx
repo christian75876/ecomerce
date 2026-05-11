@@ -16,7 +16,7 @@ const RegisterPage = () => {
           Crea tu cuenta
         </Typography>
         <Typography className='mt-3 text-base text-neutral-dark/70'>
-          Regístrate como comprador o vendedor. Los vendedores acceden al panel de tienda y los compradores exploran el catálogo y hacen pedidos.
+          Este registro crea una cuenta de vendedor para operar tienda, catálogo, inventario y ventas desde el panel interno.
         </Typography>
         {error ? (
           <Box className='mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600'>

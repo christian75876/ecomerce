@@ -8,6 +8,9 @@ import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Label from '@/presentation/ui/atoms/label/SimpleLabel';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
+import FeaturePanel from '@/presentation/ui/templates/feature/FeaturePanel';
+import FeatureScreen from '@/presentation/ui/templates/feature/FeatureScreen';
+import FeatureScreenHeader from '@/presentation/ui/templates/feature/FeatureScreenHeader';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 
 interface ProductsManagementViewProps {
@@ -60,23 +63,14 @@ export const ProductsManagementView = ({
   };
 
   return (
-    <Box className="space-y-8">
-      <Box className="flex flex-col gap-3">
-        <Typography variant="h1" className="text-3xl font-bold">
-          Productos
-        </Typography>
-        <Typography className="max-w-3xl text-neutral-dark/70">
-          Gestiona el catálogo comercial con tipo de producto, manejo por lotes,
-          SKU único, proveedor base y stock inicial opcional.
-        </Typography>
-      </Box>
+    <FeatureScreen>
+      <FeatureScreenHeader
+        title='Productos'
+        description='Gestiona el catálogo comercial con tipo de producto, manejo por lotes, SKU único, proveedor base y stock inicial opcional.'
+      />
 
       <Box className="grid gap-6 xl:grid-cols-[430px_minmax(0,1fr)]">
-        <Box className="rounded-[1.75rem] border border-neutral-gray/30 bg-white p-6 shadow-sm">
-          <Typography variant="h2" className="text-xl font-semibold">
-            {editingId ? 'Editar producto' : 'Nuevo producto'}
-          </Typography>
-
+        <FeaturePanel title={editingId ? 'Editar producto' : 'Nuevo producto'}>
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <Box>
               <Label htmlFor="product-name">Nombre</Label>
@@ -305,19 +299,13 @@ export const ProductsManagementView = ({
               ) : null}
             </Box>
           </form>
-        </Box>
+        </FeaturePanel>
 
-        <Box className="rounded-[1.75rem] border border-neutral-gray/30 bg-white p-6 shadow-sm">
+        <FeaturePanel
+          title='Catálogo administrativo'
+          subtitle='Filtra por texto o por categoría para encontrar productos rápido.'
+        >
           <Box className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-            <Box>
-              <Typography variant="h2" className="text-xl font-semibold">
-                Catálogo administrativo
-              </Typography>
-              <Typography className="mt-2 text-sm text-neutral-dark/65">
-                Filtra por texto o por categoría para encontrar productos rápido.
-              </Typography>
-            </Box>
-
             <Box className="grid gap-3 md:grid-cols-[minmax(220px,1fr)_220px]">
               <Input
                 value={search}
@@ -413,8 +401,8 @@ export const ProductsManagementView = ({
               ))
             )}
           </Box>
-        </Box>
+        </FeaturePanel>
       </Box>
-    </Box>
+    </FeatureScreen>
   );
 };

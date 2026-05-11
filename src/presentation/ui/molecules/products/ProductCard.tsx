@@ -17,6 +17,7 @@ interface ProductCardProps {
   id: string;
   storeName?: string;
   storeSlug?: string;
+  badge?: string;
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
   onAddToCart: () => void;
@@ -31,6 +32,7 @@ const ProductCard = ({
   id,
   storeName,
   storeSlug,
+  badge,
   isFavorite = false,
   onToggleFavorite,
 }: ProductCardProps) => {
@@ -49,6 +51,11 @@ const ProductCard = ({
         {storeName ? (
           <span className='absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-neutral-dark shadow-sm'>
             {storeName}
+          </span>
+        ) : null}
+        {badge ? (
+          <span className='absolute right-4 top-4 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-white shadow-sm'>
+            {badge}
           </span>
         ) : null}
       </Box>

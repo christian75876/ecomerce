@@ -3,6 +3,9 @@ import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
+import FeaturePanel from '@/presentation/ui/templates/feature/FeaturePanel';
+import FeatureScreen from '@/presentation/ui/templates/feature/FeatureScreen';
+import FeatureScreenHeader from '@/presentation/ui/templates/feature/FeatureScreenHeader';
 
 interface CategoriesManagementViewProps {
   categories: ICategory[];
@@ -39,26 +42,17 @@ export const CategoriesManagementView = ({
   };
 
   return (
-    <Box className="space-y-8">
-      <Box className="flex flex-col gap-3">
-        <Typography variant="h1" className="text-3xl font-bold">
-          Categorías
-        </Typography>
-        <Typography className="max-w-2xl text-neutral-dark/70">
-          Administra la estructura base del catálogo. Desde aquí puedes crear,
-          editar y activar o desactivar categorías visibles para productos.
-        </Typography>
-      </Box>
+    <FeatureScreen>
+      <FeatureScreenHeader
+        title='Categorías'
+        description='Administra la estructura base del catálogo. Desde aquí puedes crear, editar y activar o desactivar categorías visibles para productos.'
+      />
 
       <Box className="grid gap-6 xl:grid-cols-[380px_minmax(0,1fr)]">
-        <Box className="rounded-[1.75rem] border border-neutral-gray/30 bg-white p-6 shadow-sm">
-          <Typography variant="h2" className="text-xl font-semibold">
-            {editingId ? 'Editar categoría' : 'Nueva categoría'}
-          </Typography>
-          <Typography className="mt-2 text-sm text-neutral-dark/65">
-            Usa nombres claros y evita duplicados.
-          </Typography>
-
+        <FeaturePanel
+          title={editingId ? 'Editar categoría' : 'Nueva categoría'}
+          subtitle='Usa nombres claros y evita duplicados.'
+        >
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <Input
               value={name}
@@ -93,13 +87,11 @@ export const CategoriesManagementView = ({
               ) : null}
             </Box>
           </form>
-        </Box>
+        </FeaturePanel>
 
-        <Box className="rounded-[1.75rem] border border-neutral-gray/30 bg-white p-6 shadow-sm">
-          <Box className="mb-5 flex items-center justify-between">
-            <Typography variant="h2" className="text-xl font-semibold">
-              Categorías registradas
-            </Typography>
+        <FeaturePanel
+          title='Categorías registradas'
+          action={
             <Button
               type="button"
               variant="ghost"
@@ -108,8 +100,8 @@ export const CategoriesManagementView = ({
             >
               Recargar
             </Button>
-          </Box>
-
+          }
+        >
           {loading ? (
             <Typography>Cargando categorías...</Typography>
           ) : categories.length === 0 ? (
@@ -161,8 +153,8 @@ export const CategoriesManagementView = ({
               ))}
             </Box>
           )}
-        </Box>
+        </FeaturePanel>
       </Box>
-    </Box>
+    </FeatureScreen>
   );
 };
