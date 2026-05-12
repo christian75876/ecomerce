@@ -11,6 +11,7 @@ import PurchaseStatusBadge from './PurchaseStatusBadge';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Label from '@/presentation/ui/atoms/label/SimpleLabel';
 import { PurchaseListFilters } from '@/application/useCases/purchases/usePurchasesManagement';
+import PaginationControls from '@/presentation/ui/molecules/common/PaginationControls';
 
 interface PurchasesListPanelProps {
   purchases: IPurchase[];
@@ -103,13 +104,6 @@ const PurchasesListPanel = ({
         </Button>
       </Box>
 
-      <Box className='mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-neutral-dark/65'>
-        <Typography>
-          {totalItems} compras registradas · página {currentPage} de {totalPages}
-        </Typography>
-        <Typography>{itemsPerPage} por página</Typography>
-      </Box>
-
       <Box className='space-y-3'>
         {loading ? (
           <Typography>Cargando compras...</Typography>
@@ -152,24 +146,14 @@ const PurchasesListPanel = ({
         )}
       </Box>
 
-      <Box className='mt-6 flex items-center justify-between gap-3'>
-        <Button
-          type='button'
-          variant='outline'
-          disabled={currentPage <= 1 || loading}
-          onClick={() => void onChangePage(currentPage - 1)}
-        >
-          Anterior
-        </Button>
-        <Button
-          type='button'
-          variant='outline'
-          disabled={currentPage >= totalPages || loading}
-          onClick={() => void onChangePage(currentPage + 1)}
-        >
-          Siguiente
-        </Button>
-      </Box>
+      <PaginationControls
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        loading={loading}
+        onChangePage={onChangePage}
+      />
     </FeaturePanel>
   );
 };

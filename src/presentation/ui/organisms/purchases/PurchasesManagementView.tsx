@@ -1,5 +1,5 @@
 import { ICategory } from '@/application/dtos/categories/response/CategoryResponse';
-import { IProduct } from '@/application/dtos/products/response/ProductResponse';
+import { IAsyncOption } from '@/application/dtos/common/AsyncOption';
 import { IPurchase } from '@/application/dtos/purchases/response/PurchaseResponse';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
 import { ISupplier } from '@/application/dtos/suppliers/response/SupplierResponse';
@@ -26,8 +26,8 @@ interface PurchasesManagementViewProps {
   suppliers: ISupplier[];
   stores: IStore[];
   categories: ICategory[];
-  products: IProduct[];
   supplierId: string;
+  selectedSupplierOption: IAsyncOption | null;
   storeId: string;
   purchaseDate: string;
   paidAmount: string;
@@ -56,15 +56,15 @@ interface PurchasesManagementViewProps {
   totalPages: number;
   totalItems: number;
   itemsPerPage: number;
-  onSupplierChange: (value: string) => void;
+  onSupplierSelect: (option: IAsyncOption | null) => void;
   onStoreChange: (value: string) => void;
   onPurchaseDateChange: (value: string) => void;
   onPaidAmountChange: (value: string) => void;
   onNoteChange: (value: string) => void;
-  onItemChange: (
+  onItemChange: <K extends keyof PurchaseItemForm>(
     index: number,
-    key: keyof PurchaseItemForm,
-    value: string
+    key: K,
+    value: PurchaseItemForm[K]
   ) => void;
   onAddItem: () => void;
   onRemoveItem: (index: number) => void;
@@ -78,12 +78,32 @@ interface PurchasesManagementViewProps {
     key: K,
     value: InlineProductForm[K]
   ) => void;
-  onPaymentFormChange: (key: keyof PurchasePaymentForm, value: string) => void;
+  onPaymentFormChange: <K extends keyof PurchasePaymentForm>(
+    key: K,
+    value: PurchasePaymentForm[K]
+  ) => void;
   onEditFormChange: (key: keyof PurchaseEditForm, value: string) => void;
   onCancelFormChange: (key: keyof PurchaseCancelForm, value: string) => void;
   onFilterChange: (key: keyof PurchaseListFilters, value: string) => void;
   onCreateSupplier: () => Promise<boolean>;
   onCreateProduct: () => Promise<boolean>;
+  loadSupplierOptions: (params: {
+    search: string;
+    page: number;
+  }) => Promise<{
+    items: IAsyncOption[];
+    currentPage: number;
+    totalPages: number;
+  }>;
+  loadProductOptions: (params: {
+    search: string;
+    page: number;
+  }) => Promise<{
+    items: IAsyncOption[];
+    currentPage: number;
+    totalPages: number;
+  }>;
+  onProductSelect: (index: number, option: IAsyncOption | null) => void;
   onOpenPurchaseDetail: (purchaseId: string) => void;
   onClosePurchaseDetail: () => void;
   onSubmitPurchasePayment: () => Promise<boolean>;
@@ -99,8 +119,8 @@ export const PurchasesManagementView = ({
   suppliers,
   stores,
   categories,
-  products,
   supplierId,
+  selectedSupplierOption,
   storeId,
   purchaseDate,
   paidAmount,
@@ -129,7 +149,7 @@ export const PurchasesManagementView = ({
   totalPages,
   totalItems,
   itemsPerPage,
-  onSupplierChange,
+  onSupplierSelect,
   onStoreChange,
   onPurchaseDateChange,
   onPaidAmountChange,
@@ -150,6 +170,9 @@ export const PurchasesManagementView = ({
   onFilterChange,
   onCreateSupplier,
   onCreateProduct,
+  loadSupplierOptions,
+  loadProductOptions,
+  onProductSelect,
   onOpenPurchaseDetail,
   onClosePurchaseDetail,
   onSubmitPurchasePayment,
@@ -168,10 +191,9 @@ export const PurchasesManagementView = ({
 
       <Box className='grid gap-6 xl:grid-cols-[460px_minmax(0,1fr)]'>
         <PurchaseRegistrationForm
-          suppliers={suppliers}
           stores={stores}
-          products={products}
           supplierId={supplierId}
+          selectedSupplierOption={selectedSupplierOption}
           storeId={storeId}
           purchaseDate={purchaseDate}
           paidAmount={paidAmount}
@@ -179,7 +201,7 @@ export const PurchasesManagementView = ({
           items={items}
           submitting={submitting}
           error={error}
-          onSupplierChange={onSupplierChange}
+          onSupplierSelect={onSupplierSelect}
           onStoreChange={onStoreChange}
           onPurchaseDateChange={onPurchaseDateChange}
           onPaidAmountChange={onPaidAmountChange}
@@ -190,6 +212,9 @@ export const PurchasesManagementView = ({
           onSubmit={onSubmit}
           onOpenSupplierModal={onOpenSupplierModal}
           onOpenProductModal={onOpenProductModal}
+          loadSupplierOptions={loadSupplierOptions}
+          loadProductOptions={loadProductOptions}
+          onProductSelect={onProductSelect}
         />
 
         <PurchasesListPanel

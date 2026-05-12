@@ -1,17 +1,7 @@
-import { IApiResponse } from '@/application/dtos/common/HttpResponse';
+import { IApiResponse, IPaginatedData } from '@/application/dtos/common/HttpResponse';
 
 export type PurchaseStatus = 'OPEN' | 'PARTIALLY_PAID' | 'PAID' | 'CANCELLED';
-
-export interface IPurchasesListData {
-  items: IPurchase[];
-  pagination: {
-    totalItems: number;
-    itemCount: number;
-    itemsPerPage: number;
-    totalPages: number;
-    currentPage: number;
-  };
-}
+export type PurchasePaymentMethod = 'CASH' | 'TRANSFER';
 
 export interface IPurchase {
   id: string;
@@ -55,11 +45,14 @@ export interface IPurchase {
   payments: Array<{
     id: string;
     amount: number;
+    paymentMethod: PurchasePaymentMethod;
     note: string | null;
+    reference?: string | null;
+    receiptImagePath?: string | null;
     paidAt: string;
     createdAt: string;
   }>;
 }
 
-export type IPurchasesResp = IApiResponse<IPurchasesListData>;
+export type IPurchasesResp = IApiResponse<IPaginatedData<IPurchase>>;
 export type IPurchaseResp = IApiResponse<IPurchase>;

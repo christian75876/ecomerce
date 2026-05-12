@@ -10,6 +10,8 @@ import {
   IProductResp,
   IProductsResp,
 } from '@/application/dtos/products/response/ProductResponse';
+import { IApiResponse } from '@/application/dtos/common/HttpResponse';
+import { IAsyncOptionsData } from '@/application/dtos/common/AsyncOption';
 import {
   authenticatedClientHTTP,
   publicClientHTTP,
@@ -86,6 +88,20 @@ export class ProductRepository {
   static async getMarketplaceSections(): Promise<IMarketplaceSectionsResp> {
     return ErrorHandler.handleApiErrors(() =>
       publicClientHTTP.get<IMarketplaceSectionsResp>('/products/featured/sections'),
+    );
+  }
+
+  static async getProductOptions(query: {
+    search?: string;
+    storeId?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<IApiResponse<IAsyncOptionsData>> {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.get<IApiResponse<IAsyncOptionsData>>(
+        '/products/options',
+        { params: query },
+      ),
     );
   }
 }

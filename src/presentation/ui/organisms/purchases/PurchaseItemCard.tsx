@@ -1,4 +1,4 @@
-import { IProduct } from '@/application/dtos/products/response/ProductResponse';
+import { IAsyncOption } from '@/application/dtos/common/AsyncOption';
 import { PurchaseItemForm } from '@/application/useCases/purchases/usePurchasesManagement';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
@@ -6,34 +6,43 @@ import Card from '@/presentation/ui/atoms/card/SimpleCard';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Label from '@/presentation/ui/atoms/label/SimpleLabel';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
+import AsyncSearchSelect from '@/presentation/ui/molecules/common/AsyncSearchSelect';
 
 interface PurchaseItemCardProps {
   item: PurchaseItemForm;
   index: number;
   storeId: string;
-  products: IProduct[];
   itemsCount: number;
-  onItemChange: (
+  onItemChange: <K extends keyof PurchaseItemForm>(
     index: number,
-    key: keyof PurchaseItemForm,
-    value: string,
+    key: K,
+    value: PurchaseItemForm[K],
   ) => void;
   onRemoveItem: (index: number) => void;
   onOpenProductModal: (index: number) => void;
+  loadProductOptions: (params: {
+    search: string;
+    page: number;
+  }) => Promise<{
+    items: IAsyncOption[];
+    currentPage: number;
+    totalPages: number;
+  }>;
+  onProductSelect: (index: number, option: IAsyncOption | null) => void;
 }
 
 const PurchaseItemCard = ({
   item,
   index,
   storeId,
-  products,
   itemsCount,
   onItemChange,
   onRemoveItem,
   onOpenProductModal,
+  loadProductOptions,
+  onProductSelect,
 }: PurchaseItemCardProps) => {
-  const selectedProduct =
-    products.find((product) => product.id === item.productId) ?? null;
+  const selectedProduct = item.selectedProductOption;
 
   return (
     <Card className='rounded-2xl border border-neutral-gray/20 p-4 hover:translate-y-0 hover:shadow-none'>
@@ -41,24 +50,19 @@ const PurchaseItemCard = ({
         <Box className='flex flex-col gap-3 sm:flex-row sm:items-end'>
           <Box className='flex-1'>
             <Label>Producto</Label>
-            <select
+            <AsyncSearchSelect
               value={item.productId}
-              onChange={(event) =>
-                onItemChange(index, 'productId', event.target.value)
+              selectedLabel={selectedProduct?.label}
+              placeholder={
+                storeId
+                  ? 'Buscar producto de la tienda'
+                  : 'Selecciona primero una tienda'
               }
-              className='w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary'
-            >
-              <option value=''>
-                {storeId
-                  ? 'Selecciona producto de la tienda'
-                  : 'Selecciona primero una tienda'}
-              </option>
-              {products.map((product) => (
-                <option key={product.id} value={product.id}>
-                  {product.name}
-                </option>
-              ))}
-            </select>
+              emptyLabel='No hay productos para esa búsqueda'
+              loadOptions={loadProductOptions}
+              onChange={(option) => onProductSelect(index, option)}
+              disabled={!storeId}
+            />
           </Box>
           <Button
             type='button'
@@ -113,17 +117,17 @@ const PurchaseItemCard = ({
         {selectedProduct ? (
           <Box className='rounded-2xl border border-neutral-gray/20 bg-background px-4 py-3'>
             <Typography className='text-sm text-neutral-dark/65'>
-              {selectedProduct.isPerishable
+              {(selectedProduct.isPerishable as boolean | undefined)
                 ? 'Producto perecedero: el vencimiento es obligatorio.'
                 : 'Producto no perecedero: el vencimiento es opcional.'}
             </Typography>
             <Typography className='mt-1 text-sm text-neutral-dark/65'>
               Catálogo:{' '}
-              {selectedProduct.showStock
+              {(selectedProduct.showStock as boolean | undefined)
                 ? 'muestra disponibilidad/stock'
                 : 'oculta stock al comprador'}
               {' · '}
-              Tienda: {selectedProduct.store?.name ?? 'Sin tienda'}
+              Tienda: {String(selectedProduct.helper ?? 'Sin tienda')}
             </Typography>
           </Box>
         ) : null}

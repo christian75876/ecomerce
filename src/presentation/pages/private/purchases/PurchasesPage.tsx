@@ -10,8 +10,8 @@ const PurchasesPage = () => {
       suppliers={purchasesManagement.suppliers}
       stores={purchasesManagement.stores}
       categories={purchasesManagement.categories}
-      products={purchasesManagement.products}
       supplierId={purchasesManagement.supplierId}
+      selectedSupplierOption={purchasesManagement.selectedSupplierOption}
       storeId={purchasesManagement.storeId}
       purchaseDate={purchasesManagement.purchaseDate}
       paidAmount={purchasesManagement.paidAmount}
@@ -40,7 +40,7 @@ const PurchasesPage = () => {
       totalPages={purchasesManagement.totalPages}
       totalItems={purchasesManagement.totalItems}
       itemsPerPage={purchasesManagement.itemsPerPage}
-      onSupplierChange={purchasesManagement.setSupplierId}
+      onSupplierSelect={purchasesManagement.selectSupplierOption}
       onStoreChange={purchasesManagement.setStoreId}
       onPurchaseDateChange={purchasesManagement.setPurchaseDate}
       onPaidAmountChange={purchasesManagement.setPaidAmount}
@@ -61,6 +61,9 @@ const PurchasesPage = () => {
       onFilterChange={purchasesManagement.updateFilters}
       onCreateSupplier={purchasesManagement.createSupplierInline}
       onCreateProduct={purchasesManagement.createProductInline}
+      loadSupplierOptions={purchasesManagement.loadSupplierOptions}
+      loadProductOptions={purchasesManagement.loadProductOptions}
+      onProductSelect={purchasesManagement.selectProductOption}
       onOpenPurchaseDetail={purchasesManagement.openPurchaseDetailModal}
       onClosePurchaseDetail={purchasesManagement.closePurchaseDetailModal}
       onSubmitPurchasePayment={purchasesManagement.submitPurchasePayment}

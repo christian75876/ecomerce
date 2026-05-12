@@ -20,8 +20,11 @@ export interface IUpdatePurchaseRequest {
 
 export interface IRegisterPurchasePaymentRequest {
   amount: number;
+  paymentMethod: 'CASH' | 'TRANSFER';
   note?: string;
+  reference?: string;
   paidAt?: string;
+  receiptImage?: File | null;
 }
 
 export interface ICancelPurchaseRequest {

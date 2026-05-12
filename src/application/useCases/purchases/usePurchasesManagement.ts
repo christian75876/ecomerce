@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import { IPurchase } from '@/application/dtos/purchases/response/PurchaseResponse';
 import { ISupplier } from '@/application/dtos/suppliers/response/SupplierResponse';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
-import { IProduct } from '@/application/dtos/products/response/ProductResponse';
 import { PurchasesRepository } from '@/infrastructure/repositories/api/purchases/PurchasesRepository';
 import { SuppliersRepository } from '@/infrastructure/repositories/api/suppliers/SuppliersRepository';
 import { StoresRepository } from '@/infrastructure/repositories/api/stores/StoresRepository';
 import { ProductRepository } from '@/infrastructure/repositories/api/products/ProductsRepository';
 import { CategoriesRepository } from '@/infrastructure/repositories/api/categories/CategoriesRepository';
 import { ICategory } from '@/application/dtos/categories/response/CategoryResponse';
+import { IAsyncOption } from '@/application/dtos/common/AsyncOption';
 
 export type PurchaseItemForm = {
   productId: string;
@@ -16,6 +16,7 @@ export type PurchaseItemForm = {
   unitCost: string;
   expiresAt: string;
   batchCode: string;
+  selectedProductOption: IAsyncOption | null;
 };
 
 export type InlineSupplierForm = {
@@ -41,8 +42,11 @@ export type InlineProductForm = {
 
 export type PurchasePaymentForm = {
   amount: string;
+  paymentMethod: 'CASH' | 'TRANSFER';
   note: string;
+  reference: string;
   paidAt: string;
+  receiptImage: File | null;
 };
 
 export type PurchaseEditForm = {
@@ -67,6 +71,7 @@ const emptyItem: PurchaseItemForm = {
   unitCost: '',
   expiresAt: '',
   batchCode: '',
+  selectedProductOption: null,
 };
 
 const emptySupplierForm: InlineSupplierForm = {
@@ -92,8 +97,11 @@ const emptyProductForm: InlineProductForm = {
 
 const emptyPaymentForm: PurchasePaymentForm = {
   amount: '',
+  paymentMethod: 'CASH',
   note: '',
+  reference: '',
   paidAt: '',
+  receiptImage: null,
 };
 
 const emptyEditForm: PurchaseEditForm = {
@@ -124,8 +132,8 @@ export const usePurchasesManagement = () => {
   const [purchases, setPurchases] = useState<IPurchase[]>([]);
   const [suppliers, setSuppliers] = useState<ISupplier[]>([]);
   const [stores, setStores] = useState<IStore[]>([]);
-  const [products, setProducts] = useState<IProduct[]>([]);
   const [categories, setCategories] = useState<ICategory[]>([]);
+  const [selectedSupplierOption, setSelectedSupplierOption] = useState<IAsyncOption | null>(null);
   const [supplierId, setSupplierId] = useState('');
   const [storeId, setStoreId] = useState('');
   const [purchaseDate, setPurchaseDate] = useState('');
@@ -162,20 +170,29 @@ export const usePurchasesManagement = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage] = useState(10);
 
+  const updateStoreSelection = (value: string) => {
+    setStoreId(value);
+    setItems((current) =>
+      current.map((item) => ({
+        ...item,
+        productId: '',
+        selectedProductOption: null,
+      })),
+    );
+  };
+
   const loadStaticData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const [suppliersResponse, storesResponse, productsResponse, categoriesResponse] =
+      const [suppliersResponse, storesResponse, categoriesResponse] =
         await Promise.all([
           SuppliersRepository.getSuppliers(),
           StoresRepository.getStores(),
-          ProductRepository.getProducts(),
           CategoriesRepository.getCategories(true),
         ]);
       setSuppliers(suppliersResponse.data.filter((item) => item.isActive));
       setStores(storesResponse.data.filter((item) => item.isActive));
-      setProducts(productsResponse.data);
       setCategories(categoriesResponse.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No fue posible cargar compras');
@@ -230,7 +247,11 @@ export const usePurchasesManagement = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const updateItem = (index: number, key: keyof PurchaseItemForm, value: string) => {
+  const updateItem = <K extends keyof PurchaseItemForm>(
+    index: number,
+    key: K,
+    value: PurchaseItemForm[K],
+  ) => {
     setItems((current) =>
       current.map((item, itemIndex) =>
         itemIndex === index ? { ...item, [key]: value } : item,
@@ -244,6 +265,7 @@ export const usePurchasesManagement = () => {
 
   const resetForm = () => {
     setSupplierId('');
+    setSelectedSupplierOption(null);
     setStoreId('');
     setPurchaseDate('');
     setPaidAmount('');
@@ -268,8 +290,11 @@ export const usePurchasesManagement = () => {
     setSelectedPurchase(purchase);
     setPaymentForm({
       amount: purchase.balance > 0 ? String(purchase.balance) : '',
+      paymentMethod: 'CASH',
       note: '',
+      reference: '',
       paidAt: '',
+      receiptImage: null,
     });
     setEditForm({
       purchaseDate: toDateTimeLocal(purchase.purchaseDate),
@@ -286,10 +311,6 @@ export const usePurchasesManagement = () => {
     );
     hydratePurchaseDetail(nextPurchase);
   };
-
-  const availableProducts = products.filter(
-    (product) => !storeId || product.storeId === storeId,
-  );
 
   const submitForm = async () => {
     if (!supplierId || !storeId || !purchaseDate) {
@@ -356,6 +377,65 @@ export const usePurchasesManagement = () => {
     setIsProductModalOpen(true);
   };
 
+  const selectSupplierOption = (option: IAsyncOption | null) => {
+    setSupplierId(option?.id ?? '');
+    setSelectedSupplierOption(option);
+  };
+
+  const selectProductOption = (index: number, option: IAsyncOption | null) => {
+    updateItem(index, 'productId', option?.id ?? '');
+    updateItem(index, 'selectedProductOption', option);
+  };
+
+  const loadSupplierOptions = async ({
+    search,
+    page,
+  }: {
+    search: string;
+    page: number;
+  }) => {
+    const response = await SuppliersRepository.getSupplierOptions({
+      search: search.trim() || undefined,
+      page,
+      limit: 10,
+    });
+
+    return {
+      items: response.data.items,
+      currentPage: response.data.pagination.currentPage,
+      totalPages: response.data.pagination.totalPages,
+    };
+  };
+
+  const loadProductOptions = async ({
+    search,
+    page,
+  }: {
+    search: string;
+    page: number;
+  }) => {
+    if (!storeId) {
+      return {
+        items: [],
+        currentPage: 1,
+        totalPages: 1,
+      };
+    }
+
+    const response = await ProductRepository.getProductOptions({
+      search: search.trim() || undefined,
+      storeId,
+      page,
+      limit: 10,
+    });
+
+    return {
+      items: response.data.items,
+      currentPage: response.data.pagination.currentPage,
+      totalPages: response.data.pagination.totalPages,
+    };
+  };
+
   const openPurchaseDetailModal = async (purchaseId: string) => {
     setDetailLoading(true);
     setDetailError(null);
@@ -405,7 +485,12 @@ export const usePurchasesManagement = () => {
       });
 
       setSuppliers((current) => [...current, response.data]);
-      setSupplierId(response.data.id);
+      selectSupplierOption({
+        id: response.data.id,
+        label: response.data.name,
+        secondary: response.data.document ?? null,
+        helper: response.data.email ?? response.data.phone ?? 'Sin contacto',
+      });
       resetSupplierModal();
       return true;
     } catch (err) {
@@ -454,9 +539,16 @@ export const usePurchasesManagement = () => {
         isActive: true,
       });
 
-      setProducts((current) => [...current, response.data]);
       if (productTargetIndex !== null) {
-        updateItem(productTargetIndex, 'productId', response.data.id);
+        selectProductOption(productTargetIndex, {
+          id: response.data.id,
+          label: response.data.name,
+          secondary: response.data.sku,
+          helper: response.data.store?.name ?? 'Sin tienda',
+          isPerishable: response.data.isPerishable,
+          showStock: response.data.showStock,
+          storeId: response.data.storeId,
+        });
       }
       resetProductModal();
       return true;
@@ -470,7 +562,10 @@ export const usePurchasesManagement = () => {
     }
   };
 
-  const updatePaymentForm = (key: keyof PurchasePaymentForm, value: string) => {
+  const updatePaymentForm = <K extends keyof PurchasePaymentForm>(
+    key: K,
+    value: PurchasePaymentForm[K],
+  ) => {
     setPaymentForm((current) => ({ ...current, [key]: value }));
   };
 
@@ -526,17 +621,23 @@ export const usePurchasesManagement = () => {
         selectedPurchase.id,
         {
           amount: Number(paymentForm.amount),
+          paymentMethod: paymentForm.paymentMethod,
           note: paymentForm.note.trim() || undefined,
+          reference: paymentForm.reference.trim() || undefined,
           paidAt: paymentForm.paidAt
             ? new Date(paymentForm.paidAt).toISOString()
             : undefined,
+          receiptImage: paymentForm.receiptImage,
         },
       );
       replacePurchaseInState(response.data);
       setPaymentForm({
         amount: response.data.balance > 0 ? String(response.data.balance) : '',
+        paymentMethod: 'CASH',
         note: '',
+        reference: '',
         paidAt: '',
+        receiptImage: null,
       });
       return true;
     } catch (err) {
@@ -609,8 +710,8 @@ export const usePurchasesManagement = () => {
     suppliers,
     stores,
     categories,
-    products: availableProducts,
     supplierId,
+    selectedSupplierOption,
     storeId,
     purchaseDate,
     paidAmount,
@@ -635,11 +736,15 @@ export const usePurchasesManagement = () => {
     editForm,
     cancelForm,
     setSupplierId,
-    setStoreId,
+    setStoreId: updateStoreSelection,
     setPurchaseDate,
     setPaidAmount,
     setNote,
     updateItem,
+    selectSupplierOption,
+    selectProductOption,
+    loadSupplierOptions,
+    loadProductOptions,
     addItem,
     removeItem,
     submitForm,

@@ -16,3 +16,8 @@ export interface IMetaData {
   totalPages: number;
   currentPage: number;
 }
+
+export interface IPaginatedData<T> {
+  items: T[];
+  pagination: IMetaData;
+}
