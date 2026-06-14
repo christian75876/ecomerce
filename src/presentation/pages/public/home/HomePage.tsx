@@ -4,6 +4,7 @@ import { usePublicCatalog } from '@/application/useCases/products/usePublicCatal
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import { useFavorites } from '@/application/useCases/products/useFavorites';
 import { useCart } from '@/shared/hooks/useCart';
+import { SnackbarUtilities } from '@/shared/utils/SnackbarManager';
 import HomeCatalogSection from '@/presentation/ui/organisms/home/HomeCatalogSection';
 import HomeFeaturedCategories from '@/presentation/ui/organisms/home/HomeFeaturedCategories';
 import HomeFeaturedStores from '@/presentation/ui/organisms/home/HomeFeaturedStores';
@@ -44,6 +45,8 @@ export const HomePage = () => {
       price: Number(product.price),
       imageUrl: product.imageUrl,
     });
+    const label = product.name.length > 28 ? `${product.name.slice(0, 28)}…` : product.name;
+    SnackbarUtilities.success(`${label} agregado al carrito`, 'bottom', 'right');
   };
 
   return (

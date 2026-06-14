@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+
+const ADMIN_EMAIL = 'christian75876@gmail.com';
+const ADMIN_WHATSAPP = '573001234567'; // reemplaza con el número real (código país + número, sin + ni espacios)
 import { useNavigate } from 'react-router-dom';
 import { InvitationsRepository } from '@/infrastructure/repositories/api/invitations/InvitationsRepository';
 import { AuthRepository } from '@/infrastructure/repositories/api/auth/AuthRepository';
@@ -57,25 +60,71 @@ const RegisterPage = () => {
     }
   };
 
-  // No token — show locked message
+  // No token — show locked message with contact options
   if (!token) {
+    const mailtoSubject = encodeURIComponent('Solicitud para ser vendedor en el marketplace');
+    const mailtoBody = encodeURIComponent(
+      'Hola,\n\nMe interesa crear una tienda en el marketplace.\n\nNombre: \nNegocio: \nTeléfono: \n\nQuedo atento a su respuesta.\n\nSaludos.'
+    );
+    const mailtoHref = `mailto:${ADMIN_EMAIL}?subject=${mailtoSubject}&body=${mailtoBody}`;
+    const whatsappHref = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent('Hola, me interesa crear una tienda en el marketplace. ¿Cómo puedo solicitar una invitación?')}`;
+
     return (
       <div className='min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,69,0,0.14),_transparent_32%),linear-gradient(135deg,_#fff7f2_0%,_#ffffff_45%,_#eef6ff_100%)] px-4 py-10'>
-        <div className='mx-auto w-full max-w-md rounded-[2rem] border border-white/70 bg-white/85 p-10 shadow-[0_30px_80px_rgba(34,34,34,0.12)] text-center backdrop-blur'>
-          <div className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10'>
-            <i className='bx bx-lock-alt text-3xl text-primary' aria-hidden='true' />
+        <div className='mx-auto w-full max-w-md space-y-4'>
+          {/* Header card */}
+          <div className='rounded-[2rem] border border-white/70 bg-white/85 p-8 shadow-[0_30px_80px_rgba(34,34,34,0.12)] text-center backdrop-blur'>
+            <div className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10'>
+              <i className='bx bx-store-alt text-3xl text-primary' aria-hidden='true' />
+            </div>
+            <h1 className='text-2xl font-bold text-slate-800'>¿Quieres vender aquí?</h1>
+            <p className='mt-3 text-sm text-slate-500'>
+              El acceso de vendedores es por invitación. Contáctanos y te enviamos tu enlace de registro.
+            </p>
           </div>
-          <h1 className='text-2xl font-bold text-slate-800'>Registro por invitación</h1>
-          <p className='mt-3 text-sm text-slate-500'>
-            Para crear una tienda necesitas recibir una invitación del administrador.
-            Contacta al administrador del marketplace para solicitar acceso.
-          </p>
-          <Link
-            to={ROUTES.PUBLIC.LOGIN}
-            className='mt-8 inline-block rounded-2xl bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90'
-          >
-            Volver al inicio
-          </Link>
+
+          {/* Contact options */}
+          <div className='grid grid-cols-2 gap-3'>
+            {/* Email */}
+            <a
+              href={mailtoHref}
+              className='flex flex-col items-center gap-3 rounded-[1.5rem] border border-white/70 bg-white/85 p-5 shadow-[0_8px_32px_rgba(34,34,34,0.08)] backdrop-blur transition hover:shadow-[0_12px_40px_rgba(99,102,241,0.15)] hover:-translate-y-0.5'
+            >
+              <div className='flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10'>
+                <i className='bx bx-envelope text-2xl text-primary' aria-hidden='true' />
+              </div>
+              <div className='text-center'>
+                <p className='text-sm font-semibold text-slate-800'>Solicitar por correo</p>
+                <p className='mt-0.5 text-xs text-slate-400'>Se abre tu app de email</p>
+              </div>
+            </a>
+
+            {/* WhatsApp */}
+            <a
+              href={whatsappHref}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='flex flex-col items-center gap-3 rounded-[1.5rem] border border-white/70 bg-white/85 p-5 shadow-[0_8px_32px_rgba(34,34,34,0.08)] backdrop-blur transition hover:shadow-[0_12px_40px_rgba(37,211,102,0.18)] hover:-translate-y-0.5'
+            >
+              <div className='flex h-12 w-12 items-center justify-center rounded-xl bg-[#25D366]/10'>
+                <i className='bx bxl-whatsapp text-2xl text-[#25D366]' aria-hidden='true' />
+              </div>
+              <div className='text-center'>
+                <p className='text-sm font-semibold text-slate-800'>Contactar por WhatsApp</p>
+                <p className='mt-0.5 text-xs text-slate-400'>Respuesta inmediata</p>
+              </div>
+            </a>
+          </div>
+
+          {/* Back link */}
+          <div className='text-center'>
+            <Link
+              to={ROUTES.PUBLIC.LOGIN}
+              className='text-sm font-medium text-slate-400 transition hover:text-primary'
+            >
+              ← Volver al inicio de sesión
+            </Link>
+          </div>
         </div>
       </div>
     );

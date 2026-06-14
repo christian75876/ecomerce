@@ -6,6 +6,7 @@ import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import ProductBody from '@/presentation/ui/organisms/products/ProductBody';
 import { ROUTES } from '@/shared/constants/routes';
 import { useCart } from '@/shared/hooks/useCart';
+import { SnackbarUtilities } from '@/shared/utils/SnackbarManager';
 
 const FavoritesPage = () => {
   const {
@@ -61,6 +62,8 @@ const FavoritesPage = () => {
             price: Number(product.price),
             imageUrl: product.imageUrl,
           });
+          const label = product.name.length > 28 ? `${product.name.slice(0, 28)}…` : product.name;
+          SnackbarUtilities.success(`${label} agregado al carrito`, 'bottom', 'right');
         }}
       />
     </Box>

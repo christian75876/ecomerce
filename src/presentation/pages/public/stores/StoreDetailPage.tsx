@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import { usePublicStoreDetail } from '@/application/useCases/stores/usePublicStoreDetail';
 import ProductBody from '@/presentation/ui/organisms/products/ProductBody';
 import { useCart } from '@/shared/hooks/useCart';
+import { SnackbarUtilities } from '@/shared/utils/SnackbarManager';
 import { useFavorites } from '@/application/useCases/products/useFavorites';
 import Link from '@/presentation/ui/atoms/link/Simplelink';
 import { ROUTES } from '@/shared/constants/routes';
@@ -200,6 +201,8 @@ const StoreDetailPage = () => {
                 price: Number(product.price),
                 imageUrl: product.imageUrl,
               });
+              const label = product.name.length > 28 ? `${product.name.slice(0, 28)}…` : product.name;
+              SnackbarUtilities.success(`${label} agregado al carrito`, 'bottom', 'right');
             }}
           />
         </div>

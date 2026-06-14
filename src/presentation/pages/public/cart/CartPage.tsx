@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
@@ -7,13 +8,17 @@ import Icon from '@/presentation/ui/atoms/icon/SimpleIcon';
 import { useCart } from '@/shared/hooks/useCart';
 import { OrdersRepository } from '@/infrastructure/repositories/api/orders/OrdersRepository';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
+import { isAuthenticated, getAuthenticatedUser } from '@/shared/utils/checkIsUserAuthenticated.util';
+import { ROUTES } from '@/shared/constants/routes';
 
 const CartPage = () => {
   const { items, total, updateQuantity, removeItem, clear } = useCart();
+  const authenticated = isAuthenticated();
+  const sessionUser = getAuthenticatedUser();
   const [customer, setCustomer] = useState({
     firstName: '',
     lastName: '',
-    email: '',
+    email: sessionUser?.email ?? '',
     phone: '',
   });
   const [deliveryMethod, setDeliveryMethod] = useState<'DELIVERY' | 'PICKUP'>('PICKUP');
@@ -183,7 +188,33 @@ const CartPage = () => {
 
         {/* Sidebar */}
         <Box className='space-y-4'>
-          {/* Customer form */}
+          {/* Login gate */}
+          {!authenticated ? (
+            <Box className='surface-elevated flex flex-col items-center rounded-[1.75rem] p-8 text-center'>
+              <Box className='mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10'>
+                <Icon name='bx-lock-alt' className='text-2xl text-primary' />
+              </Box>
+              <Typography variant='h2' className='text-lg font-semibold'>
+                Inicia sesión para continuar
+              </Typography>
+              <Typography className='mt-2 text-sm text-neutral-dark/60'>
+                Necesitas una cuenta para completar tu pedido y poder rastrearlo.
+              </Typography>
+              <Link
+                to={ROUTES.PUBLIC.LOGIN}
+                className='mt-6 w-full rounded-2xl bg-primary py-3 text-center text-sm font-bold text-white transition hover:opacity-90'
+              >
+                Iniciar sesión
+              </Link>
+              <Typography className='mt-3 text-xs text-neutral-dark/40'>
+                ¿No tienes cuenta? Contacta al administrador para recibir una invitación.
+              </Typography>
+            </Box>
+          ) : null}
+
+          {/* Customer form, delivery and summary — only when authenticated */}
+          {authenticated ? (
+          <>
           <Box className='surface-elevated rounded-[1.75rem] p-6'>
             <Box className='mb-5 flex items-center gap-2'>
               <Icon name='bx-user-circle' className='text-xl text-primary' />
@@ -345,6 +376,7 @@ const CartPage = () => {
               </button>
             ) : null}
           </Box>
+          </>) : null}
         </Box>
       </Box>
     </Box>
