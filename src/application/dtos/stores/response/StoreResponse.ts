@@ -19,7 +19,10 @@ export interface IStore {
   phone: string | null;
   whatsappNumber: string | null;
   email: string | null;
+  storeType: 'STORE' | 'RESTAURANT';
+  menuPdfUrl: string | null;
   isActive: boolean;
+  isAdultContent: boolean;
   userId: number | null;
   deliveryOptions: 'DELIVERY' | 'PICKUP' | 'BOTH';
   wppNotificationsEnabled: boolean;

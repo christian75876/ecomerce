@@ -1,7 +1,8 @@
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { usePublicStoreDetail } from '@/application/useCases/stores/usePublicStoreDetail';
 import ProductBody from '@/presentation/ui/organisms/products/ProductBody';
 import { useCart } from '@/shared/hooks/useCart';
@@ -11,6 +12,8 @@ import Link from '@/presentation/ui/atoms/link/Simplelink';
 import { ROUTES } from '@/shared/constants/routes';
 import WhatsAppFloat from '@/presentation/ui/atoms/whatsapp/WhatsAppFloat';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
+import AgeGate, { isStoreVerified, markStoreVerified } from '@/presentation/ui/molecules/common/AgeGate';
+import RestaurantMenuView from '@/presentation/ui/organisms/stores/RestaurantMenuView';
 
 function buildStoreTheme(store: IStore): React.CSSProperties {
   const primary = store.primaryColor || '#6366f1';
@@ -51,9 +54,16 @@ function coverTextColor(store: IStore): string {
 
 const StoreDetailPage = () => {
   const { slug } = useParams();
-  const { store, products, loading, error } = usePublicStoreDetail(slug);
+  const navigate = useNavigate();
+  const { store, products, menuCategories, loading, error } = usePublicStoreDetail(slug);
   const { addItem } = useCart();
   const { favoriteIds, toggleFavorite } = useFavorites();
+  const [ageVerified, setAgeVerified] = useState(false);
+
+  useEffect(() => {
+    if (!store) return;
+    setAgeVerified(!store.isAdultContent || isStoreVerified(store.id));
+  }, [store]);
 
   if (loading) {
     return <Typography>Cargando tienda...</Typography>;
@@ -64,6 +74,19 @@ const StoreDetailPage = () => {
       <Box className='rounded-3xl border border-red-200 bg-red-50 px-6 py-4 text-sm text-red-600'>
         {error || 'No fue posible encontrar la tienda.'}
       </Box>
+    );
+  }
+
+  if (store.isAdultContent && !ageVerified) {
+    return (
+      <AgeGate
+        storeName={store.name}
+        onVerified={() => {
+          markStoreVerified(store.id);
+          setAgeVerified(true);
+        }}
+        onDenied={() => navigate(ROUTES.PUBLIC.STORES)}
+      />
     );
   }
 
@@ -179,32 +202,44 @@ const StoreDetailPage = () => {
           </div>
         </div>
 
-        {/* ── Products ── */}
+        {/* ── Products / Menu ── */}
         <div style={{ backgroundColor: themeVars.backgroundColor }}>
-          <ProductBody
-            products={products}
-            favoriteIds={favoriteIds}
-            layoutStyle={store.layoutStyle}
-            buttonStyle={store.buttonStyle}
-            primaryColor={store.primaryColor || undefined}
-            emptyMessage='Esta tienda todavía no tiene productos activos.'
-            onToggleFavorite={(productId) => {
-              void toggleFavorite(productId);
-            }}
-            onAddToCart={(productId) => {
-              const product = products.find((item) => item.id === productId);
-              if (!product) return;
-
-              addItem({
-                productId: product.id,
-                name: product.name,
-                price: Number(product.price),
-                imageUrl: product.imageUrl,
-              });
-              const label = product.name.length > 28 ? `${product.name.slice(0, 28)}…` : product.name;
-              SnackbarUtilities.success(`${label} agregado al carrito`, 'bottom', 'right');
-            }}
-          />
+          {store.storeType === 'RESTAURANT' ? (
+            <RestaurantMenuView
+              products={products}
+              menuCategories={menuCategories}
+              menuPdfUrl={store.menuPdfUrl}
+              layoutStyle={store.layoutStyle}
+              buttonStyle={store.buttonStyle}
+              primaryColor={store.primaryColor || undefined}
+              favoriteIds={favoriteIds}
+              onToggleFavorite={(productId) => { void toggleFavorite(productId); }}
+              onAddToCart={(productId) => {
+                const product = products.find((item) => item.id === productId);
+                if (!product) return;
+                addItem({ productId: product.id, name: product.name, price: Number(product.price), imageUrl: product.imageUrl });
+                const label = product.name.length > 28 ? `${product.name.slice(0, 28)}…` : product.name;
+                SnackbarUtilities.success(`${label} agregado al carrito`, 'bottom', 'right');
+              }}
+            />
+          ) : (
+            <ProductBody
+              products={products}
+              favoriteIds={favoriteIds}
+              layoutStyle={store.layoutStyle}
+              buttonStyle={store.buttonStyle}
+              primaryColor={store.primaryColor || undefined}
+              emptyMessage='Esta tienda todavía no tiene productos activos.'
+              onToggleFavorite={(productId) => { void toggleFavorite(productId); }}
+              onAddToCart={(productId) => {
+                const product = products.find((item) => item.id === productId);
+                if (!product) return;
+                addItem({ productId: product.id, name: product.name, price: Number(product.price), imageUrl: product.imageUrl });
+                const label = product.name.length > 28 ? `${product.name.slice(0, 28)}…` : product.name;
+                SnackbarUtilities.success(`${label} agregado al carrito`, 'bottom', 'right');
+              }}
+            />
+          )}
         </div>
       </div>
 

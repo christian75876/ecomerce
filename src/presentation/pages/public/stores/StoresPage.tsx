@@ -92,6 +92,18 @@ const StoresPage = () => {
                   <div className='absolute inset-0 flex items-center justify-center opacity-10'>
                     <span className='text-8xl font-black text-white'>{initial}</span>
                   </div>
+                  <div className='absolute right-3 top-3 flex gap-1'>
+                    {store.storeType === 'RESTAURANT' ? (
+                      <span className='rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white'>
+                        🍽️ Restaurante
+                      </span>
+                    ) : null}
+                    {store.isAdultContent ? (
+                      <span className='rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-bold text-white'>
+                        +18
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
 
                 {/* Info */}

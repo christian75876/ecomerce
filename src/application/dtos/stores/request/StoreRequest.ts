@@ -21,6 +21,9 @@ export interface ICreateStoreRequest {
   whatsappNumber?: string;
   email?: string;
   isActive?: boolean;
+  isAdultContent?: boolean;
+  storeType?: 'STORE' | 'RESTAURANT';
+  menuPdfUrl?: string;
   deliveryOptions?: 'DELIVERY' | 'PICKUP' | 'BOTH';
 }
 

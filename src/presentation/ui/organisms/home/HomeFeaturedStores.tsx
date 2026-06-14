@@ -55,7 +55,19 @@ const HomeFeaturedStores = ({ stores }: HomeFeaturedStoresProps) => {
                 </div>
               )}
               <div className='min-w-0 flex-1'>
-                <p className='truncate text-sm font-semibold text-slate-800'>{store.name}</p>
+                <div className='flex items-center gap-1.5'>
+                  <p className='truncate text-sm font-semibold text-slate-800'>{store.name}</p>
+                  {store.storeType === 'RESTAURANT' ? (
+                    <span className='flex-shrink-0 rounded-full bg-amber-500 px-1.5 py-0.5 text-[9px] font-bold text-white'>
+                      🍽️
+                    </span>
+                  ) : null}
+                  {store.isAdultContent ? (
+                    <span className='flex-shrink-0 rounded-full bg-red-600 px-1.5 py-0.5 text-[9px] font-bold text-white'>
+                      +18
+                    </span>
+                  ) : null}
+                </div>
                 <p className='truncate text-xs text-slate-400'>
                   {store.description || 'Ver productos →'}
                 </p>

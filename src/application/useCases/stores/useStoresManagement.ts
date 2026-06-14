@@ -21,6 +21,9 @@ export type StoreFormState = {
   whatsappNumber: string;
   email: string;
   isActive: boolean;
+  isAdultContent: boolean;
+  storeType: 'STORE' | 'RESTAURANT';
+  menuPdfUrl: string;
   deliveryOptions: 'DELIVERY' | 'PICKUP' | 'BOTH';
 };
 
@@ -43,6 +46,9 @@ const initialStoreForm: StoreFormState = {
   whatsappNumber: '',
   email: '',
   isActive: true,
+  isAdultContent: false,
+  storeType: 'STORE',
+  menuPdfUrl: '',
   deliveryOptions: 'BOTH',
 };
 
@@ -104,6 +110,9 @@ export const useStoresManagement = () => {
         whatsappNumber: form.whatsappNumber.trim() || undefined,
         email: form.email.trim() || undefined,
         isActive: form.isActive,
+        isAdultContent: form.isAdultContent,
+        storeType: form.storeType,
+        menuPdfUrl: form.menuPdfUrl.trim() || undefined,
         deliveryOptions: form.deliveryOptions,
         accentColor: form.accentColor.trim() || undefined,
         bgColor: form.bgColor.trim() || undefined,
@@ -145,6 +154,9 @@ export const useStoresManagement = () => {
       whatsappNumber: store.whatsappNumber ?? '',
       email: store.email ?? '',
       isActive: store.isActive,
+      isAdultContent: store.isAdultContent ?? false,
+      storeType: store.storeType ?? 'STORE',
+      menuPdfUrl: store.menuPdfUrl ?? '',
       deliveryOptions: store.deliveryOptions ?? 'BOTH',
       accentColor: store.accentColor ?? '#f59e0b',
       bgColor: store.bgColor ?? '#ffffff',

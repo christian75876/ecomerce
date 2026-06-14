@@ -7,6 +7,8 @@ import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Label from '@/presentation/ui/atoms/label/SimpleLabel';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import ColorPicker from '@/presentation/ui/atoms/color-picker/ColorPicker';
+import { useMenuCategories } from '@/application/useCases/menu-categories/useMenuCategories';
+import MenuCategoriesManager from '@/presentation/ui/organisms/menu-categories/MenuCategoriesManager';
 
 interface StoresManagementViewProps {
   stores: IStore[];
@@ -220,6 +222,9 @@ export const StoresManagementView = ({
   onReset,
 }: StoresManagementViewProps) => {
   const [activeTab, setActiveTab] = useState<BrandingTab>('info');
+  const menuCats = useMenuCategories(
+    editingId && form.storeType === 'RESTAURANT' ? editingId : null,
+  );
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -391,6 +396,51 @@ export const StoresManagementView = ({
                   </Box>
                 </Box>
 
+                {/* Store type */}
+                <Box>
+                  <p className='mb-2 text-sm font-semibold text-neutral-dark/70'>Tipo de tienda</p>
+                  <div className='grid grid-cols-2 gap-2'>
+                    {([
+                      { value: 'STORE', label: 'Tienda', sub: 'Productos físicos o digitales', icon: 'bx-store' },
+                      { value: 'RESTAURANT', label: 'Restaurante', sub: 'Menú con platos y categorías', icon: 'bx-restaurant' },
+                    ] as const).map((opt) => (
+                      <button
+                        key={opt.value}
+                        type='button'
+                        onClick={() => onFormChange('storeType', opt.value)}
+                        className={`flex items-center gap-3 rounded-2xl border-2 p-3 text-left transition-all ${
+                          form.storeType === opt.value
+                            ? 'border-primary bg-primary/5'
+                            : 'border-neutral-gray/20 hover:border-primary/30'
+                        }`}
+                      >
+                        <i className={`bx ${opt.icon} text-2xl ${form.storeType === opt.value ? 'text-primary' : 'text-neutral-dark/40'}`} aria-hidden='true' />
+                        <div>
+                          <p className='text-sm font-semibold'>{opt.label}</p>
+                          <p className='text-xs text-neutral-dark/50'>{opt.sub}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </Box>
+
+                {/* PDF menu URL — only for restaurants */}
+                {form.storeType === 'RESTAURANT' ? (
+                  <Box>
+                    <Label htmlFor='store-menu-pdf'>URL del menú en PDF (opcional)</Label>
+                    <Input
+                      id='store-menu-pdf'
+                      value={form.menuPdfUrl}
+                      onChange={(e) => onFormChange('menuPdfUrl', e.target.value)}
+                      disabled={submitting}
+                      placeholder='https://...'
+                    />
+                    <p className='mt-1 text-xs text-neutral-dark/50'>
+                      Si lo proporcionas, los clientes verán un botón para abrirlo en la tienda.
+                    </p>
+                  </Box>
+                ) : null}
+
                 <label className='flex items-center gap-3 rounded-2xl border border-neutral-gray/20 px-4 py-3 text-sm text-neutral-dark'>
                   <input
                     type='checkbox'
@@ -399,6 +449,19 @@ export const StoresManagementView = ({
                     disabled={submitting}
                   />
                   Tienda activa y visible en el marketplace
+                </label>
+
+                <label className='flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50/50 px-4 py-3 text-sm text-neutral-dark'>
+                  <input
+                    type='checkbox'
+                    checked={form.isAdultContent}
+                    onChange={(e) => onFormChange('isAdultContent', e.target.checked)}
+                    disabled={submitting}
+                  />
+                  <span>
+                    <span className='mr-1.5 inline-flex items-center rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white'>+18</span>
+                    Tienda de contenido para adultos — activa verificación de edad
+                  </span>
                 </label>
               </Box>
             ) : null}
@@ -681,9 +744,17 @@ export const StoresManagementView = ({
                     }}
                   />
                   <Box className='min-w-0 flex-1'>
-                    <Typography className='truncate text-sm font-semibold'>
-                      {store.name}
-                    </Typography>
+                    <div className='flex items-center gap-1.5'>
+                      <Typography className='truncate text-sm font-semibold'>
+                        {store.name}
+                      </Typography>
+                      {store.storeType === 'RESTAURANT' ? (
+                        <span className='flex-shrink-0 rounded-full bg-amber-500 px-1.5 py-0.5 text-[9px] font-bold text-white'>🍽️</span>
+                      ) : null}
+                      {store.isAdultContent ? (
+                        <span className='flex-shrink-0 rounded-full bg-red-600 px-1.5 py-0.5 text-[9px] font-bold text-white'>+18</span>
+                      ) : null}
+                    </div>
                     <Typography className='text-xs text-neutral-dark/45'>
                       /{store.slug} · {store.isActive ? 'Activa' : 'Inactiva'}
                     </Typography>
@@ -699,6 +770,32 @@ export const StoresManagementView = ({
               ))}
             </Box>
           </Box>
+          {/* Menu categories — only when editing a restaurant */}
+          {editingId && form.storeType === 'RESTAURANT' ? (
+            <Box className='rounded-[1.75rem] border border-amber-200 bg-amber-50/30 p-5 shadow-sm'>
+              <Box className='mb-3 flex items-center gap-2'>
+                <i className='bx bx-restaurant text-lg text-amber-500' aria-hidden='true' />
+                <Typography variant='h3' className='text-sm font-semibold'>
+                  Categorías del menú
+                </Typography>
+              </Box>
+              {menuCats.loading ? (
+                <div className='space-y-2'>
+                  {[1, 2].map((i) => <div key={i} className='h-10 skeleton rounded-xl' />)}
+                </div>
+              ) : (
+                <MenuCategoriesManager
+                  storeId={editingId}
+                  categories={menuCats.categories}
+                  submitting={menuCats.submitting}
+                  error={menuCats.error}
+                  onCreate={menuCats.create}
+                  onUpdate={menuCats.update}
+                  onRemove={menuCats.remove}
+                />
+              )}
+            </Box>
+          ) : null}
         </Box>
       </Box>
     </Box>

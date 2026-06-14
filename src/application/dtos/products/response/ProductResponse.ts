@@ -19,6 +19,8 @@ export interface IProduct {
   categoryId: string;
   storeId: string | null;
   supplierId: string | null;
+  menuCategoryId: string | null;
+  menuCategory: { id: string; name: string; sortOrder: number } | null;
   availableQuantity: number;
   category: ICategory;
   store: IStore | null;
