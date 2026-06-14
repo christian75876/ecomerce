@@ -11,7 +11,8 @@ export const ROUTES = {
     FAVORITES: '/favorites',
     MY_ORDERS: '/my-orders',
     MY_ORDER_DETAILS: '/my-orders/:orderId',
-    PRODUCT_DETAILS: '/product/:productId'
+    PRODUCT_DETAILS: '/product/:productId',
+    HELP: '/ayuda'
   },
   PRIVATE: {
     DASHBOARD: '/dashboard',

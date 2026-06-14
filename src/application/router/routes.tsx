@@ -82,6 +82,9 @@ const AuditPage = lazy(
 const InvitationsPage = lazy(
   () => import('@presentation/pages/private/invitations/InvitationsPage')
 );
+const HelpPage = lazy(
+  () => import('@presentation/pages/public/help/HelpPage')
+);
 
 export type AppRoute = RouteObject & {
   path: string;
@@ -105,6 +108,12 @@ export const routes: AppRoute[] = [
   },
   { path: ROUTES.PUBLIC.REGISTER, element: <RegisterPage /> },
   { path: ROUTES.PUBLIC.NOT_FOUND, element: <NotFound /> },
+  {
+    path: ROUTES.PUBLIC.HELP,
+    element: <HelpPage />,
+    layout: DashboardLayout,
+    publicOnly: false
+  },
   {
     path: ROUTES.PUBLIC.HOME,
     element: <HomePage />,

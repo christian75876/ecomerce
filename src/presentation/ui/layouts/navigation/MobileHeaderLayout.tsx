@@ -27,6 +27,7 @@ const adminMoreNavItems = [
   { label: 'Caja', path: ROUTES.PRIVATE.CASH, icon: 'bx-wallet' },
   { label: 'Auditoría', path: ROUTES.PRIVATE.AUDIT, icon: 'bx-history' },
   { label: 'Ajustes', path: ROUTES.PRIVATE.SETTINGS, icon: 'bx-cog' },
+  { label: 'Ayuda', path: ROUTES.PUBLIC.HELP, icon: 'bx-help-circle' },
 ];
 
 const publicPrimaryNavItems = [
@@ -39,6 +40,7 @@ const publicMoreNavItems = [
   { label: 'Favoritos', path: ROUTES.PUBLIC.FAVORITES, icon: 'bx-heart' },
   { label: 'Mis pedidos', path: ROUTES.PUBLIC.MY_ORDERS, icon: 'bx-receipt' },
   { label: 'Entrar', path: ROUTES.PUBLIC.LOGIN, icon: 'bx-user' },
+  { label: 'Ayuda', path: ROUTES.PUBLIC.HELP, icon: 'bx-help-circle' },
 ];
 
 const MobileHeaderLayout = () => {
