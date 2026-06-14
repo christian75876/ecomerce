@@ -1,5 +1,6 @@
+import { useRef } from 'react';
 import { ICategory } from '@/application/dtos/categories/response/CategoryResponse';
-import { IProduct } from '@/application/dtos/products/response/ProductResponse';
+import { IProduct, IProductImage, IProductVideo } from '@/application/dtos/products/response/ProductResponse';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
 import { ISupplier } from '@/application/dtos/suppliers/response/SupplierResponse';
 import { ProductFormState } from '@/application/useCases/products/useProductsManagement';
@@ -25,16 +26,42 @@ interface ProductsManagementViewProps {
   loading: boolean;
   submitting: boolean;
   error: string | null;
+  imagePreview: string | null;
+  gallery: IProductImage[];
+  gallerySubmitting: boolean;
+  galleryError: string | null;
+  videos: IProductVideo[];
+  videoUrl: string;
+  videoTitle: string;
+  videoSubmitting: boolean;
+  videoError: string | null;
   onSearchChange: (value: string) => void;
   onCategoryFilterChange: (value: string) => void;
   onFormChange: <K extends keyof ProductFormState>(
     key: K,
     value: ProductFormState[K],
   ) => void;
+  onImageFileChange: (file: File | null) => void;
+  onGalleryImageUpload: (file: File) => Promise<void>;
+  onGalleryImageRemove: (imageId: string) => Promise<void>;
+  onVideoUrlChange: (value: string) => void;
+  onVideoTitleChange: (value: string) => void;
+  onAddVideo: () => Promise<void>;
+  onRemoveVideo: (videoId: string) => Promise<void>;
   onSubmit: () => Promise<boolean>;
   onEdit: (product: IProduct) => void;
   onToggleStatus: (product: IProduct) => Promise<void>;
   onReset: () => void;
+}
+
+function getYouTubeEmbedUrl(url: string): string | null {
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+  return match ? `https://www.youtube.com/embed/${match[1]}` : null;
+}
+
+function getInstagramEmbedUrl(url: string): string {
+  const clean = url.replace(/\/?$/, '');
+  return `${clean}/embed`;
 }
 
 export const ProductsManagementView = ({
@@ -49,18 +76,49 @@ export const ProductsManagementView = ({
   loading,
   submitting,
   error,
+  imagePreview,
+  gallery,
+  gallerySubmitting,
+  galleryError,
+  videos,
+  videoUrl,
+  videoTitle,
+  videoSubmitting,
+  videoError,
   onSearchChange,
   onCategoryFilterChange,
   onFormChange,
+  onImageFileChange,
+  onGalleryImageUpload,
+  onGalleryImageRemove,
+  onVideoUrlChange,
+  onVideoTitleChange,
+  onAddVideo,
+  onRemoveVideo,
   onSubmit,
   onEdit,
   onToggleStatus,
   onReset,
 }: ProductsManagementViewProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     await onSubmit();
   };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    onImageFileChange(file);
+  };
+
+  const handleAddVideo = async (event: React.FormEvent) => {
+    event.preventDefault();
+    await onAddVideo();
+  };
+
+  const resolvedImageSrc = imagePreview ?? (form.imageUrl || null);
 
   return (
     <FeatureScreen>
@@ -121,6 +179,19 @@ export const ProductsManagementView = ({
 
             <Box className="grid gap-4 md:grid-cols-2">
               <Box>
+                <Label htmlFor="product-compare-at-price">Precio antes (tachado)</Label>
+                <Input
+                  id="product-compare-at-price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="Precio original (opcional)"
+                  value={form.compareAtPrice}
+                  onChange={(event) => onFormChange('compareAtPrice', event.target.value)}
+                  disabled={submitting}
+                />
+              </Box>
+              <Box>
                 <Label htmlFor="product-cost">Costo opcional</Label>
                 <Input
                   id="product-cost"
@@ -132,6 +203,9 @@ export const ProductsManagementView = ({
                   disabled={submitting}
                 />
               </Box>
+            </Box>
+
+            <Box className="grid gap-4 md:grid-cols-2">
               <Box>
                 <Label htmlFor="product-stock">Stock inicial opcional</Label>
                 <Input
@@ -248,17 +322,48 @@ export const ProductsManagementView = ({
               </select>
             </Box>
 
+            {/* Image upload section */}
             <Box>
-              <Label htmlFor="product-image">Imagen principal opcional</Label>
-              <Input
-                id="product-image"
-                value={form.imageUrl}
-                onChange={(event) =>
-                  onFormChange('imageUrl', event.target.value)
-                }
-                placeholder="https://..."
-                disabled={submitting}
-              />
+              <Label>Imagen principal</Label>
+              {resolvedImageSrc ? (
+                <Box className="mb-3 overflow-hidden rounded-xl border border-neutral-gray/20">
+                  <img
+                    src={resolvedImageSrc}
+                    alt="Vista previa"
+                    className="h-40 w-full object-cover"
+                  />
+                </Box>
+              ) : null}
+              <Box className="flex flex-col gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleFileChange}
+                  disabled={submitting}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={submitting}
+                >
+                  {resolvedImageSrc ? 'Cambiar imagen' : 'Subir imagen'}
+                </Button>
+                <Typography className="text-xs text-neutral-dark/50">
+                  O ingresa una URL de imagen:
+                </Typography>
+                <Input
+                  id="product-image"
+                  value={form.imageUrl}
+                  onChange={(event) =>
+                    onFormChange('imageUrl', event.target.value)
+                  }
+                  placeholder="https://..."
+                  disabled={submitting}
+                />
+              </Box>
             </Box>
 
             <label className="flex items-center gap-3 rounded-2xl border border-neutral-gray/20 px-4 py-3 text-sm text-neutral-dark">
@@ -299,6 +404,157 @@ export const ProductsManagementView = ({
               ) : null}
             </Box>
           </form>
+
+          {/* Gallery section — only visible when editing an existing product */}
+          {editingId ? (
+            <Box className="mt-6 border-t border-neutral-gray/20 pt-6">
+              <Typography variant="h3" className="mb-4 text-base font-semibold">
+                Galería de imágenes
+              </Typography>
+
+              {galleryError ? (
+                <Box className="mb-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                  {galleryError}
+                </Box>
+              ) : null}
+
+              <input
+                ref={galleryInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={async (event) => {
+                  const file = event.target.files?.[0];
+                  if (file) {
+                    await onGalleryImageUpload(file);
+                    event.target.value = '';
+                  }
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => galleryInputRef.current?.click()}
+                disabled={gallerySubmitting}
+                className="mb-4"
+              >
+                {gallerySubmitting ? 'Subiendo...' : 'Agregar imagen a galería'}
+              </Button>
+
+              {gallery.length > 0 ? (
+                <Box className="grid grid-cols-3 gap-3">
+                  {gallery.map((img) => (
+                    <Box key={img.id} className="group relative overflow-hidden rounded-xl border border-neutral-gray/20">
+                      <img
+                        src={img.imageUrl}
+                        alt="Galería"
+                        className="h-24 w-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => void onGalleryImageRemove(img.id)}
+                        disabled={gallerySubmitting}
+                        className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100"
+                      >
+                        ×
+                      </button>
+                    </Box>
+                  ))}
+                </Box>
+              ) : (
+                <Typography className="text-sm text-neutral-dark/50">
+                  Sin imágenes adicionales en la galería.
+                </Typography>
+              )}
+            </Box>
+          ) : null}
+
+          {/* Videos section — only visible when editing an existing product */}
+          {editingId ? (
+            <Box className="mt-6 border-t border-neutral-gray/20 pt-6">
+              <Typography variant="h3" className="mb-4 text-base font-semibold">
+                Videos del producto
+              </Typography>
+
+              <form onSubmit={handleAddVideo} className="mb-4 space-y-3">
+                <Box>
+                  <Label htmlFor="video-url">URL de YouTube o Instagram</Label>
+                  <Input
+                    id="video-url"
+                    value={videoUrl}
+                    onChange={(event) => onVideoUrlChange(event.target.value)}
+                    placeholder="https://youtube.com/watch?v=... o https://instagram.com/p/..."
+                    disabled={videoSubmitting}
+                  />
+                </Box>
+                <Box>
+                  <Label htmlFor="video-title">Título opcional</Label>
+                  <Input
+                    id="video-title"
+                    value={videoTitle}
+                    onChange={(event) => onVideoTitleChange(event.target.value)}
+                    placeholder="Ej: Video de demostración"
+                    disabled={videoSubmitting}
+                  />
+                </Box>
+                {videoError ? (
+                  <Box className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                    {videoError}
+                  </Box>
+                ) : null}
+                <Button
+                  type="submit"
+                  variant="secondary"
+                  disabled={videoSubmitting || !videoUrl.trim()}
+                >
+                  {videoSubmitting ? 'Agregando...' : 'Agregar video'}
+                </Button>
+              </form>
+
+              {videos.length > 0 ? (
+                <Box className="space-y-2">
+                  {videos.map((video) => (
+                    <Box
+                      key={video.id}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-neutral-gray/20 px-4 py-3"
+                    >
+                      <Box className="min-w-0 flex-1">
+                        <Box className="flex items-center gap-2">
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                            video.videoType === 'YOUTUBE'
+                              ? 'bg-red-100 text-red-700'
+                              : 'bg-purple-100 text-purple-700'
+                          }`}>
+                            {video.videoType === 'YOUTUBE' ? 'YouTube' : 'Instagram'}
+                          </span>
+                          {video.title ? (
+                            <Typography className="truncate text-sm font-medium">
+                              {video.title}
+                            </Typography>
+                          ) : null}
+                        </Box>
+                        <Typography className="mt-1 truncate text-xs text-neutral-dark/50">
+                          {video.videoUrl}
+                        </Typography>
+                      </Box>
+                      <Button
+                        type="button"
+                        variant="danger"
+                        onClick={() => void onRemoveVideo(video.id)}
+                        disabled={videoSubmitting}
+                      >
+                        Eliminar
+                      </Button>
+                    </Box>
+                  ))}
+                </Box>
+              ) : (
+                <Typography className="text-sm text-neutral-dark/50">
+                  Sin videos agregados aún.
+                </Typography>
+              )}
+            </Box>
+          ) : null}
         </FeaturePanel>
 
         <FeaturePanel
@@ -340,43 +596,52 @@ export const ProductsManagementView = ({
                   key={product.id}
                   className="grid gap-4 rounded-2xl border border-neutral-gray/20 px-5 py-4 lg:grid-cols-[minmax(0,1fr)_auto]"
                 >
-                  <Box className="space-y-2">
-                    <Box className="flex flex-wrap items-center gap-3">
-                      <Typography variant="h3" className="text-lg font-semibold">
-                        {product.name}
-                      </Typography>
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                          product.isActive
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-red-100 text-red-700'
-                        }`}
-                      >
-                        {product.isActive ? 'Activo' : 'Inactivo'}
-                      </span>
-                    </Box>
-                    <Typography className="text-sm text-neutral-dark/70">
-                      SKU: {product.sku} · Categoría: {product.category.name} ·
-                      Tienda: {product.store?.name ?? 'Sin tienda'}
-                    </Typography>
-                    <Typography className="text-sm text-neutral-dark/70">
-                      {formatCurrencyCOP(product.price)} · Costo:{' '}
-                      {product.cost ? formatCurrencyCOP(product.cost) : 'N/D'} ·
-                      Stock visible:{' '}
-                      {product.showStock ? 'Sí' : 'No'}
-                    </Typography>
-                    <Typography className="text-sm text-neutral-dark/70">
-                      Tipo: {product.isPerishable ? 'Perecedero' : 'No perecedero'} ·
-                      Lotes: {product.trackBatches ? 'Sí' : 'No'}
-                    </Typography>
-                    {product.supplier ? (
-                      <Typography className="text-sm text-neutral-dark/70">
-                        Proveedor: {product.supplier.name}
-                      </Typography>
+                  <Box className="flex gap-4">
+                    {product.imageUrl ? (
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="h-16 w-16 flex-shrink-0 rounded-xl object-cover"
+                      />
                     ) : null}
-                    <Typography className="text-sm text-neutral-dark/75">
-                      {product.description}
-                    </Typography>
+                    <Box className="space-y-2">
+                      <Box className="flex flex-wrap items-center gap-3">
+                        <Typography variant="h3" className="text-lg font-semibold">
+                          {product.name}
+                        </Typography>
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                            product.isActive
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-red-100 text-red-700'
+                          }`}
+                        >
+                          {product.isActive ? 'Activo' : 'Inactivo'}
+                        </span>
+                      </Box>
+                      <Typography className="text-sm text-neutral-dark/70">
+                        SKU: {product.sku} · Categoría: {product.category.name} ·
+                        Tienda: {product.store?.name ?? 'Sin tienda'}
+                      </Typography>
+                      <Typography className="text-sm text-neutral-dark/70">
+                        {formatCurrencyCOP(product.price)} · Costo:{' '}
+                        {product.cost ? formatCurrencyCOP(product.cost) : 'N/D'} ·
+                        Stock visible:{' '}
+                        {product.showStock ? 'Sí' : 'No'}
+                      </Typography>
+                      <Typography className="text-sm text-neutral-dark/70">
+                        Tipo: {product.isPerishable ? 'Perecedero' : 'No perecedero'} ·
+                        Lotes: {product.trackBatches ? 'Sí' : 'No'}
+                      </Typography>
+                      {product.supplier ? (
+                        <Typography className="text-sm text-neutral-dark/70">
+                          Proveedor: {product.supplier.name}
+                        </Typography>
+                      ) : null}
+                      <Typography className="text-sm text-neutral-dark/75">
+                        {product.description}
+                      </Typography>
+                    </Box>
                   </Box>
 
                   <Box className="flex flex-wrap gap-3 lg:flex-col">

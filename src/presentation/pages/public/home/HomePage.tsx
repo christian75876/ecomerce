@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { useMarketplaceHome } from '@/application/useCases/products/useMarketplaceHome';
 import { usePublicCatalog } from '@/application/useCases/products/usePublicCatalog';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
@@ -47,6 +48,13 @@ export const HomePage = () => {
 
   return (
     <Box className='space-y-8'>
+      <Helmet>
+        <title>Marketplace — Encuentra lo que necesitas</title>
+        <meta name='description' content='Explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.' />
+        <meta property='og:title' content='Marketplace' />
+        <meta property='og:description' content='Explora cientos de productos de tiendas locales.' />
+        <meta property='og:type' content='website' />
+      </Helmet>
       <HomeCatalogSection
         products={products}
         categories={categories}

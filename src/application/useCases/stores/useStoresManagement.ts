@@ -10,9 +10,18 @@ export type StoreFormState = {
   bannerUrl: string;
   primaryColor: string;
   secondaryColor: string;
+  accentColor: string;
+  bgColor: string;
+  textColor: string;
+  fontStyle: 'MODERN' | 'CLASSIC' | 'PLAYFUL';
+  buttonStyle: 'ROUNDED' | 'SHARP' | 'PILL';
+  layoutStyle: 'GRID' | 'LIST';
+  coverStyle: 'GRADIENT' | 'SOLID' | 'MINIMAL';
   phone: string;
+  whatsappNumber: string;
   email: string;
   isActive: boolean;
+  deliveryOptions: 'DELIVERY' | 'PICKUP' | 'BOTH';
 };
 
 const initialStoreForm: StoreFormState = {
@@ -21,11 +30,20 @@ const initialStoreForm: StoreFormState = {
   description: '',
   logoUrl: '',
   bannerUrl: '',
-  primaryColor: '',
-  secondaryColor: '',
+  primaryColor: '#6366f1',
+  secondaryColor: '#a5b4fc',
+  accentColor: '#f59e0b',
+  bgColor: '#ffffff',
+  textColor: '#1e293b',
+  fontStyle: 'MODERN',
+  buttonStyle: 'ROUNDED',
+  layoutStyle: 'GRID',
+  coverStyle: 'GRADIENT',
   phone: '',
+  whatsappNumber: '',
   email: '',
   isActive: true,
+  deliveryOptions: 'BOTH',
 };
 
 export const useStoresManagement = () => {
@@ -83,8 +101,17 @@ export const useStoresManagement = () => {
         primaryColor: form.primaryColor.trim() || undefined,
         secondaryColor: form.secondaryColor.trim() || undefined,
         phone: form.phone.trim() || undefined,
+        whatsappNumber: form.whatsappNumber.trim() || undefined,
         email: form.email.trim() || undefined,
         isActive: form.isActive,
+        deliveryOptions: form.deliveryOptions,
+        accentColor: form.accentColor.trim() || undefined,
+        bgColor: form.bgColor.trim() || undefined,
+        textColor: form.textColor.trim() || undefined,
+        fontStyle: form.fontStyle,
+        buttonStyle: form.buttonStyle,
+        layoutStyle: form.layoutStyle,
+        coverStyle: form.coverStyle,
       };
 
       if (editingId) {
@@ -112,11 +139,20 @@ export const useStoresManagement = () => {
       description: store.description ?? '',
       logoUrl: store.logoUrl ?? '',
       bannerUrl: store.bannerUrl ?? '',
-      primaryColor: store.primaryColor ?? '',
-      secondaryColor: store.secondaryColor ?? '',
+      primaryColor: store.primaryColor ?? '#6366f1',
+      secondaryColor: store.secondaryColor ?? '#a5b4fc',
       phone: store.phone ?? '',
+      whatsappNumber: store.whatsappNumber ?? '',
       email: store.email ?? '',
       isActive: store.isActive,
+      deliveryOptions: store.deliveryOptions ?? 'BOTH',
+      accentColor: store.accentColor ?? '#f59e0b',
+      bgColor: store.bgColor ?? '#ffffff',
+      textColor: store.textColor ?? '#1e293b',
+      fontStyle: store.fontStyle ?? 'MODERN',
+      buttonStyle: store.buttonStyle ?? 'ROUNDED',
+      layoutStyle: store.layoutStyle ?? 'GRID',
+      coverStyle: store.coverStyle ?? 'GRADIENT',
     });
   };
 

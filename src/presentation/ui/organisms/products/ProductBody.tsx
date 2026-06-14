@@ -8,6 +8,9 @@ interface ProductBodyProps {
   loading?: boolean;
   emptyMessage?: string;
   favoriteIds?: string[];
+  layoutStyle?: 'GRID' | 'LIST';
+  buttonStyle?: 'ROUNDED' | 'SHARP' | 'PILL';
+  primaryColor?: string;
   onToggleFavorite?: (productId: string) => void;
   onAddToCart?: (productId: string) => void;
 }
@@ -20,6 +23,9 @@ const ProductBody = ({
   loading = false,
   emptyMessage = 'No hay productos disponibles en este momento.',
   favoriteIds = [],
+  layoutStyle = 'GRID',
+  buttonStyle,
+  primaryColor,
   onToggleFavorite,
   onAddToCart,
 }: ProductBodyProps) => {
@@ -35,8 +41,13 @@ const ProductBody = ({
     );
   }
 
+  const gridClass =
+    layoutStyle === 'LIST'
+      ? 'flex flex-col gap-4'
+      : 'grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3';
+
   return (
-    <div className='grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3'>
+    <div className={gridClass}>
       {products.map(product => (
         <ProductCard
           id={product.id}
@@ -45,9 +56,15 @@ const ProductBody = ({
           name={product.name}
           description={product.description}
           price={Number(product.price).toFixed(2)}
+          compareAtPrice={product.compareAtPrice}
+          availableQuantity={product.availableQuantity}
+          showStock={product.showStock}
           storeName={product.store?.name}
           storeSlug={product.store?.slug}
           isFavorite={favoriteIds.includes(product.id)}
+          layoutStyle={layoutStyle}
+          buttonStyle={buttonStyle}
+          primaryColor={primaryColor}
           onToggleFavorite={
             onToggleFavorite ? () => onToggleFavorite(product.id) : undefined
           }

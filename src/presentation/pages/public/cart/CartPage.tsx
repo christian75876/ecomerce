@@ -3,29 +3,41 @@ import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
+import Icon from '@/presentation/ui/atoms/icon/SimpleIcon';
 import { useCart } from '@/shared/hooks/useCart';
 import { OrdersRepository } from '@/infrastructure/repositories/api/orders/OrdersRepository';
+import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 
 const CartPage = () => {
-  const { items, total, updateQuantity, clear } = useCart();
+  const { items, total, updateQuantity, removeItem, clear } = useCart();
   const [customer, setCustomer] = useState({
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
   });
+  const [deliveryMethod, setDeliveryMethod] = useState<'DELIVERY' | 'PICKUP'>('PICKUP');
+  const [address, setAddress] = useState({
+    street: '',
+    city: '',
+    department: '',
+    notes: '',
+  });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
   const handleCheckout = async () => {
-    if (
-      items.length === 0 ||
-      !customer.firstName.trim() ||
-      !customer.lastName.trim() ||
-      !customer.email.trim()
-    ) {
-      setError('Completa los datos del cliente y agrega productos al carrito');
+    if (items.length === 0) {
+      setError('Agrega productos al carrito antes de continuar');
+      return;
+    }
+    if (!customer.firstName.trim() || !customer.lastName.trim() || !customer.email.trim()) {
+      setError('Nombre, apellido y correo son obligatorios');
+      return;
+    }
+    if (deliveryMethod === 'DELIVERY' && !address.street.trim()) {
+      setError('La dirección de entrega es obligatoria para envío a domicilio');
       return;
     }
 
@@ -45,138 +57,294 @@ const CartPage = () => {
           productId: item.productId,
           quantity: item.quantity,
         })),
+        deliveryMethod,
+        deliveryAddress: deliveryMethod === 'DELIVERY' ? address.street.trim() : undefined,
+        deliveryCity: deliveryMethod === 'DELIVERY' ? address.city.trim() || undefined : undefined,
+        deliveryDepartment: deliveryMethod === 'DELIVERY' ? address.department.trim() || undefined : undefined,
+        deliveryNotes: deliveryMethod === 'DELIVERY' ? address.notes.trim() || undefined : undefined,
       });
 
       clear();
       setCustomer({ firstName: '', lastName: '', email: '', phone: '' });
-      setSuccess('Pedido creado correctamente');
+      setAddress({ street: '', city: '', department: '', notes: '' });
+      setSuccess('¡Pedido creado! Pronto recibirás confirmación por correo.');
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'No fue posible crear el pedido',
-      );
+      setError(err instanceof Error ? err.message : 'No fue posible crear el pedido');
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <Box className='space-y-8'>
-      <Box>
-        <Typography variant='h1' className='text-3xl font-bold'>
-          Carrito
-        </Typography>
-        <Typography className='mt-2 text-neutral-dark/70'>
-          Revisa tus productos y confirma el pedido online.
-        </Typography>
+    <Box className='animate-fade-up space-y-8'>
+      {/* Header */}
+      <Box className='rounded-[2rem] bg-gradient-to-br from-primary/6 via-white to-secondary/4 px-7 py-10 shadow-soft'>
+        <Box className='flex items-center gap-3'>
+          <Box className='flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10'>
+            <Icon name='bx-cart' className='text-2xl text-primary' />
+          </Box>
+          <Box>
+            <Typography variant='h1' className='text-2xl font-bold md:text-3xl'>
+              Mi carrito
+            </Typography>
+            <Typography className='text-sm text-neutral-dark/60'>
+              {items.length === 0
+                ? 'Tu carrito está vacío'
+                : `${items.length} producto${items.length !== 1 ? 's' : ''} seleccionado${items.length !== 1 ? 's' : ''}`}
+            </Typography>
+          </Box>
+        </Box>
       </Box>
 
-      <Box className='grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]'>
-        <Box className='rounded-[1.75rem] border border-neutral-gray/30 bg-white p-6 shadow-sm'>
-          <Typography variant='h2' className='text-xl font-semibold'>
-            Productos seleccionados
+      <Box className='grid gap-6 xl:grid-cols-[minmax(0,1fr)_400px]'>
+        {/* Products */}
+        <Box className='surface-elevated rounded-[1.75rem] p-6'>
+          <Typography variant='h2' className='text-lg font-semibold'>
+            Productos
           </Typography>
-          <Box className='mt-5 space-y-4'>
+
+          <Box className='mt-4 space-y-3'>
             {items.length === 0 ? (
-              <Typography>No hay productos en el carrito.</Typography>
+              <Box className='flex flex-col items-center justify-center rounded-2xl border border-dashed border-neutral-gray/50 py-14 text-center'>
+                <Icon name='bx-cart-alt' className='mb-3 text-5xl text-neutral-gray' />
+                <Typography className='font-medium text-neutral-dark/50'>
+                  Aún no agregaste productos
+                </Typography>
+                <Typography className='mt-1 text-sm text-neutral-dark/35'>
+                  Explora el catálogo y haz clic en "Agregar"
+                </Typography>
+              </Box>
             ) : (
               items.map((item) => (
                 <Box
                   key={item.productId}
-                  className='rounded-2xl border border-neutral-gray/20 p-4'
+                  className='group flex items-center gap-4 rounded-2xl border border-neutral-gray/20 bg-white p-4 transition-all hover:border-primary/20 hover:shadow-soft'
                 >
-                  <Typography className='font-semibold'>{item.name}</Typography>
-                  <Typography className='mt-1 text-sm text-neutral-dark/65'>
-                    ${item.price.toFixed(2)} c/u
+                  {item.imageUrl ? (
+                    <img
+                      src={item.imageUrl}
+                      alt={item.name}
+                      className='h-16 w-16 flex-shrink-0 rounded-xl object-cover'
+                    />
+                  ) : (
+                    <Box className='flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-xl bg-neutral-100'>
+                      <Icon name='bx-package' className='text-2xl text-neutral-gray' />
+                    </Box>
+                  )}
+
+                  <Box className='min-w-0 flex-1'>
+                    <Typography className='truncate font-semibold'>{item.name}</Typography>
+                    <Typography className='mt-0.5 text-sm font-medium text-primary'>
+                      {formatCurrencyCOP(item.price)} c/u
+                    </Typography>
+                  </Box>
+
+                  <Box className='flex items-center gap-2'>
+                    <button
+                      type='button'
+                      aria-label='Reducir cantidad'
+                      onClick={() => updateQuantity(item.productId, Math.max(1, item.quantity - 1))}
+                      className='flex h-7 w-7 items-center justify-center rounded-full border border-neutral-gray/40 bg-white text-neutral-dark/70 transition hover:border-primary/30 hover:bg-primary/5 hover:text-primary'
+                    >
+                      <Icon name='bx-minus' className='text-xs' />
+                    </button>
+                    <span className='w-6 text-center text-sm font-semibold tabular-nums'>
+                      {item.quantity}
+                    </span>
+                    <button
+                      type='button'
+                      aria-label='Aumentar cantidad'
+                      onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                      className='flex h-7 w-7 items-center justify-center rounded-full border border-neutral-gray/40 bg-white text-neutral-dark/70 transition hover:border-primary/30 hover:bg-primary/5 hover:text-primary'
+                    >
+                      <Icon name='bx-plus' className='text-xs' />
+                    </button>
+                  </Box>
+
+                  <Typography className='w-24 text-right text-sm font-bold tabular-nums text-neutral-dark'>
+                    {formatCurrencyCOP(item.price * item.quantity)}
                   </Typography>
-                  <Input
-                    type='number'
-                    min='1'
-                    value={String(item.quantity)}
-                    onChange={(event) =>
-                      updateQuantity(item.productId, Number(event.target.value || 0))
-                    }
-                    className='mt-3 max-w-24'
-                  />
+
+                  {typeof removeItem === 'function' ? (
+                    <button
+                      type='button'
+                      aria-label='Eliminar producto'
+                      onClick={() => removeItem(item.productId)}
+                      className='ml-1 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-neutral-dark/30 opacity-0 transition group-hover:opacity-100 hover:bg-red-50 hover:text-red-500'
+                    >
+                      <Icon name='bx-trash' className='text-sm' />
+                    </button>
+                  ) : null}
                 </Box>
               ))
             )}
           </Box>
         </Box>
 
-        <Box className='rounded-[1.75rem] border border-neutral-gray/30 bg-white p-6 shadow-sm'>
-          <Typography variant='h2' className='text-xl font-semibold'>
-            Datos del cliente
-          </Typography>
-          <Box className='mt-5 space-y-3'>
-            <Input
-              placeholder='Nombre'
-              value={customer.firstName}
-              onChange={(event) =>
-                setCustomer((current) => ({
-                  ...current,
-                  firstName: event.target.value,
-                }))
-              }
-            />
-            <Input
-              placeholder='Apellido'
-              value={customer.lastName}
-              onChange={(event) =>
-                setCustomer((current) => ({
-                  ...current,
-                  lastName: event.target.value,
-                }))
-              }
-            />
-            <Input
-              placeholder='Correo'
-              value={customer.email}
-              onChange={(event) =>
-                setCustomer((current) => ({
-                  ...current,
-                  email: event.target.value,
-                }))
-              }
-            />
-            <Input
-              placeholder='Teléfono'
-              value={customer.phone}
-              onChange={(event) =>
-                setCustomer((current) => ({
-                  ...current,
-                  phone: event.target.value,
-                }))
-              }
-            />
+        {/* Sidebar */}
+        <Box className='space-y-4'>
+          {/* Customer form */}
+          <Box className='surface-elevated rounded-[1.75rem] p-6'>
+            <Box className='mb-5 flex items-center gap-2'>
+              <Icon name='bx-user-circle' className='text-xl text-primary' />
+              <Typography variant='h2' className='text-lg font-semibold'>
+                Datos del cliente
+              </Typography>
+            </Box>
+            <Box className='space-y-3'>
+              <Box className='grid grid-cols-2 gap-3'>
+                <Input
+                  placeholder='Nombre'
+                  value={customer.firstName}
+                  onChange={(e) => setCustomer((c) => ({ ...c, firstName: e.target.value }))}
+                />
+                <Input
+                  placeholder='Apellido'
+                  value={customer.lastName}
+                  onChange={(e) => setCustomer((c) => ({ ...c, lastName: e.target.value }))}
+                />
+              </Box>
+              <Input
+                type='email'
+                placeholder='correo@ejemplo.com'
+                value={customer.email}
+                onChange={(e) => setCustomer((c) => ({ ...c, email: e.target.value }))}
+              />
+              <Input
+                type='tel'
+                placeholder='Teléfono (opcional)'
+                value={customer.phone}
+                onChange={(e) => setCustomer((c) => ({ ...c, phone: e.target.value }))}
+              />
+            </Box>
           </Box>
 
-          <Box className='mt-6 border-t border-neutral-gray/20 pt-4'>
-            <Typography className='text-sm text-neutral-dark/65'>Total</Typography>
-            <Typography variant='h3' className='text-2xl font-bold'>
-              ${total.toFixed(2)}
+          {/* Delivery method */}
+          <Box className='surface-elevated rounded-[1.75rem] p-6'>
+            <Box className='mb-4 flex items-center gap-2'>
+              <Icon name='bx-package' className='text-xl text-primary' />
+              <Typography variant='h2' className='text-lg font-semibold'>
+                Método de entrega
+              </Typography>
+            </Box>
+            <Box className='grid grid-cols-2 gap-3'>
+              <button
+                type='button'
+                onClick={() => setDeliveryMethod('PICKUP')}
+                className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-semibold transition-all ${
+                  deliveryMethod === 'PICKUP'
+                    ? 'border-primary bg-primary/5 text-primary'
+                    : 'border-neutral-gray/30 text-neutral-dark/60 hover:border-primary/30'
+                }`}
+              >
+                <Icon name='bx-store' className='text-2xl' />
+                Recoger en tienda
+              </button>
+              <button
+                type='button'
+                onClick={() => setDeliveryMethod('DELIVERY')}
+                className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-semibold transition-all ${
+                  deliveryMethod === 'DELIVERY'
+                    ? 'border-primary bg-primary/5 text-primary'
+                    : 'border-neutral-gray/30 text-neutral-dark/60 hover:border-primary/30'
+                }`}
+              >
+                <Icon name='bx-car' className='text-2xl' />
+                Envío a domicilio
+              </button>
+            </Box>
+
+            {deliveryMethod === 'DELIVERY' ? (
+              <Box className='mt-4 space-y-3'>
+                <Input
+                  placeholder='Dirección (calle, número, barrio) *'
+                  value={address.street}
+                  onChange={(e) => setAddress((a) => ({ ...a, street: e.target.value }))}
+                />
+                <Box className='grid grid-cols-2 gap-3'>
+                  <Input
+                    placeholder='Ciudad'
+                    value={address.city}
+                    onChange={(e) => setAddress((a) => ({ ...a, city: e.target.value }))}
+                  />
+                  <Input
+                    placeholder='Departamento'
+                    value={address.department}
+                    onChange={(e) => setAddress((a) => ({ ...a, department: e.target.value }))}
+                  />
+                </Box>
+                <Input
+                  placeholder='Notas para la entrega (opcional)'
+                  value={address.notes}
+                  onChange={(e) => setAddress((a) => ({ ...a, notes: e.target.value }))}
+                />
+              </Box>
+            ) : (
+              <Box className='mt-3 rounded-2xl border border-neutral-gray/20 bg-neutral-50 px-4 py-3 text-sm text-neutral-dark/60'>
+                Coordina el punto de recogida directamente con la tienda.
+              </Box>
+            )}
+          </Box>
+
+          {/* Summary */}
+          <Box className='surface-elevated rounded-[1.75rem] p-6'>
+            <Typography variant='h2' className='mb-4 text-lg font-semibold'>
+              Resumen
             </Typography>
+
+            <Box className='space-y-2 text-sm'>
+              {items.map((item) => (
+                <Box key={item.productId} className='flex justify-between text-neutral-dark/70'>
+                  <span className='truncate pr-2'>{item.name} × {item.quantity}</span>
+                  <span className='flex-shrink-0 tabular-nums'>{formatCurrencyCOP(item.price * item.quantity)}</span>
+                </Box>
+              ))}
+            </Box>
+
+            <Box className='mt-4 flex items-center justify-between border-t border-neutral-gray/20 pt-4'>
+              <Typography className='text-sm font-medium text-neutral-dark/65'>Total del pedido</Typography>
+              <Typography variant='h3' className='text-2xl font-bold text-neutral-dark'>
+                {formatCurrencyCOP(total)}
+              </Typography>
+            </Box>
+
+            {error ? (
+              <Box className='mt-4 flex items-start gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700'>
+                <Icon name='bx-error-circle' className='mt-0.5 flex-shrink-0 text-base' />
+                {error}
+              </Box>
+            ) : null}
+
+            {success ? (
+              <Box className='mt-4 flex items-start gap-2 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700'>
+                <Icon name='bx-check-circle' className='mt-0.5 flex-shrink-0 text-base' />
+                {success}
+              </Box>
+            ) : null}
+
+            <Button
+              type='button'
+              variant='primary'
+              fullWidth
+              size='lg'
+              className='mt-5'
+              loading={submitting}
+              disabled={items.length === 0}
+              onClick={() => void handleCheckout()}
+            >
+              {submitting ? 'Procesando...' : 'Confirmar pedido'}
+            </Button>
+
+            {items.length > 0 ? (
+              <button
+                type='button'
+                onClick={clear}
+                className='mt-3 w-full rounded-2xl py-2 text-center text-xs font-medium text-neutral-dark/40 transition hover:text-red-500'
+              >
+                Vaciar carrito
+              </button>
+            ) : null}
           </Box>
-
-          {error ? (
-            <Box className='mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600'>
-              {error}
-            </Box>
-          ) : null}
-          {success ? (
-            <Box className='mt-4 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700'>
-              {success}
-            </Box>
-          ) : null}
-
-          <Button
-            type='button'
-            variant='primary'
-            className='mt-5'
-            disabled={submitting || items.length === 0}
-            onClick={() => void handleCheckout()}
-          >
-            {submitting ? 'Procesando...' : 'Confirmar pedido'}
-          </Button>
         </Box>
       </Box>
     </Box>

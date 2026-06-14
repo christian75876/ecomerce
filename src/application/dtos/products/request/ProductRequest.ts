@@ -3,6 +3,9 @@ export interface IProductsQuery {
   categoryId?: string;
   storeId?: string;
   active?: boolean;
+  sortBy?: 'newest' | 'price_asc' | 'price_desc' | 'name_asc';
+  minPrice?: number;
+  maxPrice?: number;
 }
 
 export interface ICreateProductRequest {
@@ -16,6 +19,7 @@ export interface ICreateProductRequest {
   initialStock?: number;
   supplierId?: string;
   imageUrl?: string;
+  compareAtPrice?: number;
   showStock?: boolean;
   isActive?: boolean;
   isPerishable?: boolean;

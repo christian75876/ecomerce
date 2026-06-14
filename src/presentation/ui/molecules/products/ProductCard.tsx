@@ -1,123 +1,175 @@
-import Box from '../../atoms/box/SimpleBox';
-import Button from '../../atoms/button/SimpleButton';
-import Card from '../../atoms/card/SimpleCard';
-import Icon from '../../atoms/icon/SimpleIcon';
-import Image from '../../atoms/image/SimpleImage';
-import Link from '../../atoms/link/Simplelink';
+import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants/routes';
-import Typography from '../../atoms/typography/SimpleTypography';
-import { motion } from 'framer-motion';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
+import { buildAssetUrl } from '@/shared/utils/buildAssetUrl';
 
 interface ProductCardProps {
-  image: string;
+  image: string | null;
   name: string;
-  price: string;
+  price: string | number;
+  compareAtPrice?: number | null;
+  availableQuantity?: number;
+  showStock?: boolean;
   description?: string;
   id: string;
   storeName?: string;
   storeSlug?: string;
   badge?: string;
   isFavorite?: boolean;
+  layoutStyle?: 'GRID' | 'LIST';
+  buttonStyle?: 'ROUNDED' | 'SHARP' | 'PILL';
+  primaryColor?: string;
   onToggleFavorite?: () => void;
   onAddToCart: () => void;
 }
+
+const PLACEHOLDER =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f1f5f9'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='56' fill='%23cbd5e1'%3E%F0%9F%93%A6%3C/text%3E%3C/svg%3E";
+
+const btnRadiusClass = (style?: 'ROUNDED' | 'SHARP' | 'PILL') => {
+  if (style === 'SHARP') return 'rounded-none';
+  if (style === 'PILL') return 'rounded-full';
+  return 'rounded-xl';
+};
 
 const ProductCard = ({
   image,
   name,
   price,
-  description,
-  onAddToCart,
+  compareAtPrice,
+  availableQuantity,
+  showStock = false,
   id,
   storeName,
   storeSlug,
   badge,
   isFavorite = false,
+  layoutStyle = 'GRID',
+  buttonStyle,
+  primaryColor,
   onToggleFavorite,
+  onAddToCart,
 }: ProductCardProps) => {
-  return (
-    <Card className='group flex h-full flex-col overflow-hidden !p-0'>
-      <Box className='relative h-56 w-full overflow-hidden'>
-        <Link to={`/product/${id}`}>
-          <motion.div whileHover={{ scale: 1.04 }} transition={{ duration: 0.25 }}>
-            <Image
-              src={image}
-              alt={name}
-              className='h-full w-full object-cover'
-            />
-          </motion.div>
-        </Link>
-        {storeName ? (
-          <span className='absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-neutral-dark shadow-sm'>
-            {storeName}
-          </span>
-        ) : null}
-        {badge ? (
-          <span className='absolute right-4 top-4 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-white shadow-sm'>
-            {badge}
-          </span>
-        ) : null}
-      </Box>
+  const imgSrc = (image ? buildAssetUrl(image) : null) ?? PLACEHOLDER;
+  const numPrice = Number(price);
+  const isOutOfStock = availableQuantity === 0;
+  const isLowStock = availableQuantity !== undefined && availableQuantity > 0 && availableQuantity <= 5;
+  const hasDiscount = compareAtPrice != null && Number(compareAtPrice) > numPrice;
+  const discountPct = hasDiscount
+    ? Math.round(((Number(compareAtPrice) - numPrice) / Number(compareAtPrice)) * 100)
+    : 0;
+  const btnClass = btnRadiusClass(buttonStyle);
+  const customBtnStyle = primaryColor ? { backgroundColor: primaryColor } : undefined;
 
-      <Box className='flex flex-1 flex-col p-5'>
-        <h3 className='truncate text-xl font-semibold text-neutral-dark'>
-          {name}
-        </h3>
+  return (
+    <article className={`group relative flex overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/8 ${layoutStyle === 'LIST' ? 'flex-row' : 'flex-col'}`}>
+      {/* ── Image ── */}
+      <Link
+        to={ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', id)}
+        className={`block shrink-0 ${layoutStyle === 'LIST' ? 'w-40 sm:w-56' : ''}`}
+        tabIndex={-1}
+        aria-label={name}
+      >
+        <div className={`relative overflow-hidden bg-slate-50 ${layoutStyle === 'LIST' ? 'h-full min-h-[120px]' : 'aspect-[4/3] w-full'}`}>
+          <img
+            src={imgSrc}
+            alt={name}
+            className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
+            loading='lazy'
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = PLACEHOLDER;
+            }}
+          />
+
+          {/* Favorite overlay */}
+          {onToggleFavorite ? (
+            <button
+              type='button'
+              aria-label={isFavorite ? 'Quitar de favoritos' : 'Guardar en favoritos'}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggleFavorite();
+              }}
+              className='absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm transition-all duration-150 hover:scale-110 active:scale-95'
+            >
+              <i
+                className={`bx ${isFavorite ? 'bxs-heart text-red-500' : 'bx-heart text-slate-400 hover:text-red-400'}`}
+                style={{ fontSize: 16 }}
+                aria-hidden='true'
+              />
+            </button>
+          ) : null}
+
+          {/* Discount badge */}
+          {hasDiscount ? (
+            <span className='absolute left-2 top-2 rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white shadow'>
+              -{discountPct}%
+            </span>
+          ) : badge ? (
+            <span className='absolute left-2 top-2 rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-white shadow'>
+              {badge}
+            </span>
+          ) : null}
+
+          {/* Stock badge */}
+          {isOutOfStock ? (
+            <span className='absolute bottom-2 left-2 rounded-full bg-slate-600/90 px-2 py-0.5 text-xs font-semibold text-white'>
+              Agotado
+            </span>
+          ) : showStock && isLowStock ? (
+            <span className='absolute bottom-2 left-2 rounded-full bg-orange-500/90 px-2 py-0.5 text-xs font-semibold text-white'>
+              ¡Solo {availableQuantity} en stock!
+            </span>
+          ) : null}
+        </div>
+      </Link>
+
+      {/* ── Info ── */}
+      <div className='flex flex-1 flex-col gap-1 p-3'>
         {storeName && storeSlug ? (
           <Link
             to={ROUTES.PUBLIC.STORE_DETAILS.replace(':slug', storeSlug)}
-            className='mt-2 inline-flex text-sm font-medium text-secondary'
+            className='truncate text-xs font-medium text-primary hover:underline'
+            onClick={(e) => e.stopPropagation()}
           >
-            <Typography className='text-sm text-secondary'>
-              Ver tienda
-            </Typography>
+            {storeName}
           </Link>
         ) : null}
-        {description ? (
-          <p className='mt-3 line-clamp-3 text-sm leading-6 text-neutral-dark/65'>
-            {description}
-          </p>
-        ) : null}
-        <Box className='mt-6 flex items-end justify-between gap-4'>
-          <Box className='flex flex-col justify-center'>
-            <p className='mb-1 text-xs font-medium uppercase tracking-[0.18em] text-neutral-dark/45'>
-              Precio
-            </p>
-            <span className='text-2xl font-bold text-neutral-dark'>
+
+        <Link to={ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', id)}>
+          <h3 className='line-clamp-2 text-sm font-semibold leading-snug text-slate-800 transition-colors group-hover:text-primary'>
+            {name}
+          </h3>
+        </Link>
+
+        {/* Price row */}
+        <div className='mt-auto flex items-center justify-between gap-2 pt-2.5'>
+          <div className='flex flex-col'>
+            {hasDiscount ? (
+              <span className='text-xs font-medium leading-none text-slate-400 line-through'>
+                {formatCurrencyCOP(compareAtPrice!)}
+              </span>
+            ) : null}
+            <span className={`text-base font-extrabold leading-none ${isOutOfStock ? 'text-slate-400' : 'text-accent'}`}>
               {formatCurrencyCOP(price)}
             </span>
-          </Box>
-          <Button
-            variant='primary'
-            size='sm'
+          </div>
+
+          <button
+            type='button'
+            aria-label={`Agregar ${name} al carrito`}
             onClick={onAddToCart}
-            leftIcon={<Icon name='bx-plus-circle' className='text-sm' />}
+            disabled={isOutOfStock}
+            className={`flex h-8 items-center gap-1 px-3 text-xs font-bold text-white shadow-sm transition-all duration-150 hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 ${customBtnStyle ? '' : 'bg-primary hover:bg-primary-dark'} ${btnClass}`}
+            style={isOutOfStock ? undefined : customBtnStyle}
           >
+            <i className='bx bx-plus' style={{ fontSize: 14 }} aria-hidden='true' />
             Agregar
-          </Button>
-        </Box>
-        {onToggleFavorite ? (
-          <Button
-            variant={isFavorite ? 'secondary' : 'outlinePrimary'}
-            size='sm'
-            className='mt-3'
-            onClick={onToggleFavorite}
-            leftIcon={
-              <Icon
-                name={isFavorite ? 'bxs-heart' : 'bx-heart'}
-                className='text-sm'
-              />
-            }
-          >
-            {isFavorite ? 'Guardado' : 'Favorito'}
-          </Button>
-        ) : null}
-        <Link to={ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', id)} className='mt-4 text-sm font-semibold text-primary'>
-          Ver detalle
-        </Link>
-      </Box>
-    </Card>
+          </button>
+        </div>
+      </div>
+    </article>
   );
 };
 
