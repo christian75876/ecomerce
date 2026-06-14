@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { ICategory } from '@/application/dtos/categories/response/CategoryResponse';
 import { IProduct, IProductImage, IProductVideo } from '@/application/dtos/products/response/ProductResponse';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
+import { IMenuCategory } from '@/application/dtos/menu-categories/response/MenuCategoryResponse';
 import { ISupplier } from '@/application/dtos/suppliers/response/SupplierResponse';
 import { ProductFormState } from '@/application/useCases/products/useProductsManagement';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
@@ -19,6 +20,7 @@ interface ProductsManagementViewProps {
   categories: ICategory[];
   stores: IStore[];
   suppliers: ISupplier[];
+  menuCategories: IMenuCategory[];
   form: ProductFormState;
   editingId: string | null;
   search: string;
@@ -69,6 +71,7 @@ export const ProductsManagementView = ({
   categories,
   stores,
   suppliers,
+  menuCategories,
   form,
   editingId,
   search,
@@ -290,19 +293,47 @@ export const ProductsManagementView = ({
                 <select
                   id="product-store"
                   value={form.storeId}
-                  onChange={(event) => onFormChange('storeId', event.target.value)}
+                  onChange={(event) => {
+                    onFormChange('storeId', event.target.value);
+                    onFormChange('menuCategoryId', '');
+                  }}
                   disabled={submitting}
                   className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="">Selecciona una tienda</option>
                   {stores.map((store) => (
                     <option key={store.id} value={store.id}>
-                      {store.name}
+                      {store.storeType === 'RESTAURANT' ? '🍽️ ' : ''}{store.name}
                     </option>
                   ))}
                 </select>
               </Box>
             </Box>
+
+            {/* Menu category — only for restaurant stores */}
+            {menuCategories.length > 0 ? (
+              <Box>
+                <Label htmlFor="product-menu-category">
+                  <span className='mr-1'>🍽️</span> Sección del menú
+                </Label>
+                <select
+                  id="product-menu-category"
+                  value={form.menuCategoryId}
+                  onChange={(event) => onFormChange('menuCategoryId', event.target.value)}
+                  disabled={submitting}
+                  className="w-full rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  <option value="">Sin sección (aparece en "Otros")</option>
+                  {[...menuCategories]
+                    .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
+                    .map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                </select>
+              </Box>
+            ) : null}
 
             <Box>
               <Label htmlFor="product-supplier">Proveedor opcional</Label>
@@ -622,6 +653,7 @@ export const ProductsManagementView = ({
                       <Typography className="text-sm text-neutral-dark/70">
                         SKU: {product.sku} · Categoría: {product.category.name} ·
                         Tienda: {product.store?.name ?? 'Sin tienda'}
+                        {product.menuCategory ? ` · Sección: ${product.menuCategory.name}` : ''}
                       </Typography>
                       <Typography className="text-sm text-neutral-dark/70">
                         {formatCurrencyCOP(product.price)} · Costo:{' '}

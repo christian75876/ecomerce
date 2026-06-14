@@ -10,6 +10,7 @@ const ProductsPage = () => {
       categories={pm.categories}
       stores={pm.stores}
       suppliers={pm.suppliers}
+      menuCategories={pm.menuCategories}
       form={pm.form}
       editingId={pm.editingId}
       search={pm.search}

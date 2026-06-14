@@ -5,11 +5,13 @@ import {
 } from '@/application/dtos/products/request/ProductRequest';
 import { IProduct, IProductImage, IProductVideo } from '@/application/dtos/products/response/ProductResponse';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
+import { IMenuCategory } from '@/application/dtos/menu-categories/response/MenuCategoryResponse';
 import { ISupplier } from '@/application/dtos/suppliers/response/SupplierResponse';
 import { CategoriesRepository } from '@/infrastructure/repositories/api/categories/CategoriesRepository';
 import { ProductRepository } from '@/infrastructure/repositories/api/products/ProductsRepository';
 import { StoresRepository } from '@/infrastructure/repositories/api/stores/StoresRepository';
 import { SuppliersRepository } from '@/infrastructure/repositories/api/suppliers/SuppliersRepository';
+import { MenuCategoriesRepository } from '@/infrastructure/repositories/api/menu-categories/MenuCategoriesRepository';
 
 export type ProductFormState = {
   name: string;
@@ -20,6 +22,7 @@ export type ProductFormState = {
   compareAtPrice: string;
   categoryId: string;
   storeId: string;
+  menuCategoryId: string;
   supplierId: string;
   initialStock: string;
   imageUrl: string;
@@ -38,6 +41,7 @@ export const initialProductFormState: ProductFormState = {
   compareAtPrice: '',
   categoryId: '',
   storeId: '',
+  menuCategoryId: '',
   supplierId: '',
   initialStock: '',
   imageUrl: '',
@@ -52,6 +56,7 @@ export const useProductsManagement = () => {
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [stores, setStores] = useState<IStore[]>([]);
   const [suppliers, setSuppliers] = useState<ISupplier[]>([]);
+  const [menuCategories, setMenuCategories] = useState<IMenuCategory[]>([]);
   const [form, setForm] = useState<ProductFormState>(initialProductFormState);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -141,6 +146,17 @@ export const useProductsManagement = () => {
     void loadProducts();
   }, [loadProducts]);
 
+  useEffect(() => {
+    const selectedStore = stores.find((s) => s.id === form.storeId);
+    if (!selectedStore || selectedStore.storeType !== 'RESTAURANT') {
+      setMenuCategories([]);
+      return;
+    }
+    MenuCategoriesRepository.getByStore(form.storeId)
+      .then((resp) => setMenuCategories(resp.data))
+      .catch(() => setMenuCategories([]));
+  }, [form.storeId, stores]);
+
   const updateForm = <K extends keyof ProductFormState>(
     key: K,
     value: ProductFormState[K],
@@ -220,6 +236,7 @@ export const useProductsManagement = () => {
       price: Number(currentForm.price),
       categoryId: currentForm.categoryId,
       storeId: currentForm.storeId,
+      menuCategoryId: currentForm.menuCategoryId || undefined,
       supplierId: currentForm.supplierId || undefined,
       cost: currentForm.cost ? Number(currentForm.cost) : undefined,
       compareAtPrice: currentForm.compareAtPrice ? Number(currentForm.compareAtPrice) : undefined,
@@ -284,6 +301,7 @@ export const useProductsManagement = () => {
       compareAtPrice: product.compareAtPrice ? String(product.compareAtPrice) : '',
       categoryId: product.categoryId,
       storeId: product.storeId ?? '',
+      menuCategoryId: product.menuCategoryId ?? '',
       supplierId: product.supplierId ?? '',
       initialStock: '',
       imageUrl: product.imageUrl ?? '',
@@ -384,6 +402,7 @@ export const useProductsManagement = () => {
     categories,
     stores,
     suppliers,
+    menuCategories,
     form,
     editingId,
     search,

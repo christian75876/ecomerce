@@ -15,6 +15,7 @@ export interface ICreateProductRequest {
   price: number;
   categoryId: string;
   storeId?: string;
+  menuCategoryId?: string;
   cost?: number;
   initialStock?: number;
   supplierId?: string;
