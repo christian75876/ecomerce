@@ -20,6 +20,7 @@ export interface IStore {
   whatsappNumber: string | null;
   email: string | null;
   isActive: boolean;
+  userId: number | null;
   deliveryOptions: 'DELIVERY' | 'PICKUP' | 'BOTH';
   wppNotificationsEnabled: boolean;
   wppApiKey: string | null;

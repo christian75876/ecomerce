@@ -2,55 +2,64 @@ import { useEffect, useState } from 'react';
 import { StoresRepository } from '@/infrastructure/repositories/api/stores/StoresRepository';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
 import { SnackbarUtilities } from '@/shared/utils/SnackbarManager';
+import { canAccessAdminPanel, getAuthenticatedRole } from '@/shared/utils/checkIsUserAuthenticated.util';
 
 const SettingsPage = () => {
+  const isAdmin = getAuthenticatedRole() === 'admin';
   const [stores, setStores] = useState<IStore[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
-  const [apiKeys, setApiKeys] = useState<Record<string, string>>({});
+  const [drafts, setDrafts] = useState<Record<string, { apiKey: string; phone: string }>>({});
 
   useEffect(() => {
-    StoresRepository.getStores()
+    if (!canAccessAdminPanel()) return;
+    const fetch = isAdmin
+      ? StoresRepository.getStores()
+      : StoresRepository.getMyStores();
+
+    fetch
       .then((res) => {
         setStores(res.data);
-        const keys: Record<string, string> = {};
-        res.data.forEach((s) => { keys[s.id] = s.wppApiKey ?? ''; });
-        setApiKeys(keys);
+        const d: Record<string, { apiKey: string; phone: string }> = {};
+        res.data.forEach((s) => {
+          d[s.id] = { apiKey: s.wppApiKey ?? '', phone: s.whatsappNumber ?? '' };
+        });
+        setDrafts(d);
       })
       .catch(() => SnackbarUtilities.error('No se pudieron cargar las tiendas'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [isAdmin]);
 
   const toggleWpp = async (store: IStore) => {
     setSaving(store.id);
     try {
-      const updated = await StoresRepository.updateStore(store.id, {
+      const updated = await StoresRepository.updateStoreNotifications(store.id, {
         wppNotificationsEnabled: !store.wppNotificationsEnabled,
       });
       setStores((prev) => prev.map((s) => (s.id === store.id ? updated.data : s)));
       SnackbarUtilities.success(
-        !store.wppNotificationsEnabled
-          ? 'Notificaciones WhatsApp activadas'
-          : 'Notificaciones WhatsApp desactivadas',
+        !store.wppNotificationsEnabled ? 'Notificaciones WA activadas' : 'Notificaciones WA desactivadas',
         'bottom', 'right',
       );
     } catch {
-      SnackbarUtilities.error('No se pudo actualizar la configuración');
+      SnackbarUtilities.error('No se pudo actualizar');
     } finally {
       setSaving(null);
     }
   };
 
-  const saveApiKey = async (store: IStore) => {
-    setSaving(store.id + '_key');
+  const saveContact = async (store: IStore) => {
+    setSaving(store.id + '_save');
     try {
-      const updated = await StoresRepository.updateStore(store.id, {
-        wppApiKey: apiKeys[store.id]?.trim() || undefined,
+      const d = drafts[store.id];
+      const updated = await StoresRepository.updateStoreNotifications(store.id, {
+        wppApiKey: d.apiKey.trim() || undefined,
+        whatsappNumber: d.phone.trim() || undefined,
       });
       setStores((prev) => prev.map((s) => (s.id === store.id ? updated.data : s)));
-      SnackbarUtilities.success('API Key guardada', 'bottom', 'right');
+      SnackbarUtilities.success('Configuración guardada', 'bottom', 'right');
     } catch {
-      SnackbarUtilities.error('No se pudo guardar la API Key');
+      SnackbarUtilities.error('No se pudo guardar');
     } finally {
       setSaving(null);
     }
@@ -63,10 +72,12 @@ const SettingsPage = () => {
         <div className='pointer-events-none absolute inset-0 opacity-10' aria-hidden='true' />
         <p className='text-xs font-semibold uppercase tracking-[0.2em] text-white/60'>Configuración</p>
         <h1 className='mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl'>Ajustes</h1>
-        <p className='mt-2 text-sm text-white/70'>Gestiona las notificaciones y preferencias de cada tienda.</p>
+        <p className='mt-2 text-sm text-white/70'>
+          {isAdmin ? 'Gestiona las notificaciones de todas las tiendas.' : 'Configura las notificaciones de tu tienda.'}
+        </p>
       </div>
 
-      {/* WhatsApp notifications */}
+      {/* WhatsApp panel */}
       <div className='rounded-3xl border border-slate-200 bg-white p-6 shadow-sm'>
         <div className='mb-6 flex items-center gap-3'>
           <div className='flex h-10 w-10 items-center justify-center rounded-2xl bg-[#25D366]/10'>
@@ -74,30 +85,38 @@ const SettingsPage = () => {
           </div>
           <div>
             <h2 className='text-base font-semibold text-slate-800'>Notificaciones por WhatsApp</h2>
-            <p className='text-xs text-slate-500'>Recibe un mensaje al instante cuando llegue un nuevo pedido.</p>
+            <p className='text-xs text-slate-500'>Recibe un mensaje en tu WhatsApp cuando llegue un nuevo pedido.</p>
           </div>
         </div>
 
-        {/* CallMeBot instructions */}
-        <div className='mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800'>
-          <p className='font-semibold'>¿Cómo activar?</p>
-          <ol className='mt-1 list-decimal space-y-1 pl-4 text-xs'>
-            <li>Envía el mensaje <strong>«I allow callmebot to send me messages»</strong> al número de WhatsApp <strong>+34 644 59 72 87</strong>.</li>
-            <li>Recibirás tu <strong>API Key</strong> por WhatsApp en segundos.</li>
-            <li>Pega esa key en el campo de abajo y presiona Guardar.</li>
+        {/* Instrucciones CallMeBot */}
+        <details className='mb-5 rounded-2xl border border-amber-200 bg-amber-50'>
+          <summary className='cursor-pointer px-4 py-3 text-sm font-semibold text-amber-800 select-none'>
+            ¿Cómo obtener tu API Key? <span className='font-normal'>(ver instrucciones)</span>
+          </summary>
+          <ol className='px-4 pb-4 pt-1 text-xs text-amber-700 list-decimal space-y-1.5 pl-8'>
+            <li>Abre WhatsApp y busca el número <strong>+34 644 59 72 87</strong> (CallMeBot).</li>
+            <li>Envía exactamente este mensaje: <strong>«I allow callmebot to send me messages»</strong></li>
+            <li>En pocos segundos recibirás tu <strong>API Key</strong> por WhatsApp.</li>
+            <li>Copia esa key, pégala abajo junto a tu número y presiona <strong>Guardar</strong>.</li>
           </ol>
-        </div>
+        </details>
 
         {loading ? (
           <div className='space-y-4'>
-            {[1, 2].map((i) => <div key={i} className='h-24 skeleton rounded-2xl' />)}
+            {[1, 2].map((i) => <div key={i} className='h-28 skeleton rounded-2xl' />)}
           </div>
         ) : stores.length === 0 ? (
-          <p className='text-sm text-slate-400'>No hay tiendas registradas.</p>
+          <div className='flex flex-col items-center py-12 text-center'>
+            <i className='bx bx-store mb-3 text-4xl text-slate-300' aria-hidden='true' />
+            <p className='font-semibold text-slate-500'>No tienes tiendas asignadas</p>
+            <p className='mt-1 text-xs text-slate-400'>Pide al administrador que te asigne una tienda.</p>
+          </div>
         ) : (
           <div className='space-y-4'>
             {stores.map((store) => (
-              <div key={store.id} className='rounded-2xl border border-slate-200 p-4'>
+              <div key={store.id} className='rounded-2xl border border-slate-200 p-5 space-y-4'>
+                {/* Store header + toggle */}
                 <div className='flex items-center justify-between gap-4'>
                   <div className='flex items-center gap-3'>
                     {store.logoUrl ? (
@@ -107,13 +126,9 @@ const SettingsPage = () => {
                         <i className='bx bx-store text-base text-primary' aria-hidden='true' />
                       </div>
                     )}
-                    <div>
-                      <p className='text-sm font-semibold text-slate-800'>{store.name}</p>
-                      <p className='text-xs text-slate-400'>{store.whatsappNumber ?? 'Sin número WA en la tienda'}</p>
-                    </div>
+                    <p className='text-sm font-semibold text-slate-800'>{store.name}</p>
                   </div>
 
-                  {/* Toggle */}
                   <button
                     type='button'
                     onClick={() => void toggleWpp(store)}
@@ -123,31 +138,45 @@ const SettingsPage = () => {
                     }`}
                     aria-label={store.wppNotificationsEnabled ? 'Desactivar WA' : 'Activar WA'}
                   >
-                    <span
-                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ${
-                        store.wppNotificationsEnabled ? 'translate-x-5' : 'translate-x-0'
-                      }`}
-                    />
+                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ${
+                      store.wppNotificationsEnabled ? 'translate-x-5' : 'translate-x-0'
+                    }`} />
                   </button>
                 </div>
 
-                {/* API Key input — solo visible cuando está activado */}
+                {/* Phone + API Key — visible cuando está activado */}
                 {store.wppNotificationsEnabled ? (
-                  <div className='mt-3 flex gap-2'>
-                    <input
-                      type='text'
-                      placeholder='API Key de CallMeBot'
-                      value={apiKeys[store.id] ?? ''}
-                      onChange={(e) => setApiKeys((k) => ({ ...k, [store.id]: e.target.value }))}
-                      className='flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-[#25D366]/40 focus:ring-2 focus:ring-[#25D366]/10'
-                    />
+                  <div className='space-y-2'>
+                    <div className='grid grid-cols-1 gap-2 sm:grid-cols-2'>
+                      <div>
+                        <label className='mb-1 block text-xs font-medium text-slate-500'>Número de WhatsApp</label>
+                        <input
+                          type='tel'
+                          placeholder='57300xxxxxxx'
+                          value={drafts[store.id]?.phone ?? ''}
+                          onChange={(e) => setDrafts((d) => ({ ...d, [store.id]: { ...d[store.id], phone: e.target.value } }))}
+                          className='w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-[#25D366]/40 focus:ring-2 focus:ring-[#25D366]/10'
+                        />
+                      </div>
+                      <div>
+                        <label className='mb-1 block text-xs font-medium text-slate-500'>API Key de CallMeBot</label>
+                        <input
+                          type='text'
+                          placeholder='La key que te envió CallMeBot'
+                          value={drafts[store.id]?.apiKey ?? ''}
+                          onChange={(e) => setDrafts((d) => ({ ...d, [store.id]: { ...d[store.id], apiKey: e.target.value } }))}
+                          className='w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-[#25D366]/40 focus:ring-2 focus:ring-[#25D366]/10'
+                        />
+                      </div>
+                    </div>
                     <button
                       type='button'
-                      onClick={() => void saveApiKey(store)}
-                      disabled={saving === store.id + '_key'}
-                      className='rounded-xl bg-[#25D366] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50'
+                      onClick={() => void saveContact(store)}
+                      disabled={saving === store.id + '_save'}
+                      className='flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50'
                     >
-                      {saving === store.id + '_key' ? 'Guardando...' : 'Guardar'}
+                      <i className='bx bx-check text-base' aria-hidden='true' />
+                      {saving === store.id + '_save' ? 'Guardando...' : 'Guardar configuración'}
                     </button>
                   </div>
                 ) : null}

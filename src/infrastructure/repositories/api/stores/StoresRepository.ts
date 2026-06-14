@@ -13,7 +13,28 @@ import {
   IStoresResp,
 } from '@/application/dtos/stores/response/StoreResponse';
 
+export interface IUpdateStoreNotificationsRequest {
+  wppNotificationsEnabled?: boolean;
+  wppApiKey?: string;
+  whatsappNumber?: string;
+}
+
 export class StoresRepository {
+  static async getMyStores(): Promise<IStoresResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.get<IStoresResp>('/stores/mine'),
+    );
+  }
+
+  static async updateStoreNotifications(
+    id: string,
+    payload: IUpdateStoreNotificationsRequest,
+  ): Promise<IStoreResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.patch<IStoreResp>(`/stores/${id}/notifications`, payload),
+    );
+  }
+
   static async getStores(query: IStoresQuery = {}): Promise<IStoresResp> {
     const params = new URLSearchParams();
 
