@@ -21,6 +21,8 @@ export interface IStore {
   email: string | null;
   isActive: boolean;
   deliveryOptions: 'DELIVERY' | 'PICKUP' | 'BOTH';
+  wppNotificationsEnabled: boolean;
+  wppApiKey: string | null;
   createdAt: string;
   updatedAt: string;
 }

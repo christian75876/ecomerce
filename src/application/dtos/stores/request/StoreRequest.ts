@@ -24,4 +24,9 @@ export interface ICreateStoreRequest {
   deliveryOptions?: 'DELIVERY' | 'PICKUP' | 'BOTH';
 }
 
-export type IUpdateStoreRequest = Partial<ICreateStoreRequest>;
+export interface IUpdateStoreNotificationRequest {
+  wppNotificationsEnabled?: boolean;
+  wppApiKey?: string;
+}
+
+export type IUpdateStoreRequest = Partial<ICreateStoreRequest> & IUpdateStoreNotificationRequest;
