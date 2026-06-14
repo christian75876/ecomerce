@@ -2,28 +2,44 @@ import { useProductsManagement } from '@/application/useCases/products/useProduc
 import { ProductsManagementView } from '@/presentation/ui/organisms/products/ProductsManagementView';
 
 const ProductsPage = () => {
-  const productsManagement = useProductsManagement();
+  const pm = useProductsManagement();
 
   return (
     <ProductsManagementView
-      products={productsManagement.products}
-      categories={productsManagement.categories}
-      stores={productsManagement.stores}
-      suppliers={productsManagement.suppliers}
-      form={productsManagement.form}
-      editingId={productsManagement.editingId}
-      search={productsManagement.search}
-      selectedCategoryId={productsManagement.selectedCategoryId}
-      loading={productsManagement.loading}
-      submitting={productsManagement.submitting}
-      error={productsManagement.error}
-      onSearchChange={productsManagement.setSearch}
-      onCategoryFilterChange={productsManagement.setSelectedCategoryId}
-      onFormChange={productsManagement.updateForm}
-      onSubmit={productsManagement.submitForm}
-      onEdit={productsManagement.startEditing}
-      onToggleStatus={productsManagement.toggleStatus}
-      onReset={productsManagement.resetForm}
+      products={pm.products}
+      categories={pm.categories}
+      stores={pm.stores}
+      suppliers={pm.suppliers}
+      form={pm.form}
+      editingId={pm.editingId}
+      search={pm.search}
+      selectedCategoryId={pm.selectedCategoryId}
+      loading={pm.loading}
+      submitting={pm.submitting}
+      error={pm.error}
+      imagePreview={pm.imagePreview}
+      gallery={pm.gallery}
+      gallerySubmitting={pm.gallerySubmitting}
+      galleryError={pm.galleryError}
+      videos={pm.videos}
+      videoUrl={pm.videoUrl}
+      videoTitle={pm.videoTitle}
+      videoSubmitting={pm.videoSubmitting}
+      videoError={pm.videoError}
+      onSearchChange={pm.setSearch}
+      onCategoryFilterChange={pm.setSelectedCategoryId}
+      onFormChange={pm.updateForm}
+      onImageFileChange={pm.setImageFile}
+      onGalleryImageUpload={pm.uploadGalleryImage}
+      onGalleryImageRemove={pm.removeGalleryImage}
+      onVideoUrlChange={pm.setVideoUrl}
+      onVideoTitleChange={pm.setVideoTitle}
+      onAddVideo={pm.addVideo}
+      onRemoveVideo={pm.removeVideo}
+      onSubmit={pm.submitForm}
+      onEdit={pm.startEditing}
+      onToggleStatus={pm.toggleStatus}
+      onReset={pm.resetForm}
     />
   );
 };

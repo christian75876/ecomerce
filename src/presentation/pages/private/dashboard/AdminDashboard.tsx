@@ -79,16 +79,31 @@ const AdminDashboard = () => {
 
   if (loading) {
     return (
-      <Box className='surface-panel rounded-[1.8rem] px-6 py-10 text-center'>
-        <Typography>Cargando dashboard analítico...</Typography>
+      <Box className='flex min-h-[60vh] flex-col items-center justify-center gap-5'>
+        <div className='relative h-14 w-14'>
+          <div className='absolute inset-0 rounded-full border-4 border-primary/15' />
+          <div className='absolute inset-0 animate-spin rounded-full border-4 border-primary border-t-transparent' />
+        </div>
+        <Box className='text-center'>
+          <Typography variant='h3' className='text-neutral-dark/70'>Cargando dashboard</Typography>
+          <Typography className='mt-1 text-sm text-neutral-dark/45'>Consolidando métricas y analítica…</Typography>
+        </Box>
       </Box>
     );
   }
 
   if (error || !summary) {
     return (
-      <Box className='rounded-2xl border border-red-200 bg-red-50 px-6 py-4 text-red-600'>
-        {error || 'No fue posible cargar el dashboard'}
+      <Box className='flex min-h-[40vh] flex-col items-center justify-center gap-4 rounded-[1.8rem] border border-red-200 bg-red-50 px-8 py-10 text-center'>
+        <Box className='flex h-12 w-12 items-center justify-center rounded-2xl bg-red-100'>
+          <svg className='h-6 w-6 text-red-500' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z' />
+          </svg>
+        </Box>
+        <Box>
+          <Typography variant='h3' className='text-red-700'>{error || 'Error al cargar el dashboard'}</Typography>
+          <Typography className='mt-1 text-sm text-red-500'>Verifica tu conexión e intenta de nuevo.</Typography>
+        </Box>
       </Box>
     );
   }

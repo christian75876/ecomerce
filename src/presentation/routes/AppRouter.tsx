@@ -8,6 +8,7 @@ import {
   isAuthenticated,
 } from '@/shared/utils/checkIsUserAuthenticated.util';
 import { ROUTES } from '@/shared/constants/routes';
+import { useHandleUnauthorized } from '@/infrastructure/repositories/api/errors/ErrorUtils';
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   if (!isAuthenticated()) {
@@ -25,9 +26,15 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
     : children;
 };
 
+function GlobalGuards() {
+  useHandleUnauthorized();
+  return null;
+}
+
 const AppRouter = () => {
   return (
     <BrowserRouter>
+      <GlobalGuards />
       <Suspense fallback={<RouteFallback />}>
         <PageTransitionLayout>
           <Routes>

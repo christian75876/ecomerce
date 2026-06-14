@@ -1,9 +1,9 @@
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
-import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 
 interface HomeSectionProps {
   title: string;
   subtitle?: string;
+  action?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
 }
@@ -11,20 +11,22 @@ interface HomeSectionProps {
 const HomeSection = ({
   title,
   subtitle,
+  action,
   children,
   className = '',
 }: HomeSectionProps) => {
   return (
-    <Box className={`surface-panel rounded-[2rem] p-6 ${className}`.trim()}>
-      <Typography variant='h2' className='text-2xl font-semibold'>
-        {title}
-      </Typography>
-      {subtitle ? (
-        <Typography className='mt-2 text-sm text-neutral-dark/65'>
-          {subtitle}
-        </Typography>
-      ) : null}
-      <Box className='mt-6'>{children}</Box>
+    <Box className={`${className}`.trim()}>
+      <Box className='mb-4 flex items-end justify-between gap-4'>
+        <Box>
+          <h2 className='text-xl font-bold tracking-tight text-slate-900'>{title}</h2>
+          {subtitle ? (
+            <p className='mt-0.5 text-sm text-slate-500'>{subtitle}</p>
+          ) : null}
+        </Box>
+        {action ? <Box className='flex-shrink-0'>{action}</Box> : null}
+      </Box>
+      {children}
     </Box>
   );
 };

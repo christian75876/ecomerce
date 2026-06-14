@@ -11,14 +11,13 @@ import {
 } from '@/application/dtos/inventory/response/InventoryResponse';
 import {
   authenticatedClientHTTP,
-  publicClientHTTP,
 } from '@/infrastructure/repositories/api/ClientHTTP';
 import { ErrorHandler } from '@/infrastructure/repositories/api/errors/ErrorHandler';
 
 export class InventoryRepository {
   static async getInventory(): Promise<IInventoryResp> {
     return ErrorHandler.handleApiErrors(() =>
-      publicClientHTTP.get<IInventoryResp>('/inventory'),
+      authenticatedClientHTTP.get<IInventoryResp>('/inventory'),
     );
   }
 
@@ -26,7 +25,7 @@ export class InventoryRepository {
     const suffix = productId ? `?productId=${productId}` : '';
 
     return ErrorHandler.handleApiErrors(() =>
-      publicClientHTTP.get<IInventoryMovementsResp>(`/inventory/movements${suffix}`),
+      authenticatedClientHTTP.get<IInventoryMovementsResp>(`/inventory/movements${suffix}`),
     );
   }
 
@@ -46,7 +45,7 @@ export class InventoryRepository {
     const suffix = params.toString() ? `?${params.toString()}` : '';
 
     return ErrorHandler.handleApiErrors(() =>
-      publicClientHTTP.get<IInventoryBatchesResp>(`/inventory/batches${suffix}`),
+      authenticatedClientHTTP.get<IInventoryBatchesResp>(`/inventory/batches${suffix}`),
     );
   }
 
@@ -56,7 +55,7 @@ export class InventoryRepository {
     if (storeId) params.set('storeId', storeId);
 
     return ErrorHandler.handleApiErrors(() =>
-      publicClientHTTP.get<IInventoryBatchesResp>(
+      authenticatedClientHTTP.get<IInventoryBatchesResp>(
         `/inventory/expiring?${params.toString()}`,
       ),
     );

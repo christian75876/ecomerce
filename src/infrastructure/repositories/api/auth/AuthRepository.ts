@@ -82,9 +82,8 @@ export class AuthRepository {
    * Logs out the user by invalidating the token.
    */
   static async logout() {
-    // await ErrorHandler.handleApiErrors(() =>
-    //   authenticatedClientHTTP.post('/auth/logout')
-    // ); //TODO: Implement this in the backend
-    console.log('Dummy function: Invalidating token...');
+    await ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.post('/auth/logout')
+    );
   }
 }

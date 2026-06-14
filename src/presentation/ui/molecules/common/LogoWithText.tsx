@@ -24,25 +24,28 @@ const LogoWithText = ({
   size = 'md'
 }: LogoWithTextProps) => {
   return (
-    <Box className='flex items-center space-x-3'>
+    <Box className='flex items-center gap-2.5'>
       <Image
         src={logo}
-        alt='Logo Hot Ecomerce'
+        alt='Logo Hot Commerce'
         className={sizeClasses[size].logo}
       />
       <Box>
         <Typography
           variant='p'
-          className={`font-semibold text-white leading-tight ${sizeClasses[size].title}`}
+          className={`font-extrabold leading-tight tracking-tight text-neutral-dark ${sizeClasses[size].title}`}
         >
           {title}
+          <span className='text-primary'> Commerce</span>
         </Typography>
-        <Typography
-          variant='p'
-          className={`text-white ${sizeClasses[size].subtitle}`}
-        >
-          {subtitle}
-        </Typography>
+        {subtitle && subtitle !== 'Commerce' ? (
+          <Typography
+            variant='p'
+            className={`text-neutral-muted ${sizeClasses[size].subtitle}`}
+          >
+            {subtitle}
+          </Typography>
+        ) : null}
       </Box>
     </Box>
   );

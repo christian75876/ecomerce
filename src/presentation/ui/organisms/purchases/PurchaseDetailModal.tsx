@@ -1,61 +1,37 @@
 import { useEffect, useMemo, useState } from 'react';
-import { IPurchase } from '@/application/dtos/purchases/response/PurchaseResponse';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Card from '@/presentation/ui/atoms/card/SimpleCard';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Label from '@/presentation/ui/atoms/label/SimpleLabel';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
+import PaginationControls from '@/presentation/ui/molecules/common/PaginationControls';
+import { buildAssetUrl } from '@/shared/utils/buildAssetUrl';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import { formatDate } from '@/shared/utils/formatDate';
-import { buildAssetUrl } from '@/shared/utils/buildAssetUrl';
 import PurchaseModalShell from './PurchaseModalShell';
 import PurchaseStatusBadge from './PurchaseStatusBadge';
-import PaginationControls from '@/presentation/ui/molecules/common/PaginationControls';
-import {
-  PurchaseCancelForm,
-  PurchaseEditForm,
-  PurchasePaymentForm,
-} from '@/application/useCases/purchases/usePurchasesManagement';
+import { usePurchaseDetailSection } from './PurchasesContext';
 
-interface PurchaseDetailModalProps {
-  purchase: IPurchase | null;
-  isOpen: boolean;
-  loading: boolean;
-  submitting: boolean;
-  error: string | null;
-  paymentForm: PurchasePaymentForm;
-  editForm: PurchaseEditForm;
-  cancelForm: PurchaseCancelForm;
-  onClose: () => void;
-  onPaymentFormChange: <K extends keyof PurchasePaymentForm>(
-    key: K,
-    value: PurchasePaymentForm[K],
-  ) => void;
-  onEditFormChange: (key: keyof PurchaseEditForm, value: string) => void;
-  onCancelFormChange: (key: keyof PurchaseCancelForm, value: string) => void;
-  onSubmitPayment: () => Promise<boolean>;
-  onSubmitEdit: () => Promise<boolean>;
-  onSubmitCancel: () => Promise<boolean>;
-}
+const PurchaseDetailModal = () => {
+  const {
+    selectedPurchase,
+    isPurchaseDetailModalOpen,
+    detailLoading,
+    detailSubmitting,
+    detailError,
+    paymentForm,
+    editForm,
+    cancelForm,
+    closePurchaseDetailModal,
+    updatePaymentForm,
+    updateEditForm,
+    updateCancelForm,
+    submitPurchasePayment,
+    submitPurchaseEdit,
+    submitPurchaseCancel,
+  } = usePurchaseDetailSection();
 
-const PurchaseDetailModal = ({
-  purchase,
-  isOpen,
-  loading,
-  submitting,
-  error,
-  paymentForm,
-  editForm,
-  cancelForm,
-  onClose,
-  onPaymentFormChange,
-  onEditFormChange,
-  onCancelFormChange,
-  onSubmitPayment,
-  onSubmitEdit,
-  onSubmitCancel,
-}: PurchaseDetailModalProps) => {
   const [paymentsPage, setPaymentsPage] = useState(1);
   const [activeActionTab, setActiveActionTab] = useState<
     'payment' | 'edit' | 'cancel'
@@ -64,11 +40,11 @@ const PurchaseDetailModal = ({
   const paymentReceiptUrl = (path?: string | null) => buildAssetUrl(path);
   const sortedPayments = useMemo(
     () =>
-      [...(purchase?.payments ?? [])].sort(
+      [...(selectedPurchase?.payments ?? [])].sort(
         (left, right) =>
           new Date(right.paidAt).getTime() - new Date(left.paidAt).getTime(),
       ),
-    [purchase?.payments],
+    [selectedPurchase?.payments],
   );
   const paymentsTotalPages = Math.max(
     1,
@@ -81,13 +57,13 @@ const PurchaseDetailModal = ({
 
   useEffect(() => {
     setPaymentsPage(1);
-  }, [purchase?.id, sortedPayments.length]);
+  }, [selectedPurchase?.id, sortedPayments.length]);
 
   useEffect(() => {
     setActiveActionTab('payment');
-  }, [purchase?.id]);
+  }, [selectedPurchase?.id]);
 
-  if (!isOpen) {
+  if (!isPurchaseDetailModalOpen) {
     return null;
   }
 
@@ -96,12 +72,12 @@ const PurchaseDetailModal = ({
       title='Detalle de compra'
       description='Consulta ítems, pagos, saldo pendiente y gestiona la compra sin salir de esta vista.'
       maxWidthClassName='max-w-5xl'
-      onClose={onClose}
+      onClose={closePurchaseDetailModal}
     >
       <Box className='mt-6 space-y-6'>
-        {loading ? (
+        {detailLoading ? (
           <Typography>Cargando detalle de compra...</Typography>
-        ) : !purchase ? (
+        ) : !selectedPurchase ? (
           <Box className='rounded-2xl border border-dashed border-neutral-gray/30 px-6 py-10 text-center'>
             <Typography>No fue posible cargar el detalle de la compra.</Typography>
           </Box>
@@ -112,13 +88,14 @@ const PurchaseDetailModal = ({
                 <Box className='flex flex-wrap items-start justify-between gap-3'>
                   <Box>
                     <Typography variant='h3' className='text-xl font-semibold'>
-                      {purchase.supplier.name}
+                      {selectedPurchase.supplier.name}
                     </Typography>
                     <Typography className='mt-1 text-sm text-neutral-dark/65'>
-                      {purchase.store.name} · {formatDate(purchase.purchaseDate)}
+                      {selectedPurchase.store.name} ·{' '}
+                      {formatDate(selectedPurchase.purchaseDate)}
                     </Typography>
                   </Box>
-                  <PurchaseStatusBadge status={purchase.status} />
+                  <PurchaseStatusBadge status={selectedPurchase.status} />
                 </Box>
 
                 <Box className='mt-4 grid gap-3 md:grid-cols-3'>
@@ -126,41 +103,55 @@ const PurchaseDetailModal = ({
                     <Typography className='text-xs uppercase tracking-[0.18em] text-neutral-dark/45'>
                       Total
                     </Typography>
-                    <Typography variant='h3' className='mt-2 text-lg font-semibold'>
-                      {formatCurrencyCOP(purchase.total)}
+                    <Typography
+                      variant='h3'
+                      className='mt-2 text-lg font-semibold'
+                    >
+                      {formatCurrencyCOP(selectedPurchase.total)}
                     </Typography>
                   </Card>
                   <Card className='rounded-2xl border border-neutral-gray/20 p-4 shadow-none'>
                     <Typography className='text-xs uppercase tracking-[0.18em] text-neutral-dark/45'>
                       Abonado
                     </Typography>
-                    <Typography variant='h3' className='mt-2 text-lg font-semibold'>
-                      {formatCurrencyCOP(purchase.paidAmount)}
+                    <Typography
+                      variant='h3'
+                      className='mt-2 text-lg font-semibold'
+                    >
+                      {formatCurrencyCOP(selectedPurchase.paidAmount)}
                     </Typography>
                   </Card>
                   <Card className='rounded-2xl border border-neutral-gray/20 p-4 shadow-none'>
                     <Typography className='text-xs uppercase tracking-[0.18em] text-neutral-dark/45'>
                       Saldo
                     </Typography>
-                    <Typography variant='h3' className='mt-2 text-lg font-semibold'>
-                      {formatCurrencyCOP(purchase.balance)}
+                    <Typography
+                      variant='h3'
+                      className='mt-2 text-lg font-semibold'
+                    >
+                      {formatCurrencyCOP(selectedPurchase.balance)}
                     </Typography>
                   </Card>
                 </Box>
 
                 <Box className='mt-4 space-y-2 text-sm text-neutral-dark/70'>
                   <Typography>
-                    Nota: {purchase.note?.trim() ? purchase.note : 'Sin observación'}
+                    Nota:{' '}
+                    {selectedPurchase.note?.trim()
+                      ? selectedPurchase.note
+                      : 'Sin observación'}
                   </Typography>
-                  {purchase.cancelledAt ? (
+                  {selectedPurchase.cancelledAt ? (
                     <Typography>
-                      Cancelada el {formatDate(purchase.cancelledAt)}
-                      {purchase.cancelReason ? ` · ${purchase.cancelReason}` : ''}
+                      Cancelada el {formatDate(selectedPurchase.cancelledAt)}
+                      {selectedPurchase.cancelReason
+                        ? ` · ${selectedPurchase.cancelReason}`
+                        : ''}
                     </Typography>
                   ) : null}
-                  {purchase.cancellationBlockedReason ? (
+                  {selectedPurchase.cancellationBlockedReason ? (
                     <Typography className='text-amber-700'>
-                      Restricción: {purchase.cancellationBlockedReason}
+                      Restricción: {selectedPurchase.cancellationBlockedReason}
                     </Typography>
                   ) : null}
                 </Box>
@@ -208,7 +199,9 @@ const PurchaseDetailModal = ({
                         ) : null}
                         {payment.receiptImagePath ? (
                           <a
-                            href={paymentReceiptUrl(payment.receiptImagePath) ?? '#'}
+                            href={
+                              paymentReceiptUrl(payment.receiptImagePath) ?? '#'
+                            }
                             target='_blank'
                             rel='noreferrer'
                             className='mt-2 inline-flex text-sm font-semibold text-primary underline-offset-4 hover:underline'
@@ -238,7 +231,7 @@ const PurchaseDetailModal = ({
                 Ítems de la compra
               </Typography>
               <Box className='mt-4 space-y-3'>
-                {purchase.items.map((item) => (
+                {selectedPurchase.items.map((item) => (
                   <Box
                     key={item.id}
                     className='rounded-2xl border border-neutral-gray/20 px-4 py-4'
@@ -249,8 +242,8 @@ const PurchaseDetailModal = ({
                           {item.product.name}
                         </Typography>
                         <Typography className='mt-1 text-sm text-neutral-dark/65'>
-                          SKU: {item.product.sku} · Cantidad: {item.quantity} · Costo:{' '}
-                          {formatCurrencyCOP(item.unitCost)}
+                          SKU: {item.product.sku} · Cantidad: {item.quantity} ·
+                          Costo: {formatCurrencyCOP(item.unitCost)}
                         </Typography>
                       </Box>
                       <Typography className='font-semibold'>
@@ -317,12 +310,12 @@ const PurchaseDetailModal = ({
                           step='0.01'
                           value={paymentForm.amount}
                           onChange={(event) =>
-                            onPaymentFormChange('amount', event.target.value)
+                            updatePaymentForm('amount', event.target.value)
                           }
                           disabled={
-                            submitting ||
-                            purchase.status === 'CANCELLED' ||
-                            purchase.balance <= 0
+                            detailSubmitting ||
+                            selectedPurchase.status === 'CANCELLED' ||
+                            selectedPurchase.balance <= 0
                           }
                         />
                       </Box>
@@ -333,12 +326,12 @@ const PurchaseDetailModal = ({
                           type='datetime-local'
                           value={paymentForm.paidAt}
                           onChange={(event) =>
-                            onPaymentFormChange('paidAt', event.target.value)
+                            updatePaymentForm('paidAt', event.target.value)
                           }
                           disabled={
-                            submitting ||
-                            purchase.status === 'CANCELLED' ||
-                            purchase.balance <= 0
+                            detailSubmitting ||
+                            selectedPurchase.status === 'CANCELLED' ||
+                            selectedPurchase.balance <= 0
                           }
                         />
                       </Box>
@@ -350,15 +343,15 @@ const PurchaseDetailModal = ({
                           id='purchase-payment-method'
                           value={paymentForm.paymentMethod}
                           onChange={(event) =>
-                            onPaymentFormChange(
+                            updatePaymentForm(
                               'paymentMethod',
-                              event.target.value as PurchasePaymentForm['paymentMethod'],
+                              event.target.value as typeof paymentForm.paymentMethod,
                             )
                           }
                           disabled={
-                            submitting ||
-                            purchase.status === 'CANCELLED' ||
-                            purchase.balance <= 0
+                            detailSubmitting ||
+                            selectedPurchase.status === 'CANCELLED' ||
+                            selectedPurchase.balance <= 0
                           }
                           className='w-full rounded-2xl border border-neutral-gray/80 bg-white/90 px-4 py-3.5 shadow-sm transition-all focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20'
                         >
@@ -374,12 +367,12 @@ const PurchaseDetailModal = ({
                           id='purchase-payment-reference'
                           value={paymentForm.reference}
                           onChange={(event) =>
-                            onPaymentFormChange('reference', event.target.value)
+                            updatePaymentForm('reference', event.target.value)
                           }
                           disabled={
-                            submitting ||
-                            purchase.status === 'CANCELLED' ||
-                            purchase.balance <= 0
+                            detailSubmitting ||
+                            selectedPurchase.status === 'CANCELLED' ||
+                            selectedPurchase.balance <= 0
                           }
                           placeholder='Número de transferencia, banco, comprobante...'
                         />
@@ -391,12 +384,12 @@ const PurchaseDetailModal = ({
                         id='purchase-payment-note'
                         value={paymentForm.note}
                         onChange={(event) =>
-                          onPaymentFormChange('note', event.target.value)
+                          updatePaymentForm('note', event.target.value)
                         }
                         disabled={
-                          submitting ||
-                          purchase.status === 'CANCELLED' ||
-                          purchase.balance <= 0
+                          detailSubmitting ||
+                          selectedPurchase.status === 'CANCELLED' ||
+                          selectedPurchase.balance <= 0
                         }
                       />
                     </Box>
@@ -409,13 +402,13 @@ const PurchaseDetailModal = ({
                         type='file'
                         accept='image/png,image/jpeg,image/webp'
                         disabled={
-                          submitting ||
-                          purchase.status === 'CANCELLED' ||
-                          purchase.balance <= 0
+                          detailSubmitting ||
+                          selectedPurchase.status === 'CANCELLED' ||
+                          selectedPurchase.balance <= 0
                         }
                         className='block w-full rounded-2xl border border-neutral-gray/80 bg-white/90 px-4 py-3 text-sm shadow-sm transition-all file:mr-4 file:rounded-xl file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:font-semibold file:text-primary hover:file:bg-primary/15 focus:outline-none'
                         onChange={(event) =>
-                          onPaymentFormChange(
+                          updatePaymentForm(
                             'receiptImage',
                             event.target.files?.[0] ?? null,
                           )
@@ -431,13 +424,13 @@ const PurchaseDetailModal = ({
                       type='button'
                       variant='primary'
                       disabled={
-                        submitting ||
-                        purchase.status === 'CANCELLED' ||
-                        purchase.balance <= 0
+                        detailSubmitting ||
+                        selectedPurchase.status === 'CANCELLED' ||
+                        selectedPurchase.balance <= 0
                       }
-                      onClick={() => void onSubmitPayment()}
+                      onClick={() => void submitPurchasePayment()}
                     >
-                      {submitting ? 'Procesando...' : 'Aplicar abono'}
+                      {detailSubmitting ? 'Procesando...' : 'Aplicar abono'}
                     </Button>
                   </Box>
                 ) : null}
@@ -452,9 +445,12 @@ const PurchaseDetailModal = ({
                           type='datetime-local'
                           value={editForm.purchaseDate}
                           onChange={(event) =>
-                            onEditFormChange('purchaseDate', event.target.value)
+                            updateEditForm('purchaseDate', event.target.value)
                           }
-                          disabled={submitting || purchase.status === 'CANCELLED'}
+                          disabled={
+                            detailSubmitting ||
+                            selectedPurchase.status === 'CANCELLED'
+                          }
                         />
                       </Box>
                       <Box>
@@ -463,19 +459,25 @@ const PurchaseDetailModal = ({
                           id='purchase-edit-note'
                           value={editForm.note}
                           onChange={(event) =>
-                            onEditFormChange('note', event.target.value)
+                            updateEditForm('note', event.target.value)
                           }
-                          disabled={submitting || purchase.status === 'CANCELLED'}
+                          disabled={
+                            detailSubmitting ||
+                            selectedPurchase.status === 'CANCELLED'
+                          }
                         />
                       </Box>
                     </Box>
                     <Button
                       type='button'
                       variant='outlinePrimary'
-                      disabled={submitting || purchase.status === 'CANCELLED'}
-                      onClick={() => void onSubmitEdit()}
+                      disabled={
+                        detailSubmitting ||
+                        selectedPurchase.status === 'CANCELLED'
+                      }
+                      onClick={() => void submitPurchaseEdit()}
                     >
-                      {submitting ? 'Guardando...' : 'Guardar cambios'}
+                      {detailSubmitting ? 'Guardando...' : 'Guardar cambios'}
                     </Button>
                   </Box>
                 ) : null}
@@ -484,8 +486,8 @@ const PurchaseDetailModal = ({
                   <Box className='space-y-3'>
                     <Typography className='text-sm text-neutral-dark/65'>
                       La cancelación deshabilita la compra y deja de contarla en el
-                      saldo pendiente general. Solo se permite si ninguno de sus lotes
-                      ya tuvo consumo.
+                      saldo pendiente general. Solo se permite si ninguno de sus
+                      lotes ya tuvo consumo.
                     </Typography>
                     <Box>
                       <Label htmlFor='purchase-cancel-reason'>Motivo</Label>
@@ -493,12 +495,12 @@ const PurchaseDetailModal = ({
                         id='purchase-cancel-reason'
                         value={cancelForm.reason}
                         onChange={(event) =>
-                          onCancelFormChange('reason', event.target.value)
+                          updateCancelForm('reason', event.target.value)
                         }
                         disabled={
-                          submitting ||
-                          purchase.status === 'CANCELLED' ||
-                          purchase.canCancel === false
+                          detailSubmitting ||
+                          selectedPurchase.status === 'CANCELLED' ||
+                          selectedPurchase.canCancel === false
                         }
                       />
                     </Box>
@@ -506,22 +508,22 @@ const PurchaseDetailModal = ({
                       type='button'
                       variant='danger'
                       disabled={
-                        submitting ||
-                        purchase.status === 'CANCELLED' ||
-                        purchase.canCancel === false
+                        detailSubmitting ||
+                        selectedPurchase.status === 'CANCELLED' ||
+                        selectedPurchase.canCancel === false
                       }
-                      onClick={() => void onSubmitCancel()}
+                      onClick={() => void submitPurchaseCancel()}
                     >
-                      {submitting ? 'Cancelando...' : 'Cancelar compra'}
+                      {detailSubmitting ? 'Cancelando...' : 'Cancelar compra'}
                     </Button>
                   </Box>
                 ) : null}
               </Box>
             </Card>
 
-            {error ? (
+            {detailError ? (
               <Box className='rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600'>
-                {error}
+                {detailError}
               </Box>
             ) : null}
           </>

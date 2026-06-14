@@ -87,6 +87,10 @@ export const useCart = () => {
     );
   };
 
+  const removeItem = (productId: string) => {
+    writeItems(readItems().filter((item) => item.productId !== productId));
+  };
+
   const clear = () => writeItems([]);
 
   const total = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
@@ -96,6 +100,7 @@ export const useCart = () => {
     total,
     addItem,
     updateQuantity,
+    removeItem,
     clear,
   };
 };

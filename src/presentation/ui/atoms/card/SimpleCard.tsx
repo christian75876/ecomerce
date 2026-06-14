@@ -11,8 +11,8 @@ const Card = ({ children, className }: CardProps) => {
   return (
     <Box
       className={clsx(
-        'surface-card rounded-[1.6rem] p-4 transition-all duration-200',
-        'hover:-translate-y-0.5 hover:shadow-[0_22px_52px_rgba(15,23,42,0.14)]',
+        'rounded-2xl border border-slate-200 bg-white p-4 transition-all duration-200',
+        'hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md hover:shadow-primary/6',
         className
       )}
     >

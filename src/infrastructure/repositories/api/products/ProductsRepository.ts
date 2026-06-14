@@ -7,8 +7,12 @@ import {
   IMarketplaceSectionsResp,
 } from '@/application/dtos/products/response/MarketplaceResponse';
 import {
+  IProductImageResp,
+  IProductImagesResp,
   IProductResp,
   IProductsResp,
+  IProductVideoResp,
+  IProductVideosResp,
 } from '@/application/dtos/products/response/ProductResponse';
 import { IApiResponse } from '@/application/dtos/common/HttpResponse';
 import { IAsyncOptionsData } from '@/application/dtos/common/AsyncOption';
@@ -36,6 +40,18 @@ export class ProductRepository {
 
     if (typeof query.active === 'boolean') {
       params.set('active', String(query.active));
+    }
+
+    if (query.sortBy) {
+      params.set('sortBy', query.sortBy);
+    }
+
+    if (query.minPrice !== undefined) {
+      params.set('minPrice', String(query.minPrice));
+    }
+
+    if (query.maxPrice !== undefined) {
+      params.set('maxPrice', String(query.maxPrice));
     }
 
     const suffix = params.toString() ? `?${params.toString()}` : '';
@@ -102,6 +118,65 @@ export class ProductRepository {
         '/products/options',
         { params: query },
       ),
+    );
+  }
+
+  static async uploadProductImage(productId: string, file: File): Promise<IProductResp> {
+    const formData = new FormData();
+    formData.append('image', file);
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.post<IProductResp>(`/products/${productId}/image`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }),
+    );
+  }
+
+  static async getProductVideos(productId: string): Promise<IProductVideosResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      publicClientHTTP.get<IProductVideosResp>(`/products/${productId}/videos`),
+    );
+  }
+
+  static async addProductVideo(
+    productId: string,
+    videoUrl: string,
+    title?: string,
+  ): Promise<IProductVideoResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.post<IProductVideoResp>(`/products/${productId}/videos`, {
+        videoUrl,
+        title,
+      }),
+    );
+  }
+
+  static async removeProductVideo(productId: string, videoId: string): Promise<void> {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.delete(`/products/${productId}/videos/${videoId}`),
+    );
+  }
+
+  static async getProductGallery(productId: string): Promise<IProductImagesResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      publicClientHTTP.get<IProductImagesResp>(`/products/${productId}/gallery`),
+    );
+  }
+
+  static async uploadGalleryImage(productId: string, file: File): Promise<IProductImageResp> {
+    const formData = new FormData();
+    formData.append('image', file);
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.post<IProductImageResp>(
+        `/products/${productId}/gallery`,
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } },
+      ),
+    );
+  }
+
+  static async removeGalleryImage(productId: string, imageId: string): Promise<void> {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.delete(`/products/${productId}/gallery/${imageId}`),
     );
   }
 }

@@ -49,9 +49,18 @@ const MobileHeaderLayout = () => {
   const moreNavItems = adminView
     ? adminMoreNavItems
     : publicMoreNavItems.filter((item) => {
-        if (!isAuthenticated() && item.path !== ROUTES.PUBLIC.LOGIN) {
+        // Ocultar "Entrar" si el usuario ya está autenticado
+        if (isAuthenticated() && item.path === ROUTES.PUBLIC.LOGIN) {
           return false;
         }
+        // Ocultar favoritos/pedidos si no está autenticado
+        if (
+          !isAuthenticated() &&
+          (item.path === ROUTES.PUBLIC.FAVORITES || item.path === ROUTES.PUBLIC.MY_ORDERS)
+        ) {
+          return false;
+        }
+        // Ocultar "Mis pedidos" si no es comprador
         if (item.path === ROUTES.PUBLIC.MY_ORDERS && !buyerView) {
           return false;
         }

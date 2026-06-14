@@ -5,6 +5,8 @@ import { ROUTES } from '@/shared/constants/routes';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Link from '@/presentation/ui/atoms/link/Simplelink';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
+import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
+import { formatDate } from '@/shared/utils/formatDate';
 
 const MyOrdersPage = () => {
   const { orderId } = useParams<{ orderId: string }>();
@@ -52,7 +54,7 @@ const MyOrdersPage = () => {
                     Pedido {order.id.slice(0, 8)}
                   </Typography>
                   <Typography className='mt-1 text-sm text-neutral-dark/65'>
-                    {order.status} · ${Number(order.total).toFixed(2)} · {new Date(order.createdAt).toLocaleDateString()}
+                    {order.status} · {formatCurrencyCOP(order.total)} · {formatDate(order.createdAt)}
                   </Typography>
                 </Link>
               ))
@@ -76,10 +78,10 @@ const MyOrdersPage = () => {
                 Estado: {selectedOrder.status}
               </Typography>
               <Typography className='text-sm text-neutral-dark/65'>
-                Fecha: {new Date(selectedOrder.createdAt).toLocaleString()}
+                Fecha: {formatDate(selectedOrder.createdAt)}
               </Typography>
               <Typography className='text-sm text-neutral-dark/65'>
-                Total: ${Number(selectedOrder.total).toFixed(2)}
+                Total: {formatCurrencyCOP(selectedOrder.total)}
               </Typography>
               {selectedOrder.items.map((item) => (
                 <Box
@@ -90,7 +92,7 @@ const MyOrdersPage = () => {
                     {item.product.name}
                   </Typography>
                   <Typography className='mt-1 text-sm text-neutral-dark/65'>
-                    SKU {item.product.sku} · {item.quantity} unidad(es) · ${Number(item.lineTotal).toFixed(2)}
+                    SKU {item.product.sku} · {item.quantity} unidad(es) · {formatCurrencyCOP(item.lineTotal)}
                   </Typography>
                 </Box>
               ))}

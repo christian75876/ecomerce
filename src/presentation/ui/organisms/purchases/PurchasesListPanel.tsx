@@ -1,49 +1,33 @@
-import { IPurchase } from '@/application/dtos/purchases/response/PurchaseResponse';
-import { ISupplier } from '@/application/dtos/suppliers/response/SupplierResponse';
-import Card from '@/presentation/ui/atoms/card/SimpleCard';
-import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
+import Button from '@/presentation/ui/atoms/button/SimpleButton';
+import Card from '@/presentation/ui/atoms/card/SimpleCard';
+import Input from '@/presentation/ui/atoms/input/SimpleInput';
+import Label from '@/presentation/ui/atoms/label/SimpleLabel';
+import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
+import PaginationControls from '@/presentation/ui/molecules/common/PaginationControls';
 import FeaturePanel from '@/presentation/ui/templates/feature/FeaturePanel';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import { formatDate } from '@/shared/utils/formatDate';
-import Button from '@/presentation/ui/atoms/button/SimpleButton';
+import { usePurchaseListingSection } from './PurchasesContext';
 import PurchaseStatusBadge from './PurchaseStatusBadge';
-import Input from '@/presentation/ui/atoms/input/SimpleInput';
-import Label from '@/presentation/ui/atoms/label/SimpleLabel';
-import { PurchaseListFilters } from '@/application/useCases/purchases/usePurchasesManagement';
-import PaginationControls from '@/presentation/ui/molecules/common/PaginationControls';
 
-interface PurchasesListPanelProps {
-  purchases: IPurchase[];
-  suppliers: ISupplier[];
-  loading: boolean;
-  filters: PurchaseListFilters;
-  currentPage: number;
-  totalPages: number;
-  totalItems: number;
-  itemsPerPage: number;
-  onOpenDetail: (purchaseId: string) => void;
-  onFilterChange: (key: keyof PurchaseListFilters, value: string) => void;
-  onApplyFilters: () => Promise<void>;
-  onClearFilters: () => Promise<void>;
-  onChangePage: (page: number) => Promise<void>;
-}
+const PurchasesListPanel = () => {
+  const {
+    purchases,
+    suppliers,
+    loading,
+    filters,
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    openPurchaseDetailModal,
+    updateFilters,
+    applyFilters,
+    clearFilters,
+    changePage,
+  } = usePurchaseListingSection();
 
-const PurchasesListPanel = ({
-  purchases,
-  suppliers,
-  loading,
-  filters,
-  currentPage,
-  totalPages,
-  totalItems,
-  itemsPerPage,
-  onOpenDetail,
-  onFilterChange,
-  onApplyFilters,
-  onClearFilters,
-  onChangePage,
-}: PurchasesListPanelProps) => {
   return (
     <FeaturePanel
       title='Compras registradas'
@@ -55,7 +39,7 @@ const PurchasesListPanel = ({
           <Input
             id='purchases-search'
             value={filters.search}
-            onChange={(event) => onFilterChange('search', event.target.value)}
+            onChange={(event) => updateFilters('search', event.target.value)}
             placeholder='Proveedor, nota o ID'
           />
         </Box>
@@ -64,7 +48,9 @@ const PurchasesListPanel = ({
           <select
             id='purchases-supplier-filter'
             value={filters.supplierId}
-            onChange={(event) => onFilterChange('supplierId', event.target.value)}
+            onChange={(event) =>
+              updateFilters('supplierId', event.target.value)
+            }
             className='w-full rounded-2xl border border-neutral-gray/80 bg-white/90 px-4 py-3.5 shadow-sm transition-all focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20'
           >
             <option value=''>Todos</option>
@@ -81,7 +67,7 @@ const PurchasesListPanel = ({
             id='purchases-date-from'
             type='date'
             value={filters.dateFrom}
-            onChange={(event) => onFilterChange('dateFrom', event.target.value)}
+            onChange={(event) => updateFilters('dateFrom', event.target.value)}
           />
         </Box>
         <Box>
@@ -90,16 +76,24 @@ const PurchasesListPanel = ({
             id='purchases-date-to'
             type='date'
             value={filters.dateTo}
-            onChange={(event) => onFilterChange('dateTo', event.target.value)}
+            onChange={(event) => updateFilters('dateTo', event.target.value)}
           />
         </Box>
       </Box>
 
       <Box className='mt-4 flex flex-wrap gap-3'>
-        <Button type='button' variant='primary' onClick={() => void onApplyFilters()}>
+        <Button
+          type='button'
+          variant='primary'
+          onClick={() => void applyFilters()}
+        >
           Aplicar filtros
         </Button>
-        <Button type='button' variant='outline' onClick={() => void onClearFilters()}>
+        <Button
+          type='button'
+          variant='outline'
+          onClick={() => void clearFilters()}
+        >
           Limpiar
         </Button>
       </Box>
@@ -136,7 +130,7 @@ const PurchasesListPanel = ({
                 <Button
                   type='button'
                   variant='outlinePrimary'
-                  onClick={() => onOpenDetail(purchase.id)}
+                  onClick={() => openPurchaseDetailModal(purchase.id)}
                 >
                   Ver detalle
                 </Button>
@@ -152,7 +146,7 @@ const PurchasesListPanel = ({
         totalItems={totalItems}
         itemsPerPage={itemsPerPage}
         loading={loading}
-        onChangePage={onChangePage}
+        onChangePage={changePage}
       />
     </FeaturePanel>
   );

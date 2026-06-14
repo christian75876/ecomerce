@@ -1,89 +1,49 @@
-import { IStore } from '@/application/dtos/stores/response/StoreResponse';
 import { IAsyncOption } from '@/application/dtos/common/AsyncOption';
-import { PurchaseItemForm } from '@/application/useCases/purchases/usePurchasesManagement';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Label from '@/presentation/ui/atoms/label/SimpleLabel';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
-import FeaturePanel from '@/presentation/ui/templates/feature/FeaturePanel';
-import PurchaseItemCard from './PurchaseItemCard';
 import AsyncSearchSelect from '@/presentation/ui/molecules/common/AsyncSearchSelect';
+import FeaturePanel from '@/presentation/ui/templates/feature/FeaturePanel';
+import { usePurchaseRegistrationSection } from './PurchasesContext';
+import PurchaseItemCard from './PurchaseItemCard';
 
-interface PurchaseRegistrationFormProps {
-  stores: IStore[];
-  supplierId: string;
-  selectedSupplierOption: IAsyncOption | null;
-  storeId: string;
-  purchaseDate: string;
-  paidAmount: string;
-  note: string;
-  items: PurchaseItemForm[];
-  submitting: boolean;
-  error: string | null;
-  onSupplierSelect: (option: IAsyncOption | null) => void;
-  onStoreChange: (value: string) => void;
-  onPurchaseDateChange: (value: string) => void;
-  onPaidAmountChange: (value: string) => void;
-  onNoteChange: (value: string) => void;
-  onItemChange: <K extends keyof PurchaseItemForm>(
-    index: number,
-    key: K,
-    value: PurchaseItemForm[K],
-  ) => void;
-  onAddItem: () => void;
-  onRemoveItem: (index: number) => void;
-  onSubmit: () => Promise<boolean>;
-  onOpenSupplierModal: () => void;
-  onOpenProductModal: (index: number) => void;
-  loadSupplierOptions: (params: {
-    search: string;
-    page: number;
-  }) => Promise<{
-    items: IAsyncOption[];
-    currentPage: number;
-    totalPages: number;
-  }>;
-  loadProductOptions: (params: {
-    search: string;
-    page: number;
-  }) => Promise<{
-    items: IAsyncOption[];
-    currentPage: number;
-    totalPages: number;
-  }>;
-  onProductSelect: (index: number, option: IAsyncOption | null) => void;
-}
+const PurchaseRegistrationForm = () => {
+  const {
+    stores,
+    supplierId,
+    selectedSupplierOption,
+    storeId,
+    purchaseDate,
+    paidAmount,
+    note,
+    items,
+    submitting,
+    error,
+    selectSupplierOption,
+    setStoreId,
+    setPurchaseDate,
+    setPaidAmount,
+    setNote,
+    addItem,
+    submitForm,
+    openSupplierModal,
+    loadSupplierOptions,
+  } = usePurchaseRegistrationSection();
 
-const PurchaseRegistrationForm = ({
-  stores,
-  supplierId,
-  selectedSupplierOption,
-  storeId,
-  purchaseDate,
-  paidAmount,
-  note,
-  items,
-  submitting,
-  error,
-  onSupplierSelect,
-  onStoreChange,
-  onPurchaseDateChange,
-  onPaidAmountChange,
-  onNoteChange,
-  onItemChange,
-  onAddItem,
-  onRemoveItem,
-  onSubmit,
-  onOpenSupplierModal,
-  onOpenProductModal,
-  loadSupplierOptions,
-  loadProductOptions,
-  onProductSelect,
-}: PurchaseRegistrationFormProps) => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    await onSubmit();
+    await submitForm();
+  };
+
+  const loadSupplierAsyncOptions = async (params: {
+    search: string;
+    page: number;
+  }) => {
+    const response = await loadSupplierOptions(params);
+
+    return response;
   };
 
   return (
@@ -99,7 +59,7 @@ const PurchaseRegistrationForm = ({
             <Button
               type='button'
               variant='ghost'
-              onClick={onOpenSupplierModal}
+              onClick={openSupplierModal}
             >
               Crear proveedor
             </Button>
@@ -109,8 +69,8 @@ const PurchaseRegistrationForm = ({
             selectedLabel={selectedSupplierOption?.label}
             placeholder='Buscar proveedor'
             emptyLabel='No hay proveedores para esa búsqueda'
-            loadOptions={loadSupplierOptions}
-            onChange={onSupplierSelect}
+            loadOptions={loadSupplierAsyncOptions}
+            onChange={(option: IAsyncOption | null) => selectSupplierOption(option)}
             disabled={submitting}
           />
         </Box>
@@ -120,7 +80,7 @@ const PurchaseRegistrationForm = ({
           <select
             id='purchase-store'
             value={storeId}
-            onChange={(event) => onStoreChange(event.target.value)}
+            onChange={(event) => setStoreId(event.target.value)}
             className='w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary'
           >
             <option value=''>Selecciona tienda</option>
@@ -139,7 +99,7 @@ const PurchaseRegistrationForm = ({
               id='purchase-date'
               type='datetime-local'
               value={purchaseDate}
-              onChange={(event) => onPurchaseDateChange(event.target.value)}
+              onChange={(event) => setPurchaseDate(event.target.value)}
             />
           </Box>
           <Box>
@@ -150,7 +110,7 @@ const PurchaseRegistrationForm = ({
               min='0'
               step='0.01'
               value={paidAmount}
-              onChange={(event) => onPaidAmountChange(event.target.value)}
+              onChange={(event) => setPaidAmount(event.target.value)}
             />
           </Box>
         </Box>
@@ -160,7 +120,7 @@ const PurchaseRegistrationForm = ({
           <Input
             id='purchase-note'
             value={note}
-            onChange={(event) => onNoteChange(event.target.value)}
+            onChange={(event) => setNote(event.target.value)}
           />
         </Box>
 
@@ -169,20 +129,9 @@ const PurchaseRegistrationForm = ({
             Ítems
           </Typography>
           {items.map((item, index) => (
-            <PurchaseItemCard
-              key={`${item.productId}-${index}`}
-              item={item}
-              index={index}
-              storeId={storeId}
-              itemsCount={items.length}
-              onItemChange={onItemChange}
-              onRemoveItem={onRemoveItem}
-              onOpenProductModal={onOpenProductModal}
-              loadProductOptions={loadProductOptions}
-              onProductSelect={onProductSelect}
-            />
+            <PurchaseItemCard key={`${item.productId}-${index}-${index}`} item={item} index={index} />
           ))}
-          <Button type='button' variant='outlinePrimary' onClick={onAddItem}>
+          <Button type='button' variant='outlinePrimary' onClick={addItem}>
             Agregar ítem
           </Button>
         </Box>

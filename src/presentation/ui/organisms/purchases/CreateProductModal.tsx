@@ -1,53 +1,46 @@
-import { ICategory } from '@/application/dtos/categories/response/CategoryResponse';
-import { InlineProductForm } from '@/application/useCases/purchases/usePurchasesManagement';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import PurchaseModalShell from './PurchaseModalShell';
+import { usePurchaseModalSection } from './PurchasesContext';
 
-interface CreateProductModalProps {
-  categories: ICategory[];
-  productForm: InlineProductForm;
-  submitting: boolean;
-  error: string | null;
-  onClose: () => void;
-  onProductFormChange: <K extends keyof InlineProductForm>(
-    key: K,
-    value: InlineProductForm[K],
-  ) => void;
-  onCreateProduct: () => Promise<boolean>;
-}
+const CreateProductModal = () => {
+  const {
+    categories,
+    productForm,
+    productSubmitting,
+    modalError,
+    isProductModalOpen,
+    closeProductModal,
+    updateProductForm,
+    createProductInline,
+  } = usePurchaseModalSection();
 
-const CreateProductModal = ({
-  categories,
-  productForm,
-  submitting,
-  error,
-  onClose,
-  onProductFormChange,
-  onCreateProduct,
-}: CreateProductModalProps) => {
+  if (!isProductModalOpen) {
+    return null;
+  }
+
   return (
     <PurchaseModalShell
       title='Nuevo producto para la compra'
       description='Crea el producto con su información comercial y luego agrégalo de inmediato al ítem actual.'
       maxWidthClassName='max-w-3xl'
-      onClose={onClose}
+      onClose={closeProductModal}
     >
       <Box className='mt-6 grid gap-4 md:grid-cols-2'>
         <Input
           value={productForm.name}
-          onChange={(event) => onProductFormChange('name', event.target.value)}
+          onChange={(event) => updateProductForm('name', event.target.value)}
           placeholder='Nombre del producto'
         />
         <Input
           value={productForm.sku}
-          onChange={(event) => onProductFormChange('sku', event.target.value)}
+          onChange={(event) => updateProductForm('sku', event.target.value)}
           placeholder='SKU'
         />
         <Input
           value={productForm.price}
-          onChange={(event) => onProductFormChange('price', event.target.value)}
+          onChange={(event) => updateProductForm('price', event.target.value)}
           placeholder='Precio de venta'
           type='number'
           min='0'
@@ -56,7 +49,7 @@ const CreateProductModal = ({
         <select
           value={productForm.categoryId}
           onChange={(event) =>
-            onProductFormChange('categoryId', event.target.value)
+            updateProductForm('categoryId', event.target.value)
           }
           className='w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary'
         >
@@ -71,7 +64,7 @@ const CreateProductModal = ({
           <Input
             value={productForm.description}
             onChange={(event) =>
-              onProductFormChange('description', event.target.value)
+              updateProductForm('description', event.target.value)
             }
             placeholder='Descripción del producto'
           />
@@ -80,7 +73,7 @@ const CreateProductModal = ({
           <Input
             value={productForm.imageUrl}
             onChange={(event) =>
-              onProductFormChange('imageUrl', event.target.value)
+              updateProductForm('imageUrl', event.target.value)
             }
             placeholder='URL de imagen principal'
           />
@@ -93,7 +86,7 @@ const CreateProductModal = ({
             type='checkbox'
             checked={productForm.showStock}
             onChange={(event) =>
-              onProductFormChange('showStock', event.target.checked)
+              updateProductForm('showStock', event.target.checked)
             }
           />
           Mostrar en catálogo
@@ -103,7 +96,7 @@ const CreateProductModal = ({
             type='checkbox'
             checked={productForm.isPerishable}
             onChange={(event) =>
-              onProductFormChange('isPerishable', event.target.checked)
+              updateProductForm('isPerishable', event.target.checked)
             }
           />
           Producto perecedero
@@ -113,16 +106,16 @@ const CreateProductModal = ({
             type='checkbox'
             checked={productForm.trackBatches}
             onChange={(event) =>
-              onProductFormChange('trackBatches', event.target.checked)
+              updateProductForm('trackBatches', event.target.checked)
             }
           />
           Gestionar por lotes
         </label>
       </Box>
 
-      {error ? (
+      {modalError ? (
         <Box className='mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600'>
-          {error}
+          {modalError}
         </Box>
       ) : null}
 
@@ -130,16 +123,16 @@ const CreateProductModal = ({
         <Button
           type='button'
           variant='primary'
-          onClick={() => void onCreateProduct()}
-          disabled={submitting}
+          onClick={() => void createProductInline()}
+          disabled={productSubmitting}
         >
-          {submitting ? 'Guardando...' : 'Guardar producto'}
+          {productSubmitting ? 'Guardando...' : 'Guardar producto'}
         </Button>
         <Button
           type='button'
           variant='outline'
-          onClick={onClose}
-          disabled={submitting}
+          onClick={closeProductModal}
+          disabled={productSubmitting}
         >
           Cancelar
         </Button>
