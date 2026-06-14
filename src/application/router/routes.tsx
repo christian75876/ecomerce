@@ -79,6 +79,9 @@ const CashPage = lazy(
 const AuditPage = lazy(
   () => import('@presentation/pages/private/audit/AuditPage')
 );
+const InvitationsPage = lazy(
+  () => import('@presentation/pages/private/invitations/InvitationsPage')
+);
 
 export type AppRoute = RouteObject & {
   path: string;
@@ -234,6 +237,12 @@ export const routes: AppRoute[] = [
   {
     path: ROUTES.PRIVATE.AUDIT,
     element: <AuditPage />,
+    private: true,
+    layout: DashboardLayout
+  },
+  {
+    path: ROUTES.PRIVATE.INVITATIONS,
+    element: <InvitationsPage />,
     private: true,
     layout: DashboardLayout
   },

@@ -48,6 +48,7 @@ const adminNavGroups = [
   {
     label: 'Control',
     items: [
+      { label: 'Invitaciones', path: ROUTES.PRIVATE.INVITATIONS, icon: 'bx-envelope' },
       { label: 'Auditoría', path: ROUTES.PRIVATE.AUDIT, icon: 'bx-history' },
       { label: 'Ajustes', path: ROUTES.PRIVATE.SETTINGS, icon: 'bx-cog' },
     ],
