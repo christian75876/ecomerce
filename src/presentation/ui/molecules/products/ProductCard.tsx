@@ -15,7 +15,10 @@ interface ProductCardProps {
   storeName?: string;
   storeSlug?: string;
   badge?: string;
+  averageRating?: number | null;
+  reviewCount?: number;
   isFavorite?: boolean;
+  isSponsored?: boolean;
   layoutStyle?: 'GRID' | 'LIST';
   buttonStyle?: 'ROUNDED' | 'SHARP' | 'PILL';
   primaryColor?: string;
@@ -43,7 +46,10 @@ const ProductCard = ({
   storeName,
   storeSlug,
   badge,
+  averageRating,
+  reviewCount,
   isFavorite = false,
+  isSponsored = false,
   layoutStyle = 'GRID',
   buttonStyle,
   primaryColor,
@@ -128,13 +134,28 @@ const ProductCard = ({
       {/* ── Info ── */}
       <div className='flex flex-1 flex-col gap-1 p-3'>
         {storeName && storeSlug ? (
-          <Link
-            to={ROUTES.PUBLIC.STORE_DETAILS.replace(':slug', storeSlug)}
-            className='truncate text-xs font-medium text-primary hover:underline'
-            onClick={(e) => e.stopPropagation()}
-          >
-            {storeName}
-          </Link>
+          <div className='flex items-center gap-1.5'>
+            <Link
+              to={ROUTES.PUBLIC.STORE_DETAILS.replace(':slug', storeSlug)}
+              className='truncate text-xs font-medium text-primary hover:underline'
+              onClick={(e) => e.stopPropagation()}
+            >
+              {storeName}
+            </Link>
+            {isSponsored ? (
+              <span className='flex-shrink-0 rounded-full border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-amber-600'>
+                Patrocinado
+              </span>
+            ) : null}
+          </div>
+        ) : null}
+
+        {averageRating ? (
+          <div className='flex items-center gap-1 text-xs'>
+            <i className='bx bxs-star text-amber-400' style={{ fontSize: 11 }} aria-hidden='true' />
+            <span className='font-semibold text-slate-700'>{averageRating.toFixed(1)}</span>
+            <span className='text-slate-400'>({reviewCount ?? 0})</span>
+          </div>
         ) : null}
 
         <Link to={ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', id)}>

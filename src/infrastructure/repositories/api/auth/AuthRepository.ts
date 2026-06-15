@@ -78,6 +78,16 @@ export class AuthRepository {
     );
   }
 
+  static async updateMyProfile(payload: {
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+  }): Promise<{ id: string; firstName: string; lastName: string; phone: string | null }> {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.patch('/auth/me', payload)
+    );
+  }
+
   /**
    * Logs out the user by invalidating the token.
    */

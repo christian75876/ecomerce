@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
@@ -59,6 +59,36 @@ const StoreDetailPage = () => {
   const { addItem } = useCart();
   const { favoriteIds, toggleFavorite } = useFavorites();
   const [ageVerified, setAgeVerified] = useState(false);
+  const [storeSearch, setStoreSearch] = useState('');
+  const [storeSortBy, setStoreSortBy] = useState<'newest' | 'price_asc' | 'price_desc' | 'name_asc'>('newest');
+  const [storeSortOpen, setStoreSortOpen] = useState(false);
+  const storeSortRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!storeSortOpen) return;
+    const h = (e: MouseEvent) => { if (!storeSortRef.current?.contains(e.target as Node)) setStoreSortOpen(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [storeSortOpen]);
+
+  const STORE_SORT_OPTIONS = [
+    { value: 'newest'    as const, label: 'Más nuevos',            icon: 'bx-time'          },
+    { value: 'price_asc' as const, label: 'Precio: menor a mayor', icon: 'bx-trending-up'   },
+    { value: 'price_desc'as const, label: 'Precio: mayor a menor', icon: 'bx-trending-down' },
+    { value: 'name_asc'  as const, label: 'Nombre A–Z',            icon: 'bx-sort-a-z'      },
+  ];
+
+  const filteredStoreProducts = useMemo(() => {
+    let list = [...products];
+    if (storeSearch.trim()) {
+      const q = storeSearch.toLowerCase();
+      list = list.filter((p) => p.name.toLowerCase().includes(q) || p.sku?.toLowerCase().includes(q));
+    }
+    if (storeSortBy === 'price_asc')  list.sort((a, b) => Number(a.price) - Number(b.price));
+    else if (storeSortBy === 'price_desc') list.sort((a, b) => Number(b.price) - Number(a.price));
+    else if (storeSortBy === 'name_asc')   list.sort((a, b) => a.name.localeCompare(b.name));
+    return list;
+  }, [products, storeSearch, storeSortBy]);
 
   useEffect(() => {
     if (!store) return;
@@ -223,22 +253,84 @@ const StoreDetailPage = () => {
               }}
             />
           ) : (
-            <ProductBody
-              products={products}
-              favoriteIds={favoriteIds}
-              layoutStyle={store.layoutStyle}
-              buttonStyle={store.buttonStyle}
-              primaryColor={store.primaryColor || undefined}
-              emptyMessage='Esta tienda todavía no tiene productos activos.'
-              onToggleFavorite={(productId) => { void toggleFavorite(productId); }}
-              onAddToCart={(productId) => {
-                const product = products.find((item) => item.id === productId);
-                if (!product) return;
-                addItem({ productId: product.id, name: product.name, price: Number(product.price), imageUrl: product.imageUrl });
-                const label = product.name.length > 28 ? `${product.name.slice(0, 28)}…` : product.name;
-                SnackbarUtilities.success(`${label} agregado al carrito`, 'bottom', 'right');
-              }}
-            />
+            <div className='space-y-4'>
+              {/* Search + sort bar */}
+              {products.length > 3 ? (
+                <div className='flex items-center gap-2'>
+                  <div className='flex flex-1 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm transition focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10'>
+                    <i className='bx bx-search shrink-0 text-lg text-slate-400' aria-hidden='true' />
+                    <input
+                      type='search'
+                      value={storeSearch}
+                      onChange={(e) => setStoreSearch(e.target.value)}
+                      placeholder={`Buscar en ${store.name}...`}
+                      className='flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none'
+                    />
+                    {storeSearch ? (
+                      <button type='button' onClick={() => setStoreSearch('')} className='shrink-0 text-slate-400 hover:text-slate-600'>
+                        <i className='bx bx-x text-lg' aria-hidden='true' />
+                      </button>
+                    ) : null}
+                  </div>
+
+                  <div ref={storeSortRef} className='relative shrink-0'>
+                    <button
+                      type='button'
+                      onClick={() => setStoreSortOpen((o) => !o)}
+                      className='flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-primary/40 hover:text-primary'
+                    >
+                      <i className={`bx ${STORE_SORT_OPTIONS.find((o) => o.value === storeSortBy)?.icon} text-base`} aria-hidden='true' />
+                      <span className='hidden sm:inline'>{STORE_SORT_OPTIONS.find((o) => o.value === storeSortBy)?.label}</span>
+                      <i className={`bx bx-chevron-down text-base transition-transform ${storeSortOpen ? 'rotate-180' : ''}`} aria-hidden='true' />
+                    </button>
+                    {storeSortOpen ? (
+                      <div className='absolute right-0 top-[calc(100%+0.5rem)] z-50 min-w-[200px] rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl'>
+                        {STORE_SORT_OPTIONS.map((opt) => (
+                          <button
+                            key={opt.value}
+                            type='button'
+                            onClick={() => { setStoreSortBy(opt.value); setStoreSortOpen(false); }}
+                            className={`flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${
+                              storeSortBy === opt.value ? 'bg-primary/10 text-primary' : 'text-slate-600 hover:bg-slate-50'
+                            }`}
+                          >
+                            <i className={`bx ${opt.icon} text-base`} aria-hidden='true' />
+                            {opt.label}
+                            {storeSortBy === opt.value ? <i className='bx bx-check ml-auto text-primary' aria-hidden='true' /> : null}
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Product count feedback */}
+              {storeSearch && (
+                <p className='text-sm text-slate-500'>
+                  {filteredStoreProducts.length === 0
+                    ? `Sin resultados para "${storeSearch}"`
+                    : `${filteredStoreProducts.length} resultado${filteredStoreProducts.length === 1 ? '' : 's'} para "${storeSearch}"`}
+                </p>
+              )}
+
+              <ProductBody
+                products={filteredStoreProducts}
+                favoriteIds={favoriteIds}
+                layoutStyle={store.layoutStyle}
+                buttonStyle={store.buttonStyle}
+                primaryColor={store.primaryColor || undefined}
+                emptyMessage='Esta tienda todavía no tiene productos activos.'
+                onToggleFavorite={(productId) => { void toggleFavorite(productId); }}
+                onAddToCart={(productId) => {
+                  const product = products.find((item) => item.id === productId);
+                  if (!product) return;
+                  addItem({ productId: product.id, name: product.name, price: Number(product.price), imageUrl: product.imageUrl });
+                  const label = product.name.length > 28 ? `${product.name.slice(0, 28)}…` : product.name;
+                  SnackbarUtilities.success(`${label} agregado al carrito`, 'bottom', 'right');
+                }}
+              />
+            </div>
           )}
         </div>
       </div>

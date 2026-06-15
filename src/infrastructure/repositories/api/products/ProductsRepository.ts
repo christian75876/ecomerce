@@ -179,4 +179,13 @@ export class ProductRepository {
       authenticatedClientHTTP.delete(`/products/${productId}/gallery/${imageId}`),
     );
   }
+
+  static async reorderGallery(productId: string, imageIds: string[]): Promise<IProductImagesResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.patch<IProductImagesResp>(
+        `/products/${productId}/gallery/reorder`,
+        { imageIds },
+      ),
+    );
+  }
 }

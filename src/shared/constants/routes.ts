@@ -32,6 +32,7 @@ export const ROUTES = {
     PROFILE: '/profile',
     DETAILS: '/product/:productId',
     STORE: '/admin/store',
-    INVITATIONS: '/admin/invitations'
+    INVITATIONS: '/admin/invitations',
+    COUPONS: '/coupons'
   }
 } as const;

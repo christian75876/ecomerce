@@ -29,6 +29,7 @@ export type ProductFormState = {
   showStock: boolean;
   isPerishable: boolean;
   trackBatches: boolean;
+  lowStockThreshold: string;
   initialExpiresAt: string;
 };
 
@@ -48,6 +49,7 @@ export const initialProductFormState: ProductFormState = {
   showStock: false,
   isPerishable: false,
   trackBatches: true,
+  lowStockThreshold: '',
   initialExpiresAt: '',
 };
 
@@ -247,6 +249,7 @@ export const useProductsManagement = () => {
       showStock: currentForm.showStock,
       isPerishable: currentForm.isPerishable,
       trackBatches: currentForm.trackBatches,
+      lowStockThreshold: currentForm.lowStockThreshold ? Number(currentForm.lowStockThreshold) : undefined,
       initialExpiresAt: currentForm.initialExpiresAt || undefined,
       isActive: true,
     };
@@ -308,6 +311,7 @@ export const useProductsManagement = () => {
       showStock: product.showStock,
       isPerishable: product.isPerishable,
       trackBatches: product.trackBatches,
+      lowStockThreshold: product.lowStockThreshold != null ? String(product.lowStockThreshold) : '',
       initialExpiresAt: '',
     });
     setPendingImageFile(null);
@@ -339,12 +343,14 @@ export const useProductsManagement = () => {
     }
   };
 
-  const uploadGalleryImage = async (file: File) => {
-    if (!editingId) return;
+  const uploadGalleryImages = async (files: File[]) => {
+    if (!editingId || files.length === 0) return;
     setGallerySubmitting(true);
     setGalleryError(null);
     try {
-      await ProductRepository.uploadGalleryImage(editingId, file);
+      for (const file of files) {
+        await ProductRepository.uploadGalleryImage(editingId, file);
+      }
       await loadGallery(editingId);
     } catch (err) {
       setGalleryError(err instanceof Error ? err.message : 'No se pudo subir la imagen');
@@ -364,6 +370,19 @@ export const useProductsManagement = () => {
       setGalleryError(err instanceof Error ? err.message : 'No se pudo eliminar la imagen');
     } finally {
       setGallerySubmitting(false);
+    }
+  };
+
+  const reorderGallery = async (imageIds: string[]) => {
+    if (!editingId) return;
+    setGallery((prev) => {
+      const map = new Map(prev.map((img) => [img.id, img]));
+      return imageIds.map((id, i) => ({ ...map.get(id)!, order: i }));
+    });
+    try {
+      await ProductRepository.reorderGallery(editingId, imageIds);
+    } catch {
+      await loadGallery(editingId);
     }
   };
 
@@ -424,8 +443,9 @@ export const useProductsManagement = () => {
     setSelectedCategoryId,
     updateForm,
     setImageFile,
-    uploadGalleryImage,
+    uploadGalleryImages,
     removeGalleryImage,
+    reorderGallery,
     setVideoUrl,
     setVideoTitle,
     addVideo,

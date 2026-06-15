@@ -23,6 +23,8 @@ export interface IStore {
   menuPdfUrl: string | null;
   isActive: boolean;
   isAdultContent: boolean;
+  isPremiumAdvertiser: boolean;
+  subscriptionExpiresAt: string | null;
   userId: number | null;
   deliveryOptions: 'DELIVERY' | 'PICKUP' | 'BOTH';
   wppNotificationsEnabled: boolean;

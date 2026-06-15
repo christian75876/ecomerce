@@ -82,6 +82,17 @@ const DesktopHeaderLayout = () => {
             <i className='bx bx-help-circle text-lg' aria-hidden='true' />
           </Link>
 
+          {/* Profile button */}
+          {authenticated ? (
+            <Link
+              to={ROUTES.PRIVATE.PROFILE}
+              className='flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:border-primary/30 hover:text-primary'
+              aria-label='Mi perfil'
+            >
+              <i className='bx bx-user text-lg' aria-hidden='true' />
+            </Link>
+          ) : null}
+
           {/* Auth button */}
           {authenticated ? (
             <button

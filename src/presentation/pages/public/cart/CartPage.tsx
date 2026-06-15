@@ -7,9 +7,12 @@ import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import Icon from '@/presentation/ui/atoms/icon/SimpleIcon';
 import { useCart } from '@/shared/hooks/useCart';
 import { OrdersRepository } from '@/infrastructure/repositories/api/orders/OrdersRepository';
+import { CouponsRepository } from '@/infrastructure/repositories/api/coupons/CouponsRepository';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import { isAuthenticated, getAuthenticatedUser } from '@/shared/utils/checkIsUserAuthenticated.util';
 import { ROUTES } from '@/shared/constants/routes';
+import MapAddressPicker, { MapAddress } from '@molecules/common/MapAddressPicker';
+import type { ICouponValidation } from '@/application/dtos/coupons/CouponDtos';
 
 const CartPage = () => {
   const { items, total, updateQuantity, removeItem, clear } = useCart();
@@ -22,15 +25,37 @@ const CartPage = () => {
     phone: '',
   });
   const [deliveryMethod, setDeliveryMethod] = useState<'DELIVERY' | 'PICKUP'>('PICKUP');
-  const [address, setAddress] = useState({
-    street: '',
-    city: '',
-    department: '',
-    notes: '',
-  });
+  const [mapAddress, setMapAddress] = useState<MapAddress | null>(null);
+  const [deliveryNotes, setDeliveryNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [couponInput, setCouponInput] = useState('');
+  const [couponValidating, setCouponValidating] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState<ICouponValidation | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+
+  const handleApplyCoupon = async () => {
+    if (!couponInput.trim()) return;
+    setCouponValidating(true);
+    setCouponError(null);
+    setAppliedCoupon(null);
+    try {
+      const result = await CouponsRepository.validateCoupon(couponInput.trim().toUpperCase(), total);
+      if (result.valid) {
+        setAppliedCoupon(result);
+      } else {
+        setCouponError(result.message ?? 'Cupón inválido');
+      }
+    } catch {
+      setCouponError('No se pudo validar el cupón');
+    } finally {
+      setCouponValidating(false);
+    }
+  };
+
+  const discountAmount = appliedCoupon?.discountAmount ?? 0;
+  const finalTotal = Math.max(0, total - discountAmount);
 
   const handleCheckout = async () => {
     if (items.length === 0) {
@@ -41,8 +66,8 @@ const CartPage = () => {
       setError('Nombre, apellido y correo son obligatorios');
       return;
     }
-    if (deliveryMethod === 'DELIVERY' && !address.street.trim()) {
-      setError('La dirección de entrega es obligatoria para envío a domicilio');
+    if (deliveryMethod === 'DELIVERY' && !mapAddress) {
+      setError('Selecciona el punto de entrega en el mapa');
       return;
     }
 
@@ -63,15 +88,22 @@ const CartPage = () => {
           quantity: item.quantity,
         })),
         deliveryMethod,
-        deliveryAddress: deliveryMethod === 'DELIVERY' ? address.street.trim() : undefined,
-        deliveryCity: deliveryMethod === 'DELIVERY' ? address.city.trim() || undefined : undefined,
-        deliveryDepartment: deliveryMethod === 'DELIVERY' ? address.department.trim() || undefined : undefined,
-        deliveryNotes: deliveryMethod === 'DELIVERY' ? address.notes.trim() || undefined : undefined,
+        deliveryAddress: deliveryMethod === 'DELIVERY' ? mapAddress?.street : undefined,
+        deliveryCity: deliveryMethod === 'DELIVERY' ? mapAddress?.city || undefined : undefined,
+        deliveryDepartment: deliveryMethod === 'DELIVERY' ? mapAddress?.department || undefined : undefined,
+        deliveryNotes: deliveryMethod === 'DELIVERY' ? deliveryNotes.trim() || undefined : undefined,
+        deliveryLat: deliveryMethod === 'DELIVERY' ? mapAddress?.lat : undefined,
+        deliveryLng: deliveryMethod === 'DELIVERY' ? mapAddress?.lng : undefined,
+        couponCode: appliedCoupon?.coupon?.code,
       });
 
       clear();
       setCustomer({ firstName: '', lastName: '', email: '', phone: '' });
-      setAddress({ street: '', city: '', department: '', notes: '' });
+      setMapAddress(null);
+      setDeliveryNotes('');
+      setCouponInput('');
+      setAppliedCoupon(null);
+      setCouponError(null);
       setSuccess('¡Pedido creado! Pronto recibirás confirmación por correo.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No fue posible crear el pedido');
@@ -287,27 +319,11 @@ const CartPage = () => {
 
             {deliveryMethod === 'DELIVERY' ? (
               <Box className='mt-4 space-y-3'>
+                <MapAddressPicker value={mapAddress} onChange={setMapAddress} />
                 <Input
-                  placeholder='Dirección (calle, número, barrio) *'
-                  value={address.street}
-                  onChange={(e) => setAddress((a) => ({ ...a, street: e.target.value }))}
-                />
-                <Box className='grid grid-cols-2 gap-3'>
-                  <Input
-                    placeholder='Ciudad'
-                    value={address.city}
-                    onChange={(e) => setAddress((a) => ({ ...a, city: e.target.value }))}
-                  />
-                  <Input
-                    placeholder='Departamento'
-                    value={address.department}
-                    onChange={(e) => setAddress((a) => ({ ...a, department: e.target.value }))}
-                  />
-                </Box>
-                <Input
-                  placeholder='Notas para la entrega (opcional)'
-                  value={address.notes}
-                  onChange={(e) => setAddress((a) => ({ ...a, notes: e.target.value }))}
+                  placeholder='Notas para la entrega (piso, apartamento, referencias…)'
+                  value={deliveryNotes}
+                  onChange={(e) => setDeliveryNotes(e.target.value)}
                 />
               </Box>
             ) : (
@@ -332,11 +348,66 @@ const CartPage = () => {
               ))}
             </Box>
 
-            <Box className='mt-4 flex items-center justify-between border-t border-neutral-gray/20 pt-4'>
-              <Typography className='text-sm font-medium text-neutral-dark/65'>Total del pedido</Typography>
-              <Typography variant='h3' className='text-2xl font-bold text-neutral-dark'>
-                {formatCurrencyCOP(total)}
-              </Typography>
+            {/* Coupon input */}
+            <Box className='mt-4 space-y-2'>
+              <div className='flex gap-2'>
+                <input
+                  type='text'
+                  value={couponInput}
+                  onChange={(e) => {
+                    setCouponInput(e.target.value.toUpperCase());
+                    if (appliedCoupon) { setAppliedCoupon(null); setCouponError(null); }
+                  }}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { void handleApplyCoupon(); } }}
+                  placeholder='Código de descuento'
+                  maxLength={50}
+                  disabled={!!appliedCoupon}
+                  className='flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60'
+                />
+                <button
+                  type='button'
+                  onClick={appliedCoupon ? () => { setAppliedCoupon(null); setCouponInput(''); setCouponError(null); } : () => { void handleApplyCoupon(); }}
+                  disabled={couponValidating || (!couponInput.trim() && !appliedCoupon)}
+                  className='flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-xs font-bold text-white transition hover:bg-primary-dark disabled:opacity-40 active:scale-95'
+                >
+                  {couponValidating
+                    ? <i className='bx bx-loader-alt animate-spin text-sm' />
+                    : appliedCoupon
+                      ? <><i className='bx bx-x text-sm' />Quitar</>
+                      : 'Aplicar'}
+                </button>
+              </div>
+              {couponError ? (
+                <p className='flex items-center gap-1.5 text-xs text-red-600'>
+                  <i className='bx bx-error-circle text-sm' />
+                  {couponError}
+                </p>
+              ) : null}
+              {appliedCoupon?.valid ? (
+                <p className='flex items-center gap-1.5 text-xs font-semibold text-green-700'>
+                  <i className='bx bx-check-circle text-sm' />
+                  Cupón <strong>{appliedCoupon.coupon?.code}</strong> aplicado — descuento {formatCurrencyCOP(discountAmount)}
+                </p>
+              ) : null}
+            </Box>
+
+            <Box className='mt-4 space-y-1.5 border-t border-neutral-gray/20 pt-4'>
+              <div className='flex items-center justify-between text-sm text-neutral-dark/65'>
+                <span>Subtotal</span>
+                <span>{formatCurrencyCOP(total)}</span>
+              </div>
+              {discountAmount > 0 ? (
+                <div className='flex items-center justify-between text-sm font-semibold text-green-700'>
+                  <span>Descuento ({appliedCoupon?.coupon?.code})</span>
+                  <span>-{formatCurrencyCOP(discountAmount)}</span>
+                </div>
+              ) : null}
+              <div className='flex items-center justify-between'>
+                <Typography className='text-sm font-medium text-neutral-dark/65'>Total del pedido</Typography>
+                <Typography variant='h3' className='text-2xl font-bold text-neutral-dark'>
+                  {formatCurrencyCOP(finalTotal)}
+                </Typography>
+              </div>
             </Box>
 
             {error ? (

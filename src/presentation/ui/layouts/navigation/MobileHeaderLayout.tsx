@@ -9,6 +9,7 @@ import {
   isAuthenticated,
   isBuyerSession,
 } from '@/shared/utils/checkIsUserAuthenticated.util';
+import { useOrderNotifications } from '@/shared/hooks/useOrderNotifications';
 
 const adminPrimaryNavItems = [
   { label: 'Inicio', path: ROUTES.PRIVATE.DASHBOARD, icon: 'bx-home' },
@@ -26,6 +27,7 @@ const adminMoreNavItems = [
   { label: 'Proveedores', path: ROUTES.PRIVATE.SUPPLIERS, icon: 'bx-briefcase' },
   { label: 'Caja', path: ROUTES.PRIVATE.CASH, icon: 'bx-wallet' },
   { label: 'Auditoría', path: ROUTES.PRIVATE.AUDIT, icon: 'bx-history' },
+  { label: 'Cupones', path: ROUTES.PRIVATE.COUPONS, icon: 'bx-purchase-tag' },
   { label: 'Ajustes', path: ROUTES.PRIVATE.SETTINGS, icon: 'bx-cog' },
   { label: 'Ayuda', path: ROUTES.PUBLIC.HELP, icon: 'bx-help-circle' },
 ];
@@ -37,6 +39,7 @@ const publicPrimaryNavItems = [
 ];
 
 const publicMoreNavItems = [
+  { label: 'Mi perfil', path: ROUTES.PRIVATE.PROFILE, icon: 'bx-user' },
   { label: 'Favoritos', path: ROUTES.PUBLIC.FAVORITES, icon: 'bx-heart' },
   { label: 'Mis pedidos', path: ROUTES.PUBLIC.MY_ORDERS, icon: 'bx-receipt' },
   { label: 'Entrar', path: ROUTES.PUBLIC.LOGIN, icon: 'bx-user' },
@@ -46,6 +49,7 @@ const publicMoreNavItems = [
 const MobileHeaderLayout = () => {
   const [showMore, setShowMore] = useState(false);
   const adminView = isAuthenticated() && canAccessAdminPanel();
+  const { unreadCount } = useOrderNotifications();
   const buyerView = isBuyerSession();
   const primaryNavItems = adminView ? adminPrimaryNavItems : publicPrimaryNavItems;
   const moreNavItems = adminView
@@ -96,22 +100,33 @@ const MobileHeaderLayout = () => {
       ) : null}
       <Box className='surface-card fixed inset-x-3 bottom-3 z-50 rounded-[1.5rem] py-3'>
         <Box className='flex justify-around'>
-          {primaryNavItems.map(({ label, path, icon }) => (
-            <NavLink
-              key={path}
-              to={path}
-              className={({ isActive }) =>
-                `flex flex-col items-center text-sm transition-all ${
-                  isActive ? 'text-primary' : 'text-gray-600'
-                }`
-              }
-            >
-              <Icon name={icon} className='text-2xl' />
-              <Typography variant='p' className='mt-1 text-xs'>
-                {label}
-              </Typography>
-            </NavLink>
-          ))}
+          {primaryNavItems.map(({ label, path, icon }) => {
+            const isOrders = adminView && path === ROUTES.PRIVATE.ORDERS;
+            const badge = isOrders && unreadCount > 0 ? unreadCount : 0;
+            return (
+              <NavLink
+                key={path}
+                to={path}
+                className={({ isActive }) =>
+                  `relative flex flex-col items-center text-sm transition-all ${
+                    isActive ? 'text-primary' : 'text-gray-600'
+                  }`
+                }
+              >
+                <span className='relative'>
+                  <Icon name={icon} className='text-2xl' />
+                  {badge > 0 ? (
+                    <span className='absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white'>
+                      {badge > 9 ? '9+' : badge}
+                    </span>
+                  ) : null}
+                </span>
+                <Typography variant='p' className='mt-1 text-xs'>
+                  {label}
+                </Typography>
+              </NavLink>
+            );
+          })}
           <button
             type='button'
             onClick={() => setShowMore((current) => !current)}

@@ -22,6 +22,8 @@ export interface ICreateStoreRequest {
   email?: string;
   isActive?: boolean;
   isAdultContent?: boolean;
+  isPremiumAdvertiser?: boolean;
+  subscriptionExpiresAt?: string | null;
   storeType?: 'STORE' | 'RESTAURANT';
   menuPdfUrl?: string;
   deliveryOptions?: 'DELIVERY' | 'PICKUP' | 'BOTH';

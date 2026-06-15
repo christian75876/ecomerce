@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { usePublicStores } from '@/application/useCases/stores/usePublicStores';
 import { ROUTES } from '@/shared/constants/routes';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
+
+type StoreTab = 'all' | 'STORE' | 'RESTAURANT';
 
 const FALLBACK_GRADIENTS = [
   'from-blue-500 to-blue-700',
@@ -21,8 +24,25 @@ function storeBannerStyle(store: IStore, idx: number): React.CSSProperties {
   return {};
 }
 
+const TABS: { value: StoreTab; label: string; icon: string }[] = [
+  { value: 'all',        label: 'Todas',        icon: 'bx-store'        },
+  { value: 'STORE',      label: 'Tiendas',      icon: 'bx-shopping-bag' },
+  { value: 'RESTAURANT', label: 'Restaurantes', icon: 'bx-restaurant'   },
+];
+
 const StoresPage = () => {
   const { stores, loading, error } = usePublicStores();
+  const [activeTab, setActiveTab] = useState<StoreTab>('all');
+
+  const hasRestaurants = stores.some((s) => s.storeType === 'RESTAURANT');
+  const hasRegularStores = stores.some((s) => s.storeType === 'STORE');
+  const showTabs = hasRestaurants && hasRegularStores;
+
+  const visibleStores = activeTab === 'all'
+    ? stores
+    : stores.filter((s) => s.storeType === activeTab);
+
+  const tabLabel = activeTab === 'RESTAURANT' ? 'restaurantes' : activeTab === 'STORE' ? 'tiendas' : 'comercios';
 
   return (
     <div className='space-y-6 animate-fade-up'>
@@ -31,12 +51,42 @@ const StoresPage = () => {
         <div className='pointer-events-none absolute inset-0 opacity-10' aria-hidden='true' />
         <p className='text-xs font-semibold uppercase tracking-[0.2em] text-white/60'>Marketplace</p>
         <h1 className='mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl'>
-          Tiendas activas
+          {activeTab === 'RESTAURANT' ? 'Restaurantes' : 'Tiendas activas'}
         </h1>
         <p className='mt-2 text-sm text-white/70'>
-          Explora todos los comercios disponibles y navega sus productos.
+          {loading
+            ? 'Cargando...'
+            : `${visibleStores.length} ${tabLabel} disponibles`}
         </p>
       </div>
+
+      {/* Tabs */}
+      {showTabs ? (
+        <div className='flex gap-2 overflow-x-auto pb-1 scrollbar-hide'>
+          {TABS.map((tab) => (
+            <button
+              key={tab.value}
+              type='button'
+              onClick={() => setActiveTab(tab.value)}
+              className={`flex shrink-0 items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-semibold transition-all ${
+                activeTab === tab.value
+                  ? 'border-primary bg-primary text-white shadow-sm'
+                  : 'border-slate-200 bg-white text-slate-600 hover:border-primary/40 hover:text-primary'
+              }`}
+            >
+              <i className={`bx ${tab.icon} text-base`} aria-hidden='true' />
+              {tab.label}
+              {tab.value !== 'all' ? (
+                <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                  activeTab === tab.value ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                }`}>
+                  {stores.filter((s) => s.storeType === tab.value).length}
+                </span>
+              ) : null}
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       {/* Loading skeletons */}
       {loading ? (
@@ -56,16 +106,18 @@ const StoresPage = () => {
       ) : null}
 
       {/* Grid */}
-      {!loading && stores.length === 0 ? (
+      {!loading && visibleStores.length === 0 ? (
         <div className='flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white py-16 text-center'>
           <i className='bx bx-store mb-3 text-5xl text-slate-300' aria-hidden='true' />
-          <p className='font-semibold text-slate-500'>Aún no hay tiendas registradas</p>
+          <p className='font-semibold text-slate-500'>
+            {activeTab === 'all' ? 'Aún no hay tiendas registradas' : `No hay ${tabLabel} registrados`}
+          </p>
         </div>
       ) : null}
 
-      {!loading && stores.length > 0 ? (
+      {!loading && visibleStores.length > 0 ? (
         <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-          {stores.map((store, idx) => {
+          {visibleStores.map((store, idx) => {
             const fallback = FALLBACK_GRADIENTS[idx % FALLBACK_GRADIENTS.length];
             const initial = store.name.charAt(0).toUpperCase();
             const bannerStyle = storeBannerStyle(store, idx);

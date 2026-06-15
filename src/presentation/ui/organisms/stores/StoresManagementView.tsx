@@ -463,6 +463,65 @@ export const StoresManagementView = ({
                     Tienda de contenido para adultos — activa verificación de edad
                   </span>
                 </label>
+
+                <label className='flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50/50 px-4 py-3 text-sm text-neutral-dark'>
+                  <input
+                    type='checkbox'
+                    checked={form.isPremiumAdvertiser ?? false}
+                    onChange={(e) => onFormChange('isPremiumAdvertiser', e.target.checked)}
+                    disabled={submitting}
+                  />
+                  <span>
+                    <span className='mr-1.5 inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-600'>Patrocinado</span>
+                    Tienda con publicidad activa — sus productos aparecen intercalados en el catálogo
+                  </span>
+                </label>
+
+                {/* Subscription expiry */}
+                <div className='rounded-2xl border border-blue-200 bg-blue-50/40 p-4 space-y-3'>
+                  <p className='text-xs font-semibold uppercase tracking-wide text-blue-600'>Suscripción mensual</p>
+                  <p className='text-xs text-slate-500'>Sin fecha de vencimiento la tienda siempre está activa. Con fecha, se oculta automáticamente del marketplace al expirar.</p>
+                  <div className='flex flex-wrap items-center gap-2'>
+                    <input
+                      type='date'
+                      value={form.subscriptionExpiresAt ?? ''}
+                      onChange={(e) => onFormChange('subscriptionExpiresAt', e.target.value)}
+                      disabled={submitting}
+                      className='rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20'
+                    />
+                    <button type='button' disabled={submitting}
+                      onClick={() => { const d = new Date(); d.setDate(d.getDate() + 30); onFormChange('subscriptionExpiresAt', d.toISOString().split('T')[0]); }}
+                      className='rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:border-primary/40 hover:text-primary transition'>
+                      +30 días
+                    </button>
+                    <button type='button' disabled={submitting}
+                      onClick={() => { const d = new Date(); d.setDate(d.getDate() + 60); onFormChange('subscriptionExpiresAt', d.toISOString().split('T')[0]); }}
+                      className='rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:border-primary/40 hover:text-primary transition'>
+                      +60 días
+                    </button>
+                    <button type='button' disabled={submitting}
+                      onClick={() => { const d = new Date(); d.setDate(d.getDate() + 90); onFormChange('subscriptionExpiresAt', d.toISOString().split('T')[0]); }}
+                      className='rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:border-primary/40 hover:text-primary transition'>
+                      +90 días
+                    </button>
+                    {form.subscriptionExpiresAt ? (
+                      <button type='button' disabled={submitting}
+                        onClick={() => onFormChange('subscriptionExpiresAt', '')}
+                        className='rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-500 hover:bg-red-100 transition'>
+                        Sin vencimiento
+                      </button>
+                    ) : null}
+                  </div>
+                  {form.subscriptionExpiresAt ? (
+                    <p className={`text-xs font-medium ${new Date(form.subscriptionExpiresAt) < new Date() ? 'text-red-500' : 'text-green-600'}`}>
+                      {new Date(form.subscriptionExpiresAt) < new Date()
+                        ? '⚠ Esta fecha ya expiró — la tienda está oculta en el marketplace'
+                        : `Visible hasta el ${new Date(form.subscriptionExpiresAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}`}
+                    </p>
+                  ) : (
+                    <p className='text-xs text-slate-400'>Sin fecha — visible indefinidamente</p>
+                  )}
+                </div>
               </Box>
             ) : null}
 
@@ -757,6 +816,21 @@ export const StoresManagementView = ({
                     </div>
                     <Typography className='text-xs text-neutral-dark/45'>
                       /{store.slug} · {store.isActive ? 'Activa' : 'Inactiva'}
+                      {(() => {
+                        if (!store.subscriptionExpiresAt) return null;
+                        const exp = new Date(store.subscriptionExpiresAt);
+                        const now = new Date();
+                        const daysLeft = Math.ceil((exp.getTime() - now.getTime()) / 86400000);
+                        if (daysLeft < 0) return (
+                          <span className='ml-1.5 rounded-full bg-red-100 px-1.5 py-0.5 text-[9px] font-bold text-red-600'>EXPIRADO</span>
+                        );
+                        if (daysLeft <= 7) return (
+                          <span className='ml-1.5 rounded-full bg-orange-100 px-1.5 py-0.5 text-[9px] font-bold text-orange-600'>Vence en {daysLeft}d</span>
+                        );
+                        return (
+                          <span className='ml-1.5 rounded-full bg-green-100 px-1.5 py-0.5 text-[9px] font-bold text-green-700'>Sub. activa</span>
+                        );
+                      })()}
                     </Typography>
                   </Box>
                   <button
@@ -785,7 +859,6 @@ export const StoresManagementView = ({
                 </div>
               ) : (
                 <MenuCategoriesManager
-                  storeId={editingId}
                   categories={menuCats.categories}
                   submitting={menuCats.submitting}
                   error={menuCats.error}

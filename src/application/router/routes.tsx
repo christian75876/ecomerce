@@ -85,6 +85,12 @@ const InvitationsPage = lazy(
 const HelpPage = lazy(
   () => import('@presentation/pages/public/help/HelpPage')
 );
+const ProfilePage = lazy(
+  () => import('@presentation/pages/public/profile/ProfilePage')
+);
+const CouponsPage = lazy(
+  () => import('@presentation/pages/private/coupons/CouponsPage')
+);
 
 export type AppRoute = RouteObject & {
   path: string;
@@ -148,6 +154,12 @@ export const routes: AppRoute[] = [
   {
     path: ROUTES.PUBLIC.MY_ORDERS,
     element: <MyOrdersPage />,
+    layout: DashboardLayout,
+    publicOnly: false
+  },
+  {
+    path: ROUTES.PRIVATE.PROFILE,
+    element: <ProfilePage />,
     layout: DashboardLayout,
     publicOnly: false
   },
@@ -252,6 +264,12 @@ export const routes: AppRoute[] = [
   {
     path: ROUTES.PRIVATE.INVITATIONS,
     element: <InvitationsPage />,
+    private: true,
+    layout: DashboardLayout
+  },
+  {
+    path: ROUTES.PRIVATE.COUPONS,
+    element: <CouponsPage />,
     private: true,
     layout: DashboardLayout
   },

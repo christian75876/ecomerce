@@ -22,6 +22,8 @@ export type StoreFormState = {
   email: string;
   isActive: boolean;
   isAdultContent: boolean;
+  isPremiumAdvertiser: boolean;
+  subscriptionExpiresAt: string; // ISO date string YYYY-MM-DD or empty = no expiry
   storeType: 'STORE' | 'RESTAURANT';
   menuPdfUrl: string;
   deliveryOptions: 'DELIVERY' | 'PICKUP' | 'BOTH';
@@ -47,6 +49,8 @@ const initialStoreForm: StoreFormState = {
   email: '',
   isActive: true,
   isAdultContent: false,
+  isPremiumAdvertiser: false,
+  subscriptionExpiresAt: '',
   storeType: 'STORE',
   menuPdfUrl: '',
   deliveryOptions: 'BOTH',
@@ -111,6 +115,8 @@ export const useStoresManagement = () => {
         email: form.email.trim() || undefined,
         isActive: form.isActive,
         isAdultContent: form.isAdultContent,
+        isPremiumAdvertiser: form.isPremiumAdvertiser,
+        subscriptionExpiresAt: form.subscriptionExpiresAt || null,
         storeType: form.storeType,
         menuPdfUrl: form.menuPdfUrl.trim() || undefined,
         deliveryOptions: form.deliveryOptions,
@@ -155,6 +161,10 @@ export const useStoresManagement = () => {
       email: store.email ?? '',
       isActive: store.isActive,
       isAdultContent: store.isAdultContent ?? false,
+      isPremiumAdvertiser: store.isPremiumAdvertiser ?? false,
+      subscriptionExpiresAt: store.subscriptionExpiresAt
+        ? store.subscriptionExpiresAt.split('T')[0]
+        : '',
       storeType: store.storeType ?? 'STORE',
       menuPdfUrl: store.menuPdfUrl ?? '',
       deliveryOptions: store.deliveryOptions ?? 'BOTH',

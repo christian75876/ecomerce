@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { ICategory } from '@/application/dtos/categories/response/CategoryResponse';
 import { IProduct, IProductImage, IProductVideo } from '@/application/dtos/products/response/ProductResponse';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
@@ -44,8 +44,9 @@ interface ProductsManagementViewProps {
     value: ProductFormState[K],
   ) => void;
   onImageFileChange: (file: File | null) => void;
-  onGalleryImageUpload: (file: File) => Promise<void>;
+  onGalleryImageUpload: (files: File[]) => Promise<void>;
   onGalleryImageRemove: (imageId: string) => Promise<void>;
+  onGalleryImageReorder: (imageIds: string[]) => Promise<void>;
   onVideoUrlChange: (value: string) => void;
   onVideoTitleChange: (value: string) => void;
   onAddVideo: () => Promise<void>;
@@ -94,6 +95,7 @@ export const ProductsManagementView = ({
   onImageFileChange,
   onGalleryImageUpload,
   onGalleryImageRemove,
+  onGalleryImageReorder,
   onVideoUrlChange,
   onVideoTitleChange,
   onAddVideo,
@@ -105,6 +107,9 @@ export const ProductsManagementView = ({
 }: ProductsManagementViewProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [dropZoneActive, setDropZoneActive] = useState(false);
+  const dragIndexRef = useRef<number | null>(null);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -397,17 +402,33 @@ export const ProductsManagementView = ({
               </Box>
             </Box>
 
-            <label className="flex items-center gap-3 rounded-2xl border border-neutral-gray/20 px-4 py-3 text-sm text-neutral-dark">
-              <input
-                type="checkbox"
-                checked={form.showStock}
-                onChange={(event) =>
-                  onFormChange('showStock', event.target.checked)
-                }
-                disabled={submitting}
-              />
-              Mostrar stock disponible en el catálogo
-            </label>
+            <Box className='grid gap-4 md:grid-cols-2'>
+              <label className="flex items-center gap-3 rounded-2xl border border-neutral-gray/20 px-4 py-3 text-sm text-neutral-dark">
+                <input
+                  type="checkbox"
+                  checked={form.showStock}
+                  onChange={(event) =>
+                    onFormChange('showStock', event.target.checked)
+                  }
+                  disabled={submitting}
+                />
+                Mostrar stock disponible en el catálogo
+              </label>
+
+              <Box>
+                <Label htmlFor='low-stock-threshold'>Alerta de stock bajo (unidades)</Label>
+                <Input
+                  id='low-stock-threshold'
+                  type='number'
+                  min='0'
+                  step='1'
+                  placeholder='Ej. 5 — avisa cuando quede poco'
+                  value={form.lowStockThreshold}
+                  onChange={(e) => onFormChange('lowStockThreshold', e.target.value)}
+                  disabled={submitting}
+                />
+              </Box>
+            </Box>
 
             {error ? (
               <Box className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
@@ -449,49 +470,123 @@ export const ProductsManagementView = ({
                 </Box>
               ) : null}
 
+              {/* Hidden multi-file input */}
               <input
                 ref={galleryInputRef}
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
+                multiple
                 className="hidden"
                 onChange={async (event) => {
-                  const file = event.target.files?.[0];
-                  if (file) {
-                    await onGalleryImageUpload(file);
+                  const files = Array.from(event.target.files ?? []);
+                  if (files.length > 0) {
+                    await onGalleryImageUpload(files);
                     event.target.value = '';
                   }
                 }}
               />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => galleryInputRef.current?.click()}
-                disabled={gallerySubmitting}
-                className="mb-4"
-              >
-                {gallerySubmitting ? 'Subiendo...' : 'Agregar imagen a galería'}
-              </Button>
 
+              {/* Drop zone */}
+              <div
+                className={`mb-4 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-4 py-6 text-center transition-colors ${
+                  dropZoneActive
+                    ? 'border-primary bg-primary/5'
+                    : 'border-slate-200 bg-slate-50 hover:border-primary/40 hover:bg-primary/3'
+                }`}
+                onClick={() => galleryInputRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); setDropZoneActive(true); }}
+                onDragLeave={() => setDropZoneActive(false)}
+                onDrop={async (e) => {
+                  e.preventDefault();
+                  setDropZoneActive(false);
+                  const files = Array.from(e.dataTransfer.files).filter((f) =>
+                    ['image/jpeg', 'image/png', 'image/webp'].includes(f.type),
+                  );
+                  if (files.length > 0) await onGalleryImageUpload(files);
+                }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') galleryInputRef.current?.click(); }}
+                aria-label="Subir imágenes a la galería"
+              >
+                {gallerySubmitting ? (
+                  <>
+                    <i className="bx bx-loader-alt animate-spin text-2xl text-primary" aria-hidden="true" />
+                    <span className="text-sm font-medium text-primary">Subiendo imágenes...</span>
+                  </>
+                ) : (
+                  <>
+                    <i className="bx bx-cloud-upload text-2xl text-slate-400" aria-hidden="true" />
+                    <span className="text-sm font-medium text-slate-600">
+                      Arrastra fotos aquí o <span className="text-primary underline">haz clic para seleccionar</span>
+                    </span>
+                    <span className="text-xs text-slate-400">JPEG · PNG · WebP · máx 8 MB · múltiples archivos</span>
+                  </>
+                )}
+              </div>
+
+              {/* Gallery grid with drag-to-reorder */}
               {gallery.length > 0 ? (
-                <Box className="grid grid-cols-3 gap-3">
-                  {gallery.map((img) => (
-                    <Box key={img.id} className="group relative overflow-hidden rounded-xl border border-neutral-gray/20">
-                      <img
-                        src={img.imageUrl}
-                        alt="Galería"
-                        className="h-24 w-full object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => void onGalleryImageRemove(img.id)}
-                        disabled={gallerySubmitting}
-                        className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100"
+                <>
+                  {gallery.length > 1 ? (
+                    <p className="mb-2 text-xs text-slate-400">
+                      <i className="bx bx-move mr-1" aria-hidden="true" />
+                      Arrastra las imágenes para reordenarlas
+                    </p>
+                  ) : null}
+                  <Box className="grid grid-cols-3 gap-3">
+                    {gallery.map((img, index) => (
+                      <Box
+                        key={img.id}
+                        draggable
+                        onDragStart={() => { dragIndexRef.current = index; }}
+                        onDragOver={(e) => { e.preventDefault(); setDragOverIndex(index); }}
+                        onDragLeave={() => setDragOverIndex(null)}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          const from = dragIndexRef.current;
+                          if (from === null || from === index) { setDragOverIndex(null); return; }
+                          const newOrder = [...gallery];
+                          const [moved] = newOrder.splice(from, 1);
+                          newOrder.splice(index, 0, moved);
+                          setDragOverIndex(null);
+                          dragIndexRef.current = null;
+                          void onGalleryImageReorder(newOrder.map((i) => i.id));
+                        }}
+                        onDragEnd={() => { dragIndexRef.current = null; setDragOverIndex(null); }}
+                        className={`group relative cursor-grab overflow-hidden rounded-xl border-2 transition-all active:cursor-grabbing ${
+                          dragOverIndex === index
+                            ? 'border-primary shadow-md scale-105'
+                            : 'border-neutral-gray/20 hover:border-primary/30'
+                        }`}
                       >
-                        ×
-                      </button>
-                    </Box>
-                  ))}
-                </Box>
+                        {/* Order badge */}
+                        <span className="absolute left-1.5 top-1.5 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-black/50 text-[10px] font-bold text-white">
+                          {index + 1}
+                        </span>
+                        <img
+                          src={img.imageUrl}
+                          alt={`Galería ${index + 1}`}
+                          className="h-24 w-full object-cover"
+                          draggable={false}
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); void onGalleryImageRemove(img.id); }}
+                          disabled={gallerySubmitting}
+                          aria-label="Eliminar imagen"
+                          className="absolute right-1 top-1 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs text-white opacity-0 shadow-sm transition-opacity group-hover:opacity-100 disabled:opacity-40"
+                        >
+                          <i className="bx bx-x text-sm" aria-hidden="true" />
+                        </button>
+                        {/* Drag handle hint */}
+                        <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center bg-black/30 py-1 opacity-0 transition-opacity group-hover:opacity-100">
+                          <i className="bx bx-move text-sm text-white" aria-hidden="true" />
+                        </div>
+                      </Box>
+                    ))}
+                  </Box>
+                </>
               ) : (
                 <Typography className="text-sm text-neutral-dark/50">
                   Sin imágenes adicionales en la galería.

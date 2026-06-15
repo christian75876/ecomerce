@@ -15,6 +15,9 @@ export interface ICreateOrderRequest {
   deliveryCity?: string;
   deliveryDepartment?: string;
   deliveryNotes?: string;
+  deliveryLat?: number;
+  deliveryLng?: number;
+  couponCode?: string;
 }
 
 export interface IUpdateOrderStatusRequest {

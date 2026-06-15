@@ -8,6 +8,7 @@ interface ProductBodyProps {
   loading?: boolean;
   emptyMessage?: string;
   favoriteIds?: string[];
+  sponsoredIds?: string[];
   layoutStyle?: 'GRID' | 'LIST';
   buttonStyle?: 'ROUNDED' | 'SHARP' | 'PILL';
   primaryColor?: string;
@@ -23,6 +24,7 @@ const ProductBody = ({
   loading = false,
   emptyMessage = 'No hay productos disponibles en este momento.',
   favoriteIds = [],
+  sponsoredIds = [],
   layoutStyle = 'GRID',
   buttonStyle,
   primaryColor,
@@ -59,9 +61,12 @@ const ProductBody = ({
           compareAtPrice={product.compareAtPrice}
           availableQuantity={product.availableQuantity}
           showStock={product.showStock}
+          averageRating={product.averageRating}
+          reviewCount={product.reviewCount}
           storeName={product.store?.name}
           storeSlug={product.store?.slug}
           isFavorite={favoriteIds.includes(product.id)}
+          isSponsored={sponsoredIds.includes(product.id)}
           layoutStyle={layoutStyle}
           buttonStyle={buttonStyle}
           primaryColor={primaryColor}
