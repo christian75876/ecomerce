@@ -7,7 +7,6 @@ import { usePublicStoreDetail } from '@/application/useCases/stores/usePublicSto
 import ProductBody from '@/presentation/ui/organisms/products/ProductBody';
 import { useCart } from '@/shared/hooks/useCart';
 import { SnackbarUtilities } from '@/shared/utils/SnackbarManager';
-import { useFavorites } from '@/application/useCases/products/useFavorites';
 import Link from '@/presentation/ui/atoms/link/Simplelink';
 import { ROUTES } from '@/shared/constants/routes';
 import WhatsAppFloat from '@/presentation/ui/atoms/whatsapp/WhatsAppFloat';
@@ -57,7 +56,6 @@ const StoreDetailPage = () => {
   const navigate = useNavigate();
   const { store, products, menuCategories, loading, error } = usePublicStoreDetail(slug);
   const { addItem } = useCart();
-  const { favoriteIds, toggleFavorite } = useFavorites();
   const [ageVerified, setAgeVerified] = useState(false);
   const [storeSearch, setStoreSearch] = useState('');
   const [storeSortBy, setStoreSortBy] = useState<'newest' | 'price_asc' | 'price_desc' | 'name_asc'>('newest');
@@ -242,8 +240,6 @@ const StoreDetailPage = () => {
               layoutStyle={store.layoutStyle}
               buttonStyle={store.buttonStyle}
               primaryColor={store.primaryColor || undefined}
-              favoriteIds={favoriteIds}
-              onToggleFavorite={(productId) => { void toggleFavorite(productId); }}
               onAddToCart={(productId) => {
                 const product = products.find((item) => item.id === productId);
                 if (!product) return;
@@ -316,12 +312,10 @@ const StoreDetailPage = () => {
 
               <ProductBody
                 products={filteredStoreProducts}
-                favoriteIds={favoriteIds}
                 layoutStyle={store.layoutStyle}
                 buttonStyle={store.buttonStyle}
                 primaryColor={store.primaryColor || undefined}
                 emptyMessage='Esta tienda todavía no tiene productos activos.'
-                onToggleFavorite={(productId) => { void toggleFavorite(productId); }}
                 onAddToCart={(productId) => {
                   const product = products.find((item) => item.id === productId);
                   if (!product) return;

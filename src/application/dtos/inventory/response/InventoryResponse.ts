@@ -12,6 +12,7 @@ export interface IInventoryItem {
   activeBatchCount: number;
   nextExpiration: string | null;
   inventoryValue: number;
+  lowStockThreshold: number | null;
 }
 
 export interface IInventoryMovement {

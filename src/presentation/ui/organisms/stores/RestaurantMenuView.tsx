@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { IProduct } from '@/application/dtos/products/response/ProductResponse';
 import { IMenuCategory } from '@/application/dtos/menu-categories/response/MenuCategoryResponse';
 import ProductBody from '@/presentation/ui/organisms/products/ProductBody';
+import PdfViewerModal from '@molecules/common/PdfViewerModal';
 
 interface RestaurantMenuViewProps {
   products: IProduct[];
@@ -10,8 +11,6 @@ interface RestaurantMenuViewProps {
   layoutStyle: 'GRID' | 'LIST';
   buttonStyle: 'ROUNDED' | 'SHARP' | 'PILL';
   primaryColor?: string;
-  favoriteIds: string[];
-  onToggleFavorite: (productId: string) => void;
   onAddToCart: (productId: string) => void;
 }
 
@@ -22,13 +21,12 @@ const RestaurantMenuView = ({
   layoutStyle,
   buttonStyle,
   primaryColor,
-  favoriteIds,
-  onToggleFavorite,
   onAddToCart,
 }: RestaurantMenuViewProps) => {
   const [activeCategory, setActiveCategory] = useState<string | null>(
     menuCategories.length > 0 ? menuCategories[0].id : null,
   );
+  const [pdfOpen, setPdfOpen] = useState(false);
 
   const sorted = [...menuCategories].sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name));
 
@@ -50,18 +48,22 @@ const RestaurantMenuView = ({
 
   return (
     <div className='space-y-4'>
-      {/* PDF link */}
+      {/* PDF button */}
       {menuPdfUrl ? (
-        <a
-          href={menuPdfUrl}
-          target='_blank'
-          rel='noopener noreferrer'
-          className='flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-primary/30 hover:text-primary'
-        >
-          <i className='bx bxs-file-pdf text-xl text-red-500' aria-hidden='true' />
-          Ver menú completo en PDF
-          <i className='bx bx-link-external ml-auto text-slate-400' aria-hidden='true' />
-        </a>
+        <>
+          <button
+            type='button'
+            onClick={() => setPdfOpen(true)}
+            className='flex w-full items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-primary/30 hover:text-primary'
+          >
+            <i className='bx bxs-file-pdf text-xl text-red-500' aria-hidden='true' />
+            Ver carta completa en PDF
+            <i className='bx bx-expand ml-auto text-slate-400' aria-hidden='true' />
+          </button>
+          {pdfOpen ? (
+            <PdfViewerModal url={menuPdfUrl} onClose={() => setPdfOpen(false)} />
+          ) : null}
+        </>
       ) : null}
 
       {/* Category tabs */}
@@ -107,12 +109,10 @@ const RestaurantMenuView = ({
       {/* Products */}
       <ProductBody
         products={filteredProducts}
-        favoriteIds={favoriteIds}
         layoutStyle={layoutStyle}
         buttonStyle={buttonStyle}
         primaryColor={primaryColor}
         emptyMessage='Esta sección no tiene platos disponibles aún.'
-        onToggleFavorite={onToggleFavorite}
         onAddToCart={onAddToCart}
       />
     </div>

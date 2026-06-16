@@ -9,10 +9,8 @@ interface ProductGridProps {
   products: IProduct[];
   loading?: boolean;
   error?: string | null;
-  favoriteIds?: string[];
   hasMore?: boolean;
   onLoadMore?: () => void;
-  onToggleFavorite?: (productId: string) => void;
   onAddToCart?: (productId: string) => void;
 }
 
@@ -23,10 +21,8 @@ const ProductGrid = ({
   products,
   loading = false,
   error,
-  favoriteIds = [],
   hasMore = false,
   onLoadMore,
-  onToggleFavorite,
   onAddToCart,
 }: ProductGridProps) => {
   const observerTargetRef = useRef<HTMLDivElement | null>(null);
@@ -87,11 +83,7 @@ const ProductGrid = ({
                 price={String(product.price)}
                 storeName={product.store?.name}
                 storeSlug={product.store?.slug}
-                isFavorite={favoriteIds.includes(product.id)}
                 badge={index < 4 ? 'Top' : undefined}
-                onToggleFavorite={
-                  onToggleFavorite ? () => onToggleFavorite(product.id) : undefined
-                }
                 onAddToCart={() => onAddToCart?.(product.id)}
               />
             ))}

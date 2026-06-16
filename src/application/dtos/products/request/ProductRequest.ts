@@ -25,6 +25,7 @@ export interface ICreateProductRequest {
   isActive?: boolean;
   isPerishable?: boolean;
   trackBatches?: boolean;
+  lowStockThreshold?: number;
   initialExpiresAt?: string;
 }
 

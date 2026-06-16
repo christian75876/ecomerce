@@ -3,7 +3,7 @@ import { CouponsRepository } from '@/infrastructure/repositories/api/coupons/Cou
 import type { ICoupon, ICreateCouponRequest, CouponType } from '@/application/dtos/coupons/CouponDtos';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import { formatDate } from '@/shared/utils/formatDate';
-import { showToast } from '@/shared/utils/SnackbarManager';
+import { SnackbarUtilities } from '@/shared/utils/SnackbarManager';
 
 const EMPTY_FORM: ICreateCouponRequest = {
   code: '',
@@ -36,7 +36,7 @@ const CouponsPage = () => {
       const res = await CouponsRepository.getCoupons();
       setCoupons(res.data);
     } catch {
-      showToast('No se pudieron cargar los cupones', 'error');
+      SnackbarUtilities.error('No se pudieron cargar los cupones');
     } finally {
       setLoading(false);
     }
@@ -47,7 +47,7 @@ const CouponsPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.code.trim() || form.value <= 0) {
-      showToast('Código y valor son obligatorios', 'error');
+      SnackbarUtilities.error('Código y valor son obligatorios');
       return;
     }
     setSubmitting(true);
@@ -61,9 +61,9 @@ const CouponsPage = () => {
       });
       setForm(EMPTY_FORM);
       await load();
-      showToast('Cupón creado', 'success');
+      SnackbarUtilities.success('Cupón creado');
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'No se pudo crear el cupón', 'error');
+      SnackbarUtilities.error(err instanceof Error ? err.message : 'No se pudo crear el cupón');
     } finally {
       setSubmitting(false);
     }
@@ -74,9 +74,9 @@ const CouponsPage = () => {
     try {
       await CouponsRepository.deleteCoupon(id);
       setCoupons((prev) => prev.filter((c) => c.id !== id));
-      showToast('Cupón eliminado', 'success');
+      SnackbarUtilities.success('Cupón eliminado');
     } catch {
-      showToast('No se pudo eliminar el cupón', 'error');
+      SnackbarUtilities.error('No se pudo eliminar el cupón');
     } finally {
       setDeleting(null);
     }

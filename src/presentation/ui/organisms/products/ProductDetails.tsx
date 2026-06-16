@@ -7,9 +7,6 @@ import { usePublicProductDetail } from '@/application/useCases/products/usePubli
 import Box from '../../atoms/box/SimpleBox';
 import ProductReviews from './ProductReviews';
 import { useCart } from '@/shared/hooks/useCart';
-import { useFavorites } from '@/application/useCases/products/useFavorites';
-import Button from '../../atoms/button/SimpleButton';
-import Icon from '../../atoms/icon/SimpleIcon';
 import ProductBody from './ProductBody';
 import Link from '../../atoms/link/Simplelink';
 import { ROUTES } from '@/shared/constants/routes';
@@ -24,7 +21,6 @@ const ProductDetails = () => {
   const { productId } = useParams<{ productId: string }>();
   const { product, relatedProducts, gallery, videos, loading, error } = usePublicProductDetail(productId);
   const { addItem } = useCart();
-  const { favoriteIds, toggleFavorite, isAuthenticated } = useFavorites();
 
   if (loading) {
     return <Typography>Cargando detalle del producto...</Typography>;
@@ -97,16 +93,6 @@ const ProductDetails = () => {
                   })
                 }
               />
-              <Button
-                type='button'
-                variant={favoriteIds.includes(product.id) ? 'secondary' : 'outlinePrimary'}
-                onClick={() => void toggleFavorite(product.id)}
-                disabled={!isAuthenticated}
-                leftIcon={<Icon name={favoriteIds.includes(product.id) ? 'bxs-heart' : 'bx-heart'} />}
-                className='w-full'
-              >
-                {favoriteIds.includes(product.id) ? 'Guardado en favoritos' : 'Guardar en favoritos'}
-              </Button>
               <Box className='rounded-[1.5rem] border border-neutral-gray/20 bg-white px-5 py-4 text-sm text-neutral-dark/65 shadow-sm'>
                 {product.store?.name ? `Vendido por ${product.store.name}.` : 'Producto activo en el marketplace.'}
                 {' '}Entrega y disponibilidad sujetas a inventario.
@@ -225,10 +211,6 @@ const ProductDetails = () => {
           <ProductBody
             products={relatedProducts}
             emptyMessage='No encontramos relacionados directos. Vuelve al catálogo para seguir explorando.'
-            favoriteIds={favoriteIds}
-            onToggleFavorite={(relatedProductId) => {
-              void toggleFavorite(relatedProductId);
-            }}
             onAddToCart={(relatedProductId) => {
               const relatedProduct = relatedProducts.find(
                 (item) => item.id === relatedProductId,

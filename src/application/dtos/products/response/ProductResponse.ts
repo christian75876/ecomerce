@@ -16,12 +16,15 @@ export interface IProduct {
   showStock: boolean;
   isPerishable: boolean;
   trackBatches: boolean;
+  lowStockThreshold: number | null;
   categoryId: string;
   storeId: string | null;
   supplierId: string | null;
   menuCategoryId: string | null;
   menuCategory: { id: string; name: string; sortOrder: number } | null;
   availableQuantity: number;
+  averageRating: number | null;
+  reviewCount: number;
   category: ICategory;
   store: IStore | null;
   supplier: ISupplier | null;

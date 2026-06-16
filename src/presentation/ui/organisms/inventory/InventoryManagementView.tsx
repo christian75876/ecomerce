@@ -80,6 +80,10 @@ export const InventoryManagementView = ({
     await onSubmit();
   };
 
+  const lowStockAlerts = inventory.filter(
+    (item) => item.lowStockThreshold != null && item.stock <= item.lowStockThreshold,
+  );
+
   return (
     <FeatureScreen>
       <FeatureScreenHeader
@@ -238,7 +242,7 @@ export const InventoryManagementView = ({
         </FeaturePanel>
 
         <Box className='space-y-6'>
-          <Box className='grid gap-4 lg:grid-cols-3'>
+          <Box className='grid gap-4 lg:grid-cols-4'>
             <FeatureMetricCard
               label='Productos con stock'
               value={inventory.filter((item) => item.stock > 0).length}
@@ -251,6 +255,14 @@ export const InventoryManagementView = ({
               label='Próximos vencimientos'
               value={expiringBatches.length}
             />
+            <Box className={`rounded-2xl border px-5 py-4 ${lowStockAlerts.length > 0 ? 'border-red-200 bg-red-50' : 'border-neutral-gray/20 bg-white'}`}>
+              <Typography className={`text-xs font-medium ${lowStockAlerts.length > 0 ? 'text-red-500' : 'text-neutral-dark/55'}`}>
+                Alertas de stock bajo
+              </Typography>
+              <Typography variant='h2' className={`mt-1 text-3xl font-bold ${lowStockAlerts.length > 0 ? 'text-red-600' : 'text-neutral-dark'}`}>
+                {lowStockAlerts.length}
+              </Typography>
+            </Box>
           </Box>
 
           <FeaturePanel title='Inventario general'>
@@ -269,15 +281,30 @@ export const InventoryManagementView = ({
                     </tr>
                   </thead>
                   <tbody>
-                    {inventory.map((item) => (
-                      <tr key={item.productId} className='border-b border-neutral-gray/30 last:border-b-0'>
+                    {inventory.map((item) => {
+                      const isLow = item.lowStockThreshold != null && item.stock <= item.lowStockThreshold;
+                      return (
+                      <tr key={item.productId} className={`border-b border-neutral-gray/30 last:border-b-0 ${isLow ? 'bg-red-50/60' : ''}`}>
                         <td className='px-3 py-3'>
-                          <div className='font-semibold'>{item.productName}</div>
+                          <div className='flex items-center gap-2 font-semibold'>
+                            {item.productName}
+                            {isLow ? (
+                              <span className='inline-flex items-center gap-0.5 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600'>
+                                <i className='bx bx-error-circle' />
+                                Stock bajo
+                              </span>
+                            ) : null}
+                          </div>
                           <div className='text-neutral-dark/60'>
                             {item.sku} · {item.isPerishable ? 'Perecedero' : 'No perecedero'}
                           </div>
                         </td>
-                        <td className='px-3 py-3'>{item.stock}</td>
+                        <td className={`px-3 py-3 font-semibold tabular-nums ${isLow ? 'text-red-600' : ''}`}>
+                          {item.stock}
+                          {item.lowStockThreshold != null ? (
+                            <span className='ml-1 text-xs font-normal text-slate-400'>/ mín {item.lowStockThreshold}</span>
+                          ) : null}
+                        </td>
                         <td className='px-3 py-3'>{item.activeBatchCount}</td>
                         <td className='px-3 py-3'>
                           {item.nextExpiration
@@ -286,12 +313,38 @@ export const InventoryManagementView = ({
                         </td>
                         <td className='px-3 py-3'>{formatCurrencyCOP(item.inventoryValue)}</td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               )}
             </Box>
           </FeaturePanel>
+
+          {/* Low stock alerts panel */}
+          {lowStockAlerts.length > 0 ? (
+            <FeaturePanel title={`Alertas de stock bajo (${lowStockAlerts.length})`}>
+              <Box className='mt-5 space-y-2'>
+                {lowStockAlerts.map((item) => (
+                  <Box
+                    key={item.productId}
+                    className='flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3'
+                  >
+                    <i className='bx bx-error-circle flex-shrink-0 text-xl text-red-500' aria-hidden='true' />
+                    <Box className='min-w-0 flex-1'>
+                      <Typography className='truncate font-semibold text-red-700'>{item.productName}</Typography>
+                      <Typography className='text-xs text-red-500'>
+                        SKU: {item.sku} · Stock actual: <strong>{item.stock}</strong> · Mínimo: {item.lowStockThreshold}
+                      </Typography>
+                    </Box>
+                    <span className='flex-shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-600'>
+                      Reponer
+                    </span>
+                  </Box>
+                ))}
+              </Box>
+            </FeaturePanel>
+          ) : null}
 
           <Box className='grid gap-6 xl:grid-cols-2'>
             <FeaturePanel title='Lotes y vencimientos'>

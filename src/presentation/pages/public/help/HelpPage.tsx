@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants/routes';
+import { getAuthenticatedRole } from '@/shared/utils/checkIsUserAuthenticated.util';
+import { ADMIN_EMAIL, ADMIN_WHATSAPP } from '@/shared/config/appContact';
 
 /* ─── Types ─── */
 type SectionId = 'comprador' | 'vendedor' | 'admin' | 'wpp';
@@ -293,7 +295,7 @@ const SectionWhatsApp = () => (
           <li>Encuentra tu tienda en la lista.</li>
           <li>Activa el interruptor verde de <strong>Notificaciones WA</strong>.</li>
           <li>En el campo <strong>Número de WhatsApp</strong> ingresa tu número completo con código de país, sin espacios ni el signo +.<br />
-            <Code>573001234567</Code> (Colombia) o <Code>521234567890</Code> (México)
+            <Code>{ADMIN_WHATSAPP}</Code> (ejemplo Colombia)
           </li>
           <li>En el campo <strong>API Key de CallMeBot</strong> pega la key que recibiste.</li>
           <li>Haz clic en <strong>Guardar configuración</strong>.</li>
@@ -358,8 +360,23 @@ const SECTIONS: { id: SectionId; label: string; icon: string; color: string }[] 
   { id: 'wpp', label: 'WhatsApp', icon: 'bxl-whatsapp', color: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' },
 ];
 
+const SECTIONS_BY_ROLE: Record<string, SectionId[]> = {
+  admin:   ['comprador', 'vendedor', 'admin', 'wpp'],
+  seller:  ['vendedor', 'wpp'],
+  buyer:   ['comprador'],
+  default: ['comprador'],
+};
+
 const HelpPage = () => {
-  const [active, setActive] = useState<SectionId>('wpp');
+  const role = getAuthenticatedRole() ?? 'default';
+  const allowedIds = SECTIONS_BY_ROLE[role] ?? SECTIONS_BY_ROLE.default;
+
+  const visibleSections = useMemo(
+    () => SECTIONS.filter((s) => allowedIds.includes(s.id)),
+    [role], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+
+  const [active, setActive] = useState<SectionId>(() => allowedIds[0]);
 
   return (
     <div className='space-y-6 animate-fade-up'>
@@ -378,7 +395,7 @@ const HelpPage = () => {
 
       {/* Tab selector */}
       <div className='flex flex-wrap gap-2'>
-        {SECTIONS.map((s) => (
+        {visibleSections.map((s) => (
           <button
             key={s.id}
             type='button'
@@ -410,14 +427,14 @@ const HelpPage = () => {
         <p className='mt-1 text-sm text-slate-500'>Contáctanos directamente y te ayudamos.</p>
         <div className='mt-4 flex flex-wrap justify-center gap-3'>
           <a
-            href={`mailto:christian75876@gmail.com?subject=${encodeURIComponent('Soporte Hot Commerce')}`}
+            href={`mailto:${ADMIN_EMAIL}?subject=${encodeURIComponent('Soporte Hot Commerce')}`}
             className='flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-primary/30 hover:text-primary'
           >
             <i className='bx bx-envelope text-base' aria-hidden='true' />
             Enviar email
           </a>
           <a
-            href='https://wa.me/573001234567'
+            href={`https://wa.me/${ADMIN_WHATSAPP}`}
             target='_blank'
             rel='noopener noreferrer'
             className='flex items-center gap-2 rounded-2xl bg-[#25D366] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90'

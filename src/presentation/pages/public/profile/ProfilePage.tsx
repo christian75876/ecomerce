@@ -4,7 +4,7 @@ import { AuthRepository } from '@/infrastructure/repositories/api/auth/AuthRepos
 import type { IAuthenticatedUser, IAuthMeResp } from '@/application/dtos/auth/login/response/LoginResponse';
 import { isAuthenticated } from '@/shared/utils/checkIsUserAuthenticated.util';
 import { ROUTES } from '@/shared/constants/routes';
-import { showToast } from '@/shared/utils/SnackbarManager';
+import { SnackbarUtilities } from '@/shared/utils/SnackbarManager';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 
@@ -74,9 +74,9 @@ const ProfilePage = () => {
         prev ? { ...prev, customer: prev.customer ? { ...prev.customer, ...updated } : null } : prev,
       );
       setDirty(false);
-      showToast('Perfil actualizado', 'success');
+      SnackbarUtilities.success('Perfil actualizado');
     } catch {
-      showToast('No se pudo actualizar el perfil', 'error');
+      SnackbarUtilities.error('No se pudo actualizar el perfil');
     } finally {
       setSaving(false);
     }

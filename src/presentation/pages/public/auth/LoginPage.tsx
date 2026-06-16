@@ -56,9 +56,7 @@ const LoginPage = () => {
             <div className='relative z-10'>
               {/* Logo */}
               <div className='flex items-center gap-2'>
-                <div className='flex h-9 w-9 items-center justify-center rounded-xl bg-white/20 text-white'>
-                  <i className='bx bxs-flame text-xl' aria-hidden='true' />
-                </div>
+                <img src='/icons/icon-96x96.png' alt='Hot Commerce' className='h-9 w-9 rounded-xl' />
                 <span className='text-lg font-extrabold tracking-tight text-white'>
                   Hot Commerce
                 </span>
@@ -88,6 +86,23 @@ const LoginPage = () => {
           {/* ── Right panel ── */}
           <div className='flex flex-1 flex-col justify-center px-6 py-10 sm:px-10'>
             <div className='mx-auto w-full max-w-sm'>
+
+              {/* Logo + back — solo visible en mobile (el panel izquierdo ya los muestra en desktop) */}
+              <div className='mb-6 flex items-center justify-between lg:hidden'>
+                <div className='flex items-center gap-2'>
+                  <img src='/icons/icon-96x96.png' alt='Hot Commerce' className='h-8 w-8 rounded-xl' />
+                  <span className='text-base font-extrabold tracking-tight text-slate-900'>
+                    Hot Commerce
+                  </span>
+                </div>
+                <Link
+                  to={ROUTES.PUBLIC.HOME}
+                  className='flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-500 transition hover:border-primary/30 hover:text-primary'
+                >
+                  <i className='bx bx-arrow-back text-sm' aria-hidden='true' />
+                  Volver al inicio
+                </Link>
+              </div>
 
               {/* Mode toggle */}
               <div className='mb-8 inline-flex rounded-full border border-slate-200 bg-slate-50 p-1'>
@@ -173,12 +188,14 @@ const LoginPage = () => {
                 </div>
               )}
 
-              <p className='mt-6 text-center text-xs text-slate-400'>
-                ¿Tienes tienda?{' '}
-                <Link to={ROUTES.PUBLIC.REGISTER} className='font-semibold text-primary hover:underline'>
-                  Regístrate como vendedor
-                </Link>
-              </p>
+              {mode === 'login' ? (
+                <p className='mt-6 text-center text-xs text-slate-400'>
+                  ¿Tienes tienda?{' '}
+                  <Link to={ROUTES.PUBLIC.REGISTER} className='font-semibold text-primary hover:underline'>
+                    Regístrate como vendedor
+                  </Link>
+                </p>
+              ) : null}
             </div>
           </div>
 

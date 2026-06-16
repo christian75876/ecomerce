@@ -115,13 +115,13 @@ const CartPage = () => {
   return (
     <Box className='animate-fade-up space-y-8'>
       {/* Header */}
-      <Box className='rounded-[2rem] bg-gradient-to-br from-primary/6 via-white to-secondary/4 px-7 py-10 shadow-soft'>
+      <Box className='rounded-2xl bg-gradient-to-br from-primary/6 via-white to-secondary/4 px-4 py-6 shadow-soft sm:rounded-[2rem] sm:px-7 sm:py-10'>
         <Box className='flex items-center gap-3'>
-          <Box className='flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10'>
-            <Icon name='bx-cart' className='text-2xl text-primary' />
+          <Box className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 sm:h-11 sm:w-11 sm:rounded-2xl'>
+            <Icon name='bx-cart' className='text-xl text-primary sm:text-2xl' />
           </Box>
           <Box>
-            <Typography variant='h1' className='text-2xl font-bold md:text-3xl'>
+            <Typography variant='h1' className='text-xl font-bold sm:text-2xl md:text-3xl'>
               Mi carrito
             </Typography>
             <Typography className='text-sm text-neutral-dark/60'>
@@ -135,15 +135,15 @@ const CartPage = () => {
 
       <Box className='grid gap-6 xl:grid-cols-[minmax(0,1fr)_400px]'>
         {/* Products */}
-        <Box className='surface-elevated rounded-[1.75rem] p-6'>
-          <Typography variant='h2' className='text-lg font-semibold'>
+        <Box className='surface-elevated rounded-2xl p-4 sm:rounded-[1.75rem] sm:p-6'>
+          <Typography variant='h2' className='text-base font-semibold sm:text-lg'>
             Productos
           </Typography>
 
           <Box className='mt-4 space-y-3'>
             {items.length === 0 ? (
-              <Box className='flex flex-col items-center justify-center rounded-2xl border border-dashed border-neutral-gray/50 py-14 text-center'>
-                <Icon name='bx-cart-alt' className='mb-3 text-5xl text-neutral-gray' />
+              <Box className='flex flex-col items-center justify-center rounded-2xl border border-dashed border-neutral-gray/50 py-10 text-center sm:py-14'>
+                <Icon name='bx-cart-alt' className='mb-3 text-4xl text-neutral-gray sm:text-5xl' />
                 <Typography className='font-medium text-neutral-dark/50'>
                   Aún no agregaste productos
                 </Typography>
@@ -155,59 +155,68 @@ const CartPage = () => {
               items.map((item) => (
                 <Box
                   key={item.productId}
-                  className='group flex items-center gap-4 rounded-2xl border border-neutral-gray/20 bg-white p-4 transition-all hover:border-primary/20 hover:shadow-soft'
+                  className='flex items-center gap-3 rounded-2xl border border-neutral-gray/20 bg-white p-3 transition-all hover:border-primary/20 hover:shadow-soft sm:gap-4 sm:p-4'
                 >
+                  {/* Imagen */}
                   {item.imageUrl ? (
                     <img
                       src={item.imageUrl}
                       alt={item.name}
-                      className='h-16 w-16 flex-shrink-0 rounded-xl object-cover'
+                      className='h-12 w-12 flex-shrink-0 rounded-xl object-cover sm:h-16 sm:w-16'
                     />
                   ) : (
-                    <Box className='flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-xl bg-neutral-100'>
-                      <Icon name='bx-package' className='text-2xl text-neutral-gray' />
+                    <Box className='flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-neutral-100 sm:h-16 sm:w-16'>
+                      <Icon name='bx-package' className='text-xl text-neutral-gray sm:text-2xl' />
                     </Box>
                   )}
 
+                  {/* Nombre + precio */}
                   <Box className='min-w-0 flex-1'>
-                    <Typography className='truncate font-semibold'>{item.name}</Typography>
-                    <Typography className='mt-0.5 text-sm font-medium text-primary'>
+                    <Typography className='truncate text-sm font-semibold sm:text-base'>{item.name}</Typography>
+                    <Typography className='mt-0.5 text-xs font-medium text-primary sm:text-sm'>
                       {formatCurrencyCOP(item.price)} c/u
+                    </Typography>
+                    {/* Total inline — solo visible en mobile */}
+                    <Typography className='mt-0.5 text-xs font-bold tabular-nums text-neutral-dark sm:hidden'>
+                      {formatCurrencyCOP(item.price * item.quantity)}
                     </Typography>
                   </Box>
 
-                  <Box className='flex items-center gap-2'>
+                  {/* Controles de cantidad */}
+                  <Box className='flex items-center gap-1 sm:gap-2'>
                     <button
                       type='button'
                       aria-label='Reducir cantidad'
                       onClick={() => updateQuantity(item.productId, Math.max(1, item.quantity - 1))}
-                      className='flex h-7 w-7 items-center justify-center rounded-full border border-neutral-gray/40 bg-white text-neutral-dark/70 transition hover:border-primary/30 hover:bg-primary/5 hover:text-primary'
+                      className='flex h-6 w-6 items-center justify-center rounded-full border border-neutral-gray/40 bg-white text-neutral-dark/70 transition hover:border-primary/30 hover:bg-primary/5 hover:text-primary sm:h-7 sm:w-7'
                     >
-                      <Icon name='bx-minus' className='text-xs' />
+                      <Icon name='bx-minus' className='text-[10px] sm:text-xs' />
                     </button>
-                    <span className='w-6 text-center text-sm font-semibold tabular-nums'>
+                    <span className='w-5 text-center text-sm font-semibold tabular-nums sm:w-6'>
                       {item.quantity}
                     </span>
                     <button
                       type='button'
                       aria-label='Aumentar cantidad'
                       onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                      className='flex h-7 w-7 items-center justify-center rounded-full border border-neutral-gray/40 bg-white text-neutral-dark/70 transition hover:border-primary/30 hover:bg-primary/5 hover:text-primary'
+                      className='flex h-6 w-6 items-center justify-center rounded-full border border-neutral-gray/40 bg-white text-neutral-dark/70 transition hover:border-primary/30 hover:bg-primary/5 hover:text-primary sm:h-7 sm:w-7'
                     >
-                      <Icon name='bx-plus' className='text-xs' />
+                      <Icon name='bx-plus' className='text-[10px] sm:text-xs' />
                     </button>
                   </Box>
 
-                  <Typography className='w-24 text-right text-sm font-bold tabular-nums text-neutral-dark'>
+                  {/* Total — oculto en mobile, visible en sm+ */}
+                  <Typography className='hidden w-24 text-right text-sm font-bold tabular-nums text-neutral-dark sm:block'>
                     {formatCurrencyCOP(item.price * item.quantity)}
                   </Typography>
 
+                  {/* Eliminar — siempre visible en mobile (no hay hover), hover-only en desktop */}
                   {typeof removeItem === 'function' ? (
                     <button
                       type='button'
                       aria-label='Eliminar producto'
                       onClick={() => removeItem(item.productId)}
-                      className='ml-1 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-neutral-dark/30 opacity-0 transition group-hover:opacity-100 hover:bg-red-50 hover:text-red-500'
+                      className='flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-neutral-dark/30 transition hover:bg-red-50 hover:text-red-500'
                     >
                       <Icon name='bx-trash' className='text-sm' />
                     </button>
@@ -222,23 +231,23 @@ const CartPage = () => {
         <Box className='space-y-4'>
           {/* Login gate */}
           {!authenticated ? (
-            <Box className='surface-elevated flex flex-col items-center rounded-[1.75rem] p-8 text-center'>
-              <Box className='mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10'>
-                <Icon name='bx-lock-alt' className='text-2xl text-primary' />
+            <Box className='surface-elevated flex flex-col items-center rounded-2xl p-5 text-center sm:rounded-[1.75rem] sm:p-8'>
+              <Box className='mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 sm:h-14 sm:w-14 sm:rounded-2xl'>
+                <Icon name='bx-lock-alt' className='text-xl text-primary sm:text-2xl' />
               </Box>
-              <Typography variant='h2' className='text-lg font-semibold'>
+              <Typography variant='h2' className='text-base font-semibold sm:text-lg'>
                 Inicia sesión para continuar
               </Typography>
-              <Typography className='mt-2 text-sm text-neutral-dark/60'>
+              <Typography className='mt-2 text-xs text-neutral-dark/60 sm:text-sm'>
                 Necesitas una cuenta para completar tu pedido y poder rastrearlo.
               </Typography>
               <Link
                 to={ROUTES.PUBLIC.LOGIN}
-                className='mt-6 w-full rounded-2xl bg-primary py-3 text-center text-sm font-bold text-white transition hover:opacity-90'
+                className='mt-5 w-full rounded-xl bg-primary py-2.5 text-center text-sm font-bold text-white transition hover:opacity-90 sm:mt-6 sm:rounded-2xl sm:py-3'
               >
                 Iniciar sesión
               </Link>
-              <Typography className='mt-3 text-xs text-neutral-dark/40'>
+              <Typography className='mt-3 text-[11px] text-neutral-dark/40 sm:text-xs'>
                 ¿No tienes cuenta? Contacta al administrador para recibir una invitación.
               </Typography>
             </Box>
@@ -247,10 +256,10 @@ const CartPage = () => {
           {/* Customer form, delivery and summary — only when authenticated */}
           {authenticated ? (
           <>
-          <Box className='surface-elevated rounded-[1.75rem] p-6'>
-            <Box className='mb-5 flex items-center gap-2'>
+          <Box className='surface-elevated rounded-2xl p-4 sm:rounded-[1.75rem] sm:p-6'>
+            <Box className='mb-4 flex items-center gap-2 sm:mb-5'>
               <Icon name='bx-user-circle' className='text-xl text-primary' />
-              <Typography variant='h2' className='text-lg font-semibold'>
+              <Typography variant='h2' className='text-base font-semibold sm:text-lg'>
                 Datos del cliente
               </Typography>
             </Box>
@@ -283,10 +292,10 @@ const CartPage = () => {
           </Box>
 
           {/* Delivery method */}
-          <Box className='surface-elevated rounded-[1.75rem] p-6'>
+          <Box className='surface-elevated rounded-2xl p-4 sm:rounded-[1.75rem] sm:p-6'>
             <Box className='mb-4 flex items-center gap-2'>
               <Icon name='bx-package' className='text-xl text-primary' />
-              <Typography variant='h2' className='text-lg font-semibold'>
+              <Typography variant='h2' className='text-base font-semibold sm:text-lg'>
                 Método de entrega
               </Typography>
             </Box>
@@ -334,8 +343,8 @@ const CartPage = () => {
           </Box>
 
           {/* Summary */}
-          <Box className='surface-elevated rounded-[1.75rem] p-6'>
-            <Typography variant='h2' className='mb-4 text-lg font-semibold'>
+          <Box className='surface-elevated rounded-2xl p-4 sm:rounded-[1.75rem] sm:p-6'>
+            <Typography variant='h2' className='mb-4 text-base font-semibold sm:text-lg'>
               Resumen
             </Typography>
 

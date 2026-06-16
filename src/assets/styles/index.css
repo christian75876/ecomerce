@@ -22,8 +22,11 @@
   font-style: italic;
 }
 
+html,
 body {
   font-family: 'Urbanist', sans-serif;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 :root {

@@ -17,12 +17,10 @@ interface ProductCardProps {
   badge?: string;
   averageRating?: number | null;
   reviewCount?: number;
-  isFavorite?: boolean;
   isSponsored?: boolean;
   layoutStyle?: 'GRID' | 'LIST';
   buttonStyle?: 'ROUNDED' | 'SHARP' | 'PILL';
   primaryColor?: string;
-  onToggleFavorite?: () => void;
   onAddToCart: () => void;
 }
 
@@ -48,12 +46,10 @@ const ProductCard = ({
   badge,
   averageRating,
   reviewCount,
-  isFavorite = false,
   isSponsored = false,
   layoutStyle = 'GRID',
   buttonStyle,
   primaryColor,
-  onToggleFavorite,
   onAddToCart,
 }: ProductCardProps) => {
   const imgSrc = (image ? buildAssetUrl(image) : null) ?? PLACEHOLDER;
@@ -86,26 +82,6 @@ const ProductCard = ({
               (e.target as HTMLImageElement).src = PLACEHOLDER;
             }}
           />
-
-          {/* Favorite overlay */}
-          {onToggleFavorite ? (
-            <button
-              type='button'
-              aria-label={isFavorite ? 'Quitar de favoritos' : 'Guardar en favoritos'}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onToggleFavorite();
-              }}
-              className='absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm transition-all duration-150 hover:scale-110 active:scale-95'
-            >
-              <i
-                className={`bx ${isFavorite ? 'bxs-heart text-red-500' : 'bx-heart text-slate-400 hover:text-red-400'}`}
-                style={{ fontSize: 16 }}
-                aria-hidden='true'
-              />
-            </button>
-          ) : null}
 
           {/* Discount badge */}
           {hasDiscount ? (

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import React, { Suspense } from 'react';
 import { routes } from '@application/router/routes';
 import RouteFallback from '@organisms/navigation/RouteFallback';
@@ -33,7 +33,7 @@ function GlobalGuards() {
 
 const AppRouter = () => {
   return (
-    <BrowserRouter>
+    <>
       <GlobalGuards />
       <Suspense fallback={<RouteFallback />}>
         <PageTransitionLayout>
@@ -76,7 +76,7 @@ const AppRouter = () => {
           </Routes>
         </PageTransitionLayout>
       </Suspense>
-    </BrowserRouter>
+    </>
   );
 };
 

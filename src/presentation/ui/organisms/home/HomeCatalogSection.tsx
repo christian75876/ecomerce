@@ -21,10 +21,8 @@ interface HomeCatalogSectionProps {
   selectedCategoryId: string;
   loading: boolean;
   error: string | null;
-  favoriteIds: string[];
   onSearchChange: (value: string) => void;
   onCategoryChange: (value: string) => void;
-  onToggleFavorite: (productId: string) => void;
   onAddToCart: (productId: string) => void;
 }
 
@@ -35,10 +33,8 @@ const HomeCatalogSection = ({
   selectedCategoryId,
   loading,
   error,
-  favoriteIds,
   onSearchChange,
   onCategoryChange,
-  onToggleFavorite,
   onAddToCart,
 }: HomeCatalogSectionProps) => {
   const [sortBy, setSortBy]             = useState<SortOption>('newest');
@@ -69,11 +65,6 @@ const HomeCatalogSection = ({
   const handleAddToCart = (productId: string) => {
     trackProduct(productId);
     onAddToCart(productId);
-  };
-
-  const handleToggleFavorite = (productId: string) => {
-    trackProduct(productId);
-    onToggleFavorite(productId);
   };
 
   const handleCategoryChange = (categoryId: string) => {
@@ -163,9 +154,15 @@ const HomeCatalogSection = ({
   return (
     <div className='space-y-5'>
       {/* ── Hero search banner ── */}
-      <div className='gradient-hero relative overflow-hidden rounded-3xl px-6 py-10 text-white shadow-lg sm:px-10'>
-        <div className='pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/5' aria-hidden='true' />
-        <div className='pointer-events-none absolute -bottom-20 left-8 h-48 w-48 rounded-full bg-white/5' aria-hidden='true' />
+      <div className='gradient-hero relative overflow-hidden rounded-3xl px-6 py-4 text-white shadow-lg sm:px-10'>
+        <div
+          className='pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/5'
+          aria-hidden='true'
+        />
+        <div
+          className='pointer-events-none absolute -bottom-20 left-8 h-48 w-48 rounded-full bg-white/5'
+          aria-hidden='true'
+        />
 
         <div className='relative z-10 mx-auto max-w-2xl text-center'>
           <p className='mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/60'>
@@ -184,11 +181,14 @@ const HomeCatalogSection = ({
 
           {/* Search input */}
           <div className='mt-6 flex items-center gap-2 rounded-2xl bg-white/15 px-4 py-2.5 ring-1 ring-white/20 backdrop-blur-sm transition-all focus-within:bg-white/20 focus-within:ring-white/40'>
-            <i className='bx bx-search text-xl text-white/70' aria-hidden='true' />
+            <i
+              className='bx bx-search text-xl text-white/70'
+              aria-hidden='true'
+            />
             <input
               type='search'
               value={search}
-              onChange={(e) => onSearchChange(e.target.value)}
+              onChange={e => onSearchChange(e.target.value)}
               placeholder='Buscar productos...'
               className='flex-1 bg-transparent text-sm font-medium text-white placeholder:text-white/50 focus:outline-none'
               aria-label='Buscar productos'
@@ -224,7 +224,7 @@ const HomeCatalogSection = ({
             >
               Todo
             </button>
-            {categories.map((cat) => (
+            {categories.map(cat => (
               <button
                 key={cat.id}
                 type='button'
@@ -245,7 +245,7 @@ const HomeCatalogSection = ({
             {/* Filters toggle */}
             <button
               type='button'
-              onClick={() => setFiltersOpen((o) => !o)}
+              onClick={() => setFiltersOpen(o => !o)}
               className={`relative flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${
                 filtersOpen || activeFilterCount > 0
                   ? 'border-primary bg-primary/5 text-primary'
@@ -260,38 +260,58 @@ const HomeCatalogSection = ({
                   {activeFilterCount}
                 </span>
               ) : null}
-              <i className={`bx bx-chevron-down text-base transition-transform duration-200 ${filtersOpen ? 'rotate-180' : ''}`} aria-hidden='true' />
+              <i
+                className={`bx bx-chevron-down text-base transition-transform duration-200 ${filtersOpen ? 'rotate-180' : ''}`}
+                aria-hidden='true'
+              />
             </button>
 
             {/* Sort dropdown */}
             <div ref={sortRef} className='relative'>
               <button
                 type='button'
-                onClick={() => setSortOpen((o) => !o)}
+                onClick={() => setSortOpen(o => !o)}
                 className='flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-primary/40 hover:text-primary'
               >
-                <i className={`bx ${SORT_OPTIONS.find((o) => o.value === sortBy)?.icon} text-base`} aria-hidden='true' />
-                <span className='hidden sm:inline'>{SORT_OPTIONS.find((o) => o.value === sortBy)?.label}</span>
-                <i className={`bx bx-chevron-down text-base transition-transform duration-200 ${sortOpen ? 'rotate-180' : ''}`} aria-hidden='true' />
+                <i
+                  className={`bx ${SORT_OPTIONS.find(o => o.value === sortBy)?.icon} text-base`}
+                  aria-hidden='true'
+                />
+                <span className='hidden sm:inline'>
+                  {SORT_OPTIONS.find(o => o.value === sortBy)?.label}
+                </span>
+                <i
+                  className={`bx bx-chevron-down text-base transition-transform duration-200 ${sortOpen ? 'rotate-180' : ''}`}
+                  aria-hidden='true'
+                />
               </button>
 
               {sortOpen ? (
                 <div className='absolute right-0 top-[calc(100%+0.5rem)] z-50 min-w-[220px] rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_16px_48px_rgba(15,23,42,0.12)]'>
-                  {SORT_OPTIONS.map((opt) => (
+                  {SORT_OPTIONS.map(opt => (
                     <button
                       key={opt.value}
                       type='button'
-                      onClick={() => { setSortBy(opt.value); setSortOpen(false); }}
+                      onClick={() => {
+                        setSortBy(opt.value);
+                        setSortOpen(false);
+                      }}
                       className={`flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${
                         sortBy === opt.value
                           ? 'bg-primary/10 text-primary'
                           : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                       }`}
                     >
-                      <i className={`bx ${opt.icon} text-base`} aria-hidden='true' />
+                      <i
+                        className={`bx ${opt.icon} text-base`}
+                        aria-hidden='true'
+                      />
                       {opt.label}
                       {sortBy === opt.value ? (
-                        <i className='bx bx-check ml-auto text-base text-primary' aria-hidden='true' />
+                        <i
+                          className='bx bx-check ml-auto text-base text-primary'
+                          aria-hidden='true'
+                        />
                       ) : null}
                     </button>
                   ))}
@@ -310,28 +330,32 @@ const HomeCatalogSection = ({
             {/* Price range */}
             <div className='flex flex-wrap items-end gap-3'>
               <div className='flex flex-col gap-1'>
-                <label className='text-xs font-semibold text-slate-500'>Precio mínimo</label>
+                <label className='text-xs font-semibold text-slate-500'>
+                  Precio mínimo
+                </label>
                 <div className='flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 focus-within:border-primary focus-within:bg-white'>
                   <span className='text-xs text-slate-400'>$</span>
                   <input
                     type='number'
                     min={0}
                     value={minPriceInput}
-                    onChange={(e) => setMinPriceInput(e.target.value)}
+                    onChange={e => setMinPriceInput(e.target.value)}
                     placeholder='0'
                     className='w-24 bg-transparent text-sm text-slate-800 focus:outline-none'
                   />
                 </div>
               </div>
               <div className='flex flex-col gap-1'>
-                <label className='text-xs font-semibold text-slate-500'>Precio máximo</label>
+                <label className='text-xs font-semibold text-slate-500'>
+                  Precio máximo
+                </label>
                 <div className='flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 focus-within:border-primary focus-within:bg-white'>
                   <span className='text-xs text-slate-400'>$</span>
                   <input
                     type='number'
                     min={0}
                     value={maxPriceInput}
-                    onChange={(e) => setMaxPriceInput(e.target.value)}
+                    onChange={e => setMaxPriceInput(e.target.value)}
                     placeholder='Sin límite'
                     className='w-28 bg-transparent text-sm text-slate-800 focus:outline-none'
                   />
@@ -355,8 +379,10 @@ const HomeCatalogSection = ({
                   <button
                     type='button'
                     onClick={() => {
-                      setMinPriceInput(''); setMaxPriceInput('');
-                      setMinPrice(null); setMaxPrice(null);
+                      setMinPriceInput('');
+                      setMaxPriceInput('');
+                      setMinPrice(null);
+                      setMaxPrice(null);
                     }}
                     className='ml-0.5 text-primary/70 hover:text-primary'
                     aria-label='Quitar filtro de precio'
@@ -368,23 +394,31 @@ const HomeCatalogSection = ({
             </div>
 
             {/* Divider */}
-            <div className='h-8 w-px bg-slate-200 max-sm:hidden' aria-hidden='true' />
+            <div
+              className='h-8 w-px bg-slate-200 max-sm:hidden'
+              aria-hidden='true'
+            />
 
             {/* Stock toggle */}
             <label className='flex cursor-pointer items-center gap-2.5'>
               <div
                 className={`relative h-5 w-9 rounded-full transition-colors duration-200 ${onlyAvailable ? 'bg-primary' : 'bg-slate-300'}`}
-                onClick={() => setOnlyAvailable((v) => !v)}
+                onClick={() => setOnlyAvailable(v => !v)}
                 role='switch'
                 aria-checked={onlyAvailable}
                 tabIndex={0}
-                onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') setOnlyAvailable((v) => !v); }}
+                onKeyDown={e => {
+                  if (e.key === ' ' || e.key === 'Enter')
+                    setOnlyAvailable(v => !v);
+                }}
               >
                 <span
                   className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${onlyAvailable ? 'translate-x-4' : 'translate-x-0.5'}`}
                 />
               </div>
-              <span className='text-sm font-medium text-slate-700'>Solo disponibles</span>
+              <span className='text-sm font-medium text-slate-700'>
+                Solo disponibles
+              </span>
             </label>
 
             {/* Clear all */}
@@ -414,7 +448,12 @@ const HomeCatalogSection = ({
                     : `Hasta ${formatCurrencyCOP(maxPrice!)}`}
                 <button
                   type='button'
-                  onClick={() => { setMinPriceInput(''); setMaxPriceInput(''); setMinPrice(null); setMaxPrice(null); }}
+                  onClick={() => {
+                    setMinPriceInput('');
+                    setMaxPriceInput('');
+                    setMinPrice(null);
+                    setMaxPrice(null);
+                  }}
                   aria-label='Quitar filtro precio'
                 >
                   <i className='bx bx-x text-sm' aria-hidden='true' />
@@ -425,7 +464,11 @@ const HomeCatalogSection = ({
               <span className='flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-semibold text-green-700'>
                 <i className='bx bx-check-circle text-sm' aria-hidden='true' />
                 Solo disponibles
-                <button type='button' onClick={() => setOnlyAvailable(false)} aria-label='Quitar filtro disponibilidad'>
+                <button
+                  type='button'
+                  onClick={() => setOnlyAvailable(false)}
+                  aria-label='Quitar filtro disponibilidad'
+                >
                   <i className='bx bx-x text-sm' aria-hidden='true' />
                 </button>
               </span>
@@ -433,8 +476,12 @@ const HomeCatalogSection = ({
             {sortBy !== 'newest' ? (
               <span className='flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600'>
                 <i className='bx bx-sort-alt-2 text-sm' aria-hidden='true' />
-                {SORT_OPTIONS.find((o) => o.value === sortBy)?.label}
-                <button type='button' onClick={() => setSortBy('newest')} aria-label='Quitar filtro de orden'>
+                {SORT_OPTIONS.find(o => o.value === sortBy)?.label}
+                <button
+                  type='button'
+                  onClick={() => setSortBy('newest')}
+                  aria-label='Quitar filtro de orden'
+                >
                   <i className='bx bx-x text-sm' aria-hidden='true' />
                 </button>
               </span>
@@ -455,10 +502,8 @@ const HomeCatalogSection = ({
       <ProductBody
         products={processedProducts}
         loading={loading}
-        favoriteIds={favoriteIds}
         sponsoredIds={sponsoredIds}
         emptyMessage='No encontramos productos para este filtro.'
-        onToggleFavorite={handleToggleFavorite}
         onAddToCart={handleAddToCart}
       />
     </div>

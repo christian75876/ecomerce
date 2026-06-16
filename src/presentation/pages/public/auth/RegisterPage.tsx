@@ -1,13 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
-
-const ADMIN_EMAIL = 'christian75876@gmail.com';
-const ADMIN_WHATSAPP = '573001234567'; // reemplaza con el número real (código país + número, sin + ni espacios)
-import { useNavigate } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { InvitationsRepository } from '@/infrastructure/repositories/api/invitations/InvitationsRepository';
 import { AuthRepository } from '@/infrastructure/repositories/api/auth/AuthRepository';
 import { ROUTES } from '@/shared/constants/routes';
 import { SnackbarUtilities } from '@/shared/utils/SnackbarManager';
+import { ADMIN_EMAIL, ADMIN_WHATSAPP } from '@/shared/config/appContact';
 
 const RegisterPage = () => {
   const [searchParams] = useSearchParams();
@@ -66,7 +63,7 @@ const RegisterPage = () => {
     const mailtoBody = encodeURIComponent(
       'Hola,\n\nMe interesa crear una tienda en el marketplace.\n\nNombre: \nNegocio: \nTeléfono: \n\nQuedo atento a su respuesta.\n\nSaludos.'
     );
-    const mailtoHref = `mailto:${ADMIN_EMAIL}?subject=${mailtoSubject}&body=${mailtoBody}`;
+    const gmailHref = `https://mail.google.com/mail/?view=cm&fs=1&to=${ADMIN_EMAIL}&su=${mailtoSubject}&body=${mailtoBody}`;
     const whatsappHref = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent('Hola, me interesa crear una tienda en el marketplace. ¿Cómo puedo solicitar una invitación?')}`;
 
     return (
@@ -75,11 +72,17 @@ const RegisterPage = () => {
           {/* Header card */}
           <div className='rounded-[2rem] border border-white/70 bg-white/85 p-8 shadow-[0_30px_80px_rgba(34,34,34,0.12)] text-center backdrop-blur'>
             <div className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10'>
-              <i className='bx bx-store-alt text-3xl text-primary' aria-hidden='true' />
+              <i
+                className='bx bx-store-alt text-3xl text-primary'
+                aria-hidden='true'
+              />
             </div>
-            <h1 className='text-2xl font-bold text-slate-800'>¿Quieres vender aquí?</h1>
+            <h1 className='text-2xl font-bold text-slate-800'>
+              ¿Quieres vender aquí?
+            </h1>
             <p className='mt-3 text-sm text-slate-500'>
-              El acceso de vendedores es por invitación. Contáctanos y te enviamos tu enlace de registro.
+              El acceso de vendedores es por invitación. Contáctanos y te enviamos
+              tu enlace de registro.
             </p>
           </div>
 
@@ -87,15 +90,24 @@ const RegisterPage = () => {
           <div className='grid grid-cols-2 gap-3'>
             {/* Email */}
             <a
-              href={mailtoHref}
+              href={gmailHref}
+              target='_blank'
+              rel='noopener noreferrer'
               className='flex flex-col items-center gap-3 rounded-[1.5rem] border border-white/70 bg-white/85 p-5 shadow-[0_8px_32px_rgba(34,34,34,0.08)] backdrop-blur transition hover:shadow-[0_12px_40px_rgba(99,102,241,0.15)] hover:-translate-y-0.5'
             >
               <div className='flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10'>
-                <i className='bx bx-envelope text-2xl text-primary' aria-hidden='true' />
+                <i
+                  className='bx bx-envelope text-2xl text-primary'
+                  aria-hidden='true'
+                />
               </div>
               <div className='text-center'>
-                <p className='text-sm font-semibold text-slate-800'>Solicitar por correo</p>
-                <p className='mt-0.5 text-xs text-slate-400'>Se abre tu app de email</p>
+                <p className='text-sm font-semibold text-slate-800'>
+                  Solicitar por correo
+                </p>
+                <p className='mt-0.5 text-xs text-slate-400'>
+                  Se abre tu app de email
+                </p>
               </div>
             </a>
 
@@ -107,10 +119,15 @@ const RegisterPage = () => {
               className='flex flex-col items-center gap-3 rounded-[1.5rem] border border-white/70 bg-white/85 p-5 shadow-[0_8px_32px_rgba(34,34,34,0.08)] backdrop-blur transition hover:shadow-[0_12px_40px_rgba(37,211,102,0.18)] hover:-translate-y-0.5'
             >
               <div className='flex h-12 w-12 items-center justify-center rounded-xl bg-[#25D366]/10'>
-                <i className='bx bxl-whatsapp text-2xl text-[#25D366]' aria-hidden='true' />
+                <i
+                  className='bx bxl-whatsapp text-2xl text-[#25D366]'
+                  aria-hidden='true'
+                />
               </div>
               <div className='text-center'>
-                <p className='text-sm font-semibold text-slate-800'>Contactar por WhatsApp</p>
+                <p className='text-sm font-semibold text-slate-800'>
+                  Contactar por WhatsApp
+                </p>
                 <p className='mt-0.5 text-xs text-slate-400'>Respuesta inmediata</p>
               </div>
             </a>

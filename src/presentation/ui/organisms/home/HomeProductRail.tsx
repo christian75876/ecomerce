@@ -7,10 +7,9 @@ interface HomeProductRailProps {
   subtitle: string;
   products: IProduct[];
   loading: boolean;
-  favoriteIds: string[];
   emptyMessage: string;
-  onToggleFavorite: (productId: string) => void;
   onAddToCart: (productId: string) => void;
+  mobileCarousel?: boolean;
 }
 
 const HomeProductRail = ({
@@ -18,19 +17,17 @@ const HomeProductRail = ({
   subtitle,
   products,
   loading,
-  favoriteIds,
   emptyMessage,
-  onToggleFavorite,
   onAddToCart,
+  mobileCarousel = true,
 }: HomeProductRailProps) => {
   return (
     <HomeSection title={title} subtitle={subtitle}>
       <ProductBody
         products={products}
         loading={loading}
-        favoriteIds={favoriteIds}
         emptyMessage={emptyMessage}
-        onToggleFavorite={onToggleFavorite}
+        mobileCarousel={mobileCarousel}
         onAddToCart={onAddToCart}
       />
     </HomeSection>

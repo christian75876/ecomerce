@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BrowserRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { SnackbarProvider } from 'notistack';
 
@@ -29,17 +30,19 @@ function App() {
   }
 
   return (
-    <HelmetProvider>
-      <SnackbarProvider maxSnack={3} autoHideDuration={2500} preventDuplicate>
-        <SnackbarUtilitiesConfigurator />
-        <OrderNotificationsProvider>
-          <OfflineIndicator />
-          <AppRouter />
-          <PwaInstallBanner />
-          <NotificationToast />
-        </OrderNotificationsProvider>
-      </SnackbarProvider>
-    </HelmetProvider>
+    <BrowserRouter>
+      <HelmetProvider>
+        <SnackbarProvider maxSnack={3} autoHideDuration={2500} preventDuplicate>
+          <SnackbarUtilitiesConfigurator />
+          <OrderNotificationsProvider>
+            <OfflineIndicator />
+            <AppRouter />
+            <PwaInstallBanner />
+            <NotificationToast />
+          </OrderNotificationsProvider>
+        </SnackbarProvider>
+      </HelmetProvider>
+    </BrowserRouter>
   );
 }
 

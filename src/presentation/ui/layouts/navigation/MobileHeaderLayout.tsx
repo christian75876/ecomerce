@@ -55,7 +55,11 @@ const MobileHeaderLayout = () => {
   const moreNavItems = adminView
     ? adminMoreNavItems
     : publicMoreNavItems.filter((item) => {
-        // Ocultar "Entrar" si el usuario ya está autenticado
+        // Ocultar "Mi perfil" si no está autenticado
+        if (!isAuthenticated() && item.path === ROUTES.PRIVATE.PROFILE) {
+          return false;
+        }
+        // Ocultar "Entrar" si ya está autenticado
         if (isAuthenticated() && item.path === ROUTES.PUBLIC.LOGIN) {
           return false;
         }
@@ -98,7 +102,7 @@ const MobileHeaderLayout = () => {
           </Box>
         </Box>
       ) : null}
-      <Box className='surface-card fixed inset-x-3 bottom-3 z-50 rounded-[1.5rem] py-3'>
+      <Box className='surface-card fixed inset-x-0 bottom-0 z-50 rounded-t-[1.5rem] py-3 [padding-bottom:calc(env(safe-area-inset-bottom,0px)+0.75rem)]'>
         <Box className='flex justify-around'>
           {primaryNavItems.map(({ label, path, icon }) => {
             const isOrders = adminView && path === ROUTES.PRIVATE.ORDERS;
@@ -107,6 +111,7 @@ const MobileHeaderLayout = () => {
               <NavLink
                 key={path}
                 to={path}
+                onClick={() => setShowMore(false)}
                 className={({ isActive }) =>
                   `relative flex flex-col items-center text-sm transition-all ${
                     isActive ? 'text-primary' : 'text-gray-600'

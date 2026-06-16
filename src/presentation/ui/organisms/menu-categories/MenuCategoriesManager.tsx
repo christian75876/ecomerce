@@ -40,7 +40,6 @@ const SUGGESTED_CATEGORIES: Array<{ group: string; items: string[] }> = [
 ];
 
 interface MenuCategoriesManagerProps {
-  storeId: string;
   categories: IMenuCategory[];
   submitting: boolean;
   error: string | null;

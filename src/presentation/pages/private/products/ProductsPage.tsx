@@ -31,8 +31,9 @@ const ProductsPage = () => {
       onCategoryFilterChange={pm.setSelectedCategoryId}
       onFormChange={pm.updateForm}
       onImageFileChange={pm.setImageFile}
-      onGalleryImageUpload={pm.uploadGalleryImage}
+      onGalleryImageUpload={pm.uploadGalleryImages}
       onGalleryImageRemove={pm.removeGalleryImage}
+      onGalleryImageReorder={pm.reorderGallery}
       onVideoUrlChange={pm.setVideoUrl}
       onVideoTitleChange={pm.setVideoTitle}
       onAddVideo={pm.addVideo}
