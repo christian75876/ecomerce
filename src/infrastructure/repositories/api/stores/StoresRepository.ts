@@ -69,4 +69,24 @@ export class StoresRepository {
       authenticatedClientHTTP.patch<IStoreResp>(`/stores/${id}`, payload),
     );
   }
+
+  static async uploadLogo(id: string, file: File): Promise<IStoreResp> {
+    const form = new FormData();
+    form.append('image', file);
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.post<IStoreResp>(`/stores/${id}/logo`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }),
+    );
+  }
+
+  static async uploadBanner(id: string, file: File): Promise<IStoreResp> {
+    const form = new FormData();
+    form.append('image', file);
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.post<IStoreResp>(`/stores/${id}/banner`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }),
+    );
+  }
 }

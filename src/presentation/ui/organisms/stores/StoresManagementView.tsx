@@ -9,6 +9,7 @@ import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import ColorPicker from '@/presentation/ui/atoms/color-picker/ColorPicker';
 import { useMenuCategories } from '@/application/useCases/menu-categories/useMenuCategories';
 import MenuCategoriesManager from '@/presentation/ui/organisms/menu-categories/MenuCategoriesManager';
+import MapAddressPicker, { MapAddress } from '@molecules/common/MapAddressPicker';
 
 interface StoresManagementViewProps {
   stores: IStore[];
@@ -16,11 +17,15 @@ interface StoresManagementViewProps {
   editingId: string | null;
   loading: boolean;
   submitting: boolean;
+  uploadingLogo: boolean;
+  uploadingBanner: boolean;
   error: string | null;
   onFormChange: <K extends keyof StoreFormState>(key: K, value: StoreFormState[K]) => void;
   onSubmit: () => Promise<boolean>;
   onEdit: (store: IStore) => void;
   onReset: () => void;
+  onUploadLogo: (file: File) => Promise<void>;
+  onUploadBanner: (file: File) => Promise<void>;
 }
 
 type BrandingTab = 'info' | 'colors' | 'style' | 'delivery';
@@ -215,11 +220,15 @@ export const StoresManagementView = ({
   editingId,
   loading,
   submitting,
+  uploadingLogo,
+  uploadingBanner,
   error,
   onFormChange,
   onSubmit,
   onEdit,
   onReset,
+  onUploadLogo,
+  onUploadBanner,
 }: StoresManagementViewProps) => {
   const [activeTab, setActiveTab] = useState<BrandingTab>('info');
   const menuCats = useMenuCategories(
@@ -341,26 +350,86 @@ export const StoresManagementView = ({
                   />
                 </Box>
 
+                {/* Logo & Banner upload */}
                 <Box className='grid gap-4 sm:grid-cols-2'>
+                  {/* Logo */}
                   <Box>
-                    <Label htmlFor='store-logo'>Logo URL</Label>
-                    <Input
-                      id='store-logo'
-                      value={form.logoUrl}
-                      onChange={(e) => onFormChange('logoUrl', e.target.value)}
-                      disabled={submitting}
-                      placeholder='https://...'
-                    />
+                    <Label>Logo</Label>
+                    <div className='mt-1 flex items-center gap-3'>
+                      <div className='h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50'>
+                        {form.logoUrl ? (
+                          <img src={form.logoUrl} alt='logo' className='h-full w-full object-cover' />
+                        ) : (
+                          <div className='flex h-full w-full items-center justify-center'>
+                            <i className='bx bx-store text-2xl text-slate-300' />
+                          </div>
+                        )}
+                      </div>
+                      <div className='flex-1'>
+                        {editingId ? (
+                          <label className='flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-slate-300 px-3 py-2 text-xs font-medium text-slate-600 transition hover:border-primary hover:text-primary'>
+                            {uploadingLogo ? (
+                              <span className='flex items-center gap-1.5'><span className='h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary border-t-transparent' />Subiendo...</span>
+                            ) : (
+                              <><i className='bx bx-upload text-base' />Subir logo</>
+                            )}
+                            <input
+                              type='file'
+                              accept='image/jpeg,image/png,image/webp'
+                              className='sr-only'
+                              disabled={uploadingLogo}
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) void onUploadLogo(file);
+                                e.target.value = '';
+                              }}
+                            />
+                          </label>
+                        ) : (
+                          <p className='text-xs text-slate-400'>Guarda la tienda primero para subir imágenes</p>
+                        )}
+                        {form.logoUrl && (
+                          <button type='button' onClick={() => onFormChange('logoUrl', '')} className='mt-1 text-xs text-red-400 hover:text-red-600'>× Quitar</button>
+                        )}
+                      </div>
+                    </div>
                   </Box>
+
+                  {/* Banner */}
                   <Box>
-                    <Label htmlFor='store-banner'>Banner URL</Label>
-                    <Input
-                      id='store-banner'
-                      value={form.bannerUrl}
-                      onChange={(e) => onFormChange('bannerUrl', e.target.value)}
-                      disabled={submitting}
-                      placeholder='https://...'
-                    />
+                    <Label>Banner</Label>
+                    <div className='mt-1 flex flex-col gap-2'>
+                      {form.bannerUrl ? (
+                        <div className='relative overflow-hidden rounded-xl'>
+                          <img src={form.bannerUrl} alt='banner' className='h-20 w-full object-cover' />
+                          <button type='button' onClick={() => onFormChange('bannerUrl', '')} className='absolute right-1.5 top-1.5 rounded-lg bg-black/40 px-2 py-0.5 text-xs text-white hover:bg-black/60'>× Quitar</button>
+                        </div>
+                      ) : (
+                        <div className='flex h-20 items-center justify-center rounded-xl border border-slate-200 bg-slate-50'>
+                          <i className='bx bx-image text-2xl text-slate-300' />
+                        </div>
+                      )}
+                      {editingId ? (
+                        <label className='flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-slate-300 px-3 py-2 text-xs font-medium text-slate-600 transition hover:border-primary hover:text-primary'>
+                          {uploadingBanner ? (
+                            <span className='flex items-center gap-1.5'><span className='h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary border-t-transparent' />Subiendo...</span>
+                          ) : (
+                            <><i className='bx bx-upload text-base' />Subir banner</>
+                          )}
+                          <input
+                            type='file'
+                            accept='image/jpeg,image/png,image/webp'
+                            className='sr-only'
+                            disabled={uploadingBanner}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) void onUploadBanner(file);
+                              e.target.value = '';
+                            }}
+                          />
+                        </label>
+                      ) : null}
+                    </div>
                   </Box>
                 </Box>
 
@@ -395,6 +464,42 @@ export const StoresManagementView = ({
                     />
                   </Box>
                 </Box>
+
+                {/* Ubicación física */}
+                <div>
+                  <label className='mb-1.5 block text-xs font-semibold text-slate-600'>
+                    Ubicación física <span className='font-normal text-slate-400'>(opcional)</span>
+                  </label>
+                  <p className='mb-2 text-xs text-slate-400'>
+                    Haz clic en el mapa o busca tu dirección para que los clientes sepan dónde estás.
+                  </p>
+                  <MapAddressPicker
+                    value={
+                      form.lat != null && form.lng != null
+                        ? { lat: form.lat, lng: form.lng, street: '', city: '', department: form.addressText ?? '' }
+                        : null
+                    }
+                    onChange={(addr: MapAddress) => {
+                      const text = [addr.street, addr.city, addr.department].filter(Boolean).join(', ');
+                      onFormChange('lat', addr.lat);
+                      onFormChange('lng', addr.lng);
+                      onFormChange('addressText', text || null);
+                    }}
+                  />
+                  {form.lat != null ? (
+                    <button
+                      type='button'
+                      onClick={() => {
+                        onFormChange('lat', null);
+                        onFormChange('lng', null);
+                        onFormChange('addressText', null);
+                      }}
+                      className='mt-2 text-xs text-red-400 transition hover:text-red-600'
+                    >
+                      × Quitar ubicación
+                    </button>
+                  ) : null}
+                </div>
 
                 {/* Store type */}
                 <Box>

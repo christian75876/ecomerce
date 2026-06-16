@@ -1,5 +1,9 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { setupLeafletIcons } from '@/shared/utils/leafletSetup';
+
+setupLeafletIcons();
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -328,6 +332,33 @@ const StoreDetailPage = () => {
           )}
         </div>
       </div>
+
+      {/* Ubicación física */}
+      {store.lat != null && store.lng != null ? (
+        <div className='rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm'>
+          <div className='mb-3 flex items-center gap-2'>
+            <i className='bx bx-map text-lg text-primary' aria-hidden='true' />
+            <span className='text-sm font-semibold text-slate-800'>Ubicación física</span>
+          </div>
+          {store.addressText ? (
+            <p className='mb-3 text-xs text-slate-500'>{store.addressText}</p>
+          ) : null}
+          <div className='overflow-hidden rounded-2xl' style={{ height: 220 }}>
+            <MapContainer
+              center={[store.lat, store.lng]}
+              zoom={16}
+              style={{ height: '100%', width: '100%' }}
+              scrollWheelZoom={false}
+              zoomControl={false}
+            >
+              <TileLayer url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' />
+              <Marker position={[store.lat, store.lng]}>
+                <Popup>{store.name}</Popup>
+              </Marker>
+            </MapContainer>
+          </div>
+        </div>
+      ) : null}
 
       {store.whatsappNumber ? (
         <WhatsAppFloat

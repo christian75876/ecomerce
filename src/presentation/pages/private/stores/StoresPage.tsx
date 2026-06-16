@@ -11,11 +11,15 @@ const StoresPage = () => {
       editingId={storesManagement.editingId}
       loading={storesManagement.loading}
       submitting={storesManagement.submitting}
+      uploadingLogo={storesManagement.uploadingLogo}
+      uploadingBanner={storesManagement.uploadingBanner}
       error={storesManagement.error}
       onFormChange={storesManagement.updateForm}
       onSubmit={storesManagement.submitForm}
       onEdit={storesManagement.startEditing}
       onReset={storesManagement.resetForm}
+      onUploadLogo={storesManagement.uploadLogo}
+      onUploadBanner={storesManagement.uploadBanner}
     />
   );
 };

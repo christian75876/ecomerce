@@ -27,6 +27,9 @@ export type StoreFormState = {
   storeType: 'STORE' | 'RESTAURANT';
   menuPdfUrl: string;
   deliveryOptions: 'DELIVERY' | 'PICKUP' | 'BOTH';
+  lat: number | null;
+  lng: number | null;
+  addressText: string | null;
 };
 
 const initialStoreForm: StoreFormState = {
@@ -54,6 +57,9 @@ const initialStoreForm: StoreFormState = {
   storeType: 'STORE',
   menuPdfUrl: '',
   deliveryOptions: 'BOTH',
+  lat: null,
+  lng: null,
+  addressText: null,
 };
 
 export const useStoresManagement = () => {
@@ -62,6 +68,8 @@ export const useStoresManagement = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadStores = async () => {
@@ -127,15 +135,22 @@ export const useStoresManagement = () => {
         buttonStyle: form.buttonStyle,
         layoutStyle: form.layoutStyle,
         coverStyle: form.coverStyle,
+        lat: form.lat ?? undefined,
+        lng: form.lng ?? undefined,
+        addressText: form.addressText?.trim() || undefined,
       };
 
       if (editingId) {
         await StoresRepository.updateStore(editingId, payload);
+        resetForm();
       } else {
-        await StoresRepository.createStore(payload);
+        const res = await StoresRepository.createStore(payload);
+        // After creating, stay in edit mode so user can upload logo/banner
+        await loadStores();
+        startEditing(res.data);
+        return true;
       }
 
-      resetForm();
       await loadStores();
       return true;
     } catch (err) {
@@ -143,6 +158,34 @@ export const useStoresManagement = () => {
       return false;
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const uploadLogo = async (file: File) => {
+    if (!editingId) return;
+    setUploadingLogo(true);
+    try {
+      const res = await StoresRepository.uploadLogo(editingId, file);
+      setForm((f) => ({ ...f, logoUrl: res.data.logoUrl ?? '' }));
+      setStores((prev) => prev.map((s) => (s.id === editingId ? res.data : s)));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al subir logo');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const uploadBanner = async (file: File) => {
+    if (!editingId) return;
+    setUploadingBanner(true);
+    try {
+      const res = await StoresRepository.uploadBanner(editingId, file);
+      setForm((f) => ({ ...f, bannerUrl: res.data.bannerUrl ?? '' }));
+      setStores((prev) => prev.map((s) => (s.id === editingId ? res.data : s)));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al subir banner');
+    } finally {
+      setUploadingBanner(false);
     }
   };
 
@@ -175,6 +218,9 @@ export const useStoresManagement = () => {
       buttonStyle: store.buttonStyle ?? 'ROUNDED',
       layoutStyle: store.layoutStyle ?? 'GRID',
       coverStyle: store.coverStyle ?? 'GRADIENT',
+      lat: store.lat ?? null,
+      lng: store.lng ?? null,
+      addressText: store.addressText ?? null,
     });
   };
 
@@ -184,11 +230,15 @@ export const useStoresManagement = () => {
     editingId,
     loading,
     submitting,
+    uploadingLogo,
+    uploadingBanner,
     error,
     updateForm,
     submitForm,
     startEditing,
     resetForm,
+    uploadLogo,
+    uploadBanner,
     reload: loadStores,
   };
 };
