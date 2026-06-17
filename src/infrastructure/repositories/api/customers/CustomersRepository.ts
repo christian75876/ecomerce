@@ -1,5 +1,6 @@
 import {
   ICreateCustomerRequest,
+  IGetCustomersQuery,
   IRegisterCustomerPaymentRequest,
   IUpdateCustomerRequest,
 } from '@/application/dtos/customers/request/CustomerRequest';
@@ -10,15 +11,17 @@ import {
 } from '@/application/dtos/customers/response/CustomerResponse';
 import {
   authenticatedClientHTTP,
-  publicClientHTTP,
 } from '@/infrastructure/repositories/api/ClientHTTP';
 import { ErrorHandler } from '@/infrastructure/repositories/api/errors/ErrorHandler';
 
 export class CustomersRepository {
-  static async getCustomers(search?: string): Promise<ICustomersResp> {
-    const suffix = search ? `?search=${encodeURIComponent(search)}` : '';
+  static async getCustomers(
+    query: IGetCustomersQuery = {},
+  ): Promise<ICustomersResp> {
     return ErrorHandler.handleApiErrors(() =>
-      publicClientHTTP.get<ICustomersResp>(`/customers${suffix}`),
+      authenticatedClientHTTP.get<ICustomersResp>('/customers', {
+        params: query,
+      }),
     );
   }
 
@@ -33,26 +36,36 @@ export class CustomersRepository {
   static async updateCustomer(
     id: string,
     payload: IUpdateCustomerRequest,
+    storeId?: string | null,
   ): Promise<ICustomerResp> {
     return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.patch<ICustomerResp>(`/customers/${id}`, payload),
+      authenticatedClientHTTP.patch<ICustomerResp>(`/customers/${id}`, payload, {
+        params: storeId ? { storeId } : undefined,
+      }),
     );
   }
 
-  static async getCustomerCredit(id: string): Promise<ICustomerCreditResp> {
+  static async getCustomerCredit(
+    id: string,
+    storeId?: string | null,
+  ): Promise<ICustomerCreditResp> {
     return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.get<ICustomerCreditResp>(`/customers/${id}/credit`),
+      authenticatedClientHTTP.get<ICustomerCreditResp>(`/customers/${id}/credit`, {
+        params: storeId ? { storeId } : undefined,
+      }),
     );
   }
 
   static async registerCustomerPayment(
     id: string,
     payload: IRegisterCustomerPaymentRequest,
+    storeId?: string | null,
   ): Promise<ICustomerCreditResp> {
     return ErrorHandler.handleApiErrors(() =>
       authenticatedClientHTTP.post<ICustomerCreditResp>(
         `/customers/${id}/payments`,
         payload,
+        { params: storeId ? { storeId } : undefined },
       ),
     );
   }

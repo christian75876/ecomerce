@@ -9,14 +9,18 @@ import { ROUTES } from '@/shared/constants/routes';
  * - Optionally, triggers a global logout event.
  */
 export const handleUnauthorized = () => {
+  // Only act if the user actually had an active session.
+  // Ignore 401s that come from unauthenticated calls on public pages.
+  const hasToken =
+    localStorage.getItem('token') || sessionStorage.getItem('token');
+  if (!hasToken) return;
+
   console.warn('[AUTH ERROR]: User session expired. Logging out...');
 
-  // 1️⃣ Clear authentication tokens
   localStorage.removeItem('token');
   sessionStorage.removeItem('token');
   document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
 
-  // 2️⃣ Dispatch a logout event for global state managers
   const logoutEvent = new CustomEvent('logout');
   window.dispatchEvent(logoutEvent);
 };

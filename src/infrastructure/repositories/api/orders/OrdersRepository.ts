@@ -13,9 +13,9 @@ import {
 import { ErrorHandler } from '@/infrastructure/repositories/api/errors/ErrorHandler';
 
 export class OrdersRepository {
-  static async getOrders(): Promise<IOrdersResp> {
+  static async getOrders(storeId?: string | null): Promise<IOrdersResp> {
     return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.get<IOrdersResp>('/orders'),
+      authenticatedClientHTTP.get<IOrdersResp>('/orders', { params: storeId ? { storeId } : undefined }),
     );
   }
 

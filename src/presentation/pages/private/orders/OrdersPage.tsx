@@ -3,9 +3,11 @@ import {
   useOrdersManagement,
 } from '@/application/useCases/orders/useOrdersManagement';
 import { OrdersManagementView } from '@/presentation/ui/organisms/orders/OrdersManagementView';
+import { useAdminStoreFilterContext } from '@/shared/context/AdminStoreFilterContext';
 
 const OrdersPage = () => {
-  const ordersManagement = useOrdersManagement();
+  const { selectedStoreId } = useAdminStoreFilterContext();
+  const ordersManagement = useOrdersManagement(selectedStoreId);
 
   return (
     <OrdersManagementView

@@ -3,6 +3,7 @@ import { usePurchaseCollection } from './hooks/usePurchaseCollection';
 import { usePurchaseDetailFlow } from './hooks/usePurchaseDetailFlow';
 import { usePurchaseReferenceData } from './hooks/usePurchaseReferenceData';
 import { usePurchaseRegistrationFlow } from './hooks/usePurchaseRegistrationFlow';
+import { useAdminStoreFilterContext } from '@/shared/context/AdminStoreFilterContext';
 
 export type {
   InlineProductForm,
@@ -15,8 +16,9 @@ export type {
 } from './purchase.types';
 
 export const usePurchasesManagement = () => {
+  const { selectedStoreId } = useAdminStoreFilterContext();
   const referenceData = usePurchaseReferenceData();
-  const collection = usePurchaseCollection(10);
+  const collection = usePurchaseCollection(10, selectedStoreId);
   const registration = usePurchaseRegistrationFlow({
     onPurchaseCreated: async () => {
       await collection.loadPurchases(1, collection.filters);

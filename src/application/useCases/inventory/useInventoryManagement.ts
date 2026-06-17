@@ -10,7 +10,7 @@ import { InventoryRepository } from '@/infrastructure/repositories/api/inventory
 import { ProductRepository } from '@/infrastructure/repositories/api/products/ProductsRepository';
 import { SuppliersRepository } from '@/infrastructure/repositories/api/suppliers/SuppliersRepository';
 
-export const useInventoryManagement = () => {
+export const useInventoryManagement = (filterStoreId?: string | null) => {
   const [products, setProducts] = useState<IProduct[]>([]);
   const [suppliers, setSuppliers] = useState<ISupplier[]>([]);
   const [inventory, setInventory] = useState<IInventoryItem[]>([]);
@@ -52,8 +52,8 @@ export const useInventoryManagement = () => {
           SuppliersRepository.getSuppliers(),
           InventoryRepository.getInventory(),
           InventoryRepository.getMovements(),
-          InventoryRepository.getBatches(),
-          InventoryRepository.getExpiring(30),
+          InventoryRepository.getBatches(filterStoreId ? { storeId: filterStoreId } : undefined),
+          InventoryRepository.getExpiring(30, filterStoreId ?? undefined),
         ]);
 
       setProducts(productsResponse.data);
@@ -75,7 +75,8 @@ export const useInventoryManagement = () => {
 
   useEffect(() => {
     void loadScreen();
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterStoreId]);
 
   const resetForm = () => {
     setProductId('');

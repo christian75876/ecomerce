@@ -7,6 +7,7 @@ import {
   isAuthenticated,
 } from '@/shared/utils/checkIsUserAuthenticated.util';
 import { useCart } from '@/shared/hooks/useCart';
+import { useAdminStoreFilterContext } from '@/shared/context/AdminStoreFilterContext';
 
 import Box from '@atoms/box/SimpleBox';
 import NavigationMenu from '@molecules/navigation/NavigationMenu';
@@ -29,6 +30,9 @@ const DesktopHeaderLayout = () => {
   const chip = roleChip(roleLabel);
   const { items } = useCart();
   const cartCount = items.reduce((acc, i) => acc + i.quantity, 0);
+  const isAdmin = roleLabel === 'admin';
+  const { stores, selectedStoreId, selectedStore, selectStore } = useAdminStoreFilterContext();
+  const isSeller = roleLabel === 'seller';
 
   return (
     <Box className='sticky top-0 z-40 border-b border-slate-200/80 bg-white/97 backdrop-blur-sm'>
@@ -36,12 +40,45 @@ const DesktopHeaderLayout = () => {
         {/* Logo */}
         <Box className='flex-shrink-0'>
           <Link to={authenticated && !isBuyer ? ROUTES.PRIVATE.DASHBOARD : ROUTES.PUBLIC.HOME}>
-            <LogoWithText title='Hot' subtitle='' size='sm' />
+            {isSeller && selectedStore ? (
+              <Box className='flex items-center gap-2'>
+                {selectedStore.logoUrl ? (
+                  <img src={selectedStore.logoUrl} alt={selectedStore.name} className='h-9 w-9 rounded-xl object-cover' />
+                ) : (
+                  <Box className='flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10'>
+                    <i className='bx bx-store-alt text-lg text-primary' />
+                  </Box>
+                )}
+                <span className='text-base font-extrabold tracking-tight text-neutral-dark'>{selectedStore.name}</span>
+              </Box>
+            ) : (
+              <LogoWithText title='Hot' subtitle='' size='sm' />
+            )}
           </Link>
         </Box>
 
+        {/* Admin store filter — solo admin o seller con múltiples tiendas */}
+        {showAdminActions && !isSeller && stores.length > 0 ? (
+          <Box className='flex-shrink-0'>
+            <select
+              value={selectedStoreId ?? ''}
+              onChange={(e) => selectStore(e.target.value || null)}
+              className='rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/30'
+            >
+              {isAdmin ? (
+                <option value=''>Todas las tiendas</option>
+              ) : (
+                <option value='' disabled>Selecciona tienda</option>
+              )}
+              {stores.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </Box>
+        ) : null}
+
         {/* Navigation */}
-        <Box className='flex-1 overflow-hidden'>
+        <Box className='flex-1 overflow-visible'>
           <NavigationMenu />
         </Box>
 

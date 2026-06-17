@@ -249,7 +249,7 @@ const StoresPage = () => {
                   <FitBounds stores={mapLocated} />
                   {mapLocated.map((store) => (
                     <Marker key={store.id} position={[store.lat!, store.lng!]}>
-                      <Popup minWidth={180}>
+                      <Popup minWidth={210}>
                         <div className='py-1'>
                           <div className='flex items-center gap-2 pb-2'>
                             {store.logoUrl ? (
@@ -269,12 +269,22 @@ const StoresPage = () => {
                           {store.addressText ? (
                             <p className='pb-2 text-xs text-slate-500'>{store.addressText}</p>
                           ) : null}
-                          <a
-                            href={ROUTES.PUBLIC.STORE_DETAILS.replace(':slug', store.slug)}
-                            className='block rounded-lg bg-primary px-3 py-1.5 text-center text-xs font-semibold text-white transition hover:opacity-90'
-                          >
-                            Ver tienda →
-                          </a>
+                          <div className='flex flex-col gap-1.5'>
+                            <a
+                              href={ROUTES.PUBLIC.STORE_DETAILS.replace(':slug', store.slug)}
+                              className='block rounded-lg bg-primary px-3 py-1.5 text-center text-xs font-semibold text-white transition hover:opacity-90'
+                            >
+                              Ver tienda →
+                            </a>
+                            <a
+                              href={`https://www.google.com/maps/dir/?api=1&destination=${store.lat},${store.lng}`}
+                              target='_blank'
+                              rel='noopener noreferrer'
+                              className='block rounded-lg border border-slate-300 px-3 py-1.5 text-center text-xs font-semibold text-slate-600 transition hover:bg-slate-50'
+                            >
+                              📍 Cómo llegar
+                            </a>
+                          </div>
                         </div>
                       </Popup>
                     </Marker>

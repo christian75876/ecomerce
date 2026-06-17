@@ -6,10 +6,13 @@ import Typography from '@atoms/typography/SimpleTypography';
 import { ROUTES } from '@/shared/constants/routes';
 import {
   canAccessAdminPanel,
+  getAuthenticatedRole,
   isAuthenticated,
   isBuyerSession,
 } from '@/shared/utils/checkIsUserAuthenticated.util';
 import { useOrderNotifications } from '@/shared/hooks/useOrderNotifications';
+import { useAdminStoreFilterContext } from '@/shared/context/AdminStoreFilterContext';
+import iconCompany from '@assets/media/images/icon.svg';
 
 const adminPrimaryNavItems = [
   { label: 'Inicio', path: ROUTES.PRIVATE.DASHBOARD, icon: 'bx-home' },
@@ -51,6 +54,10 @@ const MobileHeaderLayout = () => {
   const adminView = isAuthenticated() && canAccessAdminPanel();
   const { unreadCount } = useOrderNotifications();
   const buyerView = isBuyerSession();
+  const role = getAuthenticatedRole();
+  const isAdmin = role === 'admin';
+  const isSeller = role === 'seller';
+  const { stores, selectedStoreId, selectedStore, selectStore } = useAdminStoreFilterContext();
   const primaryNavItems = adminView ? adminPrimaryNavItems : publicPrimaryNavItems;
   const moreNavItems = adminView
     ? adminMoreNavItems
@@ -85,7 +92,39 @@ const MobileHeaderLayout = () => {
             className='absolute inset-x-3 bottom-24 rounded-[1.75rem] border border-neutral-gray/20 bg-white p-4 shadow-[0_24px_60px_rgba(15,23,42,0.18)]'
             onClick={(event) => event.stopPropagation()}
           >
-            <Typography variant='h3'>Más opciones</Typography>
+            {isSeller && selectedStore ? (
+              <Box className='mb-3 flex items-center gap-3 rounded-2xl bg-slate-50 px-3 py-2.5'>
+                {selectedStore.logoUrl ? (
+                  <img src={selectedStore.logoUrl} alt={selectedStore.name} className='h-8 w-8 rounded-xl object-cover' />
+                ) : (
+                  <img src={iconCompany} alt='logo' className='h-8 w-8 rounded-xl' />
+                )}
+                <div>
+                  <p className='text-sm font-bold text-neutral-dark leading-tight'>{selectedStore.name}</p>
+                  <p className='text-xs text-slate-400'>/{selectedStore.slug}</p>
+                </div>
+              </Box>
+            ) : (
+              <Typography variant='h3'>Más opciones</Typography>
+            )}
+            {adminView && !isSeller && stores.length > 0 ? (
+              <select
+                value={selectedStoreId ?? ''}
+                onChange={(event) => selectStore(event.target.value || null)}
+                className='mt-4 w-full rounded-2xl border border-neutral-gray/30 bg-white px-4 py-3 text-sm font-semibold text-neutral-dark/75 focus:outline-none focus:ring-2 focus:ring-primary/30'
+              >
+                {isAdmin ? (
+                  <option value=''>Todas las tiendas</option>
+                ) : (
+                  <option value='' disabled>Selecciona tienda</option>
+                )}
+                {stores.map((store) => (
+                  <option key={store.id} value={store.id}>
+                    {store.name}
+                  </option>
+                ))}
+              </select>
+            ) : null}
             <Box className='mt-4 grid grid-cols-2 gap-2'>
               {moreNavItems.map(({ label, path, icon }) => (
                 <NavLink

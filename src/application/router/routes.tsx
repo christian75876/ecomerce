@@ -11,6 +11,9 @@ const LoginPage = lazy(
 const VerifyEmailPage = lazy(
   () => import('@presentation/pages/public/auth/VerifyEmailPage')
 );
+const RecoverPasswordPage = lazy(
+  () => import('@presentation/pages/public/auth/RecoverPasswordPage')
+);
 const NotFound = lazy(
   () => import('@presentation/pages/public/404/NotFoundPage')
 );
@@ -34,8 +37,8 @@ const RegisterPage = lazy(
 );
 
 // Private pages
-const AdminDashboard = lazy(
-  () => import('@presentation/pages/private/dashboard/AdminDashboard')
+const DashboardPage = lazy(
+  () => import('@presentation/pages/private/dashboard/DashboardPage')
 );
 // const TrackingPage = lazy(
 //   () => import('@presentation/pages/private/tracking/TrackingPage')
@@ -91,6 +94,12 @@ const ProfilePage = lazy(
 const CouponsPage = lazy(
   () => import('@presentation/pages/private/coupons/CouponsPage')
 );
+const SubscriptionsPage = lazy(
+  () => import('@presentation/pages/private/subscriptions/SubscriptionsPage')
+);
+const MyStorePage = lazy(
+  () => import('@presentation/pages/private/store/MyStorePage')
+);
 
 export type AppRoute = RouteObject & {
   path: string;
@@ -107,6 +116,7 @@ export type AppRoute = RouteObject & {
 export const routes: AppRoute[] = [
   // Rutas Públicas
   { path: ROUTES.PUBLIC.LOGIN, element: <LoginPage /> },
+  { path: ROUTES.PUBLIC.RECOVER_PASSWORD, element: <RecoverPasswordPage /> },
   {
     path: ROUTES.PUBLIC.VERIFY_EMAIL,
     element: <VerifyEmailPage />,
@@ -179,7 +189,7 @@ export const routes: AppRoute[] = [
   // Rutas Privadas con Layout
   {
     path: ROUTES.PRIVATE.DASHBOARD,
-    element: <AdminDashboard />,
+    element: <DashboardPage />,
     private: true,
     layout: DashboardLayout,
     hasGradient: true
@@ -232,6 +242,12 @@ export const routes: AppRoute[] = [
     layout: DashboardLayout
   },
   {
+    path: ROUTES.PRIVATE.STORE,
+    element: <MyStorePage />,
+    private: true,
+    layout: DashboardLayout
+  },
+  {
     path: ROUTES.PRIVATE.SUPPLIERS,
     element: <SuppliersPage />,
     private: true,
@@ -270,6 +286,12 @@ export const routes: AppRoute[] = [
   {
     path: ROUTES.PRIVATE.COUPONS,
     element: <CouponsPage />,
+    private: true,
+    layout: DashboardLayout
+  },
+  {
+    path: ROUTES.PRIVATE.SUBSCRIPTIONS,
+    element: <SubscriptionsPage />,
     private: true,
     layout: DashboardLayout
   },

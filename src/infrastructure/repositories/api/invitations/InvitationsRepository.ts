@@ -1,5 +1,6 @@
 import { authenticatedClientHTTP, publicClientHTTP } from '../ClientHTTP';
 import { ErrorHandler } from '../errors/ErrorHandler';
+import type { IApiResponse } from '@/application/dtos/common/HttpResponse';
 
 export interface IInvitation {
   id: string;
@@ -11,25 +12,29 @@ export interface IInvitation {
   createdAt: string;
 }
 
+interface IInvitationValidation {
+  valid: boolean;
+  email: string;
+}
+
 export class InvitationsRepository {
   static async create(email: string) {
     return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.post<{ message: string; email: string; emailSent: boolean }>(
-        '/invitations',
-        { email },
-      ),
+      authenticatedClientHTTP.post<
+        IApiResponse<{ message: string; email: string; emailSent: boolean; inviteUrl: string }>
+      >('/invitations', { email }),
     );
   }
 
   static async getAll() {
     return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.get<IInvitation[]>('/invitations'),
+      authenticatedClientHTTP.get<IApiResponse<IInvitation[]>>('/invitations'),
     );
   }
 
   static async validateToken(token: string) {
     return ErrorHandler.handleApiErrors(() =>
-      publicClientHTTP.get<{ valid: boolean; email: string }>(
+      publicClientHTTP.get<IApiResponse<IInvitationValidation>>(
         `/invitations/validate/${encodeURIComponent(token)}`,
       ),
     );

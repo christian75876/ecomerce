@@ -42,7 +42,7 @@ export const usePosManagement = () => {
           search,
           storeId: selectedStoreId || undefined,
         }),
-        SalesRepository.getSales(),
+        SalesRepository.getSales(selectedStoreId || undefined),
       ]);
       setProducts(productsResponse.data);
       setSales(salesResponse.data);
@@ -56,12 +56,17 @@ export const usePosManagement = () => {
   const loadSupportingData = useCallback(async () => {
     try {
       const [customersResponse, storesResponse, sessionsResponse] = await Promise.all([
-        CustomersRepository.getCustomers(),
+        selectedStoreId
+          ? CustomersRepository.getCustomers({
+              storeId: selectedStoreId,
+              limit: 100,
+            })
+          : Promise.resolve(null),
         StoresRepository.getStores({ active: true }),
         CashRepository.getSessions(),
       ]);
 
-      setCustomers(customersResponse.data);
+      setCustomers(customersResponse?.data.items ?? []);
       setStores(storesResponse.data.filter((store) => store.isActive));
       setCashSessions(
         sessionsResponse.data.filter((session) => session.status === 'OPEN'),
@@ -71,7 +76,7 @@ export const usePosManagement = () => {
         err instanceof Error ? err.message : 'No fue posible cargar datos POS',
       );
     }
-  }, []);
+  }, [selectedStoreId]);
 
   useEffect(() => {
     void loadScreen();
@@ -80,6 +85,10 @@ export const usePosManagement = () => {
   useEffect(() => {
     void loadSupportingData();
   }, [loadSupportingData]);
+
+  useEffect(() => {
+    setSelectedCustomerId('');
+  }, [selectedStoreId]);
 
   useEffect(() => {
     if (paymentMethod === 'CREDIT') {

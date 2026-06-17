@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 import { useLogin } from '@/application/useCases/auth/useLogin';
 import { useRegisterCustomer } from '@/application/useCases/auth/useRegisterCustomer';
@@ -19,13 +19,16 @@ const FEATURES = [
 ];
 
 const LoginPage = () => {
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [searchParams] = useSearchParams();
+  const [mode, setMode] = useState<'login' | 'register'>(
+    searchParams.get('mode') === 'register' ? 'register' : 'login',
+  );
   const { handleLogin, isloading, error } = useLogin();
   const {
     handleRegisterCustomer,
     isLoading: isCustomerRegisterLoading,
     error: customerRegisterError,
-  } = useRegisterCustomer();
+  } = useRegisterCustomer({ onSuccess: () => setMode('login') });
   const {
     control,
     handleSubmit,
@@ -85,6 +88,16 @@ const LoginPage = () => {
 
           {/* ── Right panel ── */}
           <div className='flex flex-1 flex-col justify-center px-6 py-10 sm:px-10'>
+            {/* Back link — desktop only (mobile version is inside the inner panel) */}
+            <div className='mb-4 hidden justify-end lg:flex'>
+              <Link
+                to={ROUTES.PUBLIC.HOME}
+                className='flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-500 transition hover:border-primary/30 hover:text-primary'
+              >
+                <i className='bx bx-arrow-back text-sm' aria-hidden='true' />
+                Volver al comercio
+              </Link>
+            </div>
             <div className='mx-auto w-full max-w-sm'>
 
               {/* Logo + back — solo visible en mobile (el panel izquierdo ya los muestra en desktop) */}
@@ -152,6 +165,15 @@ const LoginPage = () => {
                     showLabel
                     boxClassName='w-full'
                   />
+
+                  <div className='-mt-2 text-right'>
+                    <Link
+                      to={ROUTES.PUBLIC.RECOVER_PASSWORD}
+                      className='text-xs font-semibold text-primary hover:underline'
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </Link>
+                  </div>
 
                   {error ? (
                     <div className='flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-3 text-sm text-red-700'>

@@ -17,6 +17,24 @@ import { IRegisterCustomerRequest } from '@/application/dtos/auth/register/custo
 import { IRegisterCustomerResp } from '@/application/dtos/auth/register/customer/RegisterCustomerResponse';
 import { IVerifyEmailRequest } from '@/application/dtos/auth/verify-email/request/VerifyEmailRequest';
 import { IVerifyEmailResp } from '@/application/dtos/auth/verify-email/response/VerifyEmailResponse';
+import type { IApiResponse } from '@/application/dtos/common/HttpResponse';
+
+interface IRecoveryMessage {
+  message: string;
+  metadata?: {
+    email_delivery?: 'sent' | 'failed';
+  };
+  otp_code?: string;
+}
+
+interface IVerifyRecoveryOtpRequest {
+  email: string;
+  code: string;
+}
+
+interface IResetPasswordRequest extends IVerifyRecoveryOtpRequest {
+  newPassword: string;
+}
 
 export class AuthRepository {
   /**
@@ -65,6 +83,39 @@ export class AuthRepository {
       msg => {
         logError(msg, 'client');
       }
+    );
+  }
+
+  static async requestPasswordRecovery(
+    email: string,
+  ): Promise<IApiResponse<IRecoveryMessage>> {
+    return ErrorHandler.handleApiErrors(() =>
+      publicClientHTTP.post<IApiResponse<IRecoveryMessage>>(
+        '/auth/recover-passwords',
+        { email },
+      ),
+    );
+  }
+
+  static async verifyRecoveryOtp(
+    payload: IVerifyRecoveryOtpRequest,
+  ): Promise<IApiResponse<{ message: string }>> {
+    return ErrorHandler.handleApiErrors(() =>
+      publicClientHTTP.post<IApiResponse<{ message: string }>>(
+        '/auth/recover-passwords/verify-otp',
+        payload,
+      ),
+    );
+  }
+
+  static async resetPassword(
+    payload: IResetPasswordRequest,
+  ): Promise<IApiResponse<{ message: string }>> {
+    return ErrorHandler.handleApiErrors(() =>
+      publicClientHTTP.post<IApiResponse<{ message: string }>>(
+        '/auth/recover-passwords/reset',
+        payload,
+      ),
     );
   }
 

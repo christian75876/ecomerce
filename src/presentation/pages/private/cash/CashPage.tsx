@@ -1,8 +1,10 @@
 import { useCashManagement } from '@/application/useCases/cash/useCashManagement';
 import { CashManagementView } from '@/presentation/ui/organisms/cash/CashManagementView';
+import { useAdminStoreFilterContext } from '@/shared/context/AdminStoreFilterContext';
 
 const CashPage = () => {
-  const cashManagement = useCashManagement();
+  const { selectedStoreId } = useAdminStoreFilterContext();
+  const cashManagement = useCashManagement(selectedStoreId);
 
   return (
     <CashManagementView

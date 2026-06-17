@@ -1,11 +1,17 @@
-import { ICustomer, ICustomerLedgerEntry } from '@/application/dtos/customers/response/CustomerResponse';
+import {
+  ICustomer,
+  ICustomerLedgerEntry,
+  ICustomersSummary,
+} from '@/application/dtos/customers/response/CustomerResponse';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
+import PaginationControls from '@/presentation/ui/molecules/common/PaginationControls';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 
 interface CustomersCreditManagementViewProps {
   customers: ICustomer[];
+  selectedStoreName: string | null;
   selectedCustomerId: string;
   ledger: ICustomerLedgerEntry[];
   creditLimit: string;
@@ -15,6 +21,11 @@ interface CustomersCreditManagementViewProps {
   loading: boolean;
   submitting: boolean;
   error: string | null;
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+  summary: ICustomersSummary;
   onSelectCustomer: (value: string) => void;
   onCreditLimitChange: (value: string) => void;
   onPaymentAmountChange: (value: string) => void;
@@ -22,10 +33,12 @@ interface CustomersCreditManagementViewProps {
   onSearchChange: (value: string) => void;
   onToggleCredit: (customer: ICustomer, payload: Partial<ICustomer>) => Promise<void>;
   onRegisterPayment: () => Promise<boolean>;
+  onChangePage: (page: number) => void | Promise<void>;
 }
 
 export const CustomersCreditManagementView = ({
   customers,
+  selectedStoreName,
   selectedCustomerId,
   ledger,
   creditLimit,
@@ -35,6 +48,11 @@ export const CustomersCreditManagementView = ({
   loading,
   submitting,
   error,
+  currentPage,
+  totalPages,
+  totalItems,
+  itemsPerPage,
+  summary,
   onSelectCustomer,
   onCreditLimitChange,
   onPaymentAmountChange,
@@ -42,14 +60,9 @@ export const CustomersCreditManagementView = ({
   onSearchChange,
   onToggleCredit,
   onRegisterPayment,
+  onChangePage,
 }: CustomersCreditManagementViewProps) => {
   const selectedCustomer = customers.find((item) => item.id === selectedCustomerId) ?? null;
-  const customersWithDebt = customers.filter((customer) => Number(customer.creditBalance) > 0);
-  const enabledCreditCustomers = customers.filter((customer) => customer.creditEnabled);
-  const totalPortfolio = customersWithDebt.reduce(
-    (acc, customer) => acc + Number(customer.creditBalance),
-    0,
-  );
 
   return (
     <Box className='space-y-8'>
@@ -58,6 +71,9 @@ export const CustomersCreditManagementView = ({
         <Typography className='mt-2 text-neutral-dark/70'>
           Administra crédito comercial, consulta saldos y registra abonos sin mezclarlo con usuarios internos.
         </Typography>
+        <Typography className='mt-1 text-sm text-neutral-dark/55'>
+          {selectedStoreName ? `Tienda: ${selectedStoreName}` : 'Todas las tiendas'}
+        </Typography>
       </Box>
       <Box className='grid gap-4 md:grid-cols-3'>
         <Box className='surface-card rounded-[1.5rem] px-5 py-4'>
@@ -65,7 +81,7 @@ export const CustomersCreditManagementView = ({
             Clientes con crédito
           </Typography>
           <Typography variant='h2' className='mt-2'>
-            {enabledCreditCustomers.length}
+            {summary.creditEnabledCount}
           </Typography>
         </Box>
         <Box className='surface-card rounded-[1.5rem] px-5 py-4'>
@@ -73,7 +89,7 @@ export const CustomersCreditManagementView = ({
             Clientes con saldo
           </Typography>
           <Typography variant='h2' className='mt-2'>
-            {customersWithDebt.length}
+            {summary.customersWithDebtCount}
           </Typography>
         </Box>
         <Box className='surface-card rounded-[1.5rem] px-5 py-4'>
@@ -81,7 +97,7 @@ export const CustomersCreditManagementView = ({
             Cartera total
           </Typography>
           <Typography variant='h2' className='mt-2'>
-            ${totalPortfolio.toFixed(2)}
+            ${summary.totalPortfolio.toFixed(2)}
           </Typography>
         </Box>
       </Box>
@@ -97,7 +113,13 @@ export const CustomersCreditManagementView = ({
             <Input value={search} onChange={(event) => onSearchChange(event.target.value)} placeholder='Buscar cliente' className='max-w-80' />
           </Box>
           <Box className='mt-5 space-y-3'>
-            {loading ? <Typography>Cargando clientes...</Typography> : customers.map((customer) => (
+            {loading ? (
+              <Typography>Cargando clientes...</Typography>
+            ) : customers.length === 0 ? (
+              <Box className='rounded-2xl border border-dashed border-neutral-gray/40 bg-white px-5 py-6 text-center'>
+                <Typography>No hay clientes para esta tienda.</Typography>
+              </Box>
+            ) : customers.map((customer) => (
               <Box key={customer.id} className='rounded-2xl border border-neutral-gray/20 bg-white px-5 py-4 shadow-sm'>
                 <Box className='flex flex-wrap items-start justify-between gap-3'>
                   <Box>
@@ -149,6 +171,16 @@ export const CustomersCreditManagementView = ({
               </Box>
             ))}
           </Box>
+          {!loading && totalItems > 0 ? (
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              loading={loading}
+              onChangePage={onChangePage}
+            />
+          ) : null}
         </Box>
         <Box className='surface-panel rounded-[1.75rem] p-6'>
           <Typography variant='h2' className='text-xl font-semibold'>Detalle de cartera</Typography>

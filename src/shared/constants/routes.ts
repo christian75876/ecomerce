@@ -2,6 +2,7 @@ export const ROUTES = {
   PUBLIC: {
     LOGIN: '/auth',
     REGISTER: '/register',
+    RECOVER_PASSWORD: '/recover-password',
     VERIFY_EMAIL: '/verify-email',
     NOT_FOUND: '*',
     HOME: '/home',
@@ -33,6 +34,7 @@ export const ROUTES = {
     DETAILS: '/product/:productId',
     STORE: '/admin/store',
     INVITATIONS: '/admin/invitations',
-    COUPONS: '/coupons'
+    COUPONS: '/coupons',
+    SUBSCRIPTIONS: '/admin/subscriptions'
   }
 } as const;

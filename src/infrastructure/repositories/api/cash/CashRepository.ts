@@ -13,9 +13,9 @@ import { authenticatedClientHTTP } from '@/infrastructure/repositories/api/Clien
 import { ErrorHandler } from '@/infrastructure/repositories/api/errors/ErrorHandler';
 
 export class CashRepository {
-  static async getSessions(): Promise<ICashSessionsResp> {
+  static async getSessions(storeId?: string | null): Promise<ICashSessionsResp> {
     return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.get<ICashSessionsResp>('/cash/sessions'),
+      authenticatedClientHTTP.get<ICashSessionsResp>('/cash/sessions', { params: storeId ? { storeId } : undefined }),
     );
   }
 

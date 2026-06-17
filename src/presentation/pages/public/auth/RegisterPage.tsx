@@ -12,7 +12,6 @@ const RegisterPage = () => {
   const navigate = useNavigate();
 
   const [validating, setValidating] = useState(!!token);
-  const [inviteEmail, setInviteEmail] = useState('');
   const [tokenError, setTokenError] = useState<string | null>(null);
 
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirm: '' });
@@ -23,8 +22,8 @@ const RegisterPage = () => {
     if (!token) return;
     InvitationsRepository.validateToken(token)
       .then((res) => {
-        setInviteEmail(res.email);
-        setForm((f) => ({ ...f, email: res.email }));
+        const email = res.data.email;
+        setForm((f) => ({ ...f, email }));
       })
       .catch((err) => {
         setTokenError(err instanceof Error ? err.message : 'Invitación no válida');
@@ -38,12 +37,17 @@ const RegisterPage = () => {
       setError('Las contraseñas no coinciden');
       return;
     }
+    const email = String(form.email ?? '').trim();
+    if (!email) {
+      setError('No fue posible leer el correo de la invitación. Vuelve a abrir el enlace.');
+      return;
+    }
     setError(null);
     setSubmitting(true);
     try {
       const res = await AuthRepository.registerCustomer({
         name: form.name.trim(),
-        email: form.email.trim(),
+        email,
         phone: form.phone.trim() || undefined,
         password: form.password,
         inviteToken: token ?? undefined,
@@ -216,7 +220,7 @@ const RegisterPage = () => {
             <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Correo electrónico</label>
             <input
               type='email'
-              value={inviteEmail}
+              value={form.email}
               readOnly
               className='w-full rounded-2xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm text-slate-500 outline-none cursor-not-allowed'
             />
@@ -264,7 +268,7 @@ const RegisterPage = () => {
             disabled={submitting}
             className='mt-2 w-full rounded-2xl bg-primary py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50'
           >
-            {submitting ? 'Creando cuenta...' : 'Crear cuenta y entrar'}
+            {submitting ? 'Creando cuenta...' : 'Crear cuenta e ir a ingresar'}
           </button>
         </form>
       </div>

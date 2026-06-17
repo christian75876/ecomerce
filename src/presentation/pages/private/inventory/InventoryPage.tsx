@@ -1,8 +1,10 @@
 import { useInventoryManagement } from '@/application/useCases/inventory/useInventoryManagement';
 import { InventoryManagementView } from '@/presentation/ui/organisms/inventory/InventoryManagementView';
+import { useAdminStoreFilterContext } from '@/shared/context/AdminStoreFilterContext';
 
 const InventoryPage = () => {
-  const inventoryManagement = useInventoryManagement();
+  const { selectedStoreId } = useAdminStoreFilterContext();
+  const inventoryManagement = useInventoryManagement(selectedStoreId);
 
   return (
     <InventoryManagementView

@@ -2,11 +2,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IRegisterCustomerForm } from '@/application/dtos/auth/register/customer/RegisterCustomerRequest';
 import { AuthRepository } from '@/infrastructure/repositories/api/auth/AuthRepository';
-import { authSession } from '@/shared/utils/authSession';
 import { ROUTES } from '@/shared/constants/routes';
 import { SnackbarUtilities } from '@/shared/utils/SnackbarManager';
 
-export const useRegisterCustomer = () => {
+interface UseRegisterCustomerOptions {
+  onSuccess?: () => void;
+}
+
+export const useRegisterCustomer = (options: UseRegisterCustomerOptions = {}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -20,10 +23,9 @@ export const useRegisterCustomer = () => {
 
     try {
       const response = await AuthRepository.registerCustomer(payload);
-      authSession.setToken(response.data.token);
-      authSession.setUser(response.data.user);
       SnackbarUtilities.success(response.data.message, 'top', 'center');
-      navigate(ROUTES.PUBLIC.HOME);
+      options.onSuccess?.();
+      navigate(ROUTES.PUBLIC.LOGIN);
       return response;
     } catch (err) {
       setError(

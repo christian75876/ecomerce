@@ -36,5 +36,23 @@ export interface IStore {
   updatedAt: string;
 }
 
+export type StoreSubscriptionStatus = 'ACTIVE' | 'EXPIRED' | 'NEVER';
+
+export interface IAdminStore extends IStore {
+  subscriptionStatus: StoreSubscriptionStatus;
+}
+
+export interface IAdminStoresPaginated {
+  items: IAdminStore[];
+  pagination: {
+    totalItems: number;
+    itemCount: number;
+    itemsPerPage: number;
+    totalPages: number;
+    currentPage: number;
+  };
+}
+
 export type IStoresResp = IApiResponse<IStore[]>;
 export type IStoreResp = IApiResponse<IStore>;
+export type IAdminStoresResp = IApiResponse<IAdminStoresPaginated>;

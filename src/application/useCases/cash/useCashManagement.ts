@@ -4,7 +4,7 @@ import { CashRepository } from '@/infrastructure/repositories/api/cash/CashRepos
 import { StoresRepository } from '@/infrastructure/repositories/api/stores/StoresRepository';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
 
-export const useCashManagement = () => {
+export const useCashManagement = (filterStoreId?: string | null) => {
   const [sessions, setSessions] = useState<ICashSession[]>([]);
   const [stores, setStores] = useState<IStore[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState('');
@@ -24,7 +24,7 @@ export const useCashManagement = () => {
     setError(null);
     try {
       const [sessionsResponse, storesResponse] = await Promise.all([
-        CashRepository.getSessions(),
+        CashRepository.getSessions(filterStoreId),
         StoresRepository.getStores(),
       ]);
       setSessions(sessionsResponse.data);
@@ -38,7 +38,8 @@ export const useCashManagement = () => {
 
   useEffect(() => {
     void loadScreen();
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterStoreId]);
 
   useEffect(() => {
     if (!selectedSessionId) {

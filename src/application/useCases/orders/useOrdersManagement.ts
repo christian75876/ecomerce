@@ -20,7 +20,7 @@ export type CartRow = {
   quantity: number;
 };
 
-export const useOrdersManagement = () => {
+export const useOrdersManagement = (filterStoreId?: string | null) => {
   const [customers, setCustomers] = useState<ICustomer[]>([]);
   const [products, setProducts] = useState<IProduct[]>([]);
   const [orders, setOrders] = useState<IOrder[]>([]);
@@ -45,11 +45,17 @@ export const useOrdersManagement = () => {
     try {
       const [customersResponse, productsResponse, ordersResponse] =
         await Promise.all([
-          CustomersRepository.getCustomers(),
-          ProductRepository.getProducts({ active: true }),
-          OrdersRepository.getOrders(),
+          CustomersRepository.getCustomers({
+            storeId: filterStoreId ?? undefined,
+            limit: 100,
+          }),
+          ProductRepository.getProducts({
+            active: true,
+            storeId: filterStoreId ?? undefined,
+          }),
+          OrdersRepository.getOrders(filterStoreId),
         ]);
-      setCustomers(customersResponse.data);
+      setCustomers(customersResponse.data.items);
       setProducts(productsResponse.data);
       setOrders(ordersResponse.data);
     } catch (err) {
@@ -63,7 +69,8 @@ export const useOrdersManagement = () => {
 
   useEffect(() => {
     void loadScreen();
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterStoreId]);
 
   const createCustomer = async () => {
     if (
@@ -75,10 +82,18 @@ export const useOrdersManagement = () => {
       return false;
     }
 
+    if (!filterStoreId) {
+      setError('Selecciona una tienda para crear el cliente');
+      return false;
+    }
+
     setSubmitting(true);
     setError(null);
     try {
-      const response = await CustomersRepository.createCustomer(newCustomer);
+      const response = await CustomersRepository.createCustomer({
+        ...newCustomer,
+        storeId: filterStoreId,
+      });
       setCustomerId(response.data.id);
       setNewCustomer({ firstName: '', lastName: '', email: '', phone: '' });
       await loadScreen();

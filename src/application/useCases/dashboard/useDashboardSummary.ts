@@ -5,7 +5,7 @@ import {
 } from '@/application/dtos/dashboard/response/DashboardResponse';
 import { DashboardRepository } from '@/infrastructure/repositories/api/dashboard/DashboardRepository';
 
-export const useDashboardSummary = () => {
+export const useDashboardSummary = (lockedStoreId?: string) => {
   const buildDefaultRange = () => {
     const endDate = new Date();
     const startDate = new Date();
@@ -24,6 +24,7 @@ export const useDashboardSummary = () => {
     ...buildDefaultRange(),
     criticalStockThreshold: 5,
     rotationDays: 30,
+    storeId: lockedStoreId,
   });
 
   useEffect(() => {
@@ -63,7 +64,7 @@ export const useDashboardSummary = () => {
       ...buildDefaultRange(),
       criticalStockThreshold: 5,
       rotationDays: 30,
-      storeId: undefined,
+      storeId: lockedStoreId,
     });
   };
 

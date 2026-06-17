@@ -7,9 +7,9 @@ import { authenticatedClientHTTP } from '@/infrastructure/repositories/api/Clien
 import { ErrorHandler } from '@/infrastructure/repositories/api/errors/ErrorHandler';
 
 export class SalesRepository {
-  static async getSales(): Promise<ISalesResp> {
+  static async getSales(storeId?: string | null): Promise<ISalesResp> {
     return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.get<ISalesResp>('/sales'),
+      authenticatedClientHTTP.get<ISalesResp>('/sales', { params: storeId ? { storeId } : undefined }),
     );
   }
 

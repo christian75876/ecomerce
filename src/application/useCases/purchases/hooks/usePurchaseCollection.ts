@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { IPurchase } from '@/application/dtos/purchases/response/PurchaseResponse';
 import { PurchasesRepository } from '@/infrastructure/repositories/api/purchases/PurchasesRepository';
 import { emptyPurchaseFilters } from '../helpers/purchaseInitialState';
 import { PurchaseListFilters } from '../purchase.types';
 
-export const usePurchaseCollection = (itemsPerPage = 10) => {
+export const usePurchaseCollection = (itemsPerPage = 10, filterStoreId?: string | null) => {
   const [purchases, setPurchases] = useState<IPurchase[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -12,6 +12,7 @@ export const usePurchaseCollection = (itemsPerPage = 10) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const isFirstRender = useRef(true);
 
   const loadPurchases = async (
     page = currentPage,
@@ -30,6 +31,7 @@ export const usePurchaseCollection = (itemsPerPage = 10) => {
         limit: itemsPerPage,
         search: activeFilters.search.trim() || undefined,
         supplierId: activeFilters.supplierId || undefined,
+        storeId: filterStoreId ?? undefined,
         dateFrom: activeFilters.dateFrom || undefined,
         dateTo: activeFilters.dateTo || undefined,
       });
@@ -77,6 +79,15 @@ export const usePurchaseCollection = (itemsPerPage = 10) => {
       ),
     );
   };
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    void loadPurchases(1, filters);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterStoreId]);
 
   return {
     purchases,

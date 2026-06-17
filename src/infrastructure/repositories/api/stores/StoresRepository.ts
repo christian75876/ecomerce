@@ -9,6 +9,7 @@ import {
   IUpdateStoreRequest,
 } from '@/application/dtos/stores/request/StoreRequest';
 import {
+  IAdminStoresResp,
   IStoreResp,
   IStoresResp,
 } from '@/application/dtos/stores/response/StoreResponse';
@@ -77,6 +78,17 @@ export class StoresRepository {
       authenticatedClientHTTP.post<IStoreResp>(`/stores/${id}/logo`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
       }),
+    );
+  }
+
+  static async getAdminStores(query: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+  } = {}): Promise<IAdminStoresResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.get<IAdminStoresResp>('/stores/admin', { params: query }),
     );
   }
 

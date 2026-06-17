@@ -12,6 +12,8 @@ import { ProductRepository } from '@/infrastructure/repositories/api/products/Pr
 import { StoresRepository } from '@/infrastructure/repositories/api/stores/StoresRepository';
 import { SuppliersRepository } from '@/infrastructure/repositories/api/suppliers/SuppliersRepository';
 import { MenuCategoriesRepository } from '@/infrastructure/repositories/api/menu-categories/MenuCategoriesRepository';
+import { useAdminStoreFilterContext } from '@/shared/context/AdminStoreFilterContext';
+import { getAuthenticatedRole } from '@/shared/utils/checkIsUserAuthenticated.util';
 
 export type ProductFormState = {
   name: string;
@@ -54,6 +56,10 @@ export const initialProductFormState: ProductFormState = {
 };
 
 export const useProductsManagement = () => {
+  const { selectedStore, stores: contextStores } = useAdminStoreFilterContext();
+  const isSeller = getAuthenticatedRole() === 'seller';
+  const sellerStoreId = isSeller ? (selectedStore?.id ?? contextStores[0]?.id ?? '') : '';
+
   const [products, setProducts] = useState<IProduct[]>([]);
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [stores, setStores] = useState<IStore[]>([]);
@@ -84,9 +90,9 @@ export const useProductsManagement = () => {
   const [videoError, setVideoError] = useState<string | null>(null);
 
   const loadCategories = useCallback(async () => {
-    const response = await CategoriesRepository.getCategories(true);
+    const response = await CategoriesRepository.getCategories(true, sellerStoreId || undefined);
     setCategories(response.data);
-  }, []);
+  }, [sellerStoreId]);
 
   const loadStores = useCallback(async () => {
     const response = await StoresRepository.getStores({ active: true });
@@ -135,6 +141,13 @@ export const useProductsManagement = () => {
     }
   }, []);
 
+  // Auto-select seller's store when not editing
+  useEffect(() => {
+    if (isSeller && sellerStoreId) {
+      setForm(f => (f.storeId ? f : { ...f, storeId: sellerStoreId }));
+    }
+  }, [isSeller, sellerStoreId]);
+
   useEffect(() => {
     void Promise.all([loadCategories(), loadStores(), loadSuppliers()]).catch((err: unknown) => {
       setError(
@@ -181,7 +194,7 @@ export const useProductsManagement = () => {
   };
 
   const resetForm = () => {
-    setForm(initialProductFormState);
+    setForm({ ...initialProductFormState, storeId: sellerStoreId });
     setEditingId(null);
     setPendingImageFile(null);
     setImagePreview(null);
@@ -196,13 +209,11 @@ export const useProductsManagement = () => {
   const buildPayload = (currentForm: ProductFormState): ICreateProductRequest | null => {
     if (
       !currentForm.name.trim() ||
-      !currentForm.description.trim() ||
-      !currentForm.sku.trim() ||
       !currentForm.price ||
       !currentForm.categoryId ||
       !currentForm.storeId
     ) {
-      setError('Completa nombre, descripción, SKU, precio, categoría y tienda');
+      setError('Completa nombre, precio, categoría y tienda');
       return null;
     }
 
@@ -234,7 +245,7 @@ export const useProductsManagement = () => {
     return {
       name: currentForm.name.trim(),
       description: currentForm.description.trim(),
-      sku: currentForm.sku.trim(),
+      sku: currentForm.sku?.trim() || undefined,
       price: Number(currentForm.price),
       categoryId: currentForm.categoryId,
       storeId: currentForm.storeId,
@@ -298,7 +309,7 @@ export const useProductsManagement = () => {
     setForm({
       name: product.name,
       description: product.description,
-      sku: product.sku,
+      sku: product.sku ?? '',
       price: String(product.price),
       cost: product.cost ? String(product.cost) : '',
       compareAtPrice: product.compareAtPrice ? String(product.compareAtPrice) : '',
@@ -402,6 +413,32 @@ export const useProductsManagement = () => {
     }
   };
 
+  const createCategory = async (name: string): Promise<ICategory | null> => {
+    try {
+      const response = await CategoriesRepository.createCategory({ name: name.trim(), isActive: true });
+      const newCat = response.data;
+      setCategories(prev => [...prev, newCat].sort((a, b) => a.name.localeCompare(b.name)));
+      return newCat;
+    } catch {
+      return null;
+    }
+  };
+
+  const createSupplier = async (name: string, phone?: string, email?: string): Promise<ISupplier | null> => {
+    try {
+      const response = await SuppliersRepository.createSupplier({
+        name: name.trim(),
+        phone: phone || undefined,
+        email: email || undefined,
+      });
+      const newSup = response.data;
+      setSuppliers(prev => [...prev, newSup].sort((a, b) => a.name.localeCompare(b.name)));
+      return newSup;
+    } catch {
+      return null;
+    }
+  };
+
   const removeVideo = async (videoId: string) => {
     if (!editingId) return;
     setVideoSubmitting(true);
@@ -422,6 +459,9 @@ export const useProductsManagement = () => {
     stores,
     suppliers,
     menuCategories,
+    isSeller,
+    createCategory,
+    createSupplier,
     form,
     editingId,
     search,

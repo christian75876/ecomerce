@@ -11,6 +11,7 @@ const ProductsPage = () => {
       stores={pm.stores}
       suppliers={pm.suppliers}
       menuCategories={pm.menuCategories}
+      isSeller={pm.isSeller}
       form={pm.form}
       editingId={pm.editingId}
       search={pm.search}
@@ -42,6 +43,8 @@ const ProductsPage = () => {
       onEdit={pm.startEditing}
       onToggleStatus={pm.toggleStatus}
       onReset={pm.resetForm}
+      onAddCategory={pm.createCategory}
+      onAddSupplier={pm.createSupplier}
     />
   );
 };

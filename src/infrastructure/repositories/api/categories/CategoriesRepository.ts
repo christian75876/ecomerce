@@ -13,8 +13,11 @@ import {
 import { ErrorHandler } from '@/infrastructure/repositories/api/errors/ErrorHandler';
 
 export class CategoriesRepository {
-  static async getCategories(active?: boolean): Promise<ICategoriesResp> {
-    const query = typeof active === 'boolean' ? `?active=${active}` : '';
+  static async getCategories(active?: boolean, storeId?: string): Promise<ICategoriesResp> {
+    const params = new URLSearchParams();
+    if (typeof active === 'boolean') params.set('active', String(active));
+    if (storeId) params.set('storeId', storeId);
+    const query = params.toString() ? `?${params.toString()}` : '';
 
     return ErrorHandler.handleApiErrors(() =>
       publicClientHTTP.get<ICategoriesResp>(`/categories${query}`),

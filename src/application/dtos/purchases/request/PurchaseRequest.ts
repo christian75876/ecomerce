@@ -34,6 +34,7 @@ export interface ICancelPurchaseRequest {
 export interface IGetPurchasesQuery {
   search?: string;
   supplierId?: string;
+  storeId?: string | null;
   dateFrom?: string;
   dateTo?: string;
   page?: number;

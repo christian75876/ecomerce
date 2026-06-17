@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useInvitations } from '@/application/useCases/invitations/useInvitations';
 
 const STATUS_LABEL: Record<string, string> = {
@@ -13,8 +14,17 @@ const STATUS_CLASS: Record<string, string> = {
 };
 
 const InvitationsPage = () => {
-  const { invitations, loading, submitting, email, setEmail, error, success, sendInvitation } =
+  const { invitations, loading, submitting, email, setEmail, error, success, lastInviteUrl, sendInvitation } =
     useInvitations();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    if (!lastInviteUrl) return;
+    void navigator.clipboard.writeText(lastInviteUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
   return (
     <div className='space-y-6 animate-fade-up'>
@@ -56,9 +66,35 @@ const InvitationsPage = () => {
             <i className='bx bx-error-circle' aria-hidden='true' /> {error}
           </div>
         ) : null}
+
         {success ? (
-          <div className='mt-3 flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-emerald-700'>
-            <i className='bx bx-check-circle' aria-hidden='true' /> {success}
+          <div className='mt-3 space-y-3'>
+            <div className='flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-emerald-700'>
+              <i className='bx bx-check-circle' aria-hidden='true' /> {success}
+            </div>
+            {lastInviteUrl ? (
+              <div className='rounded-2xl border border-amber-200 bg-amber-50 p-4'>
+                <p className='mb-2 text-xs font-semibold text-amber-800'>
+                  <i className='bx bx-link mr-1' aria-hidden='true' />
+                  Enlace de invitación — compártelo manualmente si el email no llegó
+                </p>
+                <div className='flex items-center gap-2'>
+                  <input
+                    readOnly
+                    value={lastInviteUrl}
+                    className='flex-1 rounded-xl border border-amber-200 bg-white px-3 py-2 text-xs text-slate-600 outline-none'
+                    onClick={(e) => (e.target as HTMLInputElement).select()}
+                  />
+                  <button
+                    type='button'
+                    onClick={handleCopy}
+                    className='flex-shrink-0 rounded-xl bg-amber-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-amber-600'
+                  >
+                    {copied ? <i className='bx bx-check' /> : <i className='bx bx-copy' />}
+                  </button>
+                </div>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>

@@ -8,6 +8,7 @@ export const useInvitations = () => {
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [lastInviteUrl, setLastInviteUrl] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -29,9 +30,11 @@ export const useInvitations = () => {
     setSubmitting(true);
     setError(null);
     setSuccess(null);
+    setLastInviteUrl(null);
     try {
       const res = await InvitationsRepository.create(email.trim());
       setSuccess(res.data.message);
+      setLastInviteUrl(res.data.inviteUrl ?? null);
       setEmail('');
       await load();
     } catch (err) {
@@ -41,5 +44,5 @@ export const useInvitations = () => {
     }
   };
 
-  return { invitations, loading, submitting, email, setEmail, error, success, sendInvitation };
+  return { invitations, loading, submitting, email, setEmail, error, success, lastInviteUrl, sendInvitation };
 };
