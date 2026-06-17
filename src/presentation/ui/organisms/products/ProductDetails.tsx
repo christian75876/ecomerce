@@ -17,6 +17,11 @@ function getYouTubeEmbedUrl(url: string): string | null {
   return match ? `https://www.youtube.com/embed/${match[1]}` : null;
 }
 
+function getTikTokEmbedUrl(url: string): string | null {
+  const match = url.match(/tiktok\.com\/@[\w.]+\/video\/(\d+)/);
+  return match ? `https://www.tiktok.com/embed/v2/${match[1]}` : null;
+}
+
 const ProductDetails = () => {
   const { productId } = useParams<{ productId: string }>();
   const { product, relatedProducts, gallery, videos, loading, error } = usePublicProductDetail(productId);
@@ -172,6 +177,46 @@ const ProductDetails = () => {
                             allowFullScreen
                             className='absolute inset-0 h-full w-full'
                           />
+                        </Box>
+                      </Box>
+                    );
+                  }
+
+                  if (video.videoType === 'TIKTOK') {
+                    const embedUrl = getTikTokEmbedUrl(video.videoUrl);
+                    if (embedUrl) {
+                      return (
+                        <Box key={video.id} className='overflow-hidden rounded-2xl border border-neutral-gray/20'>
+                          {video.title ? (
+                            <Typography className='px-4 pt-3 text-sm font-semibold'>{video.title}</Typography>
+                          ) : null}
+                          <Box className='relative pb-[177%]'>
+                            <iframe
+                              src={embedUrl}
+                              title={video.title ?? 'Video de TikTok'}
+                              allow='autoplay; clipboard-write; encrypted-media; picture-in-picture'
+                              allowFullScreen
+                              className='absolute inset-0 h-full w-full'
+                            />
+                          </Box>
+                        </Box>
+                      );
+                    }
+                    return (
+                      <Box key={video.id} className='overflow-hidden rounded-2xl border border-neutral-gray/20'>
+                        {video.title ? (
+                          <Typography className='px-4 pt-3 text-sm font-semibold'>{video.title}</Typography>
+                        ) : null}
+                        <Box className='flex items-center justify-center p-6'>
+                          <a
+                            href={video.videoUrl}
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            className='flex items-center gap-2 rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white'
+                          >
+                            <i className='bx bxl-tiktok text-base' aria-hidden='true' />
+                            Ver en TikTok
+                          </a>
                         </Box>
                       </Box>
                     );

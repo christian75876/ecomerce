@@ -89,6 +89,12 @@ export class ProductRepository {
     );
   }
 
+  static async deleteProduct(id: string): Promise<IApiResponse<{ deleted: boolean }>> {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.delete<IApiResponse<{ deleted: boolean }>>(`/products/${id}`),
+    );
+  }
+
   static async getProductById(id: string): Promise<IProductResp> {
     return ErrorHandler.handleApiErrors(() =>
       publicClientHTTP.get<IProductResp>(`/products/${id}`),

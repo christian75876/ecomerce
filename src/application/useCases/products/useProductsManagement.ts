@@ -89,6 +89,10 @@ export const useProductsManagement = () => {
   const [videoSubmitting, setVideoSubmitting] = useState(false);
   const [videoError, setVideoError] = useState<string | null>(null);
 
+  // Pending queue for creation mode
+  const [pendingGalleryFiles, setPendingGalleryFiles] = useState<{ file: File; preview: string }[]>([]);
+  const [pendingVideos, setPendingVideos] = useState<{ url: string; title: string }[]>([]);
+
   const loadCategories = useCallback(async () => {
     const response = await CategoriesRepository.getCategories(true, sellerStoreId || undefined);
     setCategories(response.data);
@@ -204,6 +208,9 @@ export const useProductsManagement = () => {
     setVideoUrl('');
     setVideoTitle('');
     setVideoError(null);
+    pendingGalleryFiles.forEach(f => URL.revokeObjectURL(f.preview));
+    setPendingGalleryFiles([]);
+    setPendingVideos([]);
   };
 
   const buildPayload = (currentForm: ProductFormState): ICreateProductRequest | null => {
@@ -268,15 +275,14 @@ export const useProductsManagement = () => {
 
   const submitForm = async () => {
     const payload = buildPayload(form);
-    if (!payload) {
-      return false;
-    }
+    if (!payload) return false;
 
     setSubmitting(true);
     setError(null);
 
     try {
       let savedId: string;
+      const isCreating = !editingId;
 
       if (editingId) {
         const response = await ProductRepository.updateProduct(editingId, payload);
@@ -286,18 +292,49 @@ export const useProductsManagement = () => {
         savedId = response.data.id;
       }
 
-      // Upload image file if user selected one
       if (pendingImageFile) {
         await ProductRepository.uploadProductImage(savedId, pendingImageFile);
+      }
+
+      // Flush pending gallery + videos queued during creation
+      if (isCreating && (pendingGalleryFiles.length > 0 || pendingVideos.length > 0)) {
+        const failures: string[] = [];
+
+        for (let i = 0; i < pendingGalleryFiles.length; i++) {
+          try {
+            await ProductRepository.uploadGalleryImage(savedId, pendingGalleryFiles[i].file);
+          } catch {
+            failures.push(`Imagen ${i + 1}`);
+          }
+        }
+
+        for (const video of pendingVideos) {
+          try {
+            await ProductRepository.addProductVideo(savedId, video.url, video.title || undefined);
+          } catch {
+            failures.push(`Video "${video.title || video.url.slice(0, 30)}"`);
+          }
+        }
+
+        if (failures.length > 0) {
+          // Auto-switch to edit mode so the user can retry from the same form
+          const savedProductResp = await ProductRepository.getProductById(savedId);
+          startEditing(savedProductResp.data);
+          await Promise.all([loadGallery(savedId), loadVideos(savedId)]);
+          await loadProducts();
+          setError(
+            `Producto creado, pero ${failures.length} elemento(s) no se guardaron: ${failures.join(', ')}. Puedes reintentarlos aquí.`
+          );
+          setSubmitting(false);
+          return false;
+        }
       }
 
       resetForm();
       await loadProducts();
       return true;
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'No fue posible guardar el producto',
-      );
+      setError(err instanceof Error ? err.message : 'No fue posible guardar el producto');
       return false;
     } finally {
       setSubmitting(false);
@@ -355,19 +392,32 @@ export const useProductsManagement = () => {
   };
 
   const uploadGalleryImages = async (files: File[]) => {
-    if (!editingId || files.length === 0) return;
-    setGallerySubmitting(true);
-    setGalleryError(null);
-    try {
-      for (const file of files) {
-        await ProductRepository.uploadGalleryImage(editingId, file);
+    if (files.length === 0) return;
+    if (editingId) {
+      setGallerySubmitting(true);
+      setGalleryError(null);
+      try {
+        for (const file of files) {
+          await ProductRepository.uploadGalleryImage(editingId, file);
+        }
+        await loadGallery(editingId);
+      } catch (err) {
+        setGalleryError(err instanceof Error ? err.message : 'No se pudo subir la imagen');
+      } finally {
+        setGallerySubmitting(false);
       }
-      await loadGallery(editingId);
-    } catch (err) {
-      setGalleryError(err instanceof Error ? err.message : 'No se pudo subir la imagen');
-    } finally {
-      setGallerySubmitting(false);
+    } else {
+      // Creation mode: queue locally
+      const newPending = files.map(file => ({ file, preview: URL.createObjectURL(file) }));
+      setPendingGalleryFiles(prev => [...prev, ...newPending]);
     }
+  };
+
+  const removePendingGalleryFile = (index: number) => {
+    setPendingGalleryFiles(prev => {
+      URL.revokeObjectURL(prev[index].preview);
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   const removeGalleryImage = async (imageId: string) => {
@@ -398,18 +448,43 @@ export const useProductsManagement = () => {
   };
 
   const addVideo = async () => {
-    if (!editingId || !videoUrl.trim()) return;
-    setVideoSubmitting(true);
-    setVideoError(null);
-    try {
-      await ProductRepository.addProductVideo(editingId, videoUrl.trim(), videoTitle.trim() || undefined);
+    if (!videoUrl.trim()) return;
+    if (editingId) {
+      setVideoSubmitting(true);
+      setVideoError(null);
+      try {
+        await ProductRepository.addProductVideo(editingId, videoUrl.trim(), videoTitle.trim() || undefined);
+        setVideoUrl('');
+        setVideoTitle('');
+        await loadVideos(editingId);
+      } catch (err) {
+        setVideoError(err instanceof Error ? err.message : 'No se pudo agregar el video');
+      } finally {
+        setVideoSubmitting(false);
+      }
+    } else {
+      // Creation mode: queue locally
+      setPendingVideos(prev => [...prev, { url: videoUrl.trim(), title: videoTitle.trim() }]);
       setVideoUrl('');
       setVideoTitle('');
-      await loadVideos(editingId);
+    }
+  };
+
+  const removePendingVideo = (index: number) => {
+    setPendingVideos(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const deleteProduct = async (productId: string) => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      await ProductRepository.deleteProduct(productId);
+      if (editingId === productId) resetForm();
+      await loadProducts();
     } catch (err) {
-      setVideoError(err instanceof Error ? err.message : 'No se pudo agregar el video');
+      setError(err instanceof Error ? err.message : 'No fue posible eliminar el producto');
     } finally {
-      setVideoSubmitting(false);
+      setSubmitting(false);
     }
   };
 
@@ -474,6 +549,8 @@ export const useProductsManagement = () => {
     gallery,
     gallerySubmitting,
     galleryError,
+    pendingGalleryFiles,
+    pendingVideos,
     videos,
     videoUrl,
     videoTitle,
@@ -485,7 +562,9 @@ export const useProductsManagement = () => {
     setImageFile,
     uploadGalleryImages,
     removeGalleryImage,
+    removePendingGalleryFile,
     reorderGallery,
+    removePendingVideo,
     setVideoUrl,
     setVideoTitle,
     addVideo,
@@ -493,6 +572,7 @@ export const useProductsManagement = () => {
     submitForm,
     startEditing,
     toggleStatus,
+    deleteProduct,
     resetForm,
   };
 };

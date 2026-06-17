@@ -25,6 +25,8 @@ interface ProductsManagementViewProps {
   gallery: IProductImage[];
   gallerySubmitting: boolean;
   galleryError: string | null;
+  pendingGalleryFiles: { file: File; preview: string }[];
+  pendingVideos: { url: string; title: string }[];
   videos: IProductVideo[];
   videoUrl: string;
   videoTitle: string;
@@ -37,6 +39,8 @@ interface ProductsManagementViewProps {
   onGalleryImageUpload: (files: File[]) => Promise<void>;
   onGalleryImageRemove: (imageId: string) => Promise<void>;
   onGalleryImageReorder: (imageIds: string[]) => Promise<void>;
+  onRemovePendingGalleryFile: (index: number) => void;
+  onRemovePendingVideo: (index: number) => void;
   onVideoUrlChange: (value: string) => void;
   onVideoTitleChange: (value: string) => void;
   onAddVideo: () => Promise<void>;
@@ -44,6 +48,7 @@ interface ProductsManagementViewProps {
   onSubmit: () => Promise<boolean>;
   onEdit: (product: IProduct) => void;
   onToggleStatus: (product: IProduct) => Promise<void>;
+  onDelete: (productId: string) => Promise<void>;
   onReset: () => void;
   onAddCategory: (name: string) => Promise<ICategory | null>;
   onAddSupplier: (name: string, phone?: string, email?: string) => Promise<ISupplier | null>;
@@ -169,7 +174,7 @@ const CreateModal = ({
   onCancel: () => void;
   creating: boolean;
 }) => (
-  <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm'>
+  <div className='fixed inset-y-0 left-0 z-50 flex w-full items-center justify-center bg-black/40 p-4 backdrop-blur-sm xl:w-[460px]'>
     <div
       className='w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl space-y-4'
       onClick={e => e.stopPropagation()}
@@ -277,6 +282,8 @@ export const ProductsManagementView = ({
   gallery,
   gallerySubmitting,
   galleryError,
+  pendingGalleryFiles,
+  pendingVideos,
   videos,
   videoUrl,
   videoTitle,
@@ -289,6 +296,8 @@ export const ProductsManagementView = ({
   onGalleryImageUpload,
   onGalleryImageRemove,
   onGalleryImageReorder,
+  onRemovePendingGalleryFile,
+  onRemovePendingVideo,
   onVideoUrlChange,
   onVideoTitleChange,
   onAddVideo,
@@ -296,6 +305,7 @@ export const ProductsManagementView = ({
   onSubmit,
   onEdit,
   onToggleStatus,
+  onDelete,
   onReset,
   onAddCategory,
   onAddSupplier,
@@ -305,6 +315,7 @@ export const ProductsManagementView = ({
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [dropZoneActive, setDropZoneActive] = useState(false);
   const dragIndexRef = useRef<number | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Modal state — category
   const [showCatModal, setShowCatModal] = useState(false);
@@ -675,14 +686,15 @@ export const ProductsManagementView = ({
             </button>
           </form>
 
-          {/* Gallery — only when editing */}
-          {editingId ? (
-            <div className='mt-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4'>
-              <h2 className='flex items-center gap-2 text-base font-semibold text-slate-800'>
-                <i className='bx bx-images text-xl text-primary' />
-                Galería de imágenes
-              </h2>
+          {/* Gallery */}
+          <div className='mt-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4'>
+            <h2 className='flex items-center gap-2 text-base font-semibold text-slate-800'>
+              <i className='bx bx-images text-xl text-primary' />
+              Galería de imágenes
+            </h2>
 
+            {editingId ? (
+              <>
               {galleryError ? (
                 <div className='rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600'>
                   {galleryError}
@@ -789,69 +801,122 @@ export const ProductsManagementView = ({
               ) : (
                 <p className='text-sm text-slate-400'>Sin imágenes adicionales en la galería.</p>
               )}
-            </div>
-          ) : null}
-
-          {/* Videos — only when editing */}
-          {editingId ? (
-            <div className='mt-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4'>
-              <h2 className='flex items-center gap-2 text-base font-semibold text-slate-800'>
-                <i className='bx bx-video text-xl text-primary' />
-                Videos del producto
-              </h2>
-
-              <form onSubmit={handleAddVideo} className='space-y-3'>
-                <Field label='URL de YouTube, Instagram o Facebook'>
-                  <input
-                    value={videoUrl}
-                    onChange={e => onVideoUrlChange(e.target.value)}
-                    placeholder='https://youtube.com/watch?v=...'
-                    disabled={videoSubmitting}
-                    className={inputCls}
-                  />
-                </Field>
-                <Field label='Título opcional'>
-                  <input
-                    value={videoTitle}
-                    onChange={e => onVideoTitleChange(e.target.value)}
-                    placeholder='Ej: Video de demostración'
-                    disabled={videoSubmitting}
-                    className={inputCls}
-                  />
-                </Field>
-                {videoError ? (
-                  <div className='rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600'>{videoError}</div>
-                ) : null}
-                <button
-                  type='submit'
-                  disabled={videoSubmitting || !videoUrl.trim()}
-                  className='flex items-center gap-2 rounded-2xl border border-primary/30 bg-primary/5 px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/10 disabled:opacity-50'
+              </>
+            ) : (
+              // Creation mode: pending queue
+              <>
+                <input
+                  ref={galleryInputRef}
+                  type='file'
+                  accept='image/jpeg,image/png,image/webp'
+                  multiple
+                  className='hidden'
+                  onChange={async e => {
+                    const files = Array.from(e.target.files ?? []);
+                    if (files.length > 0) { await onGalleryImageUpload(files); e.target.value = ''; }
+                  }}
+                />
+                <div
+                  className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-4 py-6 text-center transition ${
+                    dropZoneActive ? 'border-primary bg-primary/5' : 'border-slate-200 bg-slate-50 hover:border-primary/40'
+                  }`}
+                  onClick={() => galleryInputRef.current?.click()}
+                  onDragOver={e => { e.preventDefault(); setDropZoneActive(true); }}
+                  onDragLeave={() => setDropZoneActive(false)}
+                  onDrop={async e => {
+                    e.preventDefault(); setDropZoneActive(false);
+                    const files = Array.from(e.dataTransfer.files).filter(f => ['image/jpeg','image/png','image/webp'].includes(f.type));
+                    if (files.length > 0) await onGalleryImageUpload(files);
+                  }}
+                  role='button' tabIndex={0}
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') galleryInputRef.current?.click(); }}
+                  aria-label='Agregar imágenes a la galería'
                 >
-                  <i className='bx bx-plus text-base' />
-                  {videoSubmitting ? 'Agregando…' : 'Agregar video'}
-                </button>
-              </form>
+                  <i className='bx bx-cloud-upload text-2xl text-slate-400' />
+                  <span className='text-sm font-medium text-slate-600'>
+                    Arrastra fotos aquí o <span className='text-primary underline'>haz clic</span>
+                  </span>
+                  <span className='text-xs text-slate-400'>Se subirán al guardar el producto</span>
+                </div>
+                {pendingGalleryFiles.length > 0 ? (
+                  <div className='grid grid-cols-3 gap-3'>
+                    {pendingGalleryFiles.map((item, index) => (
+                      <div key={index} className='group relative overflow-hidden rounded-2xl border-2 border-slate-200'>
+                        <span className='absolute left-1.5 top-1.5 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-black/50 text-[10px] font-bold text-white'>{index + 1}</span>
+                        <img src={item.preview} alt={`Pendiente ${index + 1}`} className='h-24 w-full object-cover' />
+                        <button
+                          type='button'
+                          onClick={() => onRemovePendingGalleryFile(index)}
+                          className='absolute right-1 top-1 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs text-white opacity-0 shadow transition-opacity group-hover:opacity-100'
+                        >
+                          <i className='bx bx-x text-sm' />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className='text-sm text-slate-400'>Sin imágenes en la cola aún.</p>
+                )}
+              </>
+            )}
+          </div>
 
-              {videos.length > 0 ? (
+          {/* Videos */}
+          <div className='mt-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4'>
+            <h2 className='flex items-center gap-2 text-base font-semibold text-slate-800'>
+              <i className='bx bx-video text-xl text-primary' />
+              Videos del producto
+            </h2>
+
+            <form onSubmit={handleAddVideo} className='space-y-3'>
+              <Field label='URL de YouTube, Instagram o Facebook'>
+                <input
+                  value={videoUrl}
+                  onChange={e => onVideoUrlChange(e.target.value)}
+                  placeholder='https://youtube.com/watch?v=...'
+                  disabled={videoSubmitting}
+                  className={inputCls}
+                />
+              </Field>
+              <Field label='Título opcional'>
+                <input
+                  value={videoTitle}
+                  onChange={e => onVideoTitleChange(e.target.value)}
+                  placeholder='Ej: Video de demostración'
+                  disabled={videoSubmitting}
+                  className={inputCls}
+                />
+              </Field>
+              {videoError ? (
+                <div className='rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600'>{videoError}</div>
+              ) : null}
+              <button
+                type='submit'
+                disabled={videoSubmitting || !videoUrl.trim()}
+                className='flex items-center gap-2 rounded-2xl border border-primary/30 bg-primary/5 px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/10 disabled:opacity-50'
+              >
+                <i className='bx bx-plus text-base' />
+                {editingId
+                  ? (videoSubmitting ? 'Agregando…' : 'Agregar video')
+                  : 'Añadir a la lista'}
+              </button>
+            </form>
+
+            {editingId ? (
+              videos.length > 0 ? (
                 <div className='space-y-2'>
                   {videos.map(video => (
-                    <div
-                      key={video.id}
-                      className='flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3'
-                    >
-                      <span
-                        className={`flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                          video.videoType === 'YOUTUBE' ? 'bg-red-100 text-red-700' :
-                          video.videoType === 'FACEBOOK' ? 'bg-blue-100 text-blue-700' :
-                          'bg-purple-100 text-purple-700'
-                        }`}
-                      >
-                        {video.videoType === 'YOUTUBE' ? 'YouTube' : video.videoType === 'FACEBOOK' ? 'Facebook' : 'Instagram'}
+                    <div key={video.id} className='flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3'>
+                      <span className={`flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        video.videoType === 'YOUTUBE' ? 'bg-red-100 text-red-700' :
+                        video.videoType === 'FACEBOOK' ? 'bg-blue-100 text-blue-700' :
+                        video.videoType === 'TIKTOK' ? 'bg-slate-900 text-white' :
+                        'bg-purple-100 text-purple-700'
+                      }`}>
+                        {video.videoType === 'YOUTUBE' ? 'YouTube' : video.videoType === 'FACEBOOK' ? 'Facebook' : video.videoType === 'TIKTOK' ? 'TikTok' : 'Instagram'}
                       </span>
                       <div className='min-w-0 flex-1'>
-                        {video.title ? (
-                          <p className='truncate text-sm font-medium text-slate-700'>{video.title}</p>
-                        ) : null}
+                        {video.title ? <p className='truncate text-sm font-medium text-slate-700'>{video.title}</p> : null}
                         <p className='truncate text-xs text-slate-400'>{video.videoUrl}</p>
                       </div>
                       <button
@@ -867,9 +932,34 @@ export const ProductsManagementView = ({
                 </div>
               ) : (
                 <p className='text-sm text-slate-400'>Sin videos agregados aún.</p>
-              )}
-            </div>
-          ) : null}
+              )
+            ) : (
+              pendingVideos.length > 0 ? (
+                <div className='space-y-2'>
+                  {pendingVideos.map((video, index) => (
+                    <div key={index} className='flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3'>
+                      <span className='flex-shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700'>
+                        Pendiente
+                      </span>
+                      <div className='min-w-0 flex-1'>
+                        {video.title ? <p className='truncate text-sm font-medium text-slate-700'>{video.title}</p> : null}
+                        <p className='truncate text-xs text-slate-400'>{video.url}</p>
+                      </div>
+                      <button
+                        type='button'
+                        onClick={() => onRemovePendingVideo(index)}
+                        className='flex-shrink-0 rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-100'
+                      >
+                        Quitar
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className='text-sm text-slate-400'>Sin videos en la cola aún.</p>
+              )
+            )}
+          </div>
         </div>
 
         {/* ── Right: Catalog ── */}
@@ -1005,6 +1095,36 @@ export const ProductsManagementView = ({
                       <i className={`bx ${product.isActive ? 'bx-hide' : 'bx-show'} text-sm`} />
                       {product.isActive ? 'Desactivar' : 'Activar'}
                     </button>
+                    {confirmDeleteId === product.id ? (
+                      <div className='flex gap-1'>
+                        <button
+                          type='button'
+                          onClick={() => { setConfirmDeleteId(null); void onDelete(product.id); }}
+                          disabled={submitting}
+                          className='flex flex-1 items-center justify-center gap-1 rounded-2xl bg-red-500 px-2 py-1.5 text-xs font-bold text-white transition hover:bg-red-600 disabled:opacity-50'
+                        >
+                          <i className='bx bx-check text-sm' />
+                          Sí
+                        </button>
+                        <button
+                          type='button'
+                          onClick={() => setConfirmDeleteId(null)}
+                          className='flex flex-1 items-center justify-center rounded-2xl border border-slate-200 bg-white px-2 py-1.5 text-xs font-semibold text-slate-500 transition hover:bg-slate-50'
+                        >
+                          No
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type='button'
+                        onClick={() => setConfirmDeleteId(product.id)}
+                        disabled={submitting}
+                        className='flex items-center gap-1.5 rounded-2xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-100 disabled:opacity-50'
+                      >
+                        <i className='bx bx-trash text-sm' />
+                        Eliminar
+                      </button>
+                    )}
                   </div>
                 </div>
               ))

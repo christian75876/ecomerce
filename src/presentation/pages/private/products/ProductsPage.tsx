@@ -35,6 +35,10 @@ const ProductsPage = () => {
       onGalleryImageUpload={pm.uploadGalleryImages}
       onGalleryImageRemove={pm.removeGalleryImage}
       onGalleryImageReorder={pm.reorderGallery}
+      onRemovePendingGalleryFile={pm.removePendingGalleryFile}
+      onRemovePendingVideo={pm.removePendingVideo}
+      pendingGalleryFiles={pm.pendingGalleryFiles}
+      pendingVideos={pm.pendingVideos}
       onVideoUrlChange={pm.setVideoUrl}
       onVideoTitleChange={pm.setVideoTitle}
       onAddVideo={pm.addVideo}
@@ -42,6 +46,7 @@ const ProductsPage = () => {
       onSubmit={pm.submitForm}
       onEdit={pm.startEditing}
       onToggleStatus={pm.toggleStatus}
+      onDelete={pm.deleteProduct}
       onReset={pm.resetForm}
       onAddCategory={pm.createCategory}
       onAddSupplier={pm.createSupplier}
