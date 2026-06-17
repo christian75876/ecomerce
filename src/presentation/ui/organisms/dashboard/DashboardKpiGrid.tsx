@@ -13,26 +13,30 @@ const formatCurrency = (value: number) =>
   }).format(value);
 
 const DashboardKpiGrid = ({ summary }: { summary: IDashboardAnalytics }) => {
+  const { grossProfit, grossMargin, cogs, salesThisPeriod, totalTransactions, posRevenue, onlineRevenue, averageTicket } = summary.kpis;
+  const profitColor = grossProfit >= 0 ? 'text-emerald-600' : 'text-red-500';
+
   const metrics = [
     {
       title: 'Ventas del período',
-      value: formatCurrency(summary.kpis.salesThisPeriod),
-      detail: `${summary.kpis.totalTransactions} transacciones`,
+      value: formatCurrency(salesThisPeriod),
+      detail: `${totalTransactions} transacciones`,
+    },
+    {
+      title: 'Ganancia bruta',
+      value: formatCurrency(grossProfit),
+      detail: `Margen ${grossMargin}% · Costo ${formatCurrency(cogs)}`,
+      highlight: profitColor,
     },
     {
       title: 'Ticket promedio',
-      value: formatCurrency(summary.kpis.averageTicket),
-      detail: `POS ${formatCurrency(summary.kpis.posRevenue)} · Online ${formatCurrency(summary.kpis.onlineRevenue)}`,
+      value: formatCurrency(averageTicket),
+      detail: `POS ${formatCurrency(posRevenue)} · Online ${formatCurrency(onlineRevenue)}`,
     },
     {
       title: 'Inventario',
       value: `${summary.kpis.stockUnits} uds.`,
       detail: `${summary.kpis.lowStockProducts} críticos · ${summary.kpis.outOfStockProducts} sin stock`,
-    },
-    {
-      title: 'Pedidos pendientes',
-      value: summary.kpis.pendingOrders.toString(),
-      detail: `${summary.kpis.openCashSessions} cajas abiertas`,
     },
     {
       title: 'Cartera clientes',
@@ -63,7 +67,7 @@ const DashboardKpiGrid = ({ summary }: { summary: IDashboardAnalytics }) => {
           <Typography variant='span' className='text-neutral-dark/55'>
             {metric.title}
           </Typography>
-          <Typography variant='h2' className='mt-3 text-3xl'>
+          <Typography variant='h2' className={`mt-3 text-3xl ${metric.highlight ?? ''}`}>
             {metric.value}
           </Typography>
           <Typography className='mt-2 text-sm text-neutral-dark/65'>

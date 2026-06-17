@@ -12,6 +12,8 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  ComposedChart,
+  Line,
 } from 'recharts';
 import Card from '@atoms/card/SimpleCard';
 import Box from '@atoms/box/SimpleBox';
@@ -54,13 +56,18 @@ export const SalesOverviewChart = ({ data }: { data: IDashboardSalesPoint[] }) =
             <stop offset='5%' stopColor='#f97316' stopOpacity={0.35} />
             <stop offset='95%' stopColor='#f97316' stopOpacity={0.05} />
           </linearGradient>
+          <linearGradient id='profitGradient' x1='0' y1='0' x2='0' y2='1'>
+            <stop offset='5%' stopColor='#10b981' stopOpacity={0.3} />
+            <stop offset='95%' stopColor='#10b981' stopOpacity={0.03} />
+          </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray='3 3' stroke='#e5e7eb' />
         <XAxis dataKey='label' tick={{ fill: '#475569', fontSize: 12 }} />
         <YAxis tick={{ fill: '#475569', fontSize: 12 }} />
-        <Tooltip />
+        <Tooltip formatter={(value: number, name: string) => [`$${value.toLocaleString('es-CO')}`, name]} />
         <Legend />
-        <Area type='monotone' dataKey='total' stroke='#f97316' fill='url(#salesTotalGradient)' strokeWidth={3} name='Total' />
+        <Area type='monotone' dataKey='total' stroke='#f97316' fill='url(#salesTotalGradient)' strokeWidth={3} name='Total ventas' />
+        <Area type='monotone' dataKey='profit' stroke='#10b981' fill='url(#profitGradient)' strokeWidth={2} strokeDasharray='5 3' name='Ganancia bruta' />
         <Area type='monotone' dataKey='pos' stroke='#0f766e' fillOpacity={0} strokeWidth={2} name='POS' />
         <Area type='monotone' dataKey='online' stroke='#1d4ed8' fillOpacity={0} strokeWidth={2} name='Online' />
       </AreaChart>
@@ -128,15 +135,16 @@ export const ChannelComparisonChart = ({
     subtitle='Contrasta volumen y facturación entre operación presencial y online.'
   >
     <ResponsiveContainer width='100%' height='100%'>
-      <BarChart data={data}>
+      <ComposedChart data={data}>
         <CartesianGrid strokeDasharray='3 3' stroke='#e5e7eb' />
         <XAxis dataKey='channel' tick={{ fill: '#475569', fontSize: 12 }} />
-        <YAxis tick={{ fill: '#475569', fontSize: 12 }} />
-        <Tooltip />
+        <YAxis yAxisId='revenue' orientation='left' tick={{ fill: '#475569', fontSize: 11 }} tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)} />
+        <YAxis yAxisId='count' orientation='right' tick={{ fill: '#475569', fontSize: 11 }} allowDecimals={false} />
+        <Tooltip formatter={(value: number, name: string) => name === 'Ingresos' ? [`$${value.toLocaleString('es-CO')}`, name] : [value, name]} />
         <Legend />
-        <Bar dataKey='revenue' fill='#0f766e' radius={[8, 8, 0, 0]} name='Ingresos' />
-        <Bar dataKey='count' fill='#1d4ed8' radius={[8, 8, 0, 0]} name='Operaciones' />
-      </BarChart>
+        <Bar yAxisId='revenue' dataKey='revenue' fill='#0f766e' radius={[8, 8, 0, 0]} name='Ingresos' />
+        <Line yAxisId='count' type='monotone' dataKey='count' stroke='#1d4ed8' strokeWidth={2} dot={{ r: 6, fill: '#1d4ed8' }} name='Operaciones' />
+      </ComposedChart>
     </ResponsiveContainer>
   </ChartCard>
 );

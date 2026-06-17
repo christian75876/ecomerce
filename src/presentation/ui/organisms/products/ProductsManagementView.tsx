@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { Pagination } from '@/presentation/ui/molecules/common/Pagination';
 import { ICategory } from '@/application/dtos/categories/response/CategoryResponse';
 import { IProduct, IProductImage, IProductVideo } from '@/application/dtos/products/response/ProductResponse';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
@@ -6,6 +7,7 @@ import { IMenuCategory } from '@/application/dtos/menu-categories/response/MenuC
 import { ISupplier } from '@/application/dtos/suppliers/response/SupplierResponse';
 import { ProductFormState } from '@/application/useCases/products/useProductsManagement';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
+import { CurrencyInput } from '@/presentation/ui/atoms/input/CurrencyInput';
 
 interface ProductsManagementViewProps {
   products: IProduct[];
@@ -49,6 +51,11 @@ interface ProductsManagementViewProps {
   onEdit: (product: IProduct) => void;
   onToggleStatus: (product: IProduct) => Promise<void>;
   onDelete: (productId: string) => Promise<void>;
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+  onPageChange: (page: number) => void;
   onReset: () => void;
   onAddCategory: (name: string) => Promise<ICategory | null>;
   onAddSupplier: (name: string, phone?: string, email?: string) => Promise<ISupplier | null>;
@@ -69,28 +76,34 @@ const SearchCombobox = ({
   onRequestCreate,
   placeholder,
   disabled,
+  allLabel,
 }: {
   items: { id: string; name: string }[];
   value: string;
   onChange: (id: string) => void;
-  onRequestCreate: (prefill: string) => void;
+  onRequestCreate?: (prefill: string) => void;
   placeholder: string;
   disabled?: boolean;
+  allLabel?: string;
 }) => {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
 
-  const selected = items.find(i => i.id === value);
+  const allItems = allLabel ? [{ id: '', name: allLabel }, ...items] : items;
+  const selected = allLabel
+    ? allItems.find(i => i.id === value) ?? null
+    : items.find(i => i.id === value) ?? null;
+
   const filtered = query.trim()
-    ? items.filter(i => i.name.toLowerCase().includes(query.toLowerCase()))
-    : items;
+    ? allItems.filter(i => i.name.toLowerCase().includes(query.toLowerCase()))
+    : allItems;
   const exactMatch = filtered.some(
     i => i.name.toLowerCase() === query.toLowerCase().trim()
   );
 
   return (
     <div className='relative'>
-      {selected ? (
+      {selected && !allLabel ? (
         <div className='flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5'>
           <span className='flex-1 text-sm text-slate-700'>{selected.name}</span>
           <button
@@ -107,11 +120,11 @@ const SearchCombobox = ({
           <div className='relative'>
             <i className='bx bx-search absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400' />
             <input
-              value={query}
+              value={selected && allLabel ? (query || selected.name) : query}
               onChange={e => { setQuery(e.target.value); setOpen(true); }}
-              onFocus={() => setOpen(true)}
-              onBlur={() => setTimeout(() => setOpen(false), 200)}
-              placeholder={placeholder}
+              onFocus={e => { if (allLabel && selected) e.target.select(); setOpen(true); }}
+              onBlur={() => setTimeout(() => { setOpen(false); if (allLabel) setQuery(''); }, 200)}
+              placeholder={selected?.name ?? placeholder}
               disabled={disabled}
               className={`${inputCls} pl-9`}
             />
@@ -119,12 +132,12 @@ const SearchCombobox = ({
           {open && (
             <div className='absolute z-30 mt-1 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl'>
               <div className='max-h-44 overflow-y-auto'>
-                {filtered.slice(0, 8).map(item => (
+                {filtered.slice(0, 10).map(item => (
                   <button
-                    key={item.id}
+                    key={item.id || '__all__'}
                     type='button'
                     onMouseDown={() => { onChange(item.id); setQuery(''); setOpen(false); }}
-                    className='flex w-full items-center px-4 py-2.5 text-left text-sm text-slate-700 hover:bg-primary/5'
+                    className={`flex w-full items-center px-4 py-2.5 text-left text-sm transition hover:bg-primary/5 ${value === item.id ? 'font-semibold text-primary' : 'text-slate-700'}`}
                   >
                     {item.name}
                   </button>
@@ -135,7 +148,7 @@ const SearchCombobox = ({
                   </p>
                 )}
               </div>
-              {!exactMatch && (
+              {onRequestCreate && !exactMatch && (
                 <button
                   type='button'
                   onMouseDown={() => {
@@ -307,6 +320,11 @@ export const ProductsManagementView = ({
   onToggleStatus,
   onDelete,
   onReset,
+  currentPage,
+  totalPages,
+  totalItems,
+  itemsPerPage,
+  onPageChange,
   onAddCategory,
   onAddSupplier,
 }: ProductsManagementViewProps) => {
@@ -316,6 +334,7 @@ export const ProductsManagementView = ({
   const [dropZoneActive, setDropZoneActive] = useState(false);
   const dragIndexRef = useRef<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [showFormMobile, setShowFormMobile] = useState(false);
 
   // Modal state — category
   const [showCatModal, setShowCatModal] = useState(false);
@@ -359,9 +378,20 @@ export const ProductsManagementView = ({
     }
   };
 
+  const handleEdit = (product: IProduct) => {
+    onEdit(product);
+    setShowFormMobile(true);
+  };
+
+  const handleReset = () => {
+    onReset();
+    setShowFormMobile(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    await onSubmit();
+    const ok = await onSubmit();
+    if (ok) setShowFormMobile(false);
   };
 
   const handleAddVideo = async (e: React.FormEvent) => {
@@ -374,16 +404,47 @@ export const ProductsManagementView = ({
   return (
     <div className='animate-fade-up space-y-6'>
       {/* Page header */}
-      <div>
-        <h1 className='text-2xl font-bold text-slate-800 sm:text-3xl'>Productos</h1>
-        <p className='mt-1 text-sm text-slate-500'>
-          Gestiona el catálogo comercial: SKU, precios, inventario, categorías e imágenes.
-        </p>
+      <div className='flex items-center justify-between gap-4'>
+        <div>
+          <h1 className='text-2xl font-bold text-slate-800 sm:text-3xl'>Productos</h1>
+          <p className='mt-1 text-sm text-slate-500'>
+            Gestiona el catálogo comercial: SKU, precios, inventario, categorías e imágenes.
+          </p>
+        </div>
+        {/* Mobile new-product button */}
+        <div className='group relative flex-shrink-0 xl:hidden'>
+          <button
+            type='button'
+            onClick={() => setShowFormMobile(true)}
+            className='flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white shadow-md transition hover:opacity-90 active:scale-95'
+            aria-label='Nuevo producto'
+          >
+            <i className='bx bx-plus text-2xl' />
+          </button>
+          <span className='pointer-events-none absolute right-0 top-full mt-2 whitespace-nowrap rounded-xl bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100'>
+            Nuevo producto
+          </span>
+        </div>
       </div>
 
       <div className='grid gap-6 xl:grid-cols-[460px_minmax(0,1fr)]'>
         {/* ── Left: Form ── */}
-        <div className='space-y-0'>
+        <div className={`${showFormMobile ? 'fixed inset-0 z-50 overflow-y-auto bg-slate-50' : 'hidden'} xl:static xl:block xl:inset-auto xl:z-auto xl:overflow-visible xl:bg-transparent space-y-0`}>
+          {/* Mobile top bar */}
+          <div className='sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 shadow-sm xl:hidden'>
+            <span className='text-sm font-bold text-slate-700'>
+              {editingId ? 'Editando producto' : 'Nuevo producto'}
+            </span>
+            <button
+              type='button'
+              onClick={handleReset}
+              className='flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100'
+            >
+              <i className='bx bx-x text-xl' />
+            </button>
+          </div>
+
+          <div className='p-4 space-y-0 xl:p-0'>
           {/* Form header card */}
           <div
             className='rounded-t-3xl px-6 py-5 text-white'
@@ -404,7 +465,7 @@ export const ProductsManagementView = ({
               {editingId ? (
                 <button
                   type='button'
-                  onClick={onReset}
+                  onClick={handleReset}
                   className='rounded-2xl border border-white/30 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/20 transition'
                 >
                   <i className='bx bx-x mr-1' />
@@ -458,36 +519,27 @@ export const ProductsManagementView = ({
 
             <div className='grid grid-cols-1 gap-4 sm:grid-cols-3'>
               <Field label='Precio *'>
-                <input
-                  type='number'
-                  min='0'
-                  step='0.01'
+                <CurrencyInput
                   value={form.price}
-                  onChange={e => onFormChange('price', e.target.value)}
+                  onChange={v => onFormChange('price', v)}
                   disabled={submitting}
                   placeholder='0'
                   className={inputCls}
                 />
               </Field>
               <Field label='Precio tachado'>
-                <input
-                  type='number'
-                  min='0'
-                  step='0.01'
+                <CurrencyInput
                   value={form.compareAtPrice}
-                  onChange={e => onFormChange('compareAtPrice', e.target.value)}
+                  onChange={v => onFormChange('compareAtPrice', v)}
                   disabled={submitting}
                   placeholder='Precio original'
                   className={inputCls}
                 />
               </Field>
               <Field label='Costo'>
-                <input
-                  type='number'
-                  min='0'
-                  step='0.01'
+                <CurrencyInput
                   value={form.cost}
-                  onChange={e => onFormChange('cost', e.target.value)}
+                  onChange={v => onFormChange('cost', v)}
                   disabled={submitting}
                   placeholder='Costo interno'
                   className={inputCls}
@@ -862,7 +914,7 @@ export const ProductsManagementView = ({
           </div>
 
           {/* Videos */}
-          <div className='mt-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4'>
+          <div className='mt-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4' id='videos-section'>
             <h2 className='flex items-center gap-2 text-base font-semibold text-slate-800'>
               <i className='bx bx-video text-xl text-primary' />
               Videos del producto
@@ -960,6 +1012,7 @@ export const ProductsManagementView = ({
               )
             )}
           </div>
+          </div>{/* end p-4 wrapper */}
         </div>
 
         {/* ── Right: Catalog ── */}
@@ -984,16 +1037,13 @@ export const ProductsManagementView = ({
                   className='w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10'
                 />
               </div>
-              <select
+              <SearchCombobox
+                items={categories}
                 value={selectedCategoryId}
-                onChange={e => onCategoryFilterChange(e.target.value)}
-                className={selectCls}
-              >
-                <option value=''>Todas las categorías</option>
-                {categories.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+                onChange={onCategoryFilterChange}
+                placeholder='Todas las categorías'
+                allLabel='Todas las categorías'
+              />
             </div>
           </div>
 
@@ -1075,7 +1125,7 @@ export const ProductsManagementView = ({
                   <div className='flex flex-shrink-0 flex-col gap-2'>
                     <button
                       type='button'
-                      onClick={() => onEdit(product)}
+                      onClick={() => handleEdit(product)}
                       disabled={submitting}
                       className='flex items-center gap-1.5 rounded-2xl border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary/10 disabled:opacity-50'
                     >
@@ -1130,6 +1180,14 @@ export const ProductsManagementView = ({
               ))
             )}
           </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            onPageChange={onPageChange}
+            className='py-2'
+          />
         </div>
       </div>
 

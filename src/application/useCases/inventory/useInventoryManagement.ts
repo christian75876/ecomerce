@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { usePagination } from '@/application/useCases/common/usePagination';
 import {
   IInventoryBatch,
   IInventoryItem,
@@ -29,54 +30,106 @@ export const useInventoryManagement = (filterStoreId?: string | null) => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const inventoryPagination = usePagination(20);
+  const movementsPagination = usePagination(20);
+  const batchesPagination = usePagination(20);
+  const expiringPagination = usePagination(20);
+
   const selectedProduct = useMemo(
     () => products.find((product) => product.id === productId) ?? null,
     [productId, products],
   );
 
-  const loadScreen = async () => {
+  // ── individual loaders ──────────────────────────────────────────────────────
+
+  const loadInventorySummary = useCallback(async (page: number, limit: number) => {
+    const res = await InventoryRepository.getInventory(page, limit);
+    setInventory(res.data.items);
+    inventoryPagination.updateMeta(res.data.pagination);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterStoreId]);
+
+  const loadMovements = useCallback(async (page: number, limit: number) => {
+    const res = await InventoryRepository.getMovements(undefined, page, limit);
+    setMovements(res.data.items);
+    movementsPagination.updateMeta(res.data.pagination);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterStoreId]);
+
+  const loadBatches = useCallback(async (page: number, limit: number) => {
+    const res = await InventoryRepository.getBatches(
+      filterStoreId
+        ? { storeId: filterStoreId, page, limit }
+        : { page, limit },
+    );
+    setBatches(res.data.items);
+    batchesPagination.updateMeta(res.data.pagination);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterStoreId]);
+
+  const loadExpiring = useCallback(async (page: number, limit: number) => {
+    const res = await InventoryRepository.getExpiring(30, filterStoreId ?? undefined, page, limit);
+    setExpiringBatches(res.data.items);
+    expiringPagination.updateMeta(res.data.pagination);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterStoreId]);
+
+  // ── initial full load ───────────────────────────────────────────────────────
+
+  const loadAll = useCallback(async () => {
     setLoading(true);
     setError(null);
-
     try {
-      const [
-        productsResponse,
-        suppliersResponse,
-        inventoryResponse,
-        movementsResponse,
-        batchesResponse,
-        expiringResponse,
-      ] =
-        await Promise.all([
-          ProductRepository.getProducts(),
-          SuppliersRepository.getSuppliers(),
-          InventoryRepository.getInventory(),
-          InventoryRepository.getMovements(),
-          InventoryRepository.getBatches(filterStoreId ? { storeId: filterStoreId } : undefined),
-          InventoryRepository.getExpiring(30, filterStoreId ?? undefined),
-        ]);
+      const [productsRes, suppliersRes] = await Promise.all([
+        ProductRepository.getProducts({ limit: 200 }),
+        SuppliersRepository.getSuppliers(),
+      ]);
+      setProducts(productsRes.data.items);
+      setSuppliers(suppliersRes.data.filter((s) => s.isActive));
 
-      setProducts(productsResponse.data);
-      setSuppliers(suppliersResponse.data.filter((supplier) => supplier.isActive));
-      setInventory(inventoryResponse.data);
-      setMovements(movementsResponse.data);
-      setBatches(batchesResponse.data);
-      setExpiringBatches(expiringResponse.data);
+      await Promise.all([
+        loadInventorySummary(1, inventoryPagination.limit),
+        loadMovements(1, movementsPagination.limit),
+        loadBatches(1, batchesPagination.limit),
+        loadExpiring(1, expiringPagination.limit),
+      ]);
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : 'No fue posible cargar el módulo de inventario',
+        err instanceof Error ? err.message : 'No fue posible cargar el módulo de inventario',
       );
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    void loadScreen();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterStoreId]);
+
+  // ── effects ─────────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    void loadAll();
+  }, [loadAll]);
+
+  useEffect(() => {
+    if (!loading) void loadInventorySummary(inventoryPagination.page, inventoryPagination.limit);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inventoryPagination.page]);
+
+  useEffect(() => {
+    if (!loading) void loadMovements(movementsPagination.page, movementsPagination.limit);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [movementsPagination.page]);
+
+  useEffect(() => {
+    if (!loading) void loadBatches(batchesPagination.page, batchesPagination.limit);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [batchesPagination.page]);
+
+  useEffect(() => {
+    if (!loading) void loadExpiring(expiringPagination.page, expiringPagination.limit);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expiringPagination.page]);
+
+  // ── form ────────────────────────────────────────────────────────────────────
 
   const resetForm = () => {
     setProductId('');
@@ -119,13 +172,11 @@ export const useInventoryManagement = (filterStoreId?: string | null) => {
       }
 
       resetForm();
-      await loadScreen();
+      await loadAll();
       return true;
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : 'No fue posible registrar el movimiento',
+        err instanceof Error ? err.message : 'No fue posible registrar el movimiento',
       );
       return false;
     } finally {
@@ -161,5 +212,9 @@ export const useInventoryManagement = (filterStoreId?: string | null) => {
     setExpiresAt,
     setNote,
     submitForm,
+    inventoryPagination,
+    movementsPagination,
+    batchesPagination,
+    expiringPagination,
   };
 };

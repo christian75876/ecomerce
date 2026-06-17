@@ -35,6 +35,10 @@ const InventoryPage = () => {
       onExpiresAtChange={inventoryManagement.setExpiresAt}
       onNoteChange={inventoryManagement.setNote}
       onSubmit={inventoryManagement.submitForm}
+      inventoryPagination={inventoryManagement.inventoryPagination}
+      movementsPagination={inventoryManagement.movementsPagination}
+      batchesPagination={inventoryManagement.batchesPagination}
+      expiringPagination={inventoryManagement.expiringPagination}
     />
   );
 };

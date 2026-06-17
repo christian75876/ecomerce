@@ -37,5 +37,13 @@ export interface IOrder {
   }>;
 }
 
-export type IOrdersResp = IApiResponse<IOrder[]>;
+export interface IOrdersPaginated {
+  items: IOrder[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export type IOrdersResp = IApiResponse<IOrdersPaginated>;
 export type IOrderResp = IApiResponse<IOrder>;

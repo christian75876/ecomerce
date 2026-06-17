@@ -20,10 +20,14 @@ export type CartRow = {
   quantity: number;
 };
 
+const ORDERS_PER_PAGE = 15;
+
 export const useOrdersManagement = (filterStoreId?: string | null) => {
   const [customers, setCustomers] = useState<ICustomer[]>([]);
   const [products, setProducts] = useState<IProduct[]>([]);
   const [orders, setOrders] = useState<IOrder[]>([]);
+  const [ordersPage, setOrdersPage] = useState(1);
+  const [ordersTotalPages, setOrdersTotalPages] = useState(1);
   const [customerId, setCustomerId] = useState('');
   const [newCustomer, setNewCustomer] = useState({
     firstName: '',
@@ -37,6 +41,13 @@ export const useOrdersManagement = (filterStoreId?: string | null) => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const loadOrders = async (page: number) => {
+    const ordersResponse = await OrdersRepository.getOrders(filterStoreId, page, ORDERS_PER_PAGE);
+    setOrders(ordersResponse.data.items);
+    setOrdersPage(ordersResponse.data.page);
+    setOrdersTotalPages(ordersResponse.data.totalPages);
+  };
 
   const loadScreen = async () => {
     setLoading(true);
@@ -53,11 +64,13 @@ export const useOrdersManagement = (filterStoreId?: string | null) => {
             active: true,
             storeId: filterStoreId ?? undefined,
           }),
-          OrdersRepository.getOrders(filterStoreId),
+          OrdersRepository.getOrders(filterStoreId, 1, ORDERS_PER_PAGE),
         ]);
       setCustomers(customersResponse.data.items);
-      setProducts(productsResponse.data);
-      setOrders(ordersResponse.data);
+      setProducts(productsResponse.data.items);
+      setOrders(ordersResponse.data.items);
+      setOrdersPage(ordersResponse.data.page);
+      setOrdersTotalPages(ordersResponse.data.totalPages);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'No fue posible cargar pedidos',
@@ -120,7 +133,13 @@ export const useOrdersManagement = (filterStoreId?: string | null) => {
     setCartRows((current) => [...current, { productId: '', quantity: 1 }]);
   };
 
-  const createOrder = async () => {
+  const createOrder = async (delivery: {
+    deliveryMethod: 'DELIVERY' | 'PICKUP';
+    deliveryAddress?: string;
+    deliveryCity?: string;
+    deliveryDepartment?: string;
+    deliveryNotes?: string;
+  }) => {
     const validItems = cartRows.filter((row) => row.productId && row.quantity > 0);
 
     if (!customerId || validItems.length === 0) {
@@ -134,6 +153,11 @@ export const useOrdersManagement = (filterStoreId?: string | null) => {
       await OrdersRepository.createOrder({
         customerId,
         items: validItems,
+        deliveryMethod: delivery.deliveryMethod,
+        deliveryAddress: delivery.deliveryAddress || undefined,
+        deliveryCity: delivery.deliveryCity || undefined,
+        deliveryDepartment: delivery.deliveryDepartment || undefined,
+        deliveryNotes: delivery.deliveryNotes || undefined,
       });
       setCartRows([{ productId: '', quantity: 1 }]);
       await loadScreen();
@@ -174,6 +198,9 @@ export const useOrdersManagement = (filterStoreId?: string | null) => {
     customers,
     products,
     orders,
+    ordersPage,
+    ordersTotalPages,
+    goToOrdersPage: loadOrders,
     customerId,
     newCustomer,
     cartRows,

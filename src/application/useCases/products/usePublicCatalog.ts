@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { usePagination } from '@/application/useCases/common/usePagination';
 import { ProductRepository } from '@/infrastructure/repositories/api/products/ProductsRepository';
 import { IProduct } from '@/application/dtos/products/response/ProductResponse';
 import { CategoriesRepository } from '@/infrastructure/repositories/api/categories/CategoriesRepository';
@@ -11,6 +12,7 @@ export const usePublicCatalog = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const pagination = usePagination(20);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -23,10 +25,13 @@ export const usePublicCatalog = () => {
             active: true,
             search: search || undefined,
             categoryId: selectedCategoryId || undefined,
+            page: pagination.page,
+            limit: pagination.limit,
           }),
           CategoriesRepository.getCategories(true),
         ]);
-        setProducts(productsResponse.data);
+        setProducts(productsResponse.data.items);
+        pagination.updateMeta(productsResponse.data.pagination);
         setCategories(categoriesResponse.data);
       } catch (err) {
         setError(
@@ -40,16 +45,17 @@ export const usePublicCatalog = () => {
     };
 
     void loadProducts();
-  }, [search, selectedCategoryId]);
+  }, [search, selectedCategoryId, pagination.page]);
 
   return {
     products,
     categories,
     search,
     selectedCategoryId,
-    setSearch,
-    setSelectedCategoryId,
+    setSearch: (v: string) => { pagination.reset(); setSearch(v); },
+    setSelectedCategoryId: (v: string) => { pagination.reset(); setSelectedCategoryId(v); },
     loading,
     error,
+    pagination,
   };
 };

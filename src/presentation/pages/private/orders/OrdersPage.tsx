@@ -14,6 +14,9 @@ const OrdersPage = () => {
       customers={ordersManagement.customers}
       products={ordersManagement.products}
       orders={ordersManagement.orders}
+      ordersPage={ordersManagement.ordersPage}
+      ordersTotalPages={ordersManagement.ordersTotalPages}
+      onOrdersPageChange={ordersManagement.goToOrdersPage}
       customerId={ordersManagement.customerId}
       newCustomer={ordersManagement.newCustomer}
       cartRows={ordersManagement.cartRows}

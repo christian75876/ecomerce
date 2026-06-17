@@ -27,6 +27,14 @@ export const useDashboardSummary = (lockedStoreId?: string) => {
     storeId: lockedStoreId,
   });
 
+  // Re-sync when lockedStoreId changes (e.g. context loads stores after mount)
+  useEffect(() => {
+    setFilters((prev) => {
+      if (prev.storeId === lockedStoreId) return prev;
+      return { ...prev, storeId: lockedStoreId };
+    });
+  }, [lockedStoreId]);
+
   useEffect(() => {
     const loadSummary = async () => {
       setLoading(true);

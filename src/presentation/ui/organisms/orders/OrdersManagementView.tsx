@@ -1,69 +1,523 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { ICustomer } from '@/application/dtos/customers/response/CustomerResponse';
 import { IOrder } from '@/application/dtos/orders/response/OrderResponse';
 import { IProduct } from '@/application/dtos/products/response/ProductResponse';
-import { CartRow, ORDER_STATUSES } from '@/application/useCases/orders/useOrdersManagement';
+import {
+  CartRow,
+  ORDER_STATUSES
+} from '@/application/useCases/orders/useOrdersManagement';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Label from '@/presentation/ui/atoms/label/SimpleLabel';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
+import AsyncSearchSelect from '@/presentation/ui/molecules/common/AsyncSearchSelect';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 
 // Fix Leaflet default icons in Vite
 delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconRetinaUrl:
+    'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png'
 });
 
-const STATUS_CONFIG: Record<string, { label: string; dot: string; badge: string }> = {
-  PENDING:   { label: 'Pendiente',  dot: 'bg-amber-400',  badge: 'bg-amber-100 text-amber-700 border-amber-200' },
-  PAID:      { label: 'Pagado',     dot: 'bg-blue-400',   badge: 'bg-blue-100 text-blue-700 border-blue-200' },
-  PREPARING: { label: 'Preparando', dot: 'bg-indigo-400', badge: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
-  SHIPPED:   { label: 'Enviado',    dot: 'bg-cyan-400',   badge: 'bg-cyan-100 text-cyan-700 border-cyan-200' },
-  DELIVERED: { label: 'Entregado',  dot: 'bg-green-400',  badge: 'bg-green-100 text-green-700 border-green-200' },
-  CANCELLED: { label: 'Cancelado',  dot: 'bg-red-400',    badge: 'bg-red-100 text-red-700 border-red-200' },
+const STATUS_CONFIG: Record<
+  string,
+  { label: string; dot: string; badge: string }
+> = {
+  PENDING: {
+    label: 'Pendiente',
+    dot: 'bg-amber-400',
+    badge: 'bg-amber-100 text-amber-700 border-amber-200'
+  },
+  PAID: {
+    label: 'Pagado',
+    dot: 'bg-blue-400',
+    badge: 'bg-blue-100 text-blue-700 border-blue-200'
+  },
+  PREPARING: {
+    label: 'Preparando',
+    dot: 'bg-indigo-400',
+    badge: 'bg-indigo-100 text-indigo-700 border-indigo-200'
+  },
+  SHIPPED: {
+    label: 'Enviado',
+    dot: 'bg-cyan-400',
+    badge: 'bg-cyan-100 text-cyan-700 border-cyan-200'
+  },
+  DELIVERED: {
+    label: 'Entregado',
+    dot: 'bg-green-400',
+    badge: 'bg-green-100 text-green-700 border-green-200'
+  },
+  CANCELLED: {
+    label: 'Cancelado',
+    dot: 'bg-red-400',
+    badge: 'bg-red-100 text-red-700 border-red-200'
+  }
 };
 
 const STATUS_TABS = [
   { key: '', label: 'Todos' },
-  { key: 'PENDING',   label: 'Pendientes' },
-  { key: 'PAID',      label: 'Pagados' },
+  { key: 'PENDING', label: 'Pendientes' },
+  { key: 'PAID', label: 'Pagados' },
   { key: 'PREPARING', label: 'Preparando' },
-  { key: 'SHIPPED',   label: 'Enviados' },
+  { key: 'SHIPPED', label: 'Enviados' },
   { key: 'DELIVERED', label: 'Entregados' },
-  { key: 'CANCELLED', label: 'Cancelados' },
+  { key: 'CANCELLED', label: 'Cancelados' }
 ];
+
+// ── CustomerSection ───────────────────────────────────────────────────────────
+const CustomerSection = ({
+  customers,
+  customerId,
+  newCustomer,
+  submitting,
+  onCustomerIdChange,
+  onNewCustomerChange,
+  onCreateCustomer
+}: {
+  customers: ICustomer[];
+  customerId: string;
+  newCustomer: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+  };
+  submitting: boolean;
+  onCustomerIdChange: (v: string) => void;
+  onNewCustomerChange: (v: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+  }) => void;
+  onCreateCustomer: () => Promise<boolean>;
+}) => {
+  const [showForm, setShowForm] = useState(false);
+
+  const selectedCustomer = customers.find(c => c.id === customerId);
+
+  const handleCreate = async () => {
+    const ok = await onCreateCustomer();
+    if (ok) setShowForm(false);
+  };
+
+  const loadCustomerOptions = useCallback(
+    async ({ search, page }: { search: string; page: number }) => {
+      const q = search.toLowerCase();
+      const filtered = customers.filter(
+        c =>
+          !q ||
+          `${c.firstName} ${c.lastName}`.toLowerCase().includes(q) ||
+          c.email.toLowerCase().includes(q) ||
+          (c.phone ?? '').includes(q)
+      );
+      const perPage = 10;
+      const start = (page - 1) * perPage;
+      return {
+        items: filtered.slice(start, start + perPage).map(c => ({
+          id: c.id,
+          label: `${c.firstName} ${c.lastName}`,
+          secondary: c.email,
+          helper: c.phone ?? undefined
+        })),
+        currentPage: page,
+        totalPages: Math.max(1, Math.ceil(filtered.length / perPage))
+      };
+    },
+    [customers]
+  );
+
+  return (
+    <Box className='rounded-[1.75rem] border border-neutral-gray/30 bg-white p-6 shadow-sm'>
+      <Box className='flex items-center justify-between'>
+        <Typography variant='h2' className='text-xl font-semibold'>
+          Cliente del pedido
+        </Typography>
+        <button
+          type='button'
+          onClick={() => setShowForm(v => !v)}
+          className='flex items-center gap-1.5 rounded-xl border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary transition hover:bg-primary/10'
+        >
+          <i className={`bx ${showForm ? 'bx-x' : 'bx-user-plus'} text-sm`} />
+          {showForm ? 'Cancelar' : 'Nuevo cliente'}
+        </button>
+      </Box>
+
+      <Box className='mt-5 space-y-3'>
+        {!showForm ? (
+          <>
+            <Box>
+              <Label>Cliente</Label>
+              <AsyncSearchSelect
+                value={customerId}
+                placeholder='Buscar por nombre, correo o teléfono...'
+                emptyLabel='Sin clientes encontrados'
+                selectedLabel={
+                  selectedCustomer
+                    ? `${selectedCustomer.firstName} ${selectedCustomer.lastName}`
+                    : ''
+                }
+                loadOptions={loadCustomerOptions}
+                onChange={opt => onCustomerIdChange(opt?.id ?? '')}
+              />
+            </Box>
+
+            {selectedCustomer && (
+              <Box className='flex items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3'>
+                <i className='bx bx-user-check text-lg text-emerald-500' />
+                <div>
+                  <p className='text-sm font-semibold text-emerald-800'>
+                    {selectedCustomer.firstName} {selectedCustomer.lastName}
+                  </p>
+                  <p className='text-xs text-emerald-600'>
+                    {selectedCustomer.email}
+                  </p>
+                </div>
+              </Box>
+            )}
+          </>
+        ) : (
+          <Box className='rounded-2xl border border-neutral-gray/20 bg-slate-50/60 p-4'>
+            <Typography className='text-sm font-semibold text-slate-700'>
+              Nuevo cliente rápido
+            </Typography>
+            <Box className='mt-3 grid gap-3'>
+              <Input
+                placeholder='Nombre'
+                value={newCustomer.firstName}
+                onChange={e =>
+                  onNewCustomerChange({
+                    ...newCustomer,
+                    firstName: e.target.value
+                  })
+                }
+              />
+              <Input
+                placeholder='Apellido'
+                value={newCustomer.lastName}
+                onChange={e =>
+                  onNewCustomerChange({
+                    ...newCustomer,
+                    lastName: e.target.value
+                  })
+                }
+              />
+              <Input
+                placeholder='Correo'
+                value={newCustomer.email}
+                onChange={e =>
+                  onNewCustomerChange({ ...newCustomer, email: e.target.value })
+                }
+              />
+              <Input
+                placeholder='Teléfono'
+                value={newCustomer.phone}
+                onChange={e =>
+                  onNewCustomerChange({ ...newCustomer, phone: e.target.value })
+                }
+              />
+              <Button
+                type='button'
+                variant='secondary'
+                onClick={() => void handleCreate()}
+                disabled={submitting}
+              >
+                {submitting ? 'Creando...' : 'Crear cliente'}
+              </Button>
+            </Box>
+          </Box>
+        )}
+      </Box>
+    </Box>
+  );
+};
+
+type DeliveryInfo = {
+  deliveryMethod: 'DELIVERY' | 'PICKUP';
+  deliveryAddress: string;
+  deliveryCity: string;
+  deliveryDepartment: string;
+  deliveryNotes: string;
+};
+
+// ── DeliveryModal ────────────────────────────────────────────────────────────
+const DeliveryModal = ({
+  submitting,
+  onConfirm,
+  onClose,
+}: {
+  submitting: boolean;
+  onConfirm: (info: DeliveryInfo) => void;
+  onClose: () => void;
+}) => {
+  const [step, setStep] = useState<'method' | 'address'>('method');
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [department, setDepartment] = useState('');
+  const [notes, setNotes] = useState('');
+
+  return (
+    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm'>
+      <Box className='w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl'>
+        {step === 'method' ? (
+          <>
+            <Typography variant='h2' className='text-xl font-semibold'>
+              ¿Cómo recibe el pedido?
+            </Typography>
+            <Typography className='mt-1 text-sm text-slate-500'>
+              Elige si el cliente recoge en tienda o necesita domicilio.
+            </Typography>
+            <Box className='mt-6 grid grid-cols-2 gap-3'>
+              <button
+                type='button'
+                onClick={() => setStep('address')}
+                className='flex flex-col items-center gap-3 rounded-2xl border-2 border-cyan-200 bg-cyan-50 px-4 py-5 text-cyan-700 transition hover:border-cyan-400 hover:bg-cyan-100'
+              >
+                <i className='bx bx-cycling text-3xl' />
+                <span className='text-sm font-semibold'>A domicilio</span>
+              </button>
+              <button
+                type='button'
+                disabled={submitting}
+                onClick={() =>
+                  onConfirm({ deliveryMethod: 'PICKUP', deliveryAddress: '', deliveryCity: '', deliveryDepartment: '', deliveryNotes: '' })
+                }
+                className='flex flex-col items-center gap-3 rounded-2xl border-2 border-slate-200 bg-slate-50 px-4 py-5 text-slate-600 transition hover:border-slate-400 hover:bg-slate-100 disabled:opacity-60'
+              >
+                <i className='bx bx-store text-3xl' />
+                <span className='text-sm font-semibold'>Recoge en tienda</span>
+              </button>
+            </Box>
+            <button
+              type='button'
+              onClick={onClose}
+              className='mt-4 w-full rounded-xl py-2 text-sm text-slate-400 hover:text-slate-600'
+            >
+              Cancelar
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              type='button'
+              onClick={() => setStep('method')}
+              className='mb-4 flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700'
+            >
+              <i className='bx bx-arrow-back' /> Atrás
+            </button>
+            <Typography variant='h2' className='text-xl font-semibold'>
+              Dirección de entrega
+            </Typography>
+            <Box className='mt-5 space-y-3'>
+              <Input
+                placeholder='Dirección *'
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+              />
+              <Box className='grid grid-cols-2 gap-3'>
+                <Input
+                  placeholder='Ciudad'
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                />
+                <Input
+                  placeholder='Departamento'
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
+                />
+              </Box>
+              <Input
+                placeholder='Instrucciones de entrega (opcional)'
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+            </Box>
+            <Button
+              type='button'
+              variant='primary'
+              disabled={!address.trim() || submitting}
+              onClick={() =>
+                onConfirm({ deliveryMethod: 'DELIVERY', deliveryAddress: address, deliveryCity: city, deliveryDepartment: department, deliveryNotes: notes })
+              }
+              className='mt-5 w-full'
+            >
+              {submitting ? 'Creando...' : 'Confirmar pedido'}
+            </Button>
+          </>
+        )}
+      </Box>
+    </div>
+  );
+};
+
+// ── ItemsSection ─────────────────────────────────────────────────────────────
+const ItemsSection = ({
+  products,
+  cartRows,
+  submitting,
+  error,
+  onCartRowChange,
+  onAddCartRow,
+  onCreateOrder
+}: {
+  products: IProduct[];
+  cartRows: CartRow[];
+  submitting: boolean;
+  error: string | null;
+  onCartRowChange: (index: number, patch: Partial<CartRow>) => void;
+  onAddCartRow: () => void;
+  onCreateOrder: (delivery: DeliveryInfo) => Promise<boolean>;
+}) => {
+  const [showModal, setShowModal] = useState(false);
+
+  const loadProductOptions = useCallback(
+    async ({ search, page }: { search: string; page: number }) => {
+      const q = search.toLowerCase();
+      const filtered = products.filter(
+        p =>
+          !q ||
+          p.name.toLowerCase().includes(q) ||
+          (p.sku ?? '').toLowerCase().includes(q)
+      );
+      const perPage = 10;
+      const start = (page - 1) * perPage;
+      return {
+        items: filtered.slice(start, start + perPage).map(p => ({
+          id: p.id,
+          label: p.name,
+          secondary: formatCurrencyCOP(p.price),
+          helper: p.sku ?? undefined
+        })),
+        currentPage: page,
+        totalPages: Math.max(1, Math.ceil(filtered.length / perPage))
+      };
+    },
+    [products]
+  );
+
+  const handleConfirm = async (info: DeliveryInfo) => {
+    const ok = await onCreateOrder(info);
+    if (ok) setShowModal(false);
+  };
+
+  return (
+    <>
+      {showModal && (
+        <DeliveryModal
+          submitting={submitting}
+          onConfirm={(info) => void handleConfirm(info)}
+          onClose={() => setShowModal(false)}
+        />
+      )}
+      <Box className='rounded-[1.75rem] border border-neutral-gray/30 bg-white p-6 shadow-sm'>
+        <Typography variant='h2' className='text-xl font-semibold'>
+          Ítems del pedido
+        </Typography>
+        <Box className='mt-5 space-y-3'>
+          {cartRows.map((row, index) => {
+            const selected = products.find(p => p.id === row.productId);
+            return (
+              <Box
+                key={index}
+                className='grid gap-3 md:grid-cols-[minmax(0,1fr)_120px]'
+              >
+                <AsyncSearchSelect
+                  value={row.productId}
+                  placeholder='Buscar producto'
+                  emptyLabel='Sin productos encontrados'
+                  selectedLabel={selected ? selected.name : ''}
+                  loadOptions={loadProductOptions}
+                  onChange={opt =>
+                    onCartRowChange(index, { productId: opt?.id ?? '' })
+                  }
+                />
+                <Input
+                  type='number'
+                  min='1'
+                  className='sm:h-14'
+                  value={String(row.quantity)}
+                  onChange={e =>
+                    onCartRowChange(index, {
+                      quantity: Number(e.target.value || 1)
+                    })
+                  }
+                />
+              </Box>
+            );
+          })}
+        </Box>
+
+        <Box className='mt-4 flex gap-3'>
+          <Button type='button' variant='outline' onClick={onAddCartRow}>
+            Agregar línea
+          </Button>
+          <Button
+            type='button'
+            variant='primary'
+            onClick={() => setShowModal(true)}
+          >
+            Crear pedido
+          </Button>
+        </Box>
+
+        {error ? (
+          <Box className='mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600'>
+            {error}
+          </Box>
+        ) : null}
+      </Box>
+    </>
+  );
+};
 
 interface OrdersManagementViewProps {
   customers: ICustomer[];
   products: IProduct[];
   orders: IOrder[];
   customerId: string;
-  newCustomer: { firstName: string; lastName: string; email: string; phone: string };
+  newCustomer: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+  };
   cartRows: CartRow[];
   loading: boolean;
   submitting: boolean;
   error: string | null;
   statuses: readonly string[];
   onCustomerIdChange: (value: string) => void;
-  onNewCustomerChange: (value: OrdersManagementViewProps['newCustomer']) => void;
+  onNewCustomerChange: (
+    value: OrdersManagementViewProps['newCustomer']
+  ) => void;
   onCartRowChange: (index: number, patch: Partial<CartRow>) => void;
   onAddCartRow: () => void;
   onCreateCustomer: () => Promise<boolean>;
-  onCreateOrder: () => Promise<boolean>;
-  onStatusChange: (orderId: string, status: (typeof ORDER_STATUSES)[number]) => Promise<boolean>;
+  ordersPage: number;
+  ordersTotalPages: number;
+  onOrdersPageChange: (page: number) => Promise<void>;
+  onCreateOrder: (delivery: DeliveryInfo) => Promise<boolean>;
+  onStatusChange: (
+    orderId: string,
+    status: (typeof ORDER_STATUSES)[number]
+  ) => Promise<boolean>;
 }
 
 export const OrdersManagementView = ({
   customers,
   products,
   orders,
+  ordersPage,
+  ordersTotalPages,
+  onOrdersPageChange,
   customerId,
   newCustomer,
   cartRows,
@@ -77,20 +531,22 @@ export const OrdersManagementView = ({
   onAddCartRow,
   onCreateCustomer,
   onCreateOrder,
-  onStatusChange,
+  onStatusChange
 }: OrdersManagementViewProps) => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const filtered = orders.filter((o) => {
+  const filtered = orders.filter(o => {
     const matchStatus = !statusFilter || o.status === statusFilter;
     const q = search.toLowerCase();
     const matchSearch =
       !q ||
       o.id.toLowerCase().includes(q) ||
-      `${o.customer.firstName} ${o.customer.lastName}`.toLowerCase().includes(q) ||
-      o.customer.email.toLowerCase().includes(q);
+      `${o.customer?.firstName ?? ''} ${o.customer?.lastName ?? ''}`
+        .toLowerCase()
+        .includes(q) ||
+      (o.customer?.email ?? '').toLowerCase().includes(q);
     return matchStatus && matchSearch;
   });
 
@@ -106,129 +562,54 @@ export const OrdersManagementView = ({
           Pedidos Online
         </Typography>
         <Typography className='mt-2 text-neutral-dark/70'>
-          Crea pedidos contra clientes existentes, descuenta inventario al crearlos y gestiona su ciclo de estado.
+          Crea pedidos contra clientes existentes, descuenta inventario al
+          crearlos y gestiona su ciclo de estado.
         </Typography>
       </Box>
 
       <Box className='grid gap-6 xl:grid-cols-[430px_minmax(0,1fr)]'>
         {/* ── Creation form (unchanged) ─────────────────────── */}
         <Box className='space-y-6'>
-          <Box className='rounded-[1.75rem] border border-neutral-gray/30 bg-white p-6 shadow-sm'>
-            <Typography variant='h2' className='text-xl font-semibold'>
-              Cliente del pedido
-            </Typography>
-            <Box className='mt-5 space-y-4'>
-              <Box>
-                <Label htmlFor='order-customer'>Cliente existente</Label>
-                <select
-                  id='order-customer'
-                  value={customerId}
-                  onChange={(e) => onCustomerIdChange(e.target.value)}
-                  className='w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary'
-                >
-                  <option value=''>Selecciona un cliente</option>
-                  {customers.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.firstName} {c.lastName} · {c.email}
-                    </option>
-                  ))}
-                </select>
-              </Box>
+          <CustomerSection
+            customers={customers}
+            customerId={customerId}
+            newCustomer={newCustomer}
+            submitting={submitting}
+            onCustomerIdChange={onCustomerIdChange}
+            onNewCustomerChange={onNewCustomerChange}
+            onCreateCustomer={onCreateCustomer}
+          />
 
-              <Box className='rounded-2xl border border-neutral-gray/20 p-4'>
-                <Typography className='font-semibold'>Nuevo cliente rápido</Typography>
-                <Box className='mt-4 grid gap-3'>
-                  <Input
-                    placeholder='Nombre'
-                    value={newCustomer.firstName}
-                    onChange={(e) => onNewCustomerChange({ ...newCustomer, firstName: e.target.value })}
-                  />
-                  <Input
-                    placeholder='Apellido'
-                    value={newCustomer.lastName}
-                    onChange={(e) => onNewCustomerChange({ ...newCustomer, lastName: e.target.value })}
-                  />
-                  <Input
-                    placeholder='Correo'
-                    value={newCustomer.email}
-                    onChange={(e) => onNewCustomerChange({ ...newCustomer, email: e.target.value })}
-                  />
-                  <Input
-                    placeholder='Teléfono'
-                    value={newCustomer.phone}
-                    onChange={(e) => onNewCustomerChange({ ...newCustomer, phone: e.target.value })}
-                  />
-                  <Button type='button' variant='secondary' onClick={() => void onCreateCustomer()} disabled={submitting}>
-                    Crear cliente
-                  </Button>
-                </Box>
-              </Box>
-            </Box>
-          </Box>
-
-          <Box className='rounded-[1.75rem] border border-neutral-gray/30 bg-white p-6 shadow-sm'>
-            <Typography variant='h2' className='text-xl font-semibold'>
-              Ítems del pedido
-            </Typography>
-            <Box className='mt-5 space-y-3'>
-              {cartRows.map((row, index) => (
-                <Box key={`${row.productId}-${index}`} className='grid gap-3 md:grid-cols-[minmax(0,1fr)_120px]'>
-                  <select
-                    value={row.productId}
-                    onChange={(e) => onCartRowChange(index, { productId: e.target.value })}
-                    className='w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary'
-                  >
-                    <option value=''>Selecciona un producto</option>
-                    {products.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name} · {formatCurrencyCOP(p.price)}
-                      </option>
-                    ))}
-                  </select>
-                  <Input
-                    type='number'
-                    min='1'
-                    value={String(row.quantity)}
-                    onChange={(e) => onCartRowChange(index, { quantity: Number(e.target.value || 1) })}
-                  />
-                </Box>
-              ))}
-            </Box>
-
-            <Box className='mt-4 flex gap-3'>
-              <Button type='button' variant='outline' onClick={onAddCartRow}>
-                Agregar línea
-              </Button>
-              <Button type='button' variant='primary' onClick={() => void onCreateOrder()} disabled={submitting}>
-                {submitting ? 'Creando...' : 'Crear pedido'}
-              </Button>
-            </Box>
-
-            {error ? (
-              <Box className='mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600'>
-                {error}
-              </Box>
-            ) : null}
-          </Box>
+          <ItemsSection
+            products={products}
+            cartRows={cartRows}
+            submitting={submitting}
+            error={error}
+            onCartRowChange={onCartRowChange}
+            onAddCartRow={onAddCartRow}
+            onCreateOrder={onCreateOrder}
+          />
         </Box>
 
         {/* ── Orders list ───────────────────────────────────── */}
         <Box className='rounded-[1.75rem] border border-neutral-gray/30 bg-white p-6 shadow-sm'>
           {/* Search */}
           <Box className='relative'>
-            <i className='bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400' aria-hidden='true' />
+            <i
+              className='bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400'
+              aria-hidden='true'
+            />
             <input
               type='text'
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={e => setSearch(e.target.value)}
               placeholder='Buscar por ID, nombre o correo…'
               className='w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary'
             />
           </Box>
-
           {/* Status tabs */}
           <Box className='mt-3 flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide'>
-            {STATUS_TABS.map((tab) => {
+            {STATUS_TABS.map(tab => {
               const count = tab.key ? (counts[tab.key] ?? 0) : orders.length;
               return (
                 <button
@@ -242,23 +623,29 @@ export const OrdersManagementView = ({
                   }`}
                 >
                   {tab.label}
-                  {count > 0 ? <span className='ml-1 opacity-75'>({count})</span> : null}
+                  {count > 0 ? (
+                    <span className='ml-1 opacity-75'>({count})</span>
+                  ) : null}
                 </button>
               );
             })}
           </Box>
-
           {/* Orders */}
           <Box className='mt-4 space-y-3'>
             {loading ? (
-              <Typography className='py-8 text-center text-sm text-slate-400'>Cargando pedidos…</Typography>
+              <Typography className='py-8 text-center text-sm text-slate-400'>
+                Cargando pedidos…
+              </Typography>
             ) : filtered.length === 0 ? (
               <Typography className='py-8 text-center text-sm text-slate-400'>
-                {search || statusFilter ? 'Sin resultados para ese filtro.' : 'Aún no hay pedidos registrados.'}
+                {search || statusFilter
+                  ? 'Sin resultados para ese filtro.'
+                  : 'Aún no hay pedidos registrados.'}
               </Typography>
             ) : (
-              filtered.map((order) => {
-                const cfg = STATUS_CONFIG[order.status] ?? STATUS_CONFIG['PENDING'];
+              filtered.map(order => {
+                const cfg =
+                  STATUS_CONFIG[order.status] ?? STATUS_CONFIG['PENDING'];
                 const isOpen = expandedId === order.id;
 
                 return (
@@ -272,13 +659,22 @@ export const OrdersManagementView = ({
                       className='flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-slate-50'
                       onClick={() => setExpandedId(isOpen ? null : order.id)}
                     >
-                      <span className={`h-2 w-2 flex-shrink-0 rounded-full ${cfg.dot}`} />
+                      <span
+                        className={`h-2 w-2 flex-shrink-0 rounded-full ${cfg.dot}`}
+                      />
                       <Box className='min-w-0 flex-1'>
-                        <div className='flex items-center gap-2'>
+                        <div className='flex flex-wrap items-center gap-1.5'>
                           <span className='font-semibold text-slate-800'>
+                            {order.customer
+                              ? `${order.customer.firstName} ${order.customer.lastName}`
+                              : 'Sin cliente'}
+                          </span>
+                          <span className='text-[10px] text-slate-400'>
                             #{order.id.slice(0, 8).toUpperCase()}
                           </span>
-                          <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${cfg.badge}`}>
+                          <span
+                            className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${cfg.badge}`}
+                          >
                             {cfg.label}
                           </span>
                           {order.deliveryMethod === 'DELIVERY' ? (
@@ -291,17 +687,31 @@ export const OrdersManagementView = ({
                             </span>
                           ) : null}
                         </div>
-                        <div className='mt-0.5 truncate text-xs text-slate-500'>
-                          {order.customer.firstName} {order.customer.lastName} · {order.customer.email}
+                        <div className='mt-0.5 truncate text-xs text-slate-400'>
+                          {(order.items ?? []).length > 0
+                            ? (order.items ?? [])
+                                .slice(0, 3)
+                                .map(i => `${i.product?.name ?? 'Producto'} ×${i.quantity}`)
+                                .join(' · ')
+                              + ((order.items ?? []).length > 3 ? ` +${(order.items ?? []).length - 3} más` : '')
+                            : 'Sin productos'}
                         </div>
                       </Box>
                       <Box className='flex-shrink-0 text-right'>
-                        <div className='text-sm font-bold text-slate-800'>{formatCurrencyCOP(order.total)}</div>
+                        <div className='text-sm font-bold text-slate-800'>
+                          {formatCurrencyCOP(order.total)}
+                        </div>
                         <div className='text-xs text-slate-400'>
-                          {new Date(order.createdAt).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })}
+                          {new Date(order.createdAt).toLocaleDateString(
+                            'es-CO',
+                            { day: '2-digit', month: 'short' }
+                          )}
                         </div>
                       </Box>
-                      <i className={`bx ${isOpen ? 'bx-chevron-up' : 'bx-chevron-down'} flex-shrink-0 text-lg text-slate-400`} aria-hidden='true' />
+                      <i
+                        className={`bx ${isOpen ? 'bx-chevron-up' : 'bx-chevron-down'} flex-shrink-0 text-lg text-slate-400`}
+                        aria-hidden='true'
+                      />
                     </button>
 
                     {/* Expanded detail */}
@@ -310,45 +720,79 @@ export const OrdersManagementView = ({
                         {/* Items table */}
                         <Box>
                           <p className='mb-2 text-xs font-bold uppercase tracking-wide text-slate-400'>
-                            Productos ({order.items.length})
+                            Productos ({(order.items ?? []).length})
                           </p>
                           <table className='w-full text-sm'>
                             <tbody>
-                              {order.items.map((item) => (
-                                <tr key={item.id} className='border-b border-slate-100 last:border-0'>
+                              {(order.items ?? []).map(item => (
+                                <tr
+                                  key={item.id}
+                                  className='border-b border-slate-100 last:border-0'
+                                >
                                   <td className='py-2 pr-3'>
-                                    <div className='font-medium text-slate-700'>{item.product.name}</div>
-                                    <div className='text-xs text-slate-400'>{item.product.sku}</div>
+                                    <div className='font-medium text-slate-700'>
+                                      {item.product?.name ?? '—'}
+                                    </div>
+                                    <div className='text-xs text-slate-400'>
+                                      {item.product?.sku ?? ''}
+                                    </div>
                                   </td>
-                                  <td className='py-2 text-center text-xs text-slate-500'>× {item.quantity}</td>
-                                  <td className='py-2 text-right text-xs text-slate-500'>{formatCurrencyCOP(item.unitPrice)}</td>
-                                  <td className='py-2 pl-3 text-right font-semibold text-slate-700'>{formatCurrencyCOP(item.lineTotal)}</td>
+                                  <td className='py-2 text-center text-xs text-slate-500'>
+                                    × {item.quantity}
+                                  </td>
+                                  <td className='py-2 text-right text-xs text-slate-500'>
+                                    {formatCurrencyCOP(item.unitPrice)}
+                                  </td>
+                                  <td className='py-2 pl-3 text-right font-semibold text-slate-700'>
+                                    {formatCurrencyCOP(item.lineTotal)}
+                                  </td>
                                 </tr>
                               ))}
                             </tbody>
                             <tfoot>
                               <tr>
-                                <td colSpan={3} className='pt-2 text-right text-xs font-semibold text-slate-500'>Total</td>
-                                <td className='pt-2 pl-3 text-right font-bold text-slate-800'>{formatCurrencyCOP(order.total)}</td>
+                                <td
+                                  colSpan={3}
+                                  className='pt-2 text-right text-xs font-semibold text-slate-500'
+                                >
+                                  Total
+                                </td>
+                                <td className='pt-2 pl-3 text-right font-bold text-slate-800'>
+                                  {formatCurrencyCOP(order.total)}
+                                </td>
                               </tr>
                             </tfoot>
                           </table>
                         </Box>
 
                         {/* Delivery info */}
-                        {order.deliveryMethod === 'DELIVERY' && order.deliveryAddress ? (
+                        {order.deliveryMethod === 'DELIVERY' &&
+                        order.deliveryAddress ? (
                           <Box>
                             <p className='mb-2 text-xs font-bold uppercase tracking-wide text-slate-400'>
                               Dirección de entrega
                             </p>
                             <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm'>
                               <div className='flex items-start gap-2'>
-                                <i className='bx bx-map-pin mt-0.5 flex-shrink-0 text-primary' aria-hidden='true' />
+                                <i
+                                  className='bx bx-map-pin mt-0.5 flex-shrink-0 text-primary'
+                                  aria-hidden='true'
+                                />
                                 <div>
-                                  <span className='font-medium text-slate-700'>{order.deliveryAddress}</span>
-                                  {(order.deliveryCity || order.deliveryDepartment) ? (
+                                  <span className='font-medium text-slate-700'>
+                                    {order.deliveryAddress}
+                                  </span>
+                                  {order.deliveryCity ||
+                                  order.deliveryDepartment ? (
                                     <span className='text-slate-500'>
-                                      {' '}— {[order.deliveryCity, order.deliveryDepartment].filter(Boolean).join(', ')}
+                                      {' '}
+                                      —{' '}
+                                      {[
+                                        order.deliveryCity,
+                                        order.deliveryDepartment
+                                      ]
+                                        .filter(Boolean)
+                                        .join(', ')}
                                     </span>
                                   ) : null}
                                   {order.deliveryNotes ? (
@@ -363,9 +807,15 @@ export const OrdersManagementView = ({
 
                             {/* Delivery map */}
                             {order.deliveryLat && order.deliveryLng ? (
-                              <Box className='mt-2 overflow-hidden rounded-xl border border-slate-200' style={{ height: 180 }}>
+                              <Box
+                                className='mt-2 overflow-hidden rounded-xl border border-slate-200'
+                                style={{ height: 180 }}
+                              >
                                 <MapContainer
-                                  center={[order.deliveryLat, order.deliveryLng]}
+                                  center={[
+                                    order.deliveryLat,
+                                    order.deliveryLng
+                                  ]}
                                   zoom={15}
                                   style={{ height: '100%', width: '100%' }}
                                   scrollWheelZoom={false}
@@ -375,7 +825,12 @@ export const OrdersManagementView = ({
                                     url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
                                     attribution='&copy; OpenStreetMap'
                                   />
-                                  <Marker position={[order.deliveryLat, order.deliveryLng]} />
+                                  <Marker
+                                    position={[
+                                      order.deliveryLat,
+                                      order.deliveryLng
+                                    ]}
+                                  />
                                 </MapContainer>
                               </Box>
                             ) : null}
@@ -384,22 +839,32 @@ export const OrdersManagementView = ({
 
                         {/* Status change */}
                         <Box className='flex items-center gap-3'>
-                          <p className='text-xs font-bold uppercase tracking-wide text-slate-400'>Estado</p>
+                          <p className='text-xs font-bold uppercase tracking-wide text-slate-400'>
+                            Estado
+                          </p>
                           <select
                             value={order.status}
-                            onChange={(e) =>
-                              void onStatusChange(order.id, e.target.value as (typeof ORDER_STATUSES)[number])
+                            onChange={e =>
+                              void onStatusChange(
+                                order.id,
+                                e.target
+                                  .value as (typeof ORDER_STATUSES)[number]
+                              )
                             }
                             className='rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary'
                           >
-                            {statuses.map((s) => (
+                            {statuses.map(s => (
                               <option key={s} value={s}>
                                 {STATUS_CONFIG[s]?.label ?? s}
                               </option>
                             ))}
                           </select>
                           <span className='text-xs text-slate-400'>
-                            Actualizado: {new Date(order.updatedAt).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' })}
+                            Actualizado:{' '}
+                            {new Date(order.updatedAt).toLocaleString('es-CO', {
+                              dateStyle: 'short',
+                              timeStyle: 'short'
+                            })}
                           </span>
                         </Box>
                       </Box>
@@ -409,6 +874,30 @@ export const OrdersManagementView = ({
               })
             )}
           </Box>
+
+          {ordersTotalPages > 1 && (
+            <div className='mt-4 flex items-center justify-between border-t border-slate-100 pt-3'>
+              <button
+                type='button'
+                disabled={ordersPage <= 1}
+                onClick={() => void onOrdersPageChange(ordersPage - 1)}
+                className='flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40'
+              >
+                <i className='bx bx-chevron-left' /> Anterior
+              </button>
+              <span className='text-xs text-slate-400'>
+                Página {ordersPage} de {ordersTotalPages}
+              </span>
+              <button
+                type='button'
+                disabled={ordersPage >= ordersTotalPages}
+                onClick={() => void onOrdersPageChange(ordersPage + 1)}
+                className='flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40'
+              >
+                Siguiente <i className='bx bx-chevron-right' />
+              </button>
+            </div>
+          )}
         </Box>
       </Box>
     </Box>

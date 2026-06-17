@@ -1,34 +1,36 @@
 import { usePosManagement } from '@/application/useCases/pos/usePosManagement';
 import { PosManagementView } from '@/presentation/ui/organisms/pos/PosManagementView';
+import { useAdminStoreFilterContext } from '@/shared/context/AdminStoreFilterContext';
 
 const PosPage = () => {
-  const posManagement = usePosManagement();
+  const { selectedStoreId } = useAdminStoreFilterContext();
+  const pos = usePosManagement(selectedStoreId);
 
   return (
     <PosManagementView
-      products={posManagement.products}
-      customers={posManagement.customers}
-      stores={posManagement.stores}
-      cashSessions={posManagement.cashSessions}
-      cart={posManagement.cart}
-      sales={posManagement.sales}
-      search={posManagement.search}
-      selectedStoreId={posManagement.selectedStoreId}
-      selectedCustomerId={posManagement.selectedCustomerId}
-      selectedCashSessionId={posManagement.selectedCashSessionId}
-      paymentMethod={posManagement.paymentMethod}
-      loading={posManagement.loading}
-      submitting={posManagement.submitting}
-      error={posManagement.error}
-      total={posManagement.total}
-      onSearchChange={posManagement.setSearch}
-      onStoreChange={posManagement.setSelectedStoreId}
-      onCustomerChange={posManagement.setSelectedCustomerId}
-      onCashSessionChange={posManagement.setSelectedCashSessionId}
-      onPaymentMethodChange={posManagement.setPaymentMethod}
-      onAddToCart={posManagement.addToCart}
-      onUpdateQuantity={posManagement.updateQuantity}
-      onConfirmSale={posManagement.confirmSale}
+      products={pos.products}
+      customers={pos.customers}
+      cart={pos.cart}
+      sales={pos.sales}
+      salesPage={pos.salesPage}
+      salesTotalPages={pos.salesTotalPages}
+      onSalesPageChange={pos.goToSalesPage}
+      search={pos.search}
+      selectedCustomerId={pos.selectedCustomerId}
+      paymentMethod={pos.paymentMethod}
+      loading={pos.loading}
+      submitting={pos.submitting}
+      error={pos.error}
+      total={pos.total}
+      onSearchChange={pos.setSearch}
+      onCustomerChange={pos.setSelectedCustomerId}
+      onPaymentMethodChange={pos.setPaymentMethod}
+      onAddToCart={pos.addToCart}
+      onUpdateQuantity={pos.updateQuantity}
+      onRemoveFromCart={pos.removeFromCart}
+      onConfirmSale={pos.confirmSale}
+      receiptSale={pos.receiptSale}
+      onCloseReceipt={pos.clearReceiptSale}
     />
   );
 };

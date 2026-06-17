@@ -47,6 +47,11 @@ const ProductsPage = () => {
       onEdit={pm.startEditing}
       onToggleStatus={pm.toggleStatus}
       onDelete={pm.deleteProduct}
+      currentPage={pm.pagination.page}
+      totalPages={pm.pagination.totalPages}
+      totalItems={pm.pagination.totalItems}
+      itemsPerPage={pm.pagination.itemsPerPage}
+      onPageChange={pm.pagination.goToPage}
       onReset={pm.resetForm}
       onAddCategory={pm.createCategory}
       onAddSupplier={pm.createSupplier}

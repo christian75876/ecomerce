@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { usePagination } from '@/application/useCases/common/usePagination';
 import { ICategory } from '@/application/dtos/categories/response/CategoryResponse';
 import {
   ICreateProductRequest,
@@ -71,6 +72,7 @@ export const useProductsManagement = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const pagination = usePagination(20);
   const [error, setError] = useState<string | null>(null);
 
   // Image upload state (separate from form since File can't go in ProductFormState)
@@ -116,8 +118,11 @@ export const useProductsManagement = () => {
       const response = await ProductRepository.getProducts({
         search: search || undefined,
         categoryId: selectedCategoryId || undefined,
+        page: pagination.page,
+        limit: pagination.limit,
       });
-      setProducts(response.data);
+      setProducts(response.data.items);
+      pagination.updateMeta(response.data.pagination);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'No fue posible cargar los productos',
@@ -125,7 +130,7 @@ export const useProductsManagement = () => {
     } finally {
       setLoading(false);
     }
-  }, [search, selectedCategoryId]);
+  }, [search, selectedCategoryId, pagination.page, pagination.limit]);
 
   const loadVideos = useCallback(async (productId: string) => {
     try {
@@ -556,8 +561,8 @@ export const useProductsManagement = () => {
     videoTitle,
     videoSubmitting,
     videoError,
-    setSearch,
-    setSelectedCategoryId,
+    setSearch: (v: string) => { pagination.reset(); setSearch(v); },
+    setSelectedCategoryId: (v: string) => { pagination.reset(); setSelectedCategoryId(v); },
     updateForm,
     setImageFile,
     uploadGalleryImages,
@@ -573,6 +578,7 @@ export const useProductsManagement = () => {
     startEditing,
     toggleStatus,
     deleteProduct,
+    pagination,
     resetForm,
   };
 };

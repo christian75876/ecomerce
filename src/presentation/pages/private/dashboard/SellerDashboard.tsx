@@ -15,10 +15,10 @@ import { StockAlertTable, ReceivablesTable, PayablesTable } from '@organisms/das
 import DashboardLatestOrder from '@organisms/dashboard/DashboardLatestOrder';
 
 const SellerDashboard = () => {
-  const { selectedStore, stores } = useAdminStoreFilterContext();
-  const sellerStore = selectedStore ?? stores[0] ?? null;
+  const { selectedStore } = useAdminStoreFilterContext();
+  // Do not filter by storeId — sellers see all their own data regardless of store selection
   const { summary, loading, error, filters, updateFilter, resetFilters } =
-    useDashboardSummary(sellerStore?.id);
+    useDashboardSummary(undefined);
 
   const handleExport = () => {
     if (!summary) return;
@@ -48,18 +48,26 @@ const SellerDashboard = () => {
 
   return (
     <Box className='mx-auto max-w-[1440px] space-y-8 px-4 py-6 sm:px-6'>
-      <Box>
-        <Typography variant='h1' className='text-2xl font-bold text-slate-800 sm:text-3xl'>
-          Panel operacional
-        </Typography>
-        <Typography className='mt-1 text-sm text-slate-500'>
-          Ventas, inventario, pedidos y finanzas de tus tiendas
-        </Typography>
+      <Box className='flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between'>
+        <Box>
+          <Typography variant='h1' className='text-2xl font-bold text-slate-800 sm:text-3xl'>
+            Panel operacional
+          </Typography>
+          <Typography className='mt-1 text-sm text-slate-500'>
+            Ventas, inventario, pedidos y finanzas de tu tienda
+          </Typography>
+        </Box>
+        {selectedStore && (
+          <Box className='flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 shadow-sm'>
+            <i className='bx bx-store text-lg text-orange-500' />
+            <span className='text-sm font-semibold text-slate-700'>{selectedStore.name}</span>
+          </Box>
+        )}
       </Box>
 
       <DashboardFilters
         filters={filters}
-        stores={summary?.availableStores ?? []}
+        stores={[]}
         onChange={updateFilter}
         onReset={resetFilters}
         onExport={handleExport}

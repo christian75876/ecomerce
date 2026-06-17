@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { usePagination } from '@/application/useCases/common/usePagination';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
 import { IProduct } from '@/application/dtos/products/response/ProductResponse';
 import { IMenuCategory } from '@/application/dtos/menu-categories/response/MenuCategoryResponse';
@@ -12,6 +13,7 @@ export const usePublicStoreDetail = (slug?: string) => {
   const [menuCategories, setMenuCategories] = useState<IMenuCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const productPagination = usePagination(20);
 
   useEffect(() => {
     const loadStore = async () => {
@@ -29,13 +31,14 @@ export const usePublicStoreDetail = (slug?: string) => {
         setStore(storeData);
 
         const [productsResponse, categoriesResponse] = await Promise.all([
-          ProductRepository.getProducts({ active: true, storeId: storeData.id }),
+          ProductRepository.getProducts({ active: true, storeId: storeData.id, page: productPagination.page, limit: productPagination.limit }),
           storeData.storeType === 'RESTAURANT'
             ? MenuCategoriesRepository.getByStore(storeData.id)
             : Promise.resolve(null),
         ]);
 
-        setProducts(productsResponse.data);
+        setProducts(productsResponse.data.items);
+        productPagination.updateMeta(productsResponse.data.pagination);
         setMenuCategories(categoriesResponse?.data ?? []);
       } catch (err) {
         setError(
@@ -49,5 +52,5 @@ export const usePublicStoreDetail = (slug?: string) => {
     void loadStore();
   }, [slug]);
 
-  return { store, products, menuCategories, loading, error };
+  return { store, products, menuCategories, loading, error, productPagination };
 };

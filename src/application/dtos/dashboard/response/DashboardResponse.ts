@@ -31,6 +31,9 @@ export interface IDashboardKpis {
   supplierDebt: number;
   openCashSessions: number;
   inventoryEntries: number;
+  cogs: number;
+  grossProfit: number;
+  grossMargin: number;
 }
 
 export interface IDashboardSalesPoint {
@@ -38,6 +41,7 @@ export interface IDashboardSalesPoint {
   pos: number;
   online: number;
   total: number;
+  profit: number;
 }
 
 export interface IDashboardTopProduct {

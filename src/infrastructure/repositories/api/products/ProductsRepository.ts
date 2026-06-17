@@ -54,6 +54,14 @@ export class ProductRepository {
       params.set('maxPrice', String(query.maxPrice));
     }
 
+    if (query.page !== undefined) {
+      params.set('page', String(query.page));
+    }
+
+    if (query.limit !== undefined) {
+      params.set('limit', String(query.limit));
+    }
+
     const suffix = params.toString() ? `?${params.toString()}` : '';
 
     return ErrorHandler.handleApiErrors(() =>

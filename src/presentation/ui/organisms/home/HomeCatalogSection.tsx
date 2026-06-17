@@ -336,10 +336,10 @@ const HomeCatalogSection = ({
                 <div className='flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 focus-within:border-primary focus-within:bg-white'>
                   <span className='text-xs text-slate-400'>$</span>
                   <input
-                    type='number'
-                    min={0}
-                    value={minPriceInput}
-                    onChange={e => setMinPriceInput(e.target.value)}
+                    type='text'
+                    inputMode='numeric'
+                    value={minPriceInput ? new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(Number(minPriceInput)) : ''}
+                    onChange={e => setMinPriceInput(e.target.value.replace(/\D/g, ''))}
                     placeholder='0'
                     className='w-24 bg-transparent text-sm text-slate-800 focus:outline-none'
                   />
@@ -352,10 +352,10 @@ const HomeCatalogSection = ({
                 <div className='flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 focus-within:border-primary focus-within:bg-white'>
                   <span className='text-xs text-slate-400'>$</span>
                   <input
-                    type='number'
-                    min={0}
-                    value={maxPriceInput}
-                    onChange={e => setMaxPriceInput(e.target.value)}
+                    type='text'
+                    inputMode='numeric'
+                    value={maxPriceInput ? new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(Number(maxPriceInput)) : ''}
+                    onChange={e => setMaxPriceInput(e.target.value.replace(/\D/g, ''))}
                     placeholder='Sin límite'
                     className='w-28 bg-transparent text-sm text-slate-800 focus:outline-none'
                   />

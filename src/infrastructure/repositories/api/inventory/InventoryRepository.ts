@@ -15,17 +15,17 @@ import {
 import { ErrorHandler } from '@/infrastructure/repositories/api/errors/ErrorHandler';
 
 export class InventoryRepository {
-  static async getInventory(): Promise<IInventoryResp> {
+  static async getInventory(page = 1, limit = 20): Promise<IInventoryResp> {
     return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.get<IInventoryResp>('/inventory'),
+      authenticatedClientHTTP.get<IInventoryResp>('/inventory', { params: { page, limit } }),
     );
   }
 
-  static async getMovements(productId?: string): Promise<IInventoryMovementsResp> {
-    const suffix = productId ? `?productId=${productId}` : '';
-
+  static async getMovements(productId?: string, page = 1, limit = 20): Promise<IInventoryMovementsResp> {
     return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.get<IInventoryMovementsResp>(`/inventory/movements${suffix}`),
+      authenticatedClientHTTP.get<IInventoryMovementsResp>('/inventory/movements', {
+        params: { ...(productId ? { productId } : {}), page, limit },
+      }),
     );
   }
 
@@ -34,30 +34,28 @@ export class InventoryRepository {
     storeId?: string;
     supplierId?: string;
     status?: string;
+    page?: number;
+    limit?: number;
   }): Promise<IInventoryBatchesResp> {
-    const params = new URLSearchParams();
-
-    if (query?.productId) params.set('productId', query.productId);
-    if (query?.storeId) params.set('storeId', query.storeId);
-    if (query?.supplierId) params.set('supplierId', query.supplierId);
-    if (query?.status) params.set('status', query.status);
-
-    const suffix = params.toString() ? `?${params.toString()}` : '';
-
     return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.get<IInventoryBatchesResp>(`/inventory/batches${suffix}`),
+      authenticatedClientHTTP.get<IInventoryBatchesResp>('/inventory/batches', {
+        params: {
+          ...(query?.productId ? { productId: query.productId } : {}),
+          ...(query?.storeId ? { storeId: query.storeId } : {}),
+          ...(query?.supplierId ? { supplierId: query.supplierId } : {}),
+          ...(query?.status ? { status: query.status } : {}),
+          page: query?.page ?? 1,
+          limit: query?.limit ?? 20,
+        },
+      }),
     );
   }
 
-  static async getExpiring(days = 30, storeId?: string): Promise<IInventoryBatchesResp> {
-    const params = new URLSearchParams();
-    params.set('days', String(days));
-    if (storeId) params.set('storeId', storeId);
-
+  static async getExpiring(days = 30, storeId?: string, page = 1, limit = 20): Promise<IInventoryBatchesResp> {
     return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.get<IInventoryBatchesResp>(
-        `/inventory/expiring?${params.toString()}`,
-      ),
+      authenticatedClientHTTP.get<IInventoryBatchesResp>('/inventory/expiring', {
+        params: { days, ...(storeId ? { storeId } : {}), page, limit },
+      }),
     );
   }
 

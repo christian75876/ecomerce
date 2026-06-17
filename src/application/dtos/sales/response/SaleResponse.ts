@@ -27,5 +27,13 @@ export interface ISale {
   }>;
 }
 
-export type ISalesResp = IApiResponse<ISale[]>;
+export interface ISalesPaginated {
+  items: ISale[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export type ISalesResp = IApiResponse<ISalesPaginated>;
 export type ISaleResp = IApiResponse<ISale>;
