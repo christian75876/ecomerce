@@ -20,8 +20,12 @@ const initialSupplierForm: SupplierFormState = {
   notes: '',
 };
 
+const SUPPLIERS_PER_PAGE = 15;
+
 export const useSuppliersManagement = () => {
   const [suppliers, setSuppliers] = useState<ISupplier[]>([]);
+  const [suppliersPage, setSuppliersPage] = useState(1);
+  const [suppliersTotalPages, setSuppliersTotalPages] = useState(1);
   const [form, setForm] = useState<SupplierFormState>(initialSupplierForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -29,22 +33,24 @@ export const useSuppliersManagement = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadSuppliers = useCallback(async () => {
+  const loadPage = useCallback(async (page: number, term: string) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await SuppliersRepository.getSuppliers(search || undefined);
-      setSuppliers(response.data);
+      const response = await SuppliersRepository.getSuppliers(term || undefined, page, SUPPLIERS_PER_PAGE);
+      setSuppliers(response.data.items);
+      setSuppliersPage(response.data.page);
+      setSuppliersTotalPages(response.data.totalPages);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No fue posible cargar proveedores');
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }, []);
 
   useEffect(() => {
-    void loadSuppliers();
-  }, [loadSuppliers]);
+    void loadPage(1, search);
+  }, [search, loadPage]);
 
   const updateForm = <K extends keyof SupplierFormState>(
     key: K,
@@ -81,7 +87,7 @@ export const useSuppliersManagement = () => {
       }
 
       resetForm();
-      await loadSuppliers();
+      await loadPage(1, search);
       return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No fue posible guardar proveedor');
@@ -110,7 +116,7 @@ export const useSuppliersManagement = () => {
       await SuppliersRepository.updateSupplier(supplier.id, {
         isActive: !supplier.isActive,
       });
-      await loadSuppliers();
+      await loadPage(suppliersPage, search);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No fue posible actualizar proveedor');
     } finally {
@@ -120,6 +126,9 @@ export const useSuppliersManagement = () => {
 
   return {
     suppliers,
+    suppliersPage,
+    suppliersTotalPages,
+    goToSuppliersPage: (page: number) => void loadPage(page, search),
     form,
     editingId,
     search,
@@ -132,6 +141,5 @@ export const useSuppliersManagement = () => {
     startEditing,
     toggleStatus,
     resetForm,
-    reload: loadSuppliers,
   };
 };

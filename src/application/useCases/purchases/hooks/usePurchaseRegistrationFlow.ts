@@ -3,6 +3,8 @@ import { IAsyncOption } from '@/application/dtos/common/AsyncOption';
 import { ProductRepository } from '@/infrastructure/repositories/api/products/ProductsRepository';
 import { PurchasesRepository } from '@/infrastructure/repositories/api/purchases/PurchasesRepository';
 import { SuppliersRepository } from '@/infrastructure/repositories/api/suppliers/SuppliersRepository';
+import { ICategory } from '@/application/dtos/categories/response/CategoryResponse';
+import { CategoriesRepository } from '@/infrastructure/repositories/api/categories/CategoriesRepository';
 import { ISupplier } from '@/application/dtos/suppliers/response/SupplierResponse';
 import {
   mapPurchaseProductToAsyncOption,
@@ -29,11 +31,13 @@ import {
 interface UsePurchaseRegistrationFlowParams {
   onPurchaseCreated: () => Promise<void>;
   onSupplierCreated: (supplier: ISupplier) => void;
+  onCategoryCreated: (category: ICategory) => void;
 }
 
 export const usePurchaseRegistrationFlow = ({
   onPurchaseCreated,
   onSupplierCreated,
+  onCategoryCreated,
 }: UsePurchaseRegistrationFlowParams) => {
   const [selectedSupplierOption, setSelectedSupplierOption] =
     useState<IAsyncOption | null>(null);
@@ -56,9 +60,11 @@ export const usePurchaseRegistrationFlow = ({
   const [supplierSubmitting, setSupplierSubmitting] = useState(false);
   const [productSubmitting, setProductSubmitting] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
-  const [productTargetIndex, setProductTargetIndex] = useState<number | null>(
-    null,
-  );
+  const [productTargetIndex, setProductTargetIndex] = useState<number | null>(null);
+  const [isRegistrationFormOpen, setIsRegistrationFormOpen] = useState(false);
+  const [isCategoryInputOpen, setIsCategoryInputOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [categoryCreating, setCategoryCreating] = useState(false);
 
   const updateStoreSelection = (value: string) => {
     setStoreId(value);
@@ -92,7 +98,6 @@ export const usePurchaseRegistrationFlow = ({
   const resetForm = () => {
     setSupplierId('');
     setSelectedSupplierOption(null);
-    setStoreId('');
     setPurchaseDate('');
     setPaidAmount('');
     setNote('');
@@ -138,6 +143,7 @@ export const usePurchaseRegistrationFlow = ({
         items: normalizePurchaseItems(items),
       });
       resetForm();
+      setIsRegistrationFormOpen(false);
       await onPurchaseCreated();
       return true;
     } catch (err) {
@@ -265,6 +271,38 @@ export const usePurchaseRegistrationFlow = ({
     }
   };
 
+  const createCategoryInline = async () => {
+    const name = newCategoryName.trim();
+    if (!name) {
+      setModalError('Ingresa el nombre de la categoría');
+      return false;
+    }
+
+    setCategoryCreating(true);
+    setModalError(null);
+
+    try {
+      const response = await CategoriesRepository.createCategory({
+        name,
+        storeId: storeId || undefined,
+        isActive: true,
+      });
+
+      onCategoryCreated(response.data);
+      updateProductForm('categoryId', response.data.id);
+      setNewCategoryName('');
+      setIsCategoryInputOpen(false);
+      return true;
+    } catch (err) {
+      setModalError(
+        err instanceof Error ? err.message : 'No fue posible crear la categoría',
+      );
+      return false;
+    } finally {
+      setCategoryCreating(false);
+    }
+  };
+
   const createProductInline = async () => {
     const validationError = validateInlineProductForm({
       form: productForm,
@@ -323,6 +361,9 @@ export const usePurchaseRegistrationFlow = ({
   };
 
   return {
+    isRegistrationFormOpen,
+    openRegistrationForm: () => setIsRegistrationFormOpen(true),
+    closeRegistrationForm: () => { setIsRegistrationFormOpen(false); resetForm(); },
     supplierId,
     selectedSupplierOption,
     storeId,
@@ -360,5 +401,12 @@ export const usePurchaseRegistrationFlow = ({
     loadProductOptions,
     createSupplierInline,
     createProductInline,
+    isCategoryInputOpen,
+    newCategoryName,
+    categoryCreating,
+    openCategoryInput: () => { setIsCategoryInputOpen(true); setModalError(null); },
+    closeCategoryInput: () => { setIsCategoryInputOpen(false); setNewCategoryName(''); setModalError(null); },
+    setNewCategoryName,
+    createCategoryInline,
   };
 };

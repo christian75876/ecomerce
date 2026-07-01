@@ -28,7 +28,6 @@ const adminMoreNavItems = [
   { label: 'Clientes y cartera', path: ROUTES.PRIVATE.CUSTOMERS, icon: 'bx-group' },
   { label: 'Compras', path: ROUTES.PRIVATE.PURCHASES, icon: 'bx-package' },
   { label: 'Proveedores', path: ROUTES.PRIVATE.SUPPLIERS, icon: 'bx-briefcase' },
-  { label: 'Caja', path: ROUTES.PRIVATE.CASH, icon: 'bx-wallet' },
   { label: 'Auditoría', path: ROUTES.PRIVATE.AUDIT, icon: 'bx-history' },
   { label: 'Cupones', path: ROUTES.PRIVATE.COUPONS, icon: 'bx-purchase-tag' },
   { label: 'Ajustes', path: ROUTES.PRIVATE.SETTINGS, icon: 'bx-cog' },

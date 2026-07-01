@@ -12,10 +12,11 @@ import { authenticatedClientHTTP } from '@/infrastructure/repositories/api/Clien
 import { ErrorHandler } from '@/infrastructure/repositories/api/errors/ErrorHandler';
 
 export class SuppliersRepository {
-  static async getSuppliers(search?: string): Promise<ISuppliersResp> {
-    const suffix = search ? `?search=${encodeURIComponent(search)}` : '';
+  static async getSuppliers(search?: string, page = 1, limit = 15): Promise<ISuppliersResp> {
     return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.get<ISuppliersResp>(`/suppliers${suffix}`),
+      authenticatedClientHTTP.get<ISuppliersResp>('/suppliers', {
+        params: { ...(search ? { search } : {}), page, limit },
+      }),
     );
   }
 

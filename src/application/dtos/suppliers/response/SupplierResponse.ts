@@ -13,5 +13,13 @@ export interface ISupplier {
   updatedAt: string;
 }
 
-export type ISuppliersResp = IApiResponse<ISupplier[]>;
+export interface ISuppliersPaginated {
+  items: ISupplier[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export type ISuppliersResp = IApiResponse<ISuppliersPaginated>;
 export type ISupplierResp = IApiResponse<ISupplier>;

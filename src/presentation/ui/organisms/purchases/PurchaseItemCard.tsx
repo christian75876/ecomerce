@@ -7,6 +7,7 @@ import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Label from '@/presentation/ui/atoms/label/SimpleLabel';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import AsyncSearchSelect from '@/presentation/ui/molecules/common/AsyncSearchSelect';
+import { CurrencyInput } from '@/presentation/ui/atoms/input/CurrencyInput';
 import { usePurchaseRegistrationSection } from './PurchasesContext';
 
 interface PurchaseItemCardProps {
@@ -45,11 +46,7 @@ const PurchaseItemCard = ({ item, index }: PurchaseItemCardProps) => {
             <AsyncSearchSelect
               value={item.productId}
               selectedLabel={selectedProduct?.label}
-              placeholder={
-                storeId
-                  ? 'Buscar producto de la tienda'
-                  : 'Selecciona primero una tienda'
-              }
+              placeholder='Buscar producto'
               emptyLabel='No hay productos para esa búsqueda'
               loadOptions={loadProductAsyncOptions}
               onChange={(option: IAsyncOption | null) =>
@@ -78,14 +75,9 @@ const PurchaseItemCard = ({ item, index }: PurchaseItemCardProps) => {
             }
             placeholder='Cantidad'
           />
-          <Input
-            type='number'
-            min='0'
-            step='0.01'
+          <CurrencyInput
             value={item.unitCost}
-            onChange={(event) =>
-              updateItem(index, 'unitCost', event.target.value)
-            }
+            onChange={(value) => updateItem(index, 'unitCost', value)}
             placeholder='Costo unitario'
           />
         </Box>

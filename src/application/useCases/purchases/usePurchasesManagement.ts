@@ -24,6 +24,7 @@ export const usePurchasesManagement = () => {
       await collection.loadPurchases(1, collection.filters);
     },
     onSupplierCreated: referenceData.appendSupplier,
+    onCategoryCreated: referenceData.appendCategory,
   });
   const detail = usePurchaseDetailFlow({
     onPurchaseUpdated: collection.replacePurchase,
@@ -36,6 +37,11 @@ export const usePurchasesManagement = () => {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (selectedStoreId) registration.setStoreId(selectedStoreId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStoreId]);
 
   return {
     purchases: collection.purchases,
@@ -67,6 +73,9 @@ export const usePurchasesManagement = () => {
     paymentForm: detail.paymentForm,
     editForm: detail.editForm,
     cancelForm: detail.cancelForm,
+    isRegistrationFormOpen: registration.isRegistrationFormOpen,
+    openRegistrationForm: registration.openRegistrationForm,
+    closeRegistrationForm: registration.closeRegistrationForm,
     setSupplierId: registration.setSupplierId,
     setStoreId: registration.setStoreId,
     setPurchaseDate: registration.setPurchaseDate,
@@ -102,6 +111,13 @@ export const usePurchasesManagement = () => {
     changePage: collection.changePage,
     createSupplierInline: registration.createSupplierInline,
     createProductInline: registration.createProductInline,
+    isCategoryInputOpen: registration.isCategoryInputOpen,
+    newCategoryName: registration.newCategoryName,
+    categoryCreating: registration.categoryCreating,
+    openCategoryInput: registration.openCategoryInput,
+    closeCategoryInput: registration.closeCategoryInput,
+    setNewCategoryName: registration.setNewCategoryName,
+    createCategoryInline: registration.createCategoryInline,
     submitPurchasePayment: detail.submitPurchasePayment,
     submitPurchaseEdit: detail.submitPurchaseEdit,
     submitPurchaseCancel: detail.submitPurchaseCancel,

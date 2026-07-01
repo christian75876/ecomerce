@@ -9,6 +9,7 @@ import {
 } from '../purchase.types';
 
 export const createEmptyPurchaseItem = (): PurchaseItemForm => ({
+  _key: crypto.randomUUID(),
   productId: '',
   quantity: '1',
   unitCost: '',

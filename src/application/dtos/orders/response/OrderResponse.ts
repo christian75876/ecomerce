@@ -16,24 +16,24 @@ export interface IOrder {
   deliveryLng: number | null;
   couponCode: string | null;
   discountAmount: number;
-  customer: {
+  customer?: {
     id: string;
     firstName: string;
     lastName: string;
     email: string;
     phone?: string;
-  };
-  items: Array<{
+  } | null;
+  items?: Array<{
     id: string;
     productId: string;
     quantity: number;
     unitPrice: number;
     lineTotal: number;
-    product: {
+    product?: {
       id: string;
       name: string;
       sku: string;
-    };
+    } | null;
   }>;
 }
 

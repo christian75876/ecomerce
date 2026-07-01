@@ -33,6 +33,9 @@ export const usePurchaseRegistrationSection = () => {
   const purchases = usePurchasesModule();
 
   return {
+    isRegistrationFormOpen: purchases.isRegistrationFormOpen,
+    openRegistrationForm: purchases.openRegistrationForm,
+    closeRegistrationForm: purchases.closeRegistrationForm,
     stores: purchases.stores,
     supplierId: purchases.supplierId,
     selectedSupplierOption: purchases.selectedSupplierOption,
@@ -98,6 +101,13 @@ export const usePurchaseModalSection = () => {
     updateProductForm: purchases.updateProductForm,
     createSupplierInline: purchases.createSupplierInline,
     createProductInline: purchases.createProductInline,
+    isCategoryInputOpen: purchases.isCategoryInputOpen,
+    newCategoryName: purchases.newCategoryName,
+    categoryCreating: purchases.categoryCreating,
+    openCategoryInput: purchases.openCategoryInput,
+    closeCategoryInput: purchases.closeCategoryInput,
+    setNewCategoryName: purchases.setNewCategoryName,
+    createCategoryInline: purchases.createCategoryInline,
   };
 };
 

@@ -43,10 +43,14 @@ export const useOrdersManagement = (filterStoreId?: string | null) => {
   const [error, setError] = useState<string | null>(null);
 
   const loadOrders = async (page: number) => {
-    const ordersResponse = await OrdersRepository.getOrders(filterStoreId, page, ORDERS_PER_PAGE);
-    setOrders(ordersResponse.data.items);
-    setOrdersPage(ordersResponse.data.page);
-    setOrdersTotalPages(ordersResponse.data.totalPages);
+    try {
+      const ordersResponse = await OrdersRepository.getOrders(filterStoreId, page, ORDERS_PER_PAGE);
+      setOrders(ordersResponse.data.items);
+      setOrdersPage(ordersResponse.data.page);
+      setOrdersTotalPages(ordersResponse.data.totalPages);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No fue posible cargar pedidos');
+    }
   };
 
   const loadScreen = async () => {

@@ -33,7 +33,6 @@ const adminNavGroups: NavGroup[] = [
     items: [
       { label: 'POS', path: ROUTES.PRIVATE.POS, icon: 'bx-credit-card' },
       { label: 'Pedidos', path: ROUTES.PRIVATE.ORDERS, icon: 'bx-receipt' },
-      { label: 'Caja', path: ROUTES.PRIVATE.CASH, icon: 'bx-wallet' },
     ],
   },
   {
@@ -73,7 +72,6 @@ const sellerNavGroups: NavGroup[] = [
     items: [
       { label: 'POS', path: ROUTES.PRIVATE.POS, icon: 'bx-credit-card' },
       { label: 'Pedidos', path: ROUTES.PRIVATE.ORDERS, icon: 'bx-receipt' },
-      { label: 'Caja', path: ROUTES.PRIVATE.CASH, icon: 'bx-wallet' },
     ],
   },
   {
@@ -141,9 +139,10 @@ const NavigationMenu = () => {
     <Box ref={menuRef} className='flex items-center gap-1'>
       {isAdminNavigation ? (
         activeNavGroups.map((group) => {
-          const isActive = group.items.some((item) =>
+          const activeItem = group.items.find((item) =>
             location.pathname.startsWith(item.path),
           );
+          const isActive = !!activeItem;
 
           return (
             <Box key={group.label} className='relative'>
@@ -174,7 +173,14 @@ const NavigationMenu = () => {
                         : 'text-neutral-dark/65 hover:bg-white hover:text-neutral-dark',
                     )}
                   >
-                    {group.label}
+                    {activeItem ? (
+                      <>
+                        <SimpleIcon name={activeItem.icon} size={18} className='text-inherit' />
+                        {activeItem.label}
+                      </>
+                    ) : (
+                      group.label
+                    )}
                     <SimpleIcon
                       name='bx-chevron-down'
                       size={16}

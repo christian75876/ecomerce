@@ -2,6 +2,7 @@ import { IAsyncOption } from '@/application/dtos/common/AsyncOption';
 import { PurchasePaymentMethod } from '@/domain/models/purchases/Purchase';
 
 export type PurchaseItemForm = {
+  _key: string;
   productId: string;
   quantity: string;
   unitCost: string;

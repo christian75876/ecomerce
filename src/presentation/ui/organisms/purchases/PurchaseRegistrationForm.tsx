@@ -5,16 +5,18 @@ import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Label from '@/presentation/ui/atoms/label/SimpleLabel';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import AsyncSearchSelect from '@/presentation/ui/molecules/common/AsyncSearchSelect';
+import { CurrencyInput } from '@/presentation/ui/atoms/input/CurrencyInput';
 import FeaturePanel from '@/presentation/ui/templates/feature/FeaturePanel';
 import { usePurchaseRegistrationSection } from './PurchasesContext';
 import PurchaseItemCard from './PurchaseItemCard';
 
 const PurchaseRegistrationForm = () => {
   const {
-    stores,
+    isRegistrationFormOpen,
+    openRegistrationForm,
+    closeRegistrationForm,
     supplierId,
     selectedSupplierOption,
-    storeId,
     purchaseDate,
     paidAmount,
     note,
@@ -22,7 +24,6 @@ const PurchaseRegistrationForm = () => {
     submitting,
     error,
     selectSupplierOption,
-    setStoreId,
     setPurchaseDate,
     setPaidAmount,
     setNote,
@@ -37,30 +38,52 @@ const PurchaseRegistrationForm = () => {
     await submitForm();
   };
 
-  const loadSupplierAsyncOptions = async (params: {
-    search: string;
-    page: number;
-  }) => {
-    const response = await loadSupplierOptions(params);
-
-    return response;
-  };
+  if (!isRegistrationFormOpen) {
+    return (
+      <FeaturePanel title='' subtitle='' className='h-fit'>
+        <Box className='flex flex-col items-center justify-center py-10 text-center'>
+          <div className='mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10'>
+            <i className='bx bx-package text-2xl text-primary' />
+          </div>
+          <Typography variant='h2' className='text-lg font-semibold'>
+            Registrar compra
+          </Typography>
+          <Typography className='mt-1 text-sm text-slate-400'>
+            Abastece inventario, crea proveedor o producto de forma rápida.
+          </Typography>
+          <button
+            type='button'
+            onClick={openRegistrationForm}
+            className='mt-5 flex items-center gap-2 rounded-2xl bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary/90'
+          >
+            <i className='bx bx-plus text-base' />
+            Nueva compra
+          </button>
+        </Box>
+      </FeaturePanel>
+    );
+  }
 
   return (
     <FeaturePanel
       title='Registrar compra'
       subtitle='Registra abastecimientos, crea proveedor o producto inline y aumenta el stock con trazabilidad.'
       className='h-fit'
+      action={
+        <button
+          type='button'
+          onClick={closeRegistrationForm}
+          className='flex items-center gap-1 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-slate-50'
+        >
+          <i className='bx bx-x text-sm' /> Cancelar
+        </button>
+      }
     >
-      <form onSubmit={handleSubmit} className='space-y-4'>
+      <form onSubmit={(e) => void handleSubmit(e)} className='space-y-4'>
         <Box>
           <Box className='mb-2 flex items-center justify-between gap-3'>
             <Label htmlFor='purchase-supplier'>Proveedor</Label>
-            <Button
-              type='button'
-              variant='ghost'
-              onClick={openSupplierModal}
-            >
+            <Button type='button' variant='ghost' onClick={openSupplierModal}>
               Crear proveedor
             </Button>
           </Box>
@@ -69,27 +92,10 @@ const PurchaseRegistrationForm = () => {
             selectedLabel={selectedSupplierOption?.label}
             placeholder='Buscar proveedor'
             emptyLabel='No hay proveedores para esa búsqueda'
-            loadOptions={loadSupplierAsyncOptions}
+            loadOptions={loadSupplierOptions}
             onChange={(option: IAsyncOption | null) => selectSupplierOption(option)}
             disabled={submitting}
           />
-        </Box>
-
-        <Box>
-          <Label htmlFor='purchase-store'>Tienda</Label>
-          <select
-            id='purchase-store'
-            value={storeId}
-            onChange={(event) => setStoreId(event.target.value)}
-            className='w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary'
-          >
-            <option value=''>Selecciona tienda</option>
-            {stores.map((store) => (
-              <option key={store.id} value={store.id}>
-                {store.name}
-              </option>
-            ))}
-          </select>
         </Box>
 
         <Box className='grid gap-4 md:grid-cols-2'>
@@ -104,13 +110,11 @@ const PurchaseRegistrationForm = () => {
           </Box>
           <Box>
             <Label htmlFor='purchase-paid'>Abono inicial</Label>
-            <Input
+            <CurrencyInput
               id='purchase-paid'
-              type='number'
-              min='0'
-              step='0.01'
               value={paidAmount}
-              onChange={(event) => setPaidAmount(event.target.value)}
+              onChange={setPaidAmount}
+              disabled={submitting}
             />
           </Box>
         </Box>
@@ -129,7 +133,7 @@ const PurchaseRegistrationForm = () => {
             Ítems
           </Typography>
           {items.map((item, index) => (
-            <PurchaseItemCard key={`${item.productId}-${index}-${index}`} item={item} index={index} />
+            <PurchaseItemCard key={item._key} item={item} index={index} />
           ))}
           <Button type='button' variant='outlinePrimary' onClick={addItem}>
             Agregar ítem
@@ -142,7 +146,7 @@ const PurchaseRegistrationForm = () => {
           </Box>
         ) : null}
 
-        <Button type='submit' variant='primary' disabled={submitting}>
+        <Button type='submit' variant='primary' disabled={submitting} className='w-full'>
           {submitting ? 'Guardando...' : 'Registrar compra'}
         </Button>
       </form>

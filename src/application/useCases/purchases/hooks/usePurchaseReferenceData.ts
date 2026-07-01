@@ -25,7 +25,7 @@ export const usePurchaseReferenceData = () => {
           CategoriesRepository.getCategories(true),
         ]);
 
-      setSuppliers(suppliersResponse.data.filter((item) => item.isActive));
+      setSuppliers(suppliersResponse.data.items.filter((item) => item.isActive));
       setStores(storesResponse.data.filter((item) => item.isActive));
       setCategories(categoriesResponse.data);
     } catch (err) {
@@ -41,6 +41,10 @@ export const usePurchaseReferenceData = () => {
     setSuppliers((current) => [...current, supplier]);
   };
 
+  const appendCategory = (category: ICategory) => {
+    setCategories((current) => [...current, category]);
+  };
+
   return {
     suppliers,
     stores,
@@ -49,5 +53,6 @@ export const usePurchaseReferenceData = () => {
     error,
     loadReferenceData,
     appendSupplier,
+    appendCategory,
   };
 };

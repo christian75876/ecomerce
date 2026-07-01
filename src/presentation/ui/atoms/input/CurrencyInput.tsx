@@ -18,7 +18,7 @@ export const CurrencyInput = ({
   disabled,
   className = '',
 }: CurrencyInputProps) => {
-  const numeric = parseInt(String(value ?? '').replace(/\D/g, ''), 10) || 0;
+  const numeric = Math.round(parseFloat(String(value ?? '0')) || 0);
   const display = numeric > 0 ? formatThousands(numeric) : '';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,8 +27,8 @@ export const CurrencyInput = ({
   };
 
   return (
-    <div className='relative'>
-      <span className='pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 select-none text-sm font-semibold text-slate-400'>
+    <div className='relative w-full'>
+      <span className='pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 select-none text-sm text-neutral-dark/40'>
         $
       </span>
       <input
@@ -39,7 +39,15 @@ export const CurrencyInput = ({
         onChange={handleChange}
         placeholder={placeholder}
         disabled={disabled}
-        className={`pl-8 ${className}`}
+        className={[
+          'w-full rounded-2xl border bg-white pl-8 pr-4 py-3 text-sm text-neutral-dark',
+          'shadow-xs placeholder:text-neutral-dark/30',
+          'transition-all duration-200',
+          'focus:outline-none focus:ring-2 focus:ring-offset-0',
+          'border-neutral-gray/70 hover:border-neutral-gray focus:border-primary/50 focus:ring-primary/20',
+          'disabled:opacity-50',
+          className,
+        ].join(' ')}
       />
     </div>
   );
