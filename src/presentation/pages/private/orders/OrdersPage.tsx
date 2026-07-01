@@ -16,7 +16,11 @@ const OrdersPage = () => {
       orders={ordersManagement.orders}
       ordersPage={ordersManagement.ordersPage}
       ordersTotalPages={ordersManagement.ordersTotalPages}
+      statusFilter={ordersManagement.statusFilter}
+      searchFilter={ordersManagement.searchFilter}
       onOrdersPageChange={ordersManagement.goToOrdersPage}
+      onStatusFilterChange={ordersManagement.setStatusFilter}
+      onSearchFilterChange={ordersManagement.setSearchFilter}
       customerId={ordersManagement.customerId}
       newCustomer={ordersManagement.newCustomer}
       cartRows={ordersManagement.cartRows}

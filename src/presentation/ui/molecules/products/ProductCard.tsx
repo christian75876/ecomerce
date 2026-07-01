@@ -64,7 +64,10 @@ const ProductCard = ({
   const customBtnStyle = primaryColor ? { backgroundColor: primaryColor } : undefined;
 
   return (
-    <article className={`group relative flex overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/8 ${layoutStyle === 'LIST' ? 'flex-row' : 'flex-col'}`}>
+    <article
+      className={`group relative flex overflow-hidden rounded-2xl border border-slate-200 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/8 ${layoutStyle === 'LIST' ? 'flex-row' : 'flex-col'}`}
+      style={{ backgroundColor: 'var(--store-bg, #ffffff)' }}
+    >
       {/* ── Image ── */}
       <Link
         to={ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', id)}

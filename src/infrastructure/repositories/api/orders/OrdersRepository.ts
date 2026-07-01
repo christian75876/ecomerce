@@ -13,10 +13,22 @@ import {
 import { ErrorHandler } from '@/infrastructure/repositories/api/errors/ErrorHandler';
 
 export class OrdersRepository {
-  static async getOrders(storeId?: string | null, page = 1, limit = 20): Promise<IOrdersResp> {
+  static async getOrders(
+    storeId?: string | null,
+    page = 1,
+    limit = 20,
+    status?: string,
+    search?: string,
+  ): Promise<IOrdersResp> {
     return ErrorHandler.handleApiErrors(() =>
       authenticatedClientHTTP.get<IOrdersResp>('/orders', {
-        params: { ...(storeId ? { storeId } : {}), page, limit },
+        params: {
+          ...(storeId ? { storeId } : {}),
+          page,
+          limit,
+          ...(status ? { status } : {}),
+          ...(search?.trim() ? { search: search.trim() } : {}),
+        },
       }),
     );
   }

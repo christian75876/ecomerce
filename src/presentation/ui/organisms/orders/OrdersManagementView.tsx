@@ -503,7 +503,11 @@ interface OrdersManagementViewProps {
   onCreateCustomer: () => Promise<boolean>;
   ordersPage: number;
   ordersTotalPages: number;
+  statusFilter: string;
+  searchFilter: string;
   onOrdersPageChange: (page: number) => Promise<void>;
+  onStatusFilterChange: (status: string) => void;
+  onSearchFilterChange: (search: string) => void;
   onCreateOrder: (delivery: DeliveryInfo) => Promise<boolean>;
   onStatusChange: (
     orderId: string,
@@ -517,7 +521,11 @@ export const OrdersManagementView = ({
   orders,
   ordersPage,
   ordersTotalPages,
+  statusFilter,
+  searchFilter,
   onOrdersPageChange,
+  onStatusFilterChange,
+  onSearchFilterChange,
   customerId,
   newCustomer,
   cartRows,
@@ -533,27 +541,7 @@ export const OrdersManagementView = ({
   onCreateOrder,
   onStatusChange
 }: OrdersManagementViewProps) => {
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
-
-  const filtered = orders.filter(o => {
-    const matchStatus = !statusFilter || o.status === statusFilter;
-    const q = search.toLowerCase();
-    const matchSearch =
-      !q ||
-      o.id.toLowerCase().includes(q) ||
-      `${o.customer?.firstName ?? ''} ${o.customer?.lastName ?? ''}`
-        .toLowerCase()
-        .includes(q) ||
-      (o.customer?.email ?? '').toLowerCase().includes(q);
-    return matchStatus && matchSearch;
-  });
-
-  const counts = orders.reduce<Record<string, number>>((acc, o) => {
-    acc[o.status] = (acc[o.status] ?? 0) + 1;
-    return acc;
-  }, {});
 
   return (
     <Box className='space-y-8'>
@@ -601,34 +589,28 @@ export const OrdersManagementView = ({
             />
             <input
               type='text'
-              value={search}
-              onChange={e => setSearch(e.target.value)}
+              value={searchFilter}
+              onChange={e => onSearchFilterChange(e.target.value)}
               placeholder='Buscar por ID, nombre o correo…'
               className='w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary'
             />
           </Box>
           {/* Status tabs */}
           <Box className='mt-3 flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide'>
-            {STATUS_TABS.map(tab => {
-              const count = tab.key ? (counts[tab.key] ?? 0) : orders.length;
-              return (
-                <button
-                  key={tab.key}
-                  type='button'
-                  onClick={() => setStatusFilter(tab.key)}
-                  className={`flex-shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
-                    statusFilter === tab.key
-                      ? 'bg-primary text-white'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  {tab.label}
-                  {count > 0 ? (
-                    <span className='ml-1 opacity-75'>({count})</span>
-                  ) : null}
-                </button>
-              );
-            })}
+            {STATUS_TABS.map(tab => (
+              <button
+                key={tab.key}
+                type='button'
+                onClick={() => onStatusFilterChange(tab.key)}
+                className={`flex-shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+                  statusFilter === tab.key
+                    ? 'bg-primary text-white'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </Box>
           {/* Orders */}
           <Box className='mt-4 space-y-3'>
@@ -636,14 +618,14 @@ export const OrdersManagementView = ({
               <Typography className='py-8 text-center text-sm text-slate-400'>
                 Cargando pedidos…
               </Typography>
-            ) : filtered.length === 0 ? (
+            ) : orders.length === 0 ? (
               <Typography className='py-8 text-center text-sm text-slate-400'>
-                {search || statusFilter
+                {searchFilter || statusFilter
                   ? 'Sin resultados para ese filtro.'
                   : 'Aún no hay pedidos registrados.'}
               </Typography>
             ) : (
-              filtered.map(order => {
+              orders.map((order: IOrder) => {
                 const cfg =
                   STATUS_CONFIG[order.status] ?? STATUS_CONFIG['PENDING'];
                 const isOpen = expandedId === order.id;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ICustomer } from '@/application/dtos/customers/response/CustomerResponse';
 import { IOrder } from '@/application/dtos/orders/response/OrderResponse';
 import { IProduct } from '@/application/dtos/products/response/ProductResponse';
@@ -21,6 +21,7 @@ export type CartRow = {
 };
 
 const ORDERS_PER_PAGE = 15;
+const SEARCH_DEBOUNCE_MS = 400;
 
 export const useOrdersManagement = (filterStoreId?: string | null) => {
   const [customers, setCustomers] = useState<ICustomer[]>([]);
@@ -28,6 +29,8 @@ export const useOrdersManagement = (filterStoreId?: string | null) => {
   const [orders, setOrders] = useState<IOrder[]>([]);
   const [ordersPage, setOrdersPage] = useState(1);
   const [ordersTotalPages, setOrdersTotalPages] = useState(1);
+  const [statusFilter, setStatusFilterState] = useState('');
+  const [searchFilter, setSearchFilterState] = useState('');
   const [customerId, setCustomerId] = useState('');
   const [newCustomer, setNewCustomer] = useState({
     firstName: '',
@@ -39,19 +42,31 @@ export const useOrdersManagement = (filterStoreId?: string | null) => {
     { productId: '', quantity: 1 },
   ]);
   const [loading, setLoading] = useState(true);
+  const [ordersLoading, setOrdersLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadOrders = async (page: number) => {
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const fetchOrders = useCallback(async (page: number, status: string, search: string) => {
+    setOrdersLoading(true);
     try {
-      const ordersResponse = await OrdersRepository.getOrders(filterStoreId, page, ORDERS_PER_PAGE);
-      setOrders(ordersResponse.data.items);
-      setOrdersPage(ordersResponse.data.page);
-      setOrdersTotalPages(ordersResponse.data.totalPages);
+      const res = await OrdersRepository.getOrders(
+        filterStoreId,
+        page,
+        ORDERS_PER_PAGE,
+        status || undefined,
+        search.trim() || undefined,
+      );
+      setOrders(res.data.items);
+      setOrdersPage(res.data.page);
+      setOrdersTotalPages(res.data.totalPages);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No fue posible cargar pedidos');
+    } finally {
+      setOrdersLoading(false);
     }
-  };
+  }, [filterStoreId]);
 
   const loadScreen = async () => {
     setLoading(true);
@@ -75,6 +90,9 @@ export const useOrdersManagement = (filterStoreId?: string | null) => {
       setOrders(ordersResponse.data.items);
       setOrdersPage(ordersResponse.data.page);
       setOrdersTotalPages(ordersResponse.data.totalPages);
+      // Reset filters on store change
+      setStatusFilterState('');
+      setSearchFilterState('');
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'No fue posible cargar pedidos',
@@ -86,8 +104,25 @@ export const useOrdersManagement = (filterStoreId?: string | null) => {
 
   useEffect(() => {
     void loadScreen();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterStoreId]);
+
+  const setStatusFilter = (status: string) => {
+    setStatusFilterState(status);
+    void fetchOrders(1, status, searchFilter);
+  };
+
+  const setSearchFilter = (search: string) => {
+    setSearchFilterState(search);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      void fetchOrders(1, statusFilter, search);
+    }, SEARCH_DEBOUNCE_MS);
+  };
+
+  const goToOrdersPage = async (page: number) => {
+    await fetchOrders(page, statusFilter, searchFilter);
+  };
 
   const createCustomer = async () => {
     if (
@@ -164,7 +199,7 @@ export const useOrdersManagement = (filterStoreId?: string | null) => {
         deliveryNotes: delivery.deliveryNotes || undefined,
       });
       setCartRows([{ productId: '', quantity: 1 }]);
-      await loadScreen();
+      await fetchOrders(1, statusFilter, searchFilter);
       return true;
     } catch (err) {
       setError(
@@ -184,7 +219,7 @@ export const useOrdersManagement = (filterStoreId?: string | null) => {
     setError(null);
     try {
       await OrdersRepository.updateOrderStatus(orderId, { status });
-      await loadScreen();
+      await fetchOrders(ordersPage, statusFilter, searchFilter);
       return true;
     } catch (err) {
       setError(
@@ -204,11 +239,15 @@ export const useOrdersManagement = (filterStoreId?: string | null) => {
     orders,
     ordersPage,
     ordersTotalPages,
-    goToOrdersPage: loadOrders,
+    statusFilter,
+    searchFilter,
+    goToOrdersPage,
+    setStatusFilter,
+    setSearchFilter,
     customerId,
     newCustomer,
     cartRows,
-    loading,
+    loading: loading || ordersLoading,
     submitting,
     error,
     setCustomerId,
