@@ -14,7 +14,7 @@ export const useInvitations = () => {
     setError(null);
     try {
       const res = await InvitationsRepository.getAll();
-      setInvitations(res.data ?? []);
+      setInvitations(res ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar invitaciones');
     } finally {
@@ -31,7 +31,7 @@ export const useInvitations = () => {
     setSuccess(null);
     try {
       const res = await InvitationsRepository.create(email.trim());
-      setSuccess(res.data.message);
+      setSuccess(res.message);
       setEmail('');
       await load();
     } catch (err) {

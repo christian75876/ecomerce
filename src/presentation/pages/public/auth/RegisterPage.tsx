@@ -23,8 +23,8 @@ const RegisterPage = () => {
     if (!token) return;
     InvitationsRepository.validateToken(token)
       .then((res) => {
-        setInviteEmail(res.data.email);
-        setForm((f) => ({ ...f, email: res.data.email }));
+        setInviteEmail(res.email);
+        setForm((f) => ({ ...f, email: res.email }));
       })
       .catch((err) => {
         setTokenError(err instanceof Error ? err.message : 'Invitación no válida');

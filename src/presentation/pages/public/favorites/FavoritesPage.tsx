@@ -48,11 +48,7 @@ const FavoritesPage = () => {
       <ProductBody
         products={favoriteProducts}
         loading={loading}
-        favoriteIds={favoriteIds}
         emptyMessage='Todavía no tienes productos guardados en favoritos.'
-        onToggleFavorite={(productId) => {
-          void toggleFavorite(productId);
-        }}
         onAddToCart={(productId) => {
           const product = favoriteProducts.find((item) => item.id === productId);
           if (!product) return;

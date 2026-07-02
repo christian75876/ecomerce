@@ -1,12 +1,14 @@
 interface TypographyProps {
   variant?: 'h1' | 'h2' | 'h3' | 'p' | 'span';
   className?: string;
+  style?: React.CSSProperties;
   children: React.ReactNode;
 }
 
 const Typography = ({
   variant = 'p',
   className,
+  style,
   children
 }: TypographyProps) => {
   const Tag: React.ElementType = variant || 'p';
@@ -23,7 +25,7 @@ const Typography = ({
             : 'text-base leading-7';
 
   return (
-    <Tag className={`text-neutral-dark ${baseClassName} ${className || ''}`}>
+    <Tag className={`text-neutral-dark ${baseClassName} ${className || ''}`} style={style}>
       {children}
     </Tag>
   );
