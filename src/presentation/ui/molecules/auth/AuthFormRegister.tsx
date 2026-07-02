@@ -5,8 +5,8 @@ import FormField from '../forms/FormField';
 import Button from '../../atoms/button/SimpleButton';
 import Loader from '../../atoms/loader/SimpleLoader';
 import { useRoles } from '@/application/useCases/users/useRoles';
-import { useState } from 'react';
-import { DropDownMenuForm, IOption } from '../common/DropDownMenuForm';
+import { useEffect, useMemo, useState } from 'react';
+import Box from '../../atoms/box/SimpleBox';
 
 interface RegisterFormProps {
   onSubmit: (data: IRegisterForm) => void;
@@ -18,7 +18,12 @@ const AuthFormRegister = ({
   isLoading = false
 }: RegisterFormProps) => {
   const [disabled, setDisabled] = useState<boolean>(false);
-  const { control, handleSubmit, formState: { isValid } } = useFormValidation(
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    formState: { isValid },
+  } = useFormValidation(
     registerSchema({ isAdmin: false }),
     false,
     {
@@ -35,7 +40,26 @@ const AuthFormRegister = ({
     error: isRolesError
   } = useRoles(setDisabled);
 
-  const isSubmitDisabled = isLoading || isRolesLoading || !isValid || disabled;
+  const sellerRole = useMemo(
+    () => roles.data.find((role) => role.name === 'seller') ?? null,
+    [roles.data],
+  );
+
+  useEffect(() => {
+    if (sellerRole?.id) {
+      setValue('role_id', sellerRole.id, {
+        shouldDirty: false,
+        shouldValidate: true,
+      });
+    }
+  }, [sellerRole, setValue]);
+
+  const isSubmitDisabled =
+    isLoading ||
+    Boolean(isRolesLoading) ||
+    !isValid ||
+    disabled ||
+    !sellerRole;
 
 
   return (
@@ -64,20 +88,18 @@ const AuthFormRegister = ({
         type='password'
         placeholder='Confirma tu contraseña'
       />
-      <DropDownMenuForm
-        label={'Selecciona tu rol'}
-        name={'role_id'}
-        control={control}
-        options={roles.data as IOption[]}
-        defaultValue={'Selecciona un rol'}
-      />
+      {isRolesError ? (
+        <Box className='rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600'>
+          No fue posible resolver el rol interno de vendedor.
+        </Box>
+      ) : null}
       <Button
         fullWidth
         variant='primary'
         type='submit'
         disabled={isSubmitDisabled}
       >
-        {(isLoading || isRolesLoading) && !isRolesError ? (
+        {(isLoading || isRolesLoading || !sellerRole) && !isRolesError ? (
           <Loader color='primary' />
         ) : (
           'Registrarse'

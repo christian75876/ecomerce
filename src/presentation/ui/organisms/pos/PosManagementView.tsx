@@ -1,6 +1,9 @@
 import { PosCartItem } from '@/application/useCases/pos/usePosManagement';
+import { ICashSession } from '@/application/dtos/cash/response/CashResponse';
+import { ICustomer } from '@/application/dtos/customers/response/CustomerResponse';
 import { IProduct } from '@/application/dtos/products/response/ProductResponse';
 import { ISale } from '@/application/dtos/sales/response/SaleResponse';
+import { IStore } from '@/application/dtos/stores/response/StoreResponse';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
@@ -8,14 +11,25 @@ import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 
 interface PosManagementViewProps {
   products: IProduct[];
+  customers: ICustomer[];
+  stores: IStore[];
+  cashSessions: ICashSession[];
   cart: PosCartItem[];
   sales: ISale[];
   search: string;
+  selectedStoreId: string;
+  selectedCustomerId: string;
+  selectedCashSessionId: string;
+  paymentMethod: 'CASH' | 'CREDIT';
   loading: boolean;
   submitting: boolean;
   error: string | null;
   total: number;
   onSearchChange: (value: string) => void;
+  onStoreChange: (value: string) => void;
+  onCustomerChange: (value: string) => void;
+  onCashSessionChange: (value: string) => void;
+  onPaymentMethodChange: (value: 'CASH' | 'CREDIT') => void;
   onAddToCart: (product: IProduct) => void;
   onUpdateQuantity: (productId: string, quantity: number) => void;
   onConfirmSale: () => Promise<boolean>;
@@ -23,14 +37,25 @@ interface PosManagementViewProps {
 
 export const PosManagementView = ({
   products,
+  customers,
+  stores,
+  cashSessions,
   cart,
   sales,
   search,
+  selectedStoreId,
+  selectedCustomerId,
+  selectedCashSessionId,
+  paymentMethod,
   loading,
   submitting,
   error,
   total,
   onSearchChange,
+  onStoreChange,
+  onCustomerChange,
+  onCashSessionChange,
+  onPaymentMethodChange,
   onAddToCart,
   onUpdateQuantity,
   onConfirmSale,
@@ -42,7 +67,7 @@ export const PosManagementView = ({
           POS
         </Typography>
         <Typography className="mt-2 text-neutral-dark/70">
-          Registra ventas presenciales, calcula totales y descuenta inventario al confirmar.
+          Registra ventas presenciales por tienda, método de pago y caja, incluyendo ventas a crédito.
         </Typography>
       </Box>
 
@@ -59,6 +84,60 @@ export const PosManagementView = ({
               className="max-w-72"
             />
           </Box>
+          <Box className="mb-5 grid gap-3 md:grid-cols-2">
+            <select
+              value={selectedStoreId}
+              onChange={(event) => onStoreChange(event.target.value)}
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="">Selecciona una tienda</option>
+              {stores.map((store) => (
+                <option key={store.id} value={store.id}>
+                  {store.name}
+                </option>
+              ))}
+            </select>
+            <select
+              value={paymentMethod}
+              onChange={(event) =>
+                onPaymentMethodChange(event.target.value as 'CASH' | 'CREDIT')
+              }
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="CASH">Pago en efectivo</option>
+              <option value="CREDIT">Venta a crédito</option>
+            </select>
+          </Box>
+          <Box className="mb-5 grid gap-3 md:grid-cols-2">
+            <select
+              value={selectedCustomerId}
+              onChange={(event) => onCustomerChange(event.target.value)}
+              disabled={paymentMethod !== 'CREDIT'}
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="">Selecciona cliente para crédito</option>
+              {customers.map((customer) => (
+                <option key={customer.id} value={customer.id}>
+                  {customer.firstName} {customer.lastName} · saldo ${Number(customer.creditBalance).toFixed(2)}
+                </option>
+              ))}
+            </select>
+            <select
+              value={selectedCashSessionId}
+              onChange={(event) => onCashSessionChange(event.target.value)}
+              disabled={paymentMethod !== 'CASH'}
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="">Caja abierta opcional</option>
+              {cashSessions
+                .filter((session) => !selectedStoreId || session.storeId === selectedStoreId)
+                .map((session) => (
+                  <option key={session.id} value={session.id}>
+                    {session.store.name} · esperado ${Number(session.expectedAmount).toFixed(2)}
+                  </option>
+                ))}
+            </select>
+          </Box>
           <Box className="grid gap-3 md:grid-cols-2">
             {loading ? (
               <Typography>Cargando productos...</Typography>
@@ -72,7 +151,7 @@ export const PosManagementView = ({
                     {product.name}
                   </Typography>
                   <Typography className="mt-1 text-sm text-neutral-dark/65">
-                    {product.category.name} · SKU {product.sku}
+                    {product.category.name} · SKU {product.sku} · {product.store?.name ?? 'Sin tienda'}
                   </Typography>
                   <Typography className="mt-2 text-lg font-bold">
                     ${Number(product.price).toFixed(2)}
@@ -132,7 +211,7 @@ export const PosManagementView = ({
 
             <Box className="mt-6 border-t border-neutral-gray/20 pt-4">
               <Typography className="text-sm text-neutral-dark/65">
-                Total
+                Total · {paymentMethod === 'CREDIT' ? 'Crédito' : 'Efectivo'}
               </Typography>
               <Typography variant="h3" className="text-2xl font-bold">
                 ${total.toFixed(2)}
@@ -167,7 +246,7 @@ export const PosManagementView = ({
                     Venta {sale.id.slice(0, 8)}
                   </Typography>
                   <Typography className="mt-1 text-sm text-neutral-dark/65">
-                    {sale.items.length} ítems · ${Number(sale.total).toFixed(2)}
+                    {sale.items.length} ítems · ${Number(sale.total).toFixed(2)} · {sale.paymentMethod}
                   </Typography>
                 </Box>
               ))}

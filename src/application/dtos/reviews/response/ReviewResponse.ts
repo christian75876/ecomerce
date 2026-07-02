@@ -28,5 +28,12 @@ export interface IProductReviewsData {
   };
 }
 
+export interface IReviewEligibility {
+  canReview: boolean;
+  hasPurchased: boolean;
+  review: IReview | null;
+}
+
 export type IProductReviewsResp = IApiResponse<IProductReviewsData>;
 export type IReviewResp = IApiResponse<IReview>;
+export type IReviewEligibilityResp = IApiResponse<IReviewEligibility>;

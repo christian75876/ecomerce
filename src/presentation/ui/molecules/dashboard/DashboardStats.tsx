@@ -1,23 +1,27 @@
 import DashboardStatCard from '@molecules/dashboard/DashboardStatCard';
 import Box from '@atoms/box/SimpleBox';
-import { IDashboardSummary } from '@/application/dtos/dashboard/response/DashboardResponse';
+import { IDashboardAnalytics } from '@/application/dtos/dashboard/response/DashboardResponse';
 
-const DashboardStats = ({ summary }: { summary: IDashboardSummary }) => {
+const DashboardStats = ({ summary }: { summary: IDashboardAnalytics }) => {
   const stats = [
     {
       icon: 'bx-cube',
       title: 'Productos totales',
-      value: summary.totalProducts,
+      value: summary.kpis.totalProducts,
     },
     {
       icon: 'bx-error-circle',
       title: 'Stock bajo',
-      value: summary.lowStockProducts,
+      value: summary.kpis.lowStockProducts,
       trendIcon: 'bx-trending-down',
       trendColor: 'text-red-500',
     },
-    { icon: 'bx-dollar-circle', title: 'Ventas del día', value: Math.round(summary.salesToday) },
-    { icon: 'bx-time', title: 'Pedidos pendientes', value: summary.pendingOrders }
+    {
+      icon: 'bx-dollar-circle',
+      title: 'Ventas del día',
+      value: Math.round(summary.kpis.salesToday),
+    },
+    { icon: 'bx-time', title: 'Pedidos pendientes', value: summary.kpis.pendingOrders }
   ];
 
   return (

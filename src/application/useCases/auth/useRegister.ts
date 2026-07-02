@@ -24,10 +24,10 @@ export const useRegister = () => {
         registerData as IRegisterRequest
       );
       navigation(ROUTES.PUBLIC.LOGIN);
-      SnackbarUtilities.success(response.message, 'top', 'center');
+      SnackbarUtilities.success(response.data.message, 'top', 'center');
       return response;
-    } catch {
-      setError('Error desconocido');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No fue posible registrarse');
       return null;
     } finally {
       setIsloading(false);

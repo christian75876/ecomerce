@@ -4,46 +4,48 @@ import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import { useProductReviews } from '@/application/useCases/reviews/useProductReviews';
-import { CustomersRepository } from '@/infrastructure/repositories/api/customers/CustomersRepository';
-import { ICustomer } from '@/application/dtos/customers/response/CustomerResponse';
+import { authSession } from '@/shared/utils/authSession';
 
 interface ProductReviewsProps {
   productId: string;
 }
 
 const ProductReviews = ({ productId }: ProductReviewsProps) => {
-  const { reviewsData, loading, submitting, error, createReview } =
+  const { reviewsData, eligibility, loading, submitting, error, createReview } =
     useProductReviews(productId);
-  const [customers, setCustomers] = useState<ICustomer[]>([]);
   const [form, setForm] = useState({
-    customerId: '',
     rating: '5',
     comment: '',
     images: [] as File[],
   });
 
-  useEffect(() => {
-    const loadCustomers = async () => {
-      const response = await CustomersRepository.getCustomers();
-      setCustomers(response.data);
-    };
-
-    void loadCustomers();
-  }, []);
-
   const reviews = reviewsData.reviews;
   const averageRating = reviewsData.summary.averageRating;
+  const authenticatedUser = authSession.getUser();
+  const canSubmitReview = Boolean(authenticatedUser && eligibility?.canReview);
+  const hasExistingReview = Boolean(eligibility?.review);
 
   const imagePreviewNames = useMemo(
     () => form.images.map((file) => file.name).join(', '),
     [form.images],
   );
 
+  useEffect(() => {
+    if (!eligibility?.review) {
+      return;
+    }
+
+    setForm((current) => ({
+      ...current,
+      rating: String(eligibility.review?.rating ?? 5),
+      comment: eligibility.review?.comment ?? '',
+    }));
+  }, [eligibility?.review]);
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const wasCreated = await createReview({
-      customerId: form.customerId,
       rating: Number(form.rating),
       comment: form.comment.trim(),
       images: form.images,
@@ -51,7 +53,6 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
 
     if (wasCreated) {
       setForm({
-        customerId: '',
         rating: '5',
         comment: '',
         images: [],
@@ -115,27 +116,24 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
 
       <Box className='rounded-[1.75rem] border border-neutral-gray/20 bg-white p-6 shadow-sm'>
         <Typography variant='h2' className='text-xl font-semibold'>
-          Deja tu reseña
+          {hasExistingReview ? 'Edita tu reseña' : 'Deja tu reseña'}
         </Typography>
         <Typography className='mt-2 text-sm text-neutral-dark/65'>
           Solo se aceptan clientes con una compra válida del producto.
         </Typography>
 
         <form onSubmit={handleSubmit} className='mt-6 space-y-4'>
-          <select
-            value={form.customerId}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, customerId: event.target.value }))
-            }
-            className='w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary'
-          >
-            <option value=''>Selecciona tu cliente</option>
-            {customers.map((customer) => (
-              <option key={customer.id} value={customer.id}>
-                {customer.firstName} {customer.lastName} · {customer.email}
-              </option>
-            ))}
-          </select>
+          {!authenticatedUser ? (
+            <Box className='rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700'>
+              Inicia sesión como comprador para publicar una reseña.
+            </Box>
+          ) : null}
+
+          {authenticatedUser && !eligibility?.hasPurchased ? (
+            <Box className='rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700'>
+              Solo puedes reseñar productos que hayas comprado previamente.
+            </Box>
+          ) : null}
 
           <select
             value={form.rating}
@@ -188,10 +186,14 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
             type='submit'
             variant='primary'
             disabled={
-              submitting || !form.customerId || !form.comment.trim()
+              submitting || !form.comment.trim() || !canSubmitReview
             }
           >
-            {submitting ? 'Enviando...' : 'Publicar reseña'}
+            {submitting
+              ? 'Enviando...'
+              : hasExistingReview
+                ? 'Actualizar reseña'
+                : 'Publicar reseña'}
           </Button>
         </form>
       </Box>

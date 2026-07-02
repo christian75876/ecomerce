@@ -7,11 +7,21 @@ export interface IOrder {
   total: number;
   createdAt: string;
   updatedAt: string;
+  deliveryMethod: 'DELIVERY' | 'PICKUP' | null;
+  deliveryAddress: string | null;
+  deliveryCity: string | null;
+  deliveryDepartment: string | null;
+  deliveryNotes: string | null;
+  deliveryLat: number | null;
+  deliveryLng: number | null;
+  couponCode: string | null;
+  discountAmount: number;
   customer: {
     id: string;
     firstName: string;
     lastName: string;
     email: string;
+    phone?: string;
   };
   items: Array<{
     id: string;

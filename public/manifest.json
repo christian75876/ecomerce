@@ -1,19 +1,20 @@
 {
-  "name": "Hot-Ecomerce",
-  "short_name": "Ecomerce",
-  "description": "Plataforma enfocada en la venta de productos.",
+  "name": "Hot Commerce",
+  "short_name": "Hot Commerce",
+  "description": "Marketplace con tiendas, restaurantes, catálogo, pedidos y más.",
+  "lang": "es-ES",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "theme_color": "#9d53fe",
-  "background_color": "#f6f6f6",
+  "display_override": ["window-controls-overlay", "standalone"],
   "orientation": "portrait",
-  "manifest_version": 3,
-  "version": "1.0.1",
+  "theme_color": "#f97316",
+  "background_color": "#0f172a",
+  "categories": ["shopping", "food", "business"],
   "icons": [
     {
-      "src": "/icons/icon-144x144.png",
-      "sizes": "144x144",
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
       "type": "image/png"
     },
     {
@@ -27,10 +28,27 @@
       "type": "image/png"
     },
     {
-      "src": "/icons/icon-maskable-512x512.png",
+      "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable any"
+      "purpose": "maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Ver tiendas",
+      "url": "/tiendas",
+      "description": "Explorar todas las tiendas y restaurantes"
+    },
+    {
+      "name": "Mi carrito",
+      "url": "/carrito",
+      "description": "Ver artículos en el carrito"
     }
   ]
 }

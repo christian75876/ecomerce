@@ -10,6 +10,14 @@ export interface ICreateOrderRequest {
     productId: string;
     quantity: number;
   }>;
+  deliveryMethod?: 'DELIVERY' | 'PICKUP';
+  deliveryAddress?: string;
+  deliveryCity?: string;
+  deliveryDepartment?: string;
+  deliveryNotes?: string;
+  deliveryLat?: number;
+  deliveryLng?: number;
+  couponCode?: string;
 }
 
 export interface IUpdateOrderStatusRequest {

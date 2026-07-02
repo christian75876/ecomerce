@@ -7,6 +7,11 @@ interface ProductBodyProps {
   products: IProduct[];
   loading?: boolean;
   emptyMessage?: string;
+  sponsoredIds?: string[];
+  layoutStyle?: 'GRID' | 'LIST';
+  mobileCarousel?: boolean;
+  buttonStyle?: 'ROUNDED' | 'SHARP' | 'PILL';
+  primaryColor?: string;
   onAddToCart?: (productId: string) => void;
 }
 
@@ -17,6 +22,11 @@ const ProductBody = ({
   products,
   loading = false,
   emptyMessage = 'No hay productos disponibles en este momento.',
+  sponsoredIds = [],
+  layoutStyle = 'GRID',
+  mobileCarousel = false,
+  buttonStyle,
+  primaryColor,
   onAddToCart,
 }: ProductBodyProps) => {
   if (loading) {
@@ -31,19 +41,91 @@ const ProductBody = ({
     );
   }
 
+  const cards = products.map((product) => (
+    <ProductCard
+      key={product.id}
+      id={product.id}
+      image={product.imageUrl || fallbackImage}
+      name={product.name}
+      description={product.description}
+      price={Number(product.price).toFixed(2)}
+      compareAtPrice={product.compareAtPrice}
+      availableQuantity={product.availableQuantity}
+      showStock={product.showStock}
+      averageRating={product.averageRating}
+      reviewCount={product.reviewCount}
+      storeName={product.store?.name}
+      storeSlug={product.store?.slug}
+      isSponsored={sponsoredIds.includes(product.id)}
+      layoutStyle={layoutStyle}
+      buttonStyle={buttonStyle}
+      primaryColor={primaryColor}
+      onAddToCart={() => onAddToCart?.(product.id)}
+    />
+  ));
+
+  if (layoutStyle === 'LIST') {
+    return <div className='flex flex-col gap-4'>{cards}</div>;
+  }
+
+  if (mobileCarousel) {
+    return (
+      <>
+        {/* Mobile: horizontal scroll rail */}
+        <div
+          className='flex sm:hidden'
+          style={{
+            gap: '1rem',
+            overflowX: 'auto',
+            overflowY: 'visible',
+            WebkitOverflowScrolling: 'touch' as React.CSSProperties['WebkitOverflowScrolling'],
+            scrollSnapType: 'x mandatory',
+            paddingBottom: '0.5rem',
+          }}
+        >
+          {products.map((product) => (
+            <div
+              key={product.id}
+              style={{
+                flexShrink: 0,
+                width: 'min(72vw, 240px)',
+                scrollSnapAlign: 'start',
+              }}
+            >
+              <ProductCard
+                id={product.id}
+                image={product.imageUrl || fallbackImage}
+                name={product.name}
+                description={product.description}
+                price={Number(product.price).toFixed(2)}
+                compareAtPrice={product.compareAtPrice}
+                availableQuantity={product.availableQuantity}
+                showStock={product.showStock}
+                averageRating={product.averageRating}
+                reviewCount={product.reviewCount}
+                storeName={product.store?.name}
+                storeSlug={product.store?.slug}
+                isSponsored={sponsoredIds.includes(product.id)}
+                layoutStyle={layoutStyle}
+                buttonStyle={buttonStyle}
+                primaryColor={primaryColor}
+                onAddToCart={() => onAddToCart?.(product.id)}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* sm+: standard grid */}
+        <div className='hidden sm:grid sm:grid-cols-2 sm:gap-6 xl:grid-cols-3'>
+          {cards}
+        </div>
+      </>
+    );
+  }
+
   return (
-    <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
-      {products.map(product => (
-        <ProductCard
-          id={product.id}
-          key={product.id}
-          image={product.imageUrl || fallbackImage}
-          name={product.name}
-          description={product.description}
-          price={Number(product.price).toFixed(2)}
-          onAddToCart={() => onAddToCart?.(product.id)}
-        />
-      ))}
+    <div className='grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3'>
+      {cards}
     </div>
   );
 };

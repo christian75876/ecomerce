@@ -2,8 +2,17 @@ import { IApiResponse } from '@/application/dtos/common/HttpResponse';
 
 export interface ISale {
   id: string;
+  paymentMethod: 'CASH' | 'CREDIT';
+  customerId: string | null;
+  storeId: string | null;
+  cashSessionId: string | null;
   total: number;
   createdAt: string;
+  customer?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  } | null;
   items: Array<{
     id: string;
     productId: string;

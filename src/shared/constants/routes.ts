@@ -5,8 +5,14 @@ export const ROUTES = {
     VERIFY_EMAIL: '/verify-email',
     NOT_FOUND: '*',
     HOME: '/home',
+    STORES: '/stores',
+    STORE_DETAILS: '/stores/:slug',
     CART: '/cart',
-    PRODUCT_DETAILS: '/product/:productId'
+    FAVORITES: '/favorites',
+    MY_ORDERS: '/my-orders',
+    MY_ORDER_DETAILS: '/my-orders/:orderId',
+    PRODUCT_DETAILS: '/product/:productId',
+    HELP: '/ayuda'
   },
   PRIVATE: {
     DASHBOARD: '/dashboard',
@@ -14,11 +20,19 @@ export const ROUTES = {
     INVENTORY: '/inventory',
     POS: '/pos',
     ORDERS: '/orders',
+    STORES: '/admin/stores',
+    SUPPLIERS: '/suppliers',
+    PURCHASES: '/purchases',
+    CUSTOMERS: '/customers',
+    CASH: '/cash',
+    AUDIT: '/audit',
     TRACKING: '/tracking',
     SETTINGS: '/settings',
     PRODUCTS: '/products',
     PROFILE: '/profile',
     DETAILS: '/product/:productId',
-    STORE: '/stores'
+    STORE: '/admin/store',
+    INVITATIONS: '/admin/invitations',
+    COUPONS: '/coupons'
   }
 } as const;

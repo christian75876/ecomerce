@@ -7,6 +7,12 @@ export interface IAuthenticatedUser {
   role?: string | null;
   isEmailVerified?: boolean;
   createdAt?: string;
+  customer?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    phone: string | null;
+  } | null;
 }
 
 export type ILoginResp = IApiResponse<{

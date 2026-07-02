@@ -22,7 +22,11 @@ export const useLogin = () => {
       const response = await AuthRepository.login(credentials);
       authSession.setToken(response.data.token);
       authSession.setUser(response.data.user);
-      navigation(ROUTES.PRIVATE.DASHBOARD);
+      navigation(
+        response.data.user.role === 'buyer'
+          ? ROUTES.PUBLIC.HOME
+          : ROUTES.PRIVATE.DASHBOARD,
+      );
       return response;
     } catch (_err: unknown) {
       const message =
