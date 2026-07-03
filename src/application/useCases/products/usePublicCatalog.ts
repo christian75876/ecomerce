@@ -26,7 +26,8 @@ export const usePublicCatalog = () => {
           }),
           CategoriesRepository.getCategories(true),
         ]);
-        setProducts(productsResponse.data);
+        const productData = productsResponse.data as unknown as { items?: IProduct[] };
+        setProducts(productData.items ?? []);
         setCategories(categoriesResponse.data);
       } catch (err) {
         setError(
