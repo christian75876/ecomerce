@@ -44,8 +44,8 @@ export const usePosManagement = () => {
         }),
         SalesRepository.getSales(),
       ]);
-      setProducts(productsResponse.data);
-      setSales(salesResponse.data);
+      setProducts((productsResponse.data as unknown as { items?: IProduct[] }).items ?? []);
+      setSales((salesResponse.data as unknown as { items?: ISale[] }).items ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No fue posible cargar POS');
     } finally {

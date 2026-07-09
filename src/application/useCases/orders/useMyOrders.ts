@@ -13,7 +13,7 @@ export const useMyOrders = (orderId?: string) => {
     setError(null);
     try {
       const response = await OrdersRepository.getMyOrders();
-      setOrders(response.data);
+      setOrders((response.data as unknown as { items?: IOrder[] }).items ?? []);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'No fue posible cargar tus pedidos',

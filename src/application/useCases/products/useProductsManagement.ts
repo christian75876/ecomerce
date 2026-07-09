@@ -107,7 +107,7 @@ export const useProductsManagement = () => {
         search: search || undefined,
         categoryId: selectedCategoryId || undefined,
       });
-      setProducts(response.data);
+      setProducts((response.data as unknown as { items?: IProduct[] }).items ?? []);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'No fue posible cargar los productos',

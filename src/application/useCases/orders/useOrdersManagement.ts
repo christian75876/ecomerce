@@ -49,9 +49,9 @@ export const useOrdersManagement = () => {
           ProductRepository.getProducts({ active: true }),
           OrdersRepository.getOrders(),
         ]);
-      setCustomers(customersResponse.data);
-      setProducts(productsResponse.data);
-      setOrders(ordersResponse.data);
+      setCustomers((customersResponse.data as unknown as { items?: ICustomer[] }).items ?? []);
+      setProducts((productsResponse.data as unknown as { items?: IProduct[] }).items ?? []);
+      setOrders((ordersResponse.data as unknown as { items?: IOrder[] }).items ?? []);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'No fue posible cargar pedidos',

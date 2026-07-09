@@ -41,7 +41,7 @@ const DesktopHeaderLayout = () => {
         </Box>
 
         {/* Navigation */}
-        <Box className='flex-1 overflow-hidden'>
+        <Box className='flex-1 overflow-x-clip'>
           <NavigationMenu />
         </Box>
 
