@@ -8,17 +8,14 @@ import {
   ICustomerResp,
   ICustomersResp,
 } from '@/application/dtos/customers/response/CustomerResponse';
-import {
-  authenticatedClientHTTP,
-  publicClientHTTP,
-} from '@/infrastructure/repositories/api/ClientHTTP';
+import { authenticatedClientHTTP } from '@/infrastructure/repositories/api/ClientHTTP';
 import { ErrorHandler } from '@/infrastructure/repositories/api/errors/ErrorHandler';
 
 export class CustomersRepository {
   static async getCustomers(search?: string): Promise<ICustomersResp> {
     const suffix = search ? `?search=${encodeURIComponent(search)}` : '';
     return ErrorHandler.handleApiErrors(() =>
-      publicClientHTTP.get<ICustomersResp>(`/customers${suffix}`),
+      authenticatedClientHTTP.get<ICustomersResp>(`/customers${suffix}`),
     );
   }
 

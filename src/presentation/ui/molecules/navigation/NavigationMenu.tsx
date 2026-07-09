@@ -29,7 +29,6 @@ const adminNavGroups = [
     items: [
       { label: 'POS', path: ROUTES.PRIVATE.POS, icon: 'bx-credit-card' },
       { label: 'Pedidos', path: ROUTES.PRIVATE.ORDERS, icon: 'bx-receipt' },
-      { label: 'Caja', path: ROUTES.PRIVATE.CASH, icon: 'bx-wallet' },
     ],
   },
   {

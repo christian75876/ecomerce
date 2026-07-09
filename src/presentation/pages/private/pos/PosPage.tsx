@@ -8,23 +8,17 @@ const PosPage = () => {
     <PosManagementView
       products={posManagement.products}
       customers={posManagement.customers}
-      stores={posManagement.stores}
-      cashSessions={posManagement.cashSessions}
       cart={posManagement.cart}
       sales={posManagement.sales}
       search={posManagement.search}
-      selectedStoreId={posManagement.selectedStoreId}
       selectedCustomerId={posManagement.selectedCustomerId}
-      selectedCashSessionId={posManagement.selectedCashSessionId}
       paymentMethod={posManagement.paymentMethod}
       loading={posManagement.loading}
       submitting={posManagement.submitting}
       error={posManagement.error}
       total={posManagement.total}
       onSearchChange={posManagement.setSearch}
-      onStoreChange={posManagement.setSelectedStoreId}
       onCustomerChange={posManagement.setSelectedCustomerId}
-      onCashSessionChange={posManagement.setSelectedCashSessionId}
       onPaymentMethodChange={posManagement.setPaymentMethod}
       onAddToCart={posManagement.addToCart}
       onUpdateQuantity={posManagement.updateQuantity}

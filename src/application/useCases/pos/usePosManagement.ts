@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ICashSession } from '@/application/dtos/cash/response/CashResponse';
 import { ICustomer } from '@/application/dtos/customers/response/CustomerResponse';
 import { IProduct } from '@/application/dtos/products/response/ProductResponse';
 import { ISale } from '@/application/dtos/sales/response/SaleResponse';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
-import { CashRepository } from '@/infrastructure/repositories/api/cash/CashRepository';
 import { CustomersRepository } from '@/infrastructure/repositories/api/customers/CustomersRepository';
 import { ProductRepository } from '@/infrastructure/repositories/api/products/ProductsRepository';
 import { SalesRepository } from '@/infrastructure/repositories/api/sales/SalesRepository';
 import { StoresRepository } from '@/infrastructure/repositories/api/stores/StoresRepository';
+import { getAuthenticatedRole } from '@/shared/utils/checkIsUserAuthenticated.util';
 
 export type PosCartItem = {
   product: IProduct;
@@ -18,14 +17,11 @@ export type PosCartItem = {
 export const usePosManagement = () => {
   const [products, setProducts] = useState<IProduct[]>([]);
   const [customers, setCustomers] = useState<ICustomer[]>([]);
-  const [stores, setStores] = useState<IStore[]>([]);
-  const [cashSessions, setCashSessions] = useState<ICashSession[]>([]);
   const [cart, setCart] = useState<PosCartItem[]>([]);
   const [sales, setSales] = useState<ISale[]>([]);
   const [search, setSearch] = useState('');
   const [selectedStoreId, setSelectedStoreId] = useState('');
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
-  const [selectedCashSessionId, setSelectedCashSessionId] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CREDIT'>('CASH');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -55,17 +51,17 @@ export const usePosManagement = () => {
 
   const loadSupportingData = useCallback(async () => {
     try {
-      const [customersResponse, storesResponse, sessionsResponse] = await Promise.all([
+      const isSeller = getAuthenticatedRole() === 'seller';
+      const [customersResponse, storesResponse] = await Promise.all([
         CustomersRepository.getCustomers(),
-        StoresRepository.getStores({ active: true }),
-        CashRepository.getSessions(),
+        isSeller ? StoresRepository.getMyStores() : StoresRepository.getStores({ active: true }),
       ]);
 
-      setCustomers(customersResponse.data);
-      setStores(storesResponse.data.filter((store) => store.isActive));
-      setCashSessions(
-        sessionsResponse.data.filter((session) => session.status === 'OPEN'),
-      );
+      setCustomers((customersResponse.data as unknown as { items?: ICustomer[] }).items ?? []);
+      const storeList = storesResponse.data as unknown as IStore[];
+      if (storeList.length > 0) {
+        setSelectedStoreId(storeList[0].id);
+      }
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'No fue posible cargar datos POS',
@@ -82,35 +78,10 @@ export const usePosManagement = () => {
   }, [loadSupportingData]);
 
   useEffect(() => {
-    if (paymentMethod === 'CREDIT') {
-      setSelectedCashSessionId('');
-    } else {
+    if (paymentMethod !== 'CREDIT') {
       setSelectedCustomerId('');
     }
   }, [paymentMethod]);
-
-  useEffect(() => {
-    if (
-      selectedCashSessionId &&
-      !cashSessions.some((session) => session.id === selectedCashSessionId)
-    ) {
-      setSelectedCashSessionId('');
-    }
-  }, [cashSessions, selectedCashSessionId]);
-
-  useEffect(() => {
-    if (
-      selectedStoreId &&
-      selectedCashSessionId &&
-      !cashSessions.some(
-        (session) =>
-          session.id === selectedCashSessionId &&
-          session.storeId === selectedStoreId,
-      )
-    ) {
-      setSelectedCashSessionId('');
-    }
-  }, [cashSessions, selectedCashSessionId, selectedStoreId]);
 
   const addToCart = (product: IProduct) => {
     setCart((current) => {
@@ -170,8 +141,6 @@ export const usePosManagement = () => {
         paymentMethod,
         customerId: selectedCustomerId || undefined,
         storeId: selectedStoreId,
-        cashSessionId:
-          paymentMethod === 'CASH' ? selectedCashSessionId || undefined : undefined,
         items: cart.map((item) => ({
           productId: item.product.id,
           quantity: item.quantity,
@@ -198,23 +167,17 @@ export const usePosManagement = () => {
   return {
     products,
     customers,
-    stores,
-    cashSessions,
     cart,
     sales,
     search,
-    selectedStoreId,
     selectedCustomerId,
-    selectedCashSessionId,
     paymentMethod,
     loading,
     submitting,
     error,
     total,
     setSearch,
-    setSelectedStoreId,
     setSelectedCustomerId,
-    setSelectedCashSessionId,
     setPaymentMethod,
     addToCart,
     updateQuantity,
