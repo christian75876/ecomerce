@@ -44,7 +44,7 @@ export interface IProductVideo {
   id: string;
   productId: string;
   videoUrl: string;
-  videoType: 'YOUTUBE' | 'INSTAGRAM';
+  videoType: 'YOUTUBE' | 'INSTAGRAM' | 'TIKTOK' | 'FACEBOOK';
   title: string | null;
   order: number;
   createdAt: string;

@@ -150,19 +150,22 @@ const ProductDetails = () => {
             <Typography variant='h2' className='mb-6 text-2xl font-semibold'>
               Videos del producto
             </Typography>
-            <Box className='grid gap-6 md:grid-cols-2'>
+            <Box className='flex flex-col gap-6'>
               {videos.map((video) => {
                 let embedUrl: string | null = null;
-                let aspectClass = 'pb-[56.25%]'; // 16:9 default
+                // landscape: full width 2-col; portrait: narrow centered
+                const isPortrait = video.videoType === 'TIKTOK' || video.videoType === 'INSTAGRAM';
+                const heightClass = isPortrait ? 'h-[680px]' : 'h-[420px]';
+                const wrapClass = isPortrait
+                  ? 'mx-auto w-full max-w-sm'
+                  : 'w-full';
 
                 if (video.videoType === 'YOUTUBE') {
                   embedUrl = getYouTubeEmbedUrl(video.videoUrl);
                 } else if (video.videoType === 'INSTAGRAM') {
                   embedUrl = getInstagramEmbedUrl(video.videoUrl);
-                  aspectClass = 'pb-[120%]'; // Instagram posts are taller
                 } else if (video.videoType === 'TIKTOK') {
                   embedUrl = getTikTokEmbedUrl(video.videoUrl);
-                  aspectClass = 'pb-[177%]'; // TikTok is vertical 9:16
                 } else if (video.videoType === 'FACEBOOK') {
                   embedUrl = getFacebookEmbedUrl(video.videoUrl);
                 }
@@ -170,19 +173,20 @@ const ProductDetails = () => {
                 if (!embedUrl) return null;
 
                 return (
-                  <Box key={video.id} className='overflow-hidden rounded-2xl border border-neutral-gray/20'>
+                  <Box key={video.id} className={`overflow-hidden rounded-2xl border border-neutral-gray/20 ${wrapClass}`}>
                     {video.title ? (
                       <Typography className='px-4 pt-3 text-sm font-semibold'>
                         {video.title}
                       </Typography>
                     ) : null}
-                    <Box className={`relative ${aspectClass}`}>
+                    <Box className={heightClass}>
                       <iframe
                         src={embedUrl}
                         title={video.title ?? 'Video de producto'}
                         allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
                         allowFullScreen
-                        className='absolute inset-0 h-full w-full'
+                        scrolling='no'
+                        className='h-full w-full'
                       />
                     </Box>
                   </Box>
