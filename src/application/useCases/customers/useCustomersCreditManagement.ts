@@ -23,7 +23,7 @@ export const useCustomersCreditManagement = () => {
     setError(null);
     try {
       const response = await CustomersRepository.getCustomers(search || undefined);
-      setCustomers(response.data);
+      setCustomers((response.data as unknown as { items?: ICustomer[] }).items ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No fue posible cargar clientes');
     } finally {

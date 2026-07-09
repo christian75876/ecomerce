@@ -34,7 +34,7 @@ export const useSuppliersManagement = () => {
     setError(null);
     try {
       const response = await SuppliersRepository.getSuppliers(search || undefined);
-      setSuppliers(response.data);
+      setSuppliers((response.data as unknown as { items?: ISupplier[] }).items ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No fue posible cargar proveedores');
     } finally {

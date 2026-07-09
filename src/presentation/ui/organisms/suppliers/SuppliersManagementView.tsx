@@ -58,9 +58,15 @@ export const SuppliersManagementView = ({
             {editingId ? 'Editar proveedor' : 'Nuevo proveedor'}
           </Typography>
           <form onSubmit={handleSubmit} className='mt-6 space-y-4'>
-            {(['name', 'document', 'phone', 'email', 'address'] as const).map((field) => (
+            {([
+              ['name', 'Nombre *'],
+              ['document', 'Documento / NIT'],
+              ['phone', 'Teléfono'],
+              ['email', 'Correo electrónico'],
+              ['address', 'Dirección'],
+            ] as [keyof SupplierFormState, string][]).map(([field, label]) => (
               <Box key={field}>
-                <Label htmlFor={field}>{field}</Label>
+                <Label htmlFor={field}>{label}</Label>
                 <Input
                   id={field}
                   value={form[field]}
@@ -97,10 +103,22 @@ export const SuppliersManagementView = ({
           <Box className='mt-5 space-y-3'>
             {loading ? <Typography>Cargando proveedores...</Typography> : suppliers.map((supplier) => (
               <Box key={supplier.id} className='rounded-2xl border border-neutral-gray/20 px-5 py-4'>
-                <Typography variant='h3' className='text-lg font-semibold'>{supplier.name}</Typography>
-                <Typography className='mt-1 text-sm text-neutral-dark/65'>
-                  {supplier.email || 'Sin email'} · {supplier.isActive ? 'Activo' : 'Inactivo'}
-                </Typography>
+                <Box className='flex items-start justify-between gap-3'>
+                  <Box>
+                    <Typography variant='h3' className='text-lg font-semibold'>{supplier.name}</Typography>
+                    <Typography className='mt-0.5 text-sm text-neutral-dark/65'>
+                      {supplier.email || supplier.phone || 'Sin contacto'} · {supplier.isActive ? 'Activo' : 'Inactivo'}
+                    </Typography>
+                  </Box>
+                  <Box className='shrink-0 text-right'>
+                    <Typography className='text-xs font-medium uppercase tracking-wide text-neutral-dark/40'>Saldo pendiente</Typography>
+                    <Typography
+                      className={`text-lg font-bold ${(supplier.pendingBalance ?? 0) > 0 ? 'text-red-600' : 'text-green-600'}`}
+                    >
+                      ${Number(supplier.pendingBalance ?? 0).toLocaleString('es-CO', { minimumFractionDigits: 2 })}
+                    </Typography>
+                  </Box>
+                </Box>
                 <Box className='mt-4 flex gap-3'>
                   <Button type='button' variant='outlinePrimary' onClick={() => onEdit(supplier)}>Editar</Button>
                   <Button type='button' variant={supplier.isActive ? 'danger' : 'secondary'} onClick={() => void onToggleStatus(supplier)}>

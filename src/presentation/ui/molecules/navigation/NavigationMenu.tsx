@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import { useEffect, useRef, useState } from 'react';
 import {
   canAccessAdminPanel,
+  getAuthenticatedRole,
   isAuthenticated,
   isBuyerSession,
 } from '@/shared/utils/checkIsUserAuthenticated.util';
@@ -13,10 +14,12 @@ import { ROUTES } from '@/shared/constants/routes';
 const adminNavGroups = [
   {
     label: 'Inicio',
+    adminOnly: false,
     items: [{ label: 'Dashboard', path: ROUTES.PRIVATE.DASHBOARD, icon: 'bx-home' }],
   },
   {
     label: 'Catálogo',
+    adminOnly: false,
     items: [
       { label: 'Tienda', path: ROUTES.PRIVATE.STORES, icon: 'bx-store' },
       { label: 'Productos', path: ROUTES.PRIVATE.PRODUCTS, icon: 'bx-shopping-bag' },
@@ -26,6 +29,7 @@ const adminNavGroups = [
   },
   {
     label: 'Operación',
+    adminOnly: false,
     items: [
       { label: 'POS', path: ROUTES.PRIVATE.POS, icon: 'bx-credit-card' },
       { label: 'Pedidos', path: ROUTES.PRIVATE.ORDERS, icon: 'bx-receipt' },
@@ -33,6 +37,7 @@ const adminNavGroups = [
   },
   {
     label: 'Abastecimiento',
+    adminOnly: false,
     items: [
       { label: 'Proveedores', path: ROUTES.PRIVATE.SUPPLIERS, icon: 'bx-briefcase' },
       { label: 'Compras', path: ROUTES.PRIVATE.PURCHASES, icon: 'bx-package' },
@@ -40,12 +45,14 @@ const adminNavGroups = [
   },
   {
     label: 'Relaciones',
+    adminOnly: false,
     items: [
       { label: 'Clientes y cartera', path: ROUTES.PRIVATE.CUSTOMERS, icon: 'bx-group' },
     ],
   },
   {
     label: 'Control',
+    adminOnly: true,
     items: [
       { label: 'Invitaciones', path: ROUTES.PRIVATE.INVITATIONS, icon: 'bx-envelope' },
       { label: 'Auditoría', path: ROUTES.PRIVATE.AUDIT, icon: 'bx-history' },
@@ -68,6 +75,8 @@ const NavigationMenu = () => {
   const menuRef = useRef<HTMLDivElement | null>(null);
   const isAdminNavigation = isAuthenticated() && canAccessAdminPanel();
   const buyerSession = isBuyerSession();
+  const isAdmin = getAuthenticatedRole() === 'admin';
+  const visibleAdminGroups = adminNavGroups.filter((group) => !group.adminOnly || isAdmin);
   const visiblePublicItems = publicNavItems.filter((item) => {
     if (!isAuthenticated() && (item.path === ROUTES.PUBLIC.FAVORITES || item.path === ROUTES.PUBLIC.MY_ORDERS)) {
       return false;
@@ -104,7 +113,7 @@ const NavigationMenu = () => {
   return (
     <Box ref={menuRef} className='flex items-center gap-2'>
       {isAdminNavigation ? (
-        adminNavGroups.map((group) => {
+        visibleAdminGroups.map((group) => {
           const isActive = group.items.some((item) =>
             location.pathname.startsWith(item.path),
           );

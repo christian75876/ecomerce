@@ -9,6 +9,7 @@ export interface ISupplier {
   address: string | null;
   notes: string | null;
   isActive: boolean;
+  pendingBalance?: number;
   createdAt: string;
   updatedAt: string;
 }
