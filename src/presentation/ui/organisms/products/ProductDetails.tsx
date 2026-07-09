@@ -13,8 +13,22 @@ import { ROUTES } from '@/shared/constants/routes';
 import WhatsAppFloat from '../../atoms/whatsapp/WhatsAppFloat';
 
 function getYouTubeEmbedUrl(url: string): string | null {
-  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]+)/);
   return match ? `https://www.youtube.com/embed/${match[1]}` : null;
+}
+
+function getInstagramEmbedUrl(url: string): string | null {
+  const match = url.match(/instagram\.com\/(p|reel|tv)\/([\w-]+)/);
+  return match ? `https://www.instagram.com/${match[1]}/${match[2]}/embed/` : null;
+}
+
+function getTikTokEmbedUrl(url: string): string | null {
+  const match = url.match(/tiktok\.com\/@[\w.]+\/video\/(\d+)/);
+  return match ? `https://www.tiktok.com/embed/v2/${match[1]}` : null;
+}
+
+function getFacebookEmbedUrl(url: string): string {
+  return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=0&width=560`;
 }
 
 const ProductDetails = () => {
@@ -80,6 +94,7 @@ const ProductDetails = () => {
                   'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80',
                 category: product.category?.name,
               }}
+              gallery={gallery}
             />
             <Box className='space-y-4'>
               <ProductActions
@@ -128,25 +143,6 @@ const ProductDetails = () => {
           </Box>
         </Box>
 
-        {gallery.length > 0 ? (
-          <Box className='surface-panel rounded-[2rem] p-6 sm:p-8'>
-            <Typography variant='h2' className='mb-4 text-xl font-semibold'>
-              Galería
-            </Typography>
-            <Box className='grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4'>
-              {gallery.map((img) => (
-                <Box key={img.id} className='overflow-hidden rounded-2xl border border-neutral-gray/20'>
-                  <img
-                    src={img.imageUrl}
-                    alt='Imagen del producto'
-                    className='h-32 w-full object-cover transition-transform hover:scale-105'
-                  />
-                </Box>
-              ))}
-            </Box>
-          </Box>
-        ) : null}
-
         <ProductReviews productId={product.id} />
 
         {videos.length > 0 ? (
@@ -156,30 +152,23 @@ const ProductDetails = () => {
             </Typography>
             <Box className='grid gap-6 md:grid-cols-2'>
               {videos.map((video) => {
+                let embedUrl: string | null = null;
+                let aspectClass = 'pb-[56.25%]'; // 16:9 default
+
                 if (video.videoType === 'YOUTUBE') {
-                  const embedUrl = getYouTubeEmbedUrl(video.videoUrl);
-                  if (!embedUrl) return null;
-                  return (
-                    <Box key={video.id} className='overflow-hidden rounded-2xl border border-neutral-gray/20'>
-                      {video.title ? (
-                        <Typography className='px-4 pt-3 text-sm font-semibold'>
-                          {video.title}
-                        </Typography>
-                      ) : null}
-                      <Box className='relative pb-[56.25%]'>
-                        <iframe
-                          src={embedUrl}
-                          title={video.title ?? 'Video de producto'}
-                          allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
-                          allowFullScreen
-                          className='absolute inset-0 h-full w-full'
-                        />
-                      </Box>
-                    </Box>
-                  );
+                  embedUrl = getYouTubeEmbedUrl(video.videoUrl);
+                } else if (video.videoType === 'INSTAGRAM') {
+                  embedUrl = getInstagramEmbedUrl(video.videoUrl);
+                  aspectClass = 'pb-[120%]'; // Instagram posts are taller
+                } else if (video.videoType === 'TIKTOK') {
+                  embedUrl = getTikTokEmbedUrl(video.videoUrl);
+                  aspectClass = 'pb-[177%]'; // TikTok is vertical 9:16
+                } else if (video.videoType === 'FACEBOOK') {
+                  embedUrl = getFacebookEmbedUrl(video.videoUrl);
                 }
 
-                // Instagram
+                if (!embedUrl) return null;
+
                 return (
                   <Box key={video.id} className='overflow-hidden rounded-2xl border border-neutral-gray/20'>
                     {video.title ? (
@@ -187,15 +176,14 @@ const ProductDetails = () => {
                         {video.title}
                       </Typography>
                     ) : null}
-                    <Box className='flex items-center justify-center p-4'>
-                      <a
-                        href={video.videoUrl}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 px-5 py-3 text-sm font-semibold text-white'
-                      >
-                        Ver en Instagram
-                      </a>
+                    <Box className={`relative ${aspectClass}`}>
+                      <iframe
+                        src={embedUrl}
+                        title={video.title ?? 'Video de producto'}
+                        allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+                        allowFullScreen
+                        className='absolute inset-0 h-full w-full'
+                      />
                     </Box>
                   </Box>
                 );
