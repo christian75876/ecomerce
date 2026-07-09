@@ -35,7 +35,8 @@ export const usePublicStoreDetail = (slug?: string) => {
             : Promise.resolve(null),
         ]);
 
-        setProducts(productsResponse.data);
+        const productData = productsResponse.data as unknown as { items?: IProduct[] };
+        setProducts(productData.items ?? []);
         setMenuCategories(categoriesResponse?.data ?? []);
       } catch (err) {
         setError(

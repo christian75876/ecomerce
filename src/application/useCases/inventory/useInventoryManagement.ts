@@ -56,7 +56,7 @@ export const useInventoryManagement = () => {
           InventoryRepository.getExpiring(30),
         ]);
 
-      setProducts(productsResponse.data);
+      setProducts((productsResponse.data as unknown as { items?: IProduct[] }).items ?? []);
       setSuppliers(suppliersResponse.data.filter((supplier) => supplier.isActive));
       setInventory(inventoryResponse.data);
       setMovements(movementsResponse.data);
