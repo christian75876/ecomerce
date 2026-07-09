@@ -1,10 +1,17 @@
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   IInventoryBatch,
   IInventoryItem,
   IInventoryMovement,
 } from '@/application/dtos/inventory/response/InventoryResponse';
+import { ICategory } from '@/application/dtos/categories/response/CategoryResponse';
 import { IProduct } from '@/application/dtos/products/response/ProductResponse';
+import { IStore } from '@/application/dtos/stores/response/StoreResponse';
 import { ISupplier } from '@/application/dtos/suppliers/response/SupplierResponse';
+import { CategoriesRepository } from '@/infrastructure/repositories/api/categories/CategoriesRepository';
+import { StoresRepository } from '@/infrastructure/repositories/api/stores/StoresRepository';
+import { getAuthenticatedRole } from '@/shared/utils/checkIsUserAuthenticated.util';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
@@ -15,6 +22,288 @@ import FeaturePanel from '@/presentation/ui/templates/feature/FeaturePanel';
 import FeatureScreen from '@/presentation/ui/templates/feature/FeatureScreen';
 import FeatureScreenHeader from '@/presentation/ui/templates/feature/FeatureScreenHeader';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
+
+const QuickCreateProductModal = ({
+  onConfirm,
+  onClose,
+}: {
+  onConfirm: (payload: {
+    name: string;
+    description: string;
+    sku?: string;
+    price: number;
+    categoryId: string;
+    storeId?: string;
+  }) => Promise<void>;
+  onClose: () => void;
+}) => {
+  const isSeller = getAuthenticatedRole() === 'seller';
+  const [categories, setCategories] = useState<ICategory[]>([]);
+  const [stores, setStores] = useState<IStore[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [name, setName] = useState('');
+  const [sku, setSku] = useState('');
+  const [price, setPrice] = useState('');
+  const [description, setDescription] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [storeId, setStoreId] = useState('');
+
+  useEffect(() => {
+    const load = async () => {
+      setDataLoading(true);
+      try {
+        const [catResp, storeResp] = await Promise.all([
+          CategoriesRepository.getCategories(true),
+          isSeller
+            ? StoresRepository.getMyStores()
+            : StoresRepository.getStores({ active: true }),
+        ]);
+        const cats = catResp.data;
+        setCategories(Array.isArray(cats) ? cats : []);
+        const rawStores = storeResp.data;
+        const storeList: IStore[] = Array.isArray(rawStores)
+          ? rawStores
+          : (rawStores as unknown as { items?: IStore[] }).items ?? [];
+        setStores(storeList);
+        if (isSeller && storeList.length > 0) setStoreId(storeList[0].id);
+      } catch {
+        // non-fatal — user can still type
+      } finally {
+        setDataLoading(false);
+      }
+    };
+    void load();
+  }, [isSeller]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || !price || !categoryId) return;
+    setSaving(true);
+    await onConfirm({
+      name,
+      description,
+      sku: sku.trim() || undefined,
+      price: Number(price),
+      categoryId,
+      storeId: storeId || undefined,
+    });
+    setSaving(false);
+  };
+
+  return createPortal(
+    <div
+      className='fixed inset-0 z-[100] flex items-center justify-center bg-neutral-dark/50 px-4 backdrop-blur-sm'
+      onClick={onClose}
+    >
+      <div
+        className='flex max-h-[85vh] w-full max-w-md flex-col overflow-hidden rounded-[1.75rem] bg-white shadow-[0_24px_60px_rgba(15,23,42,0.22)]'
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className='flex items-center justify-between border-b border-neutral-gray/20 px-6 py-4'>
+          <h2 className='text-lg font-bold text-neutral-dark'>Nuevo producto</h2>
+          <button
+            type='button'
+            onClick={onClose}
+            className='flex h-8 w-8 items-center justify-center rounded-full text-neutral-dark/50 hover:bg-neutral-gray/20'
+          >
+            <i className='bx bx-x text-xl' aria-hidden='true' />
+          </button>
+        </div>
+
+        <div className='overflow-y-auto p-6'>
+          {dataLoading ? (
+            <p className='py-8 text-center text-sm text-neutral-dark/55'>Cargando...</p>
+          ) : (
+            <form id='quick-product-form' onSubmit={handleSubmit} className='space-y-4'>
+              <div>
+                <label className='mb-1 block text-sm font-medium text-neutral-dark'>
+                  Nombre <span className='text-red-500'>*</span>
+                </label>
+                <input
+                  autoFocus
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder='Ej. Camiseta talla M'
+                  disabled={saving}
+                  className='w-full rounded-xl border border-neutral-gray/30 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary'
+                />
+              </div>
+
+              <div className='grid gap-4 md:grid-cols-2'>
+                <div>
+                  <label className='mb-1 block text-sm font-medium text-neutral-dark'>
+                    Precio <span className='text-red-500'>*</span>
+                  </label>
+                  <input
+                    type='number'
+                    min='0'
+                    step='0.01'
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    placeholder='0.00'
+                    disabled={saving}
+                    className='w-full rounded-xl border border-neutral-gray/30 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary'
+                  />
+                </div>
+                <div>
+                  <label className='mb-1 block text-sm font-medium text-neutral-dark'>SKU</label>
+                  <input
+                    value={sku}
+                    onChange={(e) => setSku(e.target.value)}
+                    placeholder='Opcional'
+                    disabled={saving}
+                    className='w-full rounded-xl border border-neutral-gray/30 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary'
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className='mb-1 block text-sm font-medium text-neutral-dark'>
+                  Categoría <span className='text-red-500'>*</span>
+                </label>
+                <select
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  disabled={saving}
+                  className='w-full rounded-xl border border-neutral-gray/30 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary'
+                >
+                  <option value=''>Selecciona una categoría</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {!isSeller ? (
+                <div>
+                  <label className='mb-1 block text-sm font-medium text-neutral-dark'>Tienda</label>
+                  <select
+                    value={storeId}
+                    onChange={(e) => setStoreId(e.target.value)}
+                    disabled={saving}
+                    className='w-full rounded-xl border border-neutral-gray/30 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary'
+                  >
+                    <option value=''>Sin tienda</option>
+                    {stores.map((s) => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div className='rounded-xl border border-neutral-gray/20 bg-background px-4 py-3 text-sm text-neutral-dark'>
+                  <span className='text-neutral-dark/55'>Tienda: </span>
+                  {stores[0]?.name ?? '—'}
+                </div>
+              )}
+
+              <div>
+                <label className='mb-1 block text-sm font-medium text-neutral-dark'>
+                  Descripción
+                </label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder='Opcional — se usa el nombre si se deja vacío'
+                  disabled={saving}
+                  rows={2}
+                  className='w-full resize-none rounded-xl border border-neutral-gray/30 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary'
+                />
+              </div>
+            </form>
+          )}
+        </div>
+
+        <div className='border-t border-neutral-gray/20 px-6 py-4'>
+          <div className='flex gap-2'>
+            <button
+              type='submit'
+              form='quick-product-form'
+              disabled={saving || dataLoading || !name.trim() || !price || !categoryId}
+              className='flex-1 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50'
+            >
+              {saving ? 'Creando...' : 'Crear producto'}
+            </button>
+            <button
+              type='button'
+              onClick={onClose}
+              disabled={saving}
+              className='rounded-xl border border-neutral-gray/30 px-4 py-2.5 text-sm font-semibold text-neutral-dark/70 transition hover:bg-neutral-gray/10'
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+};
+
+const QuickCreateModal = ({
+  title,
+  placeholder,
+  onConfirm,
+  onClose,
+}: {
+  title: string;
+  placeholder: string;
+  onConfirm: (name: string) => Promise<void>;
+  onClose: () => void;
+}) => {
+  const [value, setValue] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!value.trim()) return;
+    setSaving(true);
+    await onConfirm(value.trim());
+    setSaving(false);
+  };
+
+  return createPortal(
+    <div
+      className='fixed inset-0 z-[100] flex items-center justify-center bg-neutral-dark/50 px-4 backdrop-blur-sm'
+      onClick={onClose}
+    >
+      <div
+        className='w-full max-w-sm rounded-[1.75rem] bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.22)]'
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className='mb-4 text-lg font-bold text-neutral-dark'>{title}</h2>
+        <form onSubmit={handleSubmit} className='space-y-3'>
+          <input
+            autoFocus
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder={placeholder}
+            disabled={saving}
+            className='w-full rounded-xl border border-neutral-gray/30 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary'
+          />
+          <div className='flex gap-2'>
+            <button
+              type='submit'
+              disabled={saving || !value.trim()}
+              className='flex-1 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50'
+            >
+              {saving ? 'Creando...' : 'Crear'}
+            </button>
+            <button
+              type='button'
+              onClick={onClose}
+              disabled={saving}
+              className='rounded-xl border border-neutral-gray/30 px-4 py-2.5 text-sm font-semibold text-neutral-dark/70 transition hover:bg-neutral-gray/10'
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>,
+    document.body,
+  );
+};
 
 interface InventoryManagementViewProps {
   products: IProduct[];
@@ -44,6 +333,15 @@ interface InventoryManagementViewProps {
   onExpiresAtChange: (value: string) => void;
   onNoteChange: (value: string) => void;
   onSubmit: () => Promise<boolean>;
+  onQuickCreateSupplier: (name: string) => Promise<ISupplier | null>;
+  onQuickCreateProduct: (payload: {
+    name: string;
+    description: string;
+    sku?: string;
+    price: number;
+    categoryId: string;
+    storeId?: string;
+  }) => Promise<IProduct | null>;
 }
 
 export const InventoryManagementView = ({
@@ -74,7 +372,12 @@ export const InventoryManagementView = ({
   onExpiresAtChange,
   onNoteChange,
   onSubmit,
+  onQuickCreateSupplier,
+  onQuickCreateProduct,
 }: InventoryManagementViewProps) => {
+  const [showCreateSupplierModal, setShowCreateSupplierModal] = useState(false);
+  const [showCreateProductModal, setShowCreateProductModal] = useState(false);
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     await onSubmit();
@@ -97,7 +400,16 @@ export const InventoryManagementView = ({
         >
           <form onSubmit={handleSubmit} className='mt-6 space-y-4'>
             <Box>
-              <Label htmlFor='inventory-product'>Producto</Label>
+              <div className='mb-1 flex items-center justify-between'>
+                <Label htmlFor='inventory-product'>Producto</Label>
+                <button
+                  type='button'
+                  onClick={() => setShowCreateProductModal(true)}
+                  className='flex items-center gap-1 text-xs font-semibold text-primary hover:underline'
+                >
+                  <i className='bx bx-plus' aria-hidden='true' /> Nuevo
+                </button>
+              </div>
               <select
                 id='inventory-product'
                 value={productId}
@@ -108,7 +420,7 @@ export const InventoryManagementView = ({
                 <option value=''>Selecciona un producto</option>
                 {products.map((product) => (
                   <option key={product.id} value={product.id}>
-                    {product.name} ({product.sku})
+                    {product.name}{product.sku ? ` (${product.sku})` : ''}
                   </option>
                 ))}
               </select>
@@ -174,7 +486,16 @@ export const InventoryManagementView = ({
 
                 <Box className='grid gap-4 md:grid-cols-2'>
                   <Box>
-                    <Label htmlFor='entry-supplier'>Proveedor</Label>
+                    <div className='mb-1 flex items-center justify-between'>
+                      <Label htmlFor='entry-supplier'>Proveedor</Label>
+                      <button
+                        type='button'
+                        onClick={() => setShowCreateSupplierModal(true)}
+                        className='flex items-center gap-1 text-xs font-semibold text-primary hover:underline'
+                      >
+                        <i className='bx bx-plus' aria-hidden='true' /> Nuevo
+                      </button>
+                    </div>
                     <select
                       id='entry-supplier'
                       value={supplierId}
@@ -427,6 +748,30 @@ export const InventoryManagementView = ({
           </FeaturePanel>
         </Box>
       </Box>
+
+      {showCreateProductModal ? (
+        <QuickCreateProductModal
+          onClose={() => setShowCreateProductModal(false)}
+          onConfirm={async (payload) => {
+            const created = await onQuickCreateProduct(payload);
+            if (created) onProductChange(created.id);
+            setShowCreateProductModal(false);
+          }}
+        />
+      ) : null}
+
+      {showCreateSupplierModal ? (
+        <QuickCreateModal
+          title='Nuevo proveedor'
+          placeholder='Ej. Distribuidora ABC'
+          onClose={() => setShowCreateSupplierModal(false)}
+          onConfirm={async (name) => {
+            const created = await onQuickCreateSupplier(name);
+            if (created) onSupplierChange(created.id);
+            setShowCreateSupplierModal(false);
+          }}
+        />
+      ) : null}
     </FeatureScreen>
   );
 };

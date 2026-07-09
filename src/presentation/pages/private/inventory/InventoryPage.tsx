@@ -33,6 +33,8 @@ const InventoryPage = () => {
       onExpiresAtChange={inventoryManagement.setExpiresAt}
       onNoteChange={inventoryManagement.setNote}
       onSubmit={inventoryManagement.submitForm}
+      onQuickCreateProduct={inventoryManagement.quickCreateProduct}
+      onQuickCreateSupplier={inventoryManagement.quickCreateSupplier}
     />
   );
 };

@@ -57,11 +57,15 @@ export const useInventoryManagement = () => {
         ]);
 
       setProducts((productsResponse.data as unknown as { items?: IProduct[] }).items ?? []);
-      setSuppliers(suppliersResponse.data.filter((supplier) => supplier.isActive));
-      setInventory(inventoryResponse.data);
-      setMovements(movementsResponse.data);
-      setBatches(batchesResponse.data);
-      setExpiringBatches(expiringResponse.data);
+      setSuppliers(
+        ((suppliersResponse.data as unknown as { items?: ISupplier[] }).items ?? []).filter(
+          (s) => s.isActive,
+        ),
+      );
+      setInventory((inventoryResponse.data as unknown as { items?: IInventoryItem[] }).items ?? []);
+      setMovements((movementsResponse.data as unknown as { items?: IInventoryMovement[] }).items ?? []);
+      setBatches((batchesResponse.data as unknown as { items?: IInventoryBatch[] }).items ?? []);
+      setExpiringBatches((expiringResponse.data as unknown as { items?: IInventoryBatch[] }).items ?? []);
     } catch (err) {
       setError(
         err instanceof Error
@@ -132,6 +136,48 @@ export const useInventoryManagement = () => {
     }
   };
 
+  const quickCreateProduct = async (payload: {
+    name: string;
+    description: string;
+    sku?: string;
+    price: number;
+    categoryId: string;
+    storeId?: string;
+  }): Promise<IProduct | null> => {
+    try {
+      const response = await ProductRepository.createProduct({
+        name: payload.name.trim(),
+        description: payload.description.trim() || payload.name.trim(),
+        sku: payload.sku?.trim() || undefined,
+        price: payload.price,
+        categoryId: payload.categoryId,
+        storeId: payload.storeId || undefined,
+        isActive: true,
+      });
+      const updated = await ProductRepository.getProducts();
+      setProducts((updated.data as unknown as { items?: IProduct[] }).items ?? []);
+      return response.data;
+    } catch {
+      return null;
+    }
+  };
+
+  const quickCreateSupplier = async (name: string): Promise<ISupplier | null> => {
+    try {
+      const response = await SuppliersRepository.createSupplier({ name });
+      // Reload suppliers so the new one appears in the dropdown
+      const updated = await SuppliersRepository.getSuppliers();
+      setSuppliers(
+        ((updated.data as unknown as { items?: ISupplier[] }).items ?? []).filter(
+          (s) => s.isActive,
+        ),
+      );
+      return response.data;
+    } catch {
+      return null;
+    }
+  };
+
   return {
     products,
     suppliers,
@@ -160,5 +206,7 @@ export const useInventoryManagement = () => {
     setExpiresAt,
     setNote,
     submitForm,
+    quickCreateProduct,
+    quickCreateSupplier,
   };
 };
