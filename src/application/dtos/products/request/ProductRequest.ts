@@ -6,6 +6,7 @@ export interface IProductsQuery {
   sortBy?: 'newest' | 'price_asc' | 'price_desc' | 'name_asc';
   minPrice?: number;
   maxPrice?: number;
+  limit?: number;
 }
 
 export interface ICreateProductRequest {

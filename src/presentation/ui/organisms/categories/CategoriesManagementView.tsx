@@ -1,4 +1,6 @@
+import { createPortal } from 'react-dom';
 import { ICategory } from '@/application/dtos/categories/response/CategoryResponse';
+import { IProduct } from '@/application/dtos/products/response/ProductResponse';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
@@ -7,6 +9,106 @@ import FeaturePanel from '@/presentation/ui/templates/feature/FeaturePanel';
 import FeatureScreen from '@/presentation/ui/templates/feature/FeatureScreen';
 import FeatureScreenHeader from '@/presentation/ui/templates/feature/FeatureScreenHeader';
 
+const CategoryProductsPanel = ({
+  category,
+  products,
+  loading,
+  onToggle,
+  onClose,
+}: {
+  category: ICategory;
+  products: IProduct[];
+  loading: boolean;
+  onToggle: (product: IProduct) => Promise<void>;
+  onClose: () => void;
+}) =>
+  createPortal(
+    <div
+      className='fixed inset-0 z-[100] flex items-center justify-center bg-neutral-dark/50 px-4 backdrop-blur-sm'
+      onClick={onClose}
+    >
+      <div
+        className='flex max-h-[80vh] w-full max-w-lg flex-col overflow-hidden rounded-[1.75rem] bg-white shadow-[0_24px_60px_rgba(15,23,42,0.22)]'
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className='flex items-center justify-between border-b border-neutral-gray/20 px-6 py-4'>
+          <div>
+            <h2 className='text-lg font-bold text-neutral-dark'>{category.name}</h2>
+            <p className='text-sm text-neutral-dark/55'>
+              {products.length} {products.length === 1 ? 'producto' : 'productos'} asociados
+            </p>
+          </div>
+          <button
+            type='button'
+            onClick={onClose}
+            className='flex h-8 w-8 items-center justify-center rounded-full text-neutral-dark/50 transition hover:bg-neutral-gray/20 hover:text-neutral-dark'
+            aria-label='Cerrar'
+          >
+            <i className='bx bx-x text-xl' aria-hidden='true' />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className='overflow-y-auto p-4'>
+          {loading ? (
+            <p className='py-8 text-center text-sm text-neutral-dark/55'>Cargando productos...</p>
+          ) : products.length === 0 ? (
+            <div className='rounded-2xl border border-dashed border-neutral-gray/40 bg-background px-6 py-10 text-center'>
+              <p className='text-sm text-neutral-dark/55'>No hay productos en esta categoría.</p>
+            </div>
+          ) : (
+            <div className='space-y-2'>
+              {products.map((product) => (
+                <div
+                  key={product.id}
+                  className='flex items-center gap-3 rounded-2xl border border-neutral-gray/20 px-4 py-3'
+                >
+                  {product.imageUrl ? (
+                    <img
+                      src={product.imageUrl}
+                      alt={product.name}
+                      className='h-10 w-10 flex-shrink-0 rounded-xl object-cover'
+                    />
+                  ) : (
+                    <div className='flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-neutral-gray/20 text-neutral-dark/30'>
+                      <i className='bx bx-image text-lg' aria-hidden='true' />
+                    </div>
+                  )}
+                  <div className='min-w-0 flex-1'>
+                    <p className='truncate text-sm font-semibold text-neutral-dark'>{product.name}</p>
+                    <span
+                      className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        product.isActive
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-100 text-red-700'
+                      }`}
+                    >
+                      {product.isActive ? 'Activo' : 'Inactivo'}
+                    </span>
+                  </div>
+                  <button
+                    type='button'
+                    onClick={() => void onToggle(product)}
+                    disabled={loading}
+                    className={`flex-shrink-0 rounded-xl px-3 py-1.5 text-xs font-semibold transition disabled:opacity-50 ${
+                      product.isActive
+                        ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                        : 'bg-green-50 text-green-700 hover:bg-green-100'
+                    }`}
+                  >
+                    {product.isActive ? 'Desactivar' : 'Activar'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+
 interface CategoriesManagementViewProps {
   categories: ICategory[];
   name: string;
@@ -14,12 +116,18 @@ interface CategoriesManagementViewProps {
   loading: boolean;
   submitting: boolean;
   error: string | null;
+  viewingCategory: ICategory | null;
+  categoryProducts: IProduct[];
+  productsLoading: boolean;
   onNameChange: (value: string) => void;
   onSubmit: () => Promise<boolean>;
   onEdit: (category: ICategory) => void;
   onToggleStatus: (category: ICategory) => Promise<void>;
   onReset: () => void;
   onReload: () => Promise<void>;
+  onViewProducts: (category: ICategory) => void;
+  onCloseProducts: () => void;
+  onToggleProduct: (product: IProduct) => Promise<void>;
 }
 
 export const CategoriesManagementView = ({
@@ -29,12 +137,18 @@ export const CategoriesManagementView = ({
   loading,
   submitting,
   error,
+  viewingCategory,
+  categoryProducts,
+  productsLoading,
   onNameChange,
   onSubmit,
   onEdit,
   onToggleStatus,
   onReset,
   onReload,
+  onViewProducts,
+  onCloseProducts,
+  onToggleProduct,
 }: CategoriesManagementViewProps) => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -119,16 +233,22 @@ export const CategoriesManagementView = ({
                     <Typography variant="h3" className="text-lg font-semibold">
                       {category.name}
                     </Typography>
-                    <Typography className="mt-1 text-sm text-neutral-dark/65">
-                      Estado:{' '}
-                      <span
-                        className={
-                          category.isActive ? 'text-success' : 'text-error'
-                        }
+                    <Box className='mt-1 flex flex-wrap items-center gap-2'>
+                      <Typography className="text-sm text-neutral-dark/65">
+                        Estado:{' '}
+                        <span className={category.isActive ? 'text-success' : 'text-error'}>
+                          {category.isActive ? 'Activa' : 'Inactiva'}
+                        </span>
+                      </Typography>
+                      <button
+                        type='button'
+                        onClick={() => void onViewProducts(category)}
+                        className='inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary transition hover:bg-primary/20'
                       >
-                        {category.isActive ? 'Activa' : 'Inactiva'}
-                      </span>
-                    </Typography>
+                        <i className='bx bx-package text-sm' aria-hidden='true' />
+                        {category.productCount ?? 0} productos
+                      </button>
+                    </Box>
                   </Box>
 
                   <Box className="flex gap-3">
@@ -155,6 +275,16 @@ export const CategoriesManagementView = ({
           )}
         </FeaturePanel>
       </Box>
+
+      {viewingCategory ? (
+        <CategoryProductsPanel
+          category={viewingCategory}
+          products={categoryProducts}
+          loading={productsLoading}
+          onToggle={onToggleProduct}
+          onClose={onCloseProducts}
+        />
+      ) : null}
     </FeatureScreen>
   );
 };

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { ICategory } from '@/application/dtos/categories/response/CategoryResponse';
+import { IProduct } from '@/application/dtos/products/response/ProductResponse';
 import { CategoriesRepository } from '@/infrastructure/repositories/api/categories/CategoriesRepository';
+import { ProductRepository } from '@/infrastructure/repositories/api/products/ProductsRepository';
 
 export const useCategoriesManagement = () => {
   const [categories, setCategories] = useState<ICategory[]>([]);
@@ -9,6 +11,11 @@ export const useCategoriesManagement = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Products panel
+  const [viewingCategory, setViewingCategory] = useState<ICategory | null>(null);
+  const [categoryProducts, setCategoryProducts] = useState<IProduct[]>([]);
+  const [productsLoading, setProductsLoading] = useState(false);
 
   const loadCategories = async () => {
     setLoading(true);
@@ -97,6 +104,43 @@ export const useCategoriesManagement = () => {
     }
   };
 
+  const loadCategoryProducts = async (categoryId: string) => {
+    setProductsLoading(true);
+    try {
+      const response = await ProductRepository.getProducts({ categoryId, limit: 500 });
+      const data = response.data as unknown as { items?: IProduct[] };
+      setCategoryProducts(data.items ?? []);
+    } catch {
+      setCategoryProducts([]);
+    } finally {
+      setProductsLoading(false);
+    }
+  };
+
+  const openProductsPanel = async (category: ICategory) => {
+    setViewingCategory(category);
+    await loadCategoryProducts(category.id);
+  };
+
+  const closeProductsPanel = () => {
+    setViewingCategory(null);
+    setCategoryProducts([]);
+  };
+
+  const toggleCategoryProduct = async (product: IProduct) => {
+    setProductsLoading(true);
+    try {
+      await ProductRepository.updateStatus(product.id, !product.isActive);
+      if (viewingCategory) {
+        await loadCategoryProducts(viewingCategory.id);
+      }
+    } catch {
+      // ignore — product list will still reflect last known state
+    } finally {
+      setProductsLoading(false);
+    }
+  };
+
   return {
     categories,
     name,
@@ -104,11 +148,17 @@ export const useCategoriesManagement = () => {
     loading,
     submitting,
     error,
+    viewingCategory,
+    categoryProducts,
+    productsLoading,
     setName,
     submitForm,
     startEditing,
     toggleStatus,
     resetForm,
     reload: loadCategories,
+    openProductsPanel,
+    closeProductsPanel,
+    toggleCategoryProduct,
   };
 };
