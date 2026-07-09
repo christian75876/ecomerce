@@ -110,6 +110,10 @@ const NavigationMenu = () => {
             location.pathname.startsWith(item.path),
           );
 
+          const activeItem = group.items.find((item) =>
+            location.pathname.startsWith(item.path),
+          );
+
           return (
             <Box
               key={group.label}
@@ -144,16 +148,30 @@ const NavigationMenu = () => {
                         : 'text-neutral-dark/65 hover:bg-white hover:text-neutral-dark',
                     )}
                   >
-                    {group.label}
-                    <SimpleIcon name='bx-chevron-down' size={16} />
+                    {activeItem ? (
+                      <>
+                        <SimpleIcon name={activeItem.icon} size={16} className='text-primary' />
+                        <span className='text-primary'>{activeItem.label}</span>
+                      </>
+                    ) : (
+                      group.label
+                    )}
+                    <SimpleIcon
+                      name={openGroup === group.label ? 'bx-chevron-up' : 'bx-chevron-down'}
+                      size={16}
+                    />
                   </button>
 
                   {openGroup === group.label ? (
                     <Box className='absolute left-0 top-[calc(100%+0.75rem)] z-50 min-w-[240px] rounded-[1.35rem] border border-neutral-gray/40 bg-white p-2 shadow-[0_24px_60px_rgba(15,23,42,0.14)]'>
+                      <p className='px-4 pb-2 pt-1 text-[10px] font-semibold uppercase tracking-widest text-neutral-dark/35'>
+                        {group.label}
+                      </p>
                       {group.items.map((item) => (
                         <NavLink
                           key={item.path}
                           to={item.path}
+                          onClick={() => setOpenGroup(null)}
                           className={({ isActive: itemActive }) =>
                             clsx(
                               'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all',
