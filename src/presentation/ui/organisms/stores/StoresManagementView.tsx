@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
 import { StoreFormState } from '@/application/useCases/stores/useStoresManagement';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
@@ -9,6 +9,7 @@ import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import ColorPicker from '@/presentation/ui/atoms/color-picker/ColorPicker';
 import { useMenuCategories } from '@/application/useCases/menu-categories/useMenuCategories';
 import MenuCategoriesManager from '@/presentation/ui/organisms/menu-categories/MenuCategoriesManager';
+import { ADMIN_WHATSAPP } from '@/shared/config/appContact';
 
 interface StoresManagementViewProps {
   stores: IStore[];
@@ -17,6 +18,8 @@ interface StoresManagementViewProps {
   loading: boolean;
   submitting: boolean;
   error: string | null;
+  isSeller?: boolean;
+  isDirty?: boolean;
   onFormChange: <K extends keyof StoreFormState>(key: K, value: StoreFormState[K]) => void;
   onSubmit: () => Promise<boolean>;
   onEdit: (store: IStore) => void;
@@ -128,7 +131,169 @@ const fontClass = (style: StoreFormState['fontStyle']) => {
   return 'font-sans';
 };
 
-const StorePreview = ({ form }: { form: StoreFormState }) => {
+const ImageUrlInput = ({
+  id,
+  label,
+  value,
+  onChange,
+  disabled,
+  placeholder = 'https://...',
+  variant = 'logo',
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  disabled?: boolean;
+  placeholder?: string;
+  variant?: 'logo' | 'banner';
+}) => {
+  const [imgError, setImgError] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setImgError(false);
+    onChange(e.target.value);
+  };
+
+  const showPreview = Boolean(value) && !imgError;
+  const showError = Boolean(value) && imgError;
+
+  return (
+    <div className='space-y-2'>
+      <label htmlFor={id} className='block text-sm font-medium text-neutral-dark/70'>{label}</label>
+      <input
+        id={id}
+        type='text'
+        value={value}
+        onChange={handleChange}
+        disabled={disabled}
+        placeholder={placeholder}
+        className='w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50'
+      />
+      {showPreview ? (
+        variant === 'banner' ? (
+          <div className='relative overflow-hidden rounded-xl border border-neutral-gray/20 shadow-sm' style={{ aspectRatio: '4/1' }}>
+            <img
+              src={value}
+              alt={label}
+              onError={() => setImgError(true)}
+              className='h-full w-full object-cover'
+            />
+          </div>
+        ) : (
+          <div className='flex items-center gap-3'>
+            <div className='relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border border-neutral-gray/20 shadow-sm'>
+              <img
+                src={value}
+                alt={label}
+                onError={() => setImgError(true)}
+                className='h-full w-full object-cover'
+              />
+            </div>
+            <p className='text-xs text-neutral-dark/45'>Vista previa del logo</p>
+          </div>
+        )
+      ) : showError ? (
+        <div className='flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-500'>
+          <i className='bx bx-error-circle text-base' aria-hidden='true' />
+          No se pudo cargar la imagen — verifica la URL
+        </div>
+      ) : null}
+    </div>
+  );
+};
+
+const SubscriptionInfo = ({ expiresAt }: { expiresAt: string }) => {
+  const hasExpiry = Boolean(expiresAt);
+  const expired = hasExpiry && new Date(expiresAt) < new Date();
+  const daysLeft = hasExpiry
+    ? Math.ceil((new Date(expiresAt).getTime() - Date.now()) / 86400000)
+    : null;
+
+  const statusColor = expired
+    ? 'border-red-200 bg-red-50/60'
+    : hasExpiry && daysLeft! <= 7
+      ? 'border-orange-200 bg-orange-50/60'
+      : 'border-blue-200 bg-blue-50/40';
+
+  const wppMsg = encodeURIComponent(
+    expired
+      ? '¡Hola! Mi suscripción en Hot Commerce expiró. Quisiera renovarla.'
+      : hasExpiry
+        ? `¡Hola! Quisiera renovar mi suscripción en Hot Commerce antes de que venza el ${new Date(expiresAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}.`
+        : '¡Hola! Quisiera consultar los planes de suscripción de Hot Commerce.',
+  );
+
+  return (
+    <div className={`rounded-2xl border p-4 space-y-3 ${statusColor}`}>
+      <div className='flex items-center gap-2'>
+        <i className='bx bx-credit-card text-base text-blue-500' aria-hidden='true' />
+        <p className='text-xs font-semibold uppercase tracking-wide text-blue-600'>Suscripción mensual</p>
+      </div>
+
+      {expired ? (
+        <div className='flex items-center gap-2 rounded-xl bg-red-100 px-3 py-2'>
+          <i className='bx bx-error-circle text-lg text-red-500' aria-hidden='true' />
+          <div>
+            <p className='text-sm font-semibold text-red-700'>Suscripción expirada</p>
+            <p className='text-xs text-red-500'>
+              Venció el {new Date(expiresAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}. Tu tienda está oculta en el marketplace.
+            </p>
+          </div>
+        </div>
+      ) : hasExpiry && daysLeft! <= 7 ? (
+        <div className='flex items-center gap-2 rounded-xl bg-orange-100 px-3 py-2'>
+          <i className='bx bx-time text-lg text-orange-500' aria-hidden='true' />
+          <div>
+            <p className='text-sm font-semibold text-orange-700'>Vence pronto — {daysLeft} día{daysLeft === 1 ? '' : 's'}</p>
+            <p className='text-xs text-orange-500'>
+              Tu suscripción expira el {new Date(expiresAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}.
+            </p>
+          </div>
+        </div>
+      ) : hasExpiry ? (
+        <div className='flex items-center gap-2 rounded-xl bg-green-50 px-3 py-2'>
+          <i className='bx bx-check-circle text-lg text-green-500' aria-hidden='true' />
+          <div>
+            <p className='text-sm font-semibold text-green-700'>Activa hasta el {new Date(expiresAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+            <p className='text-xs text-green-600'>Quedan {daysLeft} días de suscripción.</p>
+          </div>
+        </div>
+      ) : (
+        <div className='flex items-center gap-2 rounded-xl bg-blue-50 px-3 py-2'>
+          <i className='bx bx-infinite text-lg text-blue-500' aria-hidden='true' />
+          <div>
+            <p className='text-sm font-semibold text-blue-700'>Sin vencimiento</p>
+            <p className='text-xs text-blue-500'>Tu tienda está visible indefinidamente en el marketplace.</p>
+          </div>
+        </div>
+      )}
+
+      <div className='border-t border-slate-200/60 pt-3'>
+        <p className='mb-2 text-xs text-slate-500'>
+          Para renovar o contratar un plan, contáctanos directamente por WhatsApp.
+        </p>
+        <a
+          href={`https://wa.me/${ADMIN_WHATSAPP}?text=${wppMsg}`}
+          target='_blank'
+          rel='noopener noreferrer'
+          className='inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95'
+        >
+          <i className='bx bxl-whatsapp text-base' aria-hidden='true' />
+          Renovar / contratar plan
+        </a>
+      </div>
+    </div>
+  );
+};
+
+const StorePreview = ({ form, wide = false }: { form: StoreFormState; wide?: boolean }) => {
+  const [logoError, setLogoError] = useState(false);
+  const [bannerError, setBannerError] = useState(false);
+
+  useEffect(() => { setLogoError(false); }, [form.logoUrl]);
+  useEffect(() => { setBannerError(false); }, [form.bannerUrl]);
+
   const primary = form.primaryColor || '#6366f1';
   const secondary = form.secondaryColor || '#a5b4fc';
   const accent = form.accentColor || '#f59e0b';
@@ -137,6 +302,9 @@ const StorePreview = ({ form }: { form: StoreFormState }) => {
   const btnRadius = buttonRadiusClass(form.buttonStyle);
   const font = fontClass(form.fontStyle);
 
+  const hasBanner = Boolean(form.bannerUrl) && !bannerError;
+  const hasLogo = Boolean(form.logoUrl) && !logoError;
+
   const coverBg =
     form.coverStyle === 'SOLID'
       ? primary
@@ -144,7 +312,17 @@ const StorePreview = ({ form }: { form: StoreFormState }) => {
         ? '#f8fafc'
         : `linear-gradient(135deg, ${primary} 0%, ${secondary} 100%)`;
 
-  const coverText = form.coverStyle === 'MINIMAL' ? text : '#ffffff';
+  const coverTextColor = form.coverStyle === 'MINIMAL' ? text : '#ffffff';
+  const coverMinHeight = wide ? 180 : 88;
+  const logoSize = wide ? 'h-16 w-16' : 'h-11 w-11';
+  const logoText = wide ? 'text-2xl' : 'text-lg';
+  const storeName = wide ? 'text-xl font-bold' : 'text-sm font-bold';
+  const storeDesc = wide ? 'text-xs opacity-75' : 'text-[10px] opacity-75';
+  const productCols = wide
+    ? (form.layoutStyle === 'LIST' ? 'flex flex-col gap-3' : 'grid grid-cols-3 gap-3')
+    : (form.layoutStyle === 'LIST' ? 'flex flex-col gap-2' : 'grid grid-cols-2 gap-2');
+  const productCount = wide ? [1, 2, 3] : [1, 2];
+  const productImgHeight = wide ? 'h-24' : 'h-16';
 
   return (
     <div
@@ -152,35 +330,59 @@ const StorePreview = ({ form }: { form: StoreFormState }) => {
       style={{ backgroundColor: bg, color: text }}
     >
       {/* Cover */}
-      <div
-        className='px-5 py-6'
-        style={{ background: coverBg, color: coverText }}
-      >
-        <div className='flex items-center gap-3'>
-          <div
-            className='flex h-12 w-12 items-center justify-center rounded-xl text-lg font-bold text-white shadow'
-            style={{ backgroundColor: accent }}
-          >
-            {(form.name || 'T').charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <p className='text-lg font-bold'>{form.name || 'Nombre de tu tienda'}</p>
-            <p className='text-xs opacity-75'>{form.description ? form.description.slice(0, 50) : 'Descripción breve'}</p>
+      <div className='relative overflow-hidden' style={{ minHeight: coverMinHeight }}>
+        {hasBanner ? (
+          <>
+            <img
+              src={form.bannerUrl}
+              alt=''
+              onError={() => setBannerError(true)}
+              className='absolute inset-0 h-full w-full object-cover'
+            />
+            <div className='absolute inset-0 bg-black/40' />
+          </>
+        ) : (
+          <div className='absolute inset-0' style={{ background: coverBg }} />
+        )}
+
+        <div
+          className={`relative z-10 flex items-end gap-4 px-6 ${wide ? 'pb-5 pt-10' : 'py-5 px-5'}`}
+          style={{ color: hasBanner ? '#ffffff' : coverTextColor }}
+        >
+          {hasLogo ? (
+            <img
+              src={form.logoUrl}
+              alt=''
+              onError={() => setLogoError(true)}
+              className={`${logoSize} flex-shrink-0 rounded-xl border-2 border-white/30 object-cover shadow-md`}
+            />
+          ) : (
+            <div
+              className={`${logoSize} flex flex-shrink-0 items-center justify-center rounded-xl font-bold text-white shadow-md ${logoText}`}
+              style={{ backgroundColor: accent }}
+            >
+              {(form.name || 'T').charAt(0).toUpperCase()}
+            </div>
+          )}
+          <div className='min-w-0 pb-1'>
+            <p className={`truncate ${storeName}`}>{form.name || 'Nombre de tu tienda'}</p>
+            <p className={`truncate ${storeDesc}`}>
+              {form.description ? form.description.slice(0, wide ? 80 : 50) : 'Descripción breve'}
+            </p>
           </div>
         </div>
       </div>
 
       {/* Body */}
-      <div className='p-4' style={{ backgroundColor: bg }}>
-        {/* Mini product cards */}
-        <div className={form.layoutStyle === 'LIST' ? 'flex flex-col gap-2' : 'grid grid-cols-2 gap-2'}>
-          {[1, 2].map((i) => (
+      <div className={wide ? 'p-5' : 'p-4'} style={{ backgroundColor: bg }}>
+        <div className={productCols}>
+          {productCount.map((i) => (
             <div
               key={i}
               className='overflow-hidden rounded-xl border border-neutral-gray/15'
               style={{ backgroundColor: '#fff' }}
             >
-              <div className='h-16 w-full' style={{ backgroundColor: `${primary}15` }} />
+              <div className={`${productImgHeight} w-full`} style={{ backgroundColor: `${primary}15` }} />
               <div className='p-2'>
                 <div className='h-2.5 w-3/4 rounded bg-neutral-200' />
                 <div className='mt-1.5 flex items-center justify-between'>
@@ -197,7 +399,6 @@ const StorePreview = ({ form }: { form: StoreFormState }) => {
           ))}
         </div>
 
-        {/* CTA button */}
         <div
           className={`mt-3 py-2 text-center text-xs font-bold text-white ${btnRadius}`}
           style={{ backgroundColor: primary }}
@@ -216,6 +417,8 @@ export const StoresManagementView = ({
   loading,
   submitting,
   error,
+  isSeller = false,
+  isDirty = false,
   onFormChange,
   onSubmit,
   onEdit,
@@ -248,18 +451,20 @@ export const StoresManagementView = ({
     <Box className='space-y-6'>
       <Box>
         <Typography variant='h1' className='text-3xl font-bold'>
-          Tiendas
+          {isSeller ? 'Mi tienda' : 'Tiendas'}
         </Typography>
         <Typography className='mt-2 text-neutral-dark/70'>
-          Configura el branding completo de cada tienda — colores, tipografía, layout y más.
+          {isSeller
+            ? 'Configura el branding de tu tienda — colores, tipografía, layout y más.'
+            : 'Configura el branding completo de cada tienda — colores, tipografía, layout y más.'}
         </Typography>
       </Box>
 
-      <Box className='grid gap-6 xl:grid-cols-[1fr_340px]'>
+      <Box className={`grid gap-6 ${isSeller ? 'grid-cols-1' : 'xl:grid-cols-[1fr_340px]'}`}>
         {/* ── Editor ── */}
-        <Box className='rounded-[1.75rem] border border-neutral-gray/30 bg-white p-6 shadow-sm'>
+        <Box className={`rounded-[1.75rem] border border-neutral-gray/30 bg-white p-6 shadow-sm ${isSeller ? 'order-2' : 'order-1'}`}>
           <Typography variant='h2' className='text-xl font-semibold'>
-            {editingId ? 'Editar tienda' : 'Nueva tienda'}
+            {editingId ? 'Editar tienda' : isSeller ? 'Mi tienda' : 'Nueva tienda'}
           </Typography>
 
           {/* Presets */}
@@ -341,27 +546,26 @@ export const StoresManagementView = ({
                   />
                 </Box>
 
-                <Box className='grid gap-4 sm:grid-cols-2'>
-                  <Box>
-                    <Label htmlFor='store-logo'>Logo URL</Label>
-                    <Input
-                      id='store-logo'
-                      value={form.logoUrl}
-                      onChange={(e) => onFormChange('logoUrl', e.target.value)}
-                      disabled={submitting}
-                      placeholder='https://...'
-                    />
-                  </Box>
-                  <Box>
-                    <Label htmlFor='store-banner'>Banner URL</Label>
-                    <Input
-                      id='store-banner'
-                      value={form.bannerUrl}
-                      onChange={(e) => onFormChange('bannerUrl', e.target.value)}
-                      disabled={submitting}
-                      placeholder='https://...'
-                    />
-                  </Box>
+                <Box>
+                  <ImageUrlInput
+                    id='store-logo'
+                    label='Logo URL'
+                    value={form.logoUrl}
+                    onChange={(v) => onFormChange('logoUrl', v)}
+                    disabled={submitting}
+                    variant='logo'
+                  />
+                </Box>
+
+                <Box>
+                  <ImageUrlInput
+                    id='store-banner'
+                    label='Banner URL'
+                    value={form.bannerUrl}
+                    onChange={(v) => onFormChange('bannerUrl', v)}
+                    disabled={submitting}
+                    variant='banner'
+                  />
                 </Box>
 
                 <Box className='grid gap-4 sm:grid-cols-3'>
@@ -451,6 +655,7 @@ export const StoresManagementView = ({
                   Tienda activa y visible en el marketplace
                 </label>
 
+                {/* +18 — editable by both admin and seller */}
                 <label className='flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50/50 px-4 py-3 text-sm text-neutral-dark'>
                   <input
                     type='checkbox'
@@ -464,64 +669,113 @@ export const StoresManagementView = ({
                   </span>
                 </label>
 
-                <label className='flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50/50 px-4 py-3 text-sm text-neutral-dark'>
-                  <input
-                    type='checkbox'
-                    checked={form.isPremiumAdvertiser ?? false}
-                    onChange={(e) => onFormChange('isPremiumAdvertiser', e.target.checked)}
-                    disabled={submitting}
-                  />
-                  <span>
-                    <span className='mr-1.5 inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-600'>Patrocinado</span>
-                    Tienda con publicidad activa — sus productos aparecen intercalados en el catálogo
-                  </span>
-                </label>
+                {isSeller ? (
+                  <div className='space-y-3'>
+                    {/* Patrocinado info */}
+                    <div className={`rounded-2xl border p-4 ${form.isPremiumAdvertiser ? 'border-amber-200 bg-amber-50/50' : 'border-neutral-gray/20 bg-neutral-50'}`}>
+                      <div className='flex items-center justify-between gap-3'>
+                        <div className='flex items-center gap-2'>
+                          <span className='inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-600'>Patrocinado</span>
+                          <p className='text-sm font-medium text-neutral-dark'>Publicidad en el catálogo</p>
+                        </div>
+                        {form.isPremiumAdvertiser ? (
+                          <span className='rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-600'>Activo</span>
+                        ) : (
+                          <span className='rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-semibold text-neutral-dark/40'>Inactivo</span>
+                        )}
+                      </div>
+                      <p className='mt-1.5 text-xs text-neutral-dark/55'>
+                        {form.isPremiumAdvertiser
+                          ? 'Tus productos aparecen destacados e intercalados en el catálogo principal.'
+                          : 'Con el plan Patrocinado tus productos aparecen destacados en el catálogo y llegan a más clientes.'}
+                      </p>
+                      {form.isPremiumAdvertiser ? (
+                        <a
+                          href={`https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent('Hola, quisiera consultar sobre mi plan Patrocinado activo.')}`}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='mt-3 inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-amber-600 shadow-sm transition hover:bg-amber-50 active:scale-95'
+                        >
+                          <i className='bx bxl-whatsapp text-sm' aria-hidden='true' />
+                          Consultar mi plan
+                        </a>
+                      ) : (
+                        <a
+                          href={`https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent('Hola, estoy interesado en el plan Patrocinado para destacar mis productos en el catálogo.')}`}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='mt-3 inline-flex items-center gap-1.5 rounded-xl bg-[#25D366] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95'
+                        >
+                          <i className='bx bxl-whatsapp text-sm' aria-hidden='true' />
+                          Contratar plan patrocinado
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <label className='flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50/50 px-4 py-3 text-sm text-neutral-dark'>
+                    <input
+                      type='checkbox'
+                      checked={form.isPremiumAdvertiser ?? false}
+                      onChange={(e) => onFormChange('isPremiumAdvertiser', e.target.checked)}
+                      disabled={submitting}
+                    />
+                    <span>
+                      <span className='mr-1.5 inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-600'>Patrocinado</span>
+                      Tienda con publicidad activa — sus productos aparecen intercalados en el catálogo
+                    </span>
+                  </label>
+                )}
 
                 {/* Subscription expiry */}
-                <div className='rounded-2xl border border-blue-200 bg-blue-50/40 p-4 space-y-3'>
-                  <p className='text-xs font-semibold uppercase tracking-wide text-blue-600'>Suscripción mensual</p>
-                  <p className='text-xs text-slate-500'>Sin fecha de vencimiento la tienda siempre está activa. Con fecha, se oculta automáticamente del marketplace al expirar.</p>
-                  <div className='flex flex-wrap items-center gap-2'>
-                    <input
-                      type='date'
-                      value={form.subscriptionExpiresAt ?? ''}
-                      onChange={(e) => onFormChange('subscriptionExpiresAt', e.target.value)}
-                      disabled={submitting}
-                      className='rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20'
-                    />
-                    <button type='button' disabled={submitting}
-                      onClick={() => { const d = new Date(); d.setDate(d.getDate() + 30); onFormChange('subscriptionExpiresAt', d.toISOString().split('T')[0]); }}
-                      className='rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:border-primary/40 hover:text-primary transition'>
-                      +30 días
-                    </button>
-                    <button type='button' disabled={submitting}
-                      onClick={() => { const d = new Date(); d.setDate(d.getDate() + 60); onFormChange('subscriptionExpiresAt', d.toISOString().split('T')[0]); }}
-                      className='rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:border-primary/40 hover:text-primary transition'>
-                      +60 días
-                    </button>
-                    <button type='button' disabled={submitting}
-                      onClick={() => { const d = new Date(); d.setDate(d.getDate() + 90); onFormChange('subscriptionExpiresAt', d.toISOString().split('T')[0]); }}
-                      className='rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:border-primary/40 hover:text-primary transition'>
-                      +90 días
-                    </button>
-                    {form.subscriptionExpiresAt ? (
+                {isSeller ? (
+                  <SubscriptionInfo expiresAt={form.subscriptionExpiresAt} />
+                ) : (
+                  <div className='rounded-2xl border border-blue-200 bg-blue-50/40 p-4 space-y-3'>
+                    <p className='text-xs font-semibold uppercase tracking-wide text-blue-600'>Suscripción mensual</p>
+                    <p className='text-xs text-slate-500'>Sin fecha de vencimiento la tienda siempre está activa. Con fecha, se oculta automáticamente del marketplace al expirar.</p>
+                    <div className='flex flex-wrap items-center gap-2'>
+                      <input
+                        type='date'
+                        value={form.subscriptionExpiresAt ?? ''}
+                        onChange={(e) => onFormChange('subscriptionExpiresAt', e.target.value)}
+                        disabled={submitting}
+                        className='rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20'
+                      />
                       <button type='button' disabled={submitting}
-                        onClick={() => onFormChange('subscriptionExpiresAt', '')}
-                        className='rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-500 hover:bg-red-100 transition'>
-                        Sin vencimiento
+                        onClick={() => { const d = new Date(); d.setDate(d.getDate() + 30); onFormChange('subscriptionExpiresAt', d.toISOString().split('T')[0]); }}
+                        className='rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:border-primary/40 hover:text-primary transition'>
+                        +30 días
                       </button>
-                    ) : null}
+                      <button type='button' disabled={submitting}
+                        onClick={() => { const d = new Date(); d.setDate(d.getDate() + 60); onFormChange('subscriptionExpiresAt', d.toISOString().split('T')[0]); }}
+                        className='rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:border-primary/40 hover:text-primary transition'>
+                        +60 días
+                      </button>
+                      <button type='button' disabled={submitting}
+                        onClick={() => { const d = new Date(); d.setDate(d.getDate() + 90); onFormChange('subscriptionExpiresAt', d.toISOString().split('T')[0]); }}
+                        className='rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:border-primary/40 hover:text-primary transition'>
+                        +90 días
+                      </button>
+                      {form.subscriptionExpiresAt ? (
+                        <button type='button' disabled={submitting}
+                          onClick={() => onFormChange('subscriptionExpiresAt', '')}
+                          className='rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-500 hover:bg-red-100 transition'>
+                          Sin vencimiento
+                        </button>
+                      ) : null}
+                    </div>
+                    {form.subscriptionExpiresAt ? (
+                      <p className={`text-xs font-medium ${new Date(form.subscriptionExpiresAt) < new Date() ? 'text-red-500' : 'text-green-600'}`}>
+                        {new Date(form.subscriptionExpiresAt) < new Date()
+                          ? '⚠ Esta fecha ya expiró — la tienda está oculta en el marketplace'
+                          : `Visible hasta el ${new Date(form.subscriptionExpiresAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}`}
+                      </p>
+                    ) : (
+                      <p className='text-xs text-slate-400'>Sin fecha — visible indefinidamente</p>
+                    )}
                   </div>
-                  {form.subscriptionExpiresAt ? (
-                    <p className={`text-xs font-medium ${new Date(form.subscriptionExpiresAt) < new Date() ? 'text-red-500' : 'text-green-600'}`}>
-                      {new Date(form.subscriptionExpiresAt) < new Date()
-                        ? '⚠ Esta fecha ya expiró — la tienda está oculta en el marketplace'
-                        : `Visible hasta el ${new Date(form.subscriptionExpiresAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}`}
-                    </p>
-                  ) : (
-                    <p className='text-xs text-slate-400'>Sin fecha — visible indefinidamente</p>
-                  )}
-                </div>
+                )}
               </Box>
             ) : null}
 
@@ -741,21 +995,27 @@ export const StoresManagementView = ({
               </Box>
             ) : null}
 
-            <Box className='flex gap-3 pt-2'>
+            <Box className='flex items-center gap-3 pt-2'>
               <Button type='submit' variant='primary' loading={submitting}>
-                {submitting ? 'Guardando...' : editingId ? 'Guardar cambios' : 'Crear tienda'}
+                {submitting ? 'Guardando...' : 'Guardar cambios'}
               </Button>
-              {editingId ? (
+              {editingId && !isSeller ? (
                 <Button type='button' variant='outline' onClick={onReset}>
                   Cancelar
                 </Button>
+              ) : null}
+              {isDirty && !submitting ? (
+                <span className='flex items-center gap-1.5 text-xs font-medium text-amber-600'>
+                  <span className='h-2 w-2 rounded-full bg-amber-400' />
+                  Cambios sin guardar
+                </span>
               ) : null}
             </Box>
           </form>
         </Box>
 
         {/* ── Right column: Preview + Stores list ── */}
-        <Box className='flex flex-col gap-6'>
+        <Box className={`flex flex-col gap-6 ${isSeller ? 'order-1' : 'order-2'}`}>
           {/* Live Preview */}
           <Box className='rounded-[1.75rem] border border-neutral-gray/30 bg-white p-5 shadow-sm'>
             <Box className='mb-3 flex items-center gap-2'>
@@ -764,11 +1024,11 @@ export const StoresManagementView = ({
                 Vista previa en tiempo real
               </Typography>
             </Box>
-            <StorePreview form={form} />
+            <StorePreview form={form} wide={isSeller} />
           </Box>
 
-          {/* Stores list */}
-          <Box className='rounded-[1.75rem] border border-neutral-gray/30 bg-white p-5 shadow-sm'>
+          {/* Stores list — hidden for sellers (they only have one store, always in edit mode) */}
+          {!isSeller ? <Box className='rounded-[1.75rem] border border-neutral-gray/30 bg-white p-5 shadow-sm'>
             <Typography variant='h2' className='text-base font-semibold'>
               Tiendas registradas
             </Typography>
@@ -843,7 +1103,7 @@ export const StoresManagementView = ({
                 </Box>
               ))}
             </Box>
-          </Box>
+          </Box> : null}
           {/* Menu categories — only when editing a restaurant */}
           {editingId && form.storeType === 'RESTAURANT' ? (
             <Box className='rounded-[1.75rem] border border-amber-200 bg-amber-50/30 p-5 shadow-sm'>

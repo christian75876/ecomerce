@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
 import { StoresRepository } from '@/infrastructure/repositories/api/stores/StoresRepository';
+import { getAuthenticatedRole } from '@/shared/utils/checkIsUserAuthenticated.util';
 
 export type StoreFormState = {
   name: string;
@@ -23,7 +24,7 @@ export type StoreFormState = {
   isActive: boolean;
   isAdultContent: boolean;
   isPremiumAdvertiser: boolean;
-  subscriptionExpiresAt: string; // ISO date string YYYY-MM-DD or empty = no expiry
+  subscriptionExpiresAt: string;
   storeType: 'STORE' | 'RESTAURANT';
   menuPdfUrl: string;
   deliveryOptions: 'DELIVERY' | 'PICKUP' | 'BOTH';
@@ -56,20 +57,66 @@ const initialStoreForm: StoreFormState = {
   deliveryOptions: 'BOTH',
 };
 
+function storeToForm(store: IStore): StoreFormState {
+  return {
+    name: store.name,
+    slug: store.slug,
+    description: store.description ?? '',
+    logoUrl: store.logoUrl ?? '',
+    bannerUrl: store.bannerUrl ?? '',
+    primaryColor: store.primaryColor ?? '#6366f1',
+    secondaryColor: store.secondaryColor ?? '#a5b4fc',
+    phone: store.phone ?? '',
+    whatsappNumber: store.whatsappNumber ?? '',
+    email: store.email ?? '',
+    isActive: store.isActive,
+    isAdultContent: store.isAdultContent ?? false,
+    isPremiumAdvertiser: store.isPremiumAdvertiser ?? false,
+    subscriptionExpiresAt: store.subscriptionExpiresAt
+      ? store.subscriptionExpiresAt.split('T')[0]
+      : '',
+    storeType: store.storeType ?? 'STORE',
+    menuPdfUrl: store.menuPdfUrl ?? '',
+    deliveryOptions: store.deliveryOptions ?? 'BOTH',
+    accentColor: store.accentColor ?? '#f59e0b',
+    bgColor: store.bgColor ?? '#ffffff',
+    textColor: store.textColor ?? '#1e293b',
+    fontStyle: store.fontStyle ?? 'MODERN',
+    buttonStyle: store.buttonStyle ?? 'ROUNDED',
+    layoutStyle: store.layoutStyle ?? 'GRID',
+    coverStyle: store.coverStyle ?? 'GRADIENT',
+  };
+}
+
 export const useStoresManagement = () => {
+  const isSeller = getAuthenticatedRole() === 'seller';
   const [stores, setStores] = useState<IStore[]>([]);
   const [form, setForm] = useState<StoreFormState>(initialStoreForm);
+  const [savedForm, setSavedForm] = useState<StoreFormState>(initialStoreForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const isDirty = JSON.stringify(form) !== JSON.stringify(savedForm);
+
   const loadStores = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await StoresRepository.getStores();
-      setStores(response.data);
+      const response = isSeller
+        ? await StoresRepository.getMyStores()
+        : await StoresRepository.getStores();
+      const loaded: IStore[] = Array.isArray(response.data)
+        ? response.data
+        : (response.data as unknown as { items?: IStore[] }).items ?? [];
+      setStores(loaded);
+      if (isSeller && loaded.length > 0) {
+        const f = storeToForm(loaded[0]);
+        setEditingId(loaded[0].id);
+        setForm(f);
+        setSavedForm(f);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No fue posible cargar tiendas');
     } finally {
@@ -90,6 +137,7 @@ export const useStoresManagement = () => {
 
   const resetForm = () => {
     setForm(initialStoreForm);
+    setSavedForm(initialStoreForm);
     setEditingId(null);
   };
 
@@ -135,7 +183,8 @@ export const useStoresManagement = () => {
         await StoresRepository.createStore(payload);
       }
 
-      resetForm();
+      setSavedForm(form);
+      if (!isSeller) resetForm();
       await loadStores();
       return true;
     } catch (err) {
@@ -147,38 +196,15 @@ export const useStoresManagement = () => {
   };
 
   const startEditing = (store: IStore) => {
+    const f = storeToForm(store);
     setEditingId(store.id);
-    setForm({
-      name: store.name,
-      slug: store.slug,
-      description: store.description ?? '',
-      logoUrl: store.logoUrl ?? '',
-      bannerUrl: store.bannerUrl ?? '',
-      primaryColor: store.primaryColor ?? '#6366f1',
-      secondaryColor: store.secondaryColor ?? '#a5b4fc',
-      phone: store.phone ?? '',
-      whatsappNumber: store.whatsappNumber ?? '',
-      email: store.email ?? '',
-      isActive: store.isActive,
-      isAdultContent: store.isAdultContent ?? false,
-      isPremiumAdvertiser: store.isPremiumAdvertiser ?? false,
-      subscriptionExpiresAt: store.subscriptionExpiresAt
-        ? store.subscriptionExpiresAt.split('T')[0]
-        : '',
-      storeType: store.storeType ?? 'STORE',
-      menuPdfUrl: store.menuPdfUrl ?? '',
-      deliveryOptions: store.deliveryOptions ?? 'BOTH',
-      accentColor: store.accentColor ?? '#f59e0b',
-      bgColor: store.bgColor ?? '#ffffff',
-      textColor: store.textColor ?? '#1e293b',
-      fontStyle: store.fontStyle ?? 'MODERN',
-      buttonStyle: store.buttonStyle ?? 'ROUNDED',
-      layoutStyle: store.layoutStyle ?? 'GRID',
-      coverStyle: store.coverStyle ?? 'GRADIENT',
-    });
+    setForm(f);
+    setSavedForm(f);
   };
 
   return {
+    isSeller,
+    isDirty,
     stores,
     form,
     editingId,
