@@ -6,6 +6,7 @@ const ProductsPage = () => {
 
   return (
     <ProductsManagementView
+      isSeller={pm.isSeller}
       products={pm.products}
       categories={pm.categories}
       stores={pm.stores}
@@ -42,6 +43,8 @@ const ProductsPage = () => {
       onEdit={pm.startEditing}
       onToggleStatus={pm.toggleStatus}
       onReset={pm.resetForm}
+      onQuickCreateCategory={pm.quickCreateCategory}
+      onQuickCreateSupplier={pm.quickCreateSupplier}
     />
   );
 };

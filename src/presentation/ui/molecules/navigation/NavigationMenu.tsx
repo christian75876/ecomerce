@@ -19,7 +19,7 @@ const adminNavGroups = [
     label: 'Catálogo',
     items: [
       { label: 'Tienda', path: ROUTES.PRIVATE.STORES, icon: 'bx-store' },
-      { label: 'Productos y fichas', path: ROUTES.PRIVATE.PRODUCTS, icon: 'bx-shopping-bag' },
+      { label: 'Productos', path: ROUTES.PRIVATE.PRODUCTS, icon: 'bx-shopping-bag' },
       { label: 'Categorías', path: ROUTES.PRIVATE.CATEGORIES, icon: 'bx-category' },
       { label: 'Inventario general', path: ROUTES.PRIVATE.INVENTORY, icon: 'bx-box' },
     ],

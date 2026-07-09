@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ICategory } from '@/application/dtos/categories/response/CategoryResponse';
 import { IProduct, IProductImage, IProductVideo } from '@/application/dtos/products/response/ProductResponse';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
@@ -16,6 +17,7 @@ import FeatureScreenHeader from '@/presentation/ui/templates/feature/FeatureScre
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 
 interface ProductsManagementViewProps {
+  isSeller: boolean;
   products: IProduct[];
   categories: ICategory[];
   stores: IStore[];
@@ -55,7 +57,74 @@ interface ProductsManagementViewProps {
   onEdit: (product: IProduct) => void;
   onToggleStatus: (product: IProduct) => Promise<void>;
   onReset: () => void;
+  onQuickCreateCategory: (name: string) => Promise<ICategory | null>;
+  onQuickCreateSupplier: (name: string) => Promise<ISupplier | null>;
 }
+
+const QuickCreateModal = ({
+  title,
+  placeholder,
+  onConfirm,
+  onClose,
+}: {
+  title: string;
+  placeholder: string;
+  onConfirm: (name: string) => Promise<void>;
+  onClose: () => void;
+}) => {
+  const [value, setValue] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!value.trim()) return;
+    setSaving(true);
+    await onConfirm(value.trim());
+    setSaving(false);
+  };
+
+  return createPortal(
+    <div
+      className='fixed inset-0 z-[100] flex items-center justify-center bg-neutral-dark/50 px-4 backdrop-blur-sm'
+      onClick={onClose}
+    >
+      <div
+        className='w-full max-w-sm rounded-[1.75rem] bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.22)]'
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className='mb-4 text-lg font-bold text-neutral-dark'>{title}</h2>
+        <form onSubmit={handleSubmit} className='space-y-3'>
+          <input
+            autoFocus
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder={placeholder}
+            disabled={saving}
+            className='w-full rounded-xl border border-neutral-gray/30 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary'
+          />
+          <div className='flex gap-2'>
+            <button
+              type='submit'
+              disabled={saving || !value.trim()}
+              className='flex-1 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50'
+            >
+              {saving ? 'Creando...' : 'Crear'}
+            </button>
+            <button
+              type='button'
+              onClick={onClose}
+              disabled={saving}
+              className='rounded-xl border border-neutral-gray/30 px-4 py-2.5 text-sm font-semibold text-neutral-dark/70 transition hover:bg-neutral-gray/10'
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>,
+    document.body,
+  );
+};
 
 function getYouTubeEmbedUrl(url: string): string | null {
   const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
@@ -68,6 +137,7 @@ function getInstagramEmbedUrl(url: string): string {
 }
 
 export const ProductsManagementView = ({
+  isSeller,
   products,
   categories,
   stores,
@@ -104,12 +174,16 @@ export const ProductsManagementView = ({
   onEdit,
   onToggleStatus,
   onReset,
+  onQuickCreateCategory,
+  onQuickCreateSupplier,
 }: ProductsManagementViewProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [dropZoneActive, setDropZoneActive] = useState(false);
   const dragIndexRef = useRef<number | null>(null);
+  const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false);
+  const [showCreateSupplierModal, setShowCreateSupplierModal] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -200,12 +274,13 @@ export const ProductsManagementView = ({
                 />
               </Box>
               <Box>
-                <Label htmlFor="product-cost">Costo opcional</Label>
+                <Label htmlFor="product-cost">Precio de costo</Label>
                 <Input
                   id="product-cost"
                   type="number"
                   min="0"
                   step="0.01"
+                  placeholder="Costo de adquisición"
                   value={form.cost}
                   onChange={(event) => onFormChange('cost', event.target.value)}
                   disabled={submitting}
@@ -215,12 +290,13 @@ export const ProductsManagementView = ({
 
             <Box className="grid gap-4 md:grid-cols-2">
               <Box>
-                <Label htmlFor="product-stock">Stock inicial opcional</Label>
+                <Label htmlFor="product-stock">Stock disponible</Label>
                 <Input
                   id="product-stock"
                   type="number"
                   min="0"
                   step="1"
+                  placeholder="Unidades en inventario"
                   value={form.initialStock}
                   onChange={(event) =>
                     onFormChange('initialStock', event.target.value)
@@ -275,7 +351,16 @@ export const ProductsManagementView = ({
 
             <Box className="grid gap-4 md:grid-cols-2">
               <Box>
-                <Label htmlFor="product-category">Categoría</Label>
+                <div className='mb-1 flex items-center justify-between'>
+                  <Label htmlFor="product-category">Categoría</Label>
+                  <button
+                    type='button'
+                    onClick={() => setShowCreateCategoryModal(true)}
+                    className='flex items-center gap-1 text-xs font-semibold text-primary hover:underline'
+                  >
+                    <i className='bx bx-plus' aria-hidden='true' /> Nueva
+                  </button>
+                </div>
                 <select
                   id="product-category"
                   value={form.categoryId}
@@ -295,23 +380,29 @@ export const ProductsManagementView = ({
               </Box>
               <Box>
                 <Label htmlFor="product-store">Tienda</Label>
-                <select
-                  id="product-store"
-                  value={form.storeId}
-                  onChange={(event) => {
-                    onFormChange('storeId', event.target.value);
-                    onFormChange('menuCategoryId', '');
-                  }}
-                  disabled={submitting}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <option value="">Selecciona una tienda</option>
-                  {stores.map((store) => (
-                    <option key={store.id} value={store.id}>
-                      {store.storeType === 'RESTAURANT' ? '🍽️ ' : ''}{store.name}
-                    </option>
-                  ))}
-                </select>
+                {isSeller ? (
+                  <div className='flex h-[50px] items-center rounded-lg border border-neutral-gray/20 bg-background px-4 text-sm text-neutral-dark'>
+                    {stores[0]?.name ?? 'Cargando...'}
+                  </div>
+                ) : (
+                  <select
+                    id="product-store"
+                    value={form.storeId}
+                    onChange={(event) => {
+                      onFormChange('storeId', event.target.value);
+                      onFormChange('menuCategoryId', '');
+                    }}
+                    disabled={submitting}
+                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="">Selecciona una tienda</option>
+                    {stores.map((store) => (
+                      <option key={store.id} value={store.id}>
+                        {store.storeType === 'RESTAURANT' ? '🍽️ ' : ''}{store.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </Box>
             </Box>
 
@@ -341,7 +432,16 @@ export const ProductsManagementView = ({
             ) : null}
 
             <Box>
-              <Label htmlFor="product-supplier">Proveedor opcional</Label>
+              <div className='mb-1 flex items-center justify-between'>
+                <Label htmlFor="product-supplier">Proveedor</Label>
+                <button
+                  type='button'
+                  onClick={() => setShowCreateSupplierModal(true)}
+                  className='flex items-center gap-1 text-xs font-semibold text-primary hover:underline'
+                >
+                  <i className='bx bx-plus' aria-hidden='true' /> Nuevo
+                </button>
+              </div>
               <select
                 id="product-supplier"
                 value={form.supplierId}
@@ -795,6 +895,32 @@ export const ProductsManagementView = ({
           </Box>
         </FeaturePanel>
       </Box>
+
+      {showCreateCategoryModal ? (
+        <QuickCreateModal
+          title='Nueva categoría'
+          placeholder='Ej. Electrónica'
+          onClose={() => setShowCreateCategoryModal(false)}
+          onConfirm={async (name) => {
+            const created = await onQuickCreateCategory(name);
+            if (created) onFormChange('categoryId', created.id);
+            setShowCreateCategoryModal(false);
+          }}
+        />
+      ) : null}
+
+      {showCreateSupplierModal ? (
+        <QuickCreateModal
+          title='Nuevo proveedor'
+          placeholder='Ej. Distribuidora ABC'
+          onClose={() => setShowCreateSupplierModal(false)}
+          onConfirm={async (name) => {
+            const created = await onQuickCreateSupplier(name);
+            if (created) onFormChange('supplierId', created.id);
+            setShowCreateSupplierModal(false);
+          }}
+        />
+      ) : null}
     </FeatureScreen>
   );
 };

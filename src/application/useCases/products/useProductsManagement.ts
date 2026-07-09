@@ -12,6 +12,7 @@ import { ProductRepository } from '@/infrastructure/repositories/api/products/Pr
 import { StoresRepository } from '@/infrastructure/repositories/api/stores/StoresRepository';
 import { SuppliersRepository } from '@/infrastructure/repositories/api/suppliers/SuppliersRepository';
 import { MenuCategoriesRepository } from '@/infrastructure/repositories/api/menu-categories/MenuCategoriesRepository';
+import { getAuthenticatedRole } from '@/shared/utils/checkIsUserAuthenticated.util';
 
 export type ProductFormState = {
   name: string;
@@ -54,6 +55,7 @@ export const initialProductFormState: ProductFormState = {
 };
 
 export const useProductsManagement = () => {
+  const isSeller = getAuthenticatedRole() === 'seller';
   const [products, setProducts] = useState<IProduct[]>([]);
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [stores, setStores] = useState<IStore[]>([]);
@@ -89,13 +91,25 @@ export const useProductsManagement = () => {
   }, []);
 
   const loadStores = useCallback(async () => {
-    const response = await StoresRepository.getStores({ active: true });
-    setStores(response.data);
-  }, []);
+    if (isSeller) {
+      const response = await StoresRepository.getMyStores();
+      const loaded: IStore[] = Array.isArray(response.data)
+        ? response.data
+        : (response.data as unknown as { items?: IStore[] }).items ?? [];
+      setStores(loaded);
+    } else {
+      const response = await StoresRepository.getStores({ active: true });
+      setStores(response.data);
+    }
+  }, [isSeller]);
 
   const loadSuppliers = useCallback(async () => {
     const response = await SuppliersRepository.getSuppliers();
-    setSuppliers(response.data.filter((supplier) => supplier.isActive));
+    const raw = response.data as unknown;
+    const items: ISupplier[] = Array.isArray(raw)
+      ? raw
+      : ((raw as { items?: ISupplier[] }).items ?? []);
+    setSuppliers(items.filter((s) => s.isActive));
   }, []);
 
   const loadProducts = useCallback(async () => {
@@ -148,6 +162,13 @@ export const useProductsManagement = () => {
     void loadProducts();
   }, [loadProducts]);
 
+  // Auto-select the seller's only store when stores load
+  useEffect(() => {
+    if (isSeller && stores.length > 0) {
+      setForm((prev) => prev.storeId ? prev : { ...prev, storeId: stores[0].id });
+    }
+  }, [isSeller, stores]);
+
   useEffect(() => {
     const selectedStore = stores.find((s) => s.id === form.storeId);
     if (!selectedStore || selectedStore.storeType !== 'RESTAURANT') {
@@ -181,7 +202,10 @@ export const useProductsManagement = () => {
   };
 
   const resetForm = () => {
-    setForm(initialProductFormState);
+    setForm((prev) => ({
+      ...initialProductFormState,
+      storeId: isSeller ? prev.storeId : '',
+    }));
     setEditingId(null);
     setPendingImageFile(null);
     setImagePreview(null);
@@ -191,6 +215,26 @@ export const useProductsManagement = () => {
     setVideoUrl('');
     setVideoTitle('');
     setVideoError(null);
+  };
+
+  const quickCreateCategory = async (name: string): Promise<ICategory | null> => {
+    try {
+      const response = await CategoriesRepository.createCategory({ name, isActive: true });
+      await loadCategories();
+      return response.data;
+    } catch {
+      return null;
+    }
+  };
+
+  const quickCreateSupplier = async (name: string): Promise<ISupplier | null> => {
+    try {
+      const response = await SuppliersRepository.createSupplier({ name });
+      await loadSuppliers();
+      return response.data;
+    } catch {
+      return null;
+    }
   };
 
   const buildPayload = (currentForm: ProductFormState): ICreateProductRequest | null => {
@@ -417,6 +461,7 @@ export const useProductsManagement = () => {
   };
 
   return {
+    isSeller,
     products,
     categories,
     stores,
@@ -454,5 +499,7 @@ export const useProductsManagement = () => {
     startEditing,
     toggleStatus,
     resetForm,
+    quickCreateCategory,
+    quickCreateSupplier,
   };
 };
