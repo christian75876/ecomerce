@@ -35,6 +35,7 @@ export interface IStoreWithSubscriptionStatus {
     name: string;
     slug: string;
     logoUrl: string | null;
+    isActive: boolean;
     subscriptionExpiresAt: string | null;
     isPremiumAdvertiser: boolean;
     whatsappNumber: string | null;

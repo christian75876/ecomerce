@@ -150,7 +150,7 @@ export const useInventoryManagement = () => {
       const response = await ProductRepository.createProduct({
         name: payload.name.trim(),
         description: payload.description.trim() || payload.name.trim(),
-        sku: payload.sku?.trim() || undefined,
+        sku: payload.sku?.trim() ?? '',
         price: payload.price,
         categoryId: payload.categoryId,
         storeId: payload.storeId || undefined,
