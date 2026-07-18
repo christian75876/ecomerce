@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 interface WhatsAppFloatProps {
   phoneNumber: string;
   message?: string;
@@ -10,7 +12,20 @@ function buildWhatsAppUrl(phoneNumber: string, message?: string): string {
 }
 
 const WhatsAppFloat = ({ phoneNumber, message }: WhatsAppFloatProps) => {
-  if (!phoneNumber) return null;
+  const [hiddenByNav, setHiddenByNav] = useState(false);
+
+  useEffect(() => {
+    const show = () => setHiddenByNav(true);
+    const hide = () => setHiddenByNav(false);
+    window.addEventListener('mobile-nav-more-open', show);
+    window.addEventListener('mobile-nav-more-close', hide);
+    return () => {
+      window.removeEventListener('mobile-nav-more-open', show);
+      window.removeEventListener('mobile-nav-more-close', hide);
+    };
+  }, []);
+
+  if (!phoneNumber || hiddenByNav) return null;
 
   return (
     <a
@@ -18,7 +33,7 @@ const WhatsAppFloat = ({ phoneNumber, message }: WhatsAppFloatProps) => {
       target='_blank'
       rel='noopener noreferrer'
       aria-label='Chatear por WhatsApp'
-      className='fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] shadow-lg transition-transform hover:scale-110 active:scale-95'
+      className='fixed bottom-24 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] shadow-lg transition-transform hover:scale-110 active:scale-95 sm:bottom-6'
     >
       <span className='absolute inset-0 animate-ping rounded-full bg-[#25D366] opacity-30' />
       <svg

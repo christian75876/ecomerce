@@ -4,6 +4,7 @@ import type { ICoupon, ICreateCouponRequest, CouponType } from '@/application/dt
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import { formatDate } from '@/shared/utils/formatDate';
 import { SnackbarUtilities } from '@/shared/utils/SnackbarManager';
+import SelectDropdown from '@/presentation/ui/molecules/common/SelectDropdown';
 
 const EMPTY_FORM: ICreateCouponRequest = {
   code: '',
@@ -115,14 +116,14 @@ const CouponsPage = () => {
             <div className='grid grid-cols-2 gap-3'>
               <div>
                 <label className='mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500'>Tipo</label>
-                <select
-                  className={inputCls}
+                <SelectDropdown
                   value={form.type}
-                  onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as CouponType }))}
-                >
-                  <option value='PERCENTAGE'>Porcentaje (%)</option>
-                  <option value='FIXED'>Valor fijo ($)</option>
-                </select>
+                  options={[
+                    { value: 'PERCENTAGE', label: 'Porcentaje (%)' },
+                    { value: 'FIXED', label: 'Valor fijo ($)' },
+                  ]}
+                  onChange={(v) => setForm((f) => ({ ...f, type: v as CouponType }))}
+                />
               </div>
               <div>
                 <label className='mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500'>

@@ -5,6 +5,7 @@ import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Label from '@/presentation/ui/atoms/label/SimpleLabel';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import AsyncSearchSelect from '@/presentation/ui/molecules/common/AsyncSearchSelect';
+import SelectDropdown from '@/presentation/ui/molecules/common/SelectDropdown';
 import FeaturePanel from '@/presentation/ui/templates/feature/FeaturePanel';
 import { usePurchaseRegistrationSection } from './PurchasesContext';
 import PurchaseItemCard from './PurchaseItemCard';
@@ -76,20 +77,14 @@ const PurchaseRegistrationForm = () => {
         </Box>
 
         <Box>
-          <Label htmlFor='purchase-store'>Tienda</Label>
-          <select
-            id='purchase-store'
+          <Label>Tienda</Label>
+          <SelectDropdown
             value={storeId}
-            onChange={(event) => setStoreId(event.target.value)}
-            className='w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary'
-          >
-            <option value=''>Selecciona tienda</option>
-            {stores.map((store) => (
-              <option key={store.id} value={store.id}>
-                {store.name}
-              </option>
-            ))}
-          </select>
+            options={stores.map((s) => ({ value: s.id, label: s.name }))}
+            placeholder='Selecciona tienda'
+            disabled={submitting}
+            onChange={(v) => setStoreId(v)}
+          />
         </Box>
 
         <Box className='grid gap-4 md:grid-cols-2'>

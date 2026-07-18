@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ISupplier } from '@/application/dtos/suppliers/response/SupplierResponse';
 import { SuppliersRepository } from '@/infrastructure/repositories/api/suppliers/SuppliersRepository';
+import { useAdminStore } from '@/shared/contexts/AdminStoreContext';
 
 export type SupplierFormState = {
   name: string;
@@ -21,6 +22,7 @@ const initialSupplierForm: SupplierFormState = {
 };
 
 export const useSuppliersManagement = () => {
+  const { selectedStoreId: contextStoreId } = useAdminStore();
   const [suppliers, setSuppliers] = useState<ISupplier[]>([]);
   const [form, setForm] = useState<SupplierFormState>(initialSupplierForm);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -33,14 +35,14 @@ export const useSuppliersManagement = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await SuppliersRepository.getSuppliers(search || undefined);
+      const response = await SuppliersRepository.getSuppliers(search || undefined, contextStoreId);
       setSuppliers((response.data as unknown as { items?: ISupplier[] }).items ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No fue posible cargar proveedores');
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }, [search, contextStoreId]);
 
   useEffect(() => {
     void loadSuppliers();

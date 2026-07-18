@@ -2,6 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import Box from '@atoms/box/SimpleBox';
 import SimpleIcon from '@atoms/icon/SimpleIcon';
 import clsx from 'clsx';
+import StoreSearchSelector from './StoreSearchSelector';
 import { useEffect, useRef, useState } from 'react';
 import {
   canAccessAdminPanel,
@@ -113,7 +114,8 @@ const NavigationMenu = () => {
   return (
     <Box ref={menuRef} className='flex items-center gap-2'>
       {isAdminNavigation ? (
-        visibleAdminGroups.map((group) => {
+        <>
+        {visibleAdminGroups.map((group) => {
           const isActive = group.items.some((item) =>
             location.pathname.startsWith(item.path),
           );
@@ -199,7 +201,9 @@ const NavigationMenu = () => {
               )}
             </Box>
           );
-        })
+        })}
+        {isAdmin ? <StoreSearchSelector /> : null}
+        </>
       ) : (
         visiblePublicItems.map(({ label, path, icon }) => (
           <NavLink

@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import SelectDropdown from '@/presentation/ui/molecules/common/SelectDropdown';
 import { ICategory } from '@/application/dtos/categories/response/CategoryResponse';
 import { IProduct, IProductImage, IProductVideo } from '@/application/dtos/products/response/ProductResponse';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
@@ -127,13 +128,59 @@ const QuickCreateModal = ({
 };
 
 function getYouTubeEmbedUrl(url: string): string | null {
-  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]+)/);
   return match ? `https://www.youtube.com/embed/${match[1]}` : null;
 }
 
-function getInstagramEmbedUrl(url: string): string {
-  const clean = url.replace(/\/?$/, '');
-  return `${clean}/embed`;
+function getTikTokEmbedUrl(url: string): string | null {
+  const match = url.match(/tiktok\.com\/@[\w.]+\/video\/(\d+)/);
+  return match ? `https://www.tiktok.com/embed/v2/${match[1]}` : null;
+}
+
+function getInstagramEmbedUrl(url: string): string | null {
+  const match = url.match(/instagram\.com\/(p|reel|tv)\/([\w-]+)/);
+  return match ? `https://www.instagram.com/${match[1]}/${match[2]}/embed/` : null;
+}
+
+function getFacebookEmbedUrl(url: string): string {
+  return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=0&width=560`;
+}
+
+interface VideoPreviewInfo {
+  embedUrl: string;
+  isPortrait: boolean;
+}
+
+function getVideoPreview(url: string): VideoPreviewInfo | null {
+  const yt = getYouTubeEmbedUrl(url);
+  if (yt) return { embedUrl: yt, isPortrait: false };
+  const tt = getTikTokEmbedUrl(url);
+  if (tt) return { embedUrl: tt, isPortrait: true };
+  const ig = getInstagramEmbedUrl(url);
+  if (ig) return { embedUrl: ig, isPortrait: true };
+  if (url.includes('facebook.com') && url.includes('video')) {
+    return { embedUrl: getFacebookEmbedUrl(url), isPortrait: false };
+  }
+  return null;
+}
+
+function getVideoPreviewFromType(videoUrl: string, videoType: string): VideoPreviewInfo | null {
+  if (videoType === 'YOUTUBE') {
+    const u = getYouTubeEmbedUrl(videoUrl);
+    return u ? { embedUrl: u, isPortrait: false } : null;
+  }
+  if (videoType === 'TIKTOK') {
+    const u = getTikTokEmbedUrl(videoUrl);
+    return u ? { embedUrl: u, isPortrait: true } : null;
+  }
+  if (videoType === 'INSTAGRAM') {
+    const u = getInstagramEmbedUrl(videoUrl);
+    return u ? { embedUrl: u, isPortrait: true } : null;
+  }
+  if (videoType === 'FACEBOOK') {
+    return { embedUrl: getFacebookEmbedUrl(videoUrl), isPortrait: false };
+  }
+  return null;
 }
 
 export const ProductsManagementView = ({
@@ -351,57 +398,37 @@ export const ProductsManagementView = ({
 
             <Box className="grid gap-4 md:grid-cols-2">
               <Box>
-                <div className='mb-1 flex items-center justify-between'>
-                  <Label htmlFor="product-category">Categoría</Label>
-                  <button
-                    type='button'
-                    onClick={() => setShowCreateCategoryModal(true)}
-                    className='flex items-center gap-1 text-xs font-semibold text-primary hover:underline'
-                  >
-                    <i className='bx bx-plus' aria-hidden='true' /> Nueva
-                  </button>
-                </div>
-                <select
-                  id="product-category"
+                <Label htmlFor="product-category">Categoría</Label>
+                <SelectDropdown
                   value={form.categoryId}
-                  onChange={(event) =>
-                    onFormChange('categoryId', event.target.value)
-                  }
+                  options={categories.map((c) => ({ value: c.id, label: c.name }))}
+                  placeholder='Selecciona una categoría'
                   disabled={submitting}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <option value="">Selecciona una categoría</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
+                  onCreateClick={() => setShowCreateCategoryModal(true)}
+                  createLabel='+ Nueva categoría'
+                  onChange={(v) => onFormChange('categoryId', v)}
+                />
               </Box>
               <Box>
                 <Label htmlFor="product-store">Tienda</Label>
                 {isSeller ? (
-                  <div className='flex h-[50px] items-center rounded-lg border border-neutral-gray/20 bg-background px-4 text-sm text-neutral-dark'>
+                  <div className='flex h-[50px] items-center rounded-2xl border border-neutral-gray/20 bg-background px-4 text-sm text-neutral-dark'>
                     {stores[0]?.name ?? 'Cargando...'}
                   </div>
                 ) : (
-                  <select
-                    id="product-store"
+                  <SelectDropdown
                     value={form.storeId}
-                    onChange={(event) => {
-                      onFormChange('storeId', event.target.value);
+                    options={stores.map((s) => ({
+                      value: s.id,
+                      label: `${s.storeType === 'RESTAURANT' ? '🍽️ ' : ''}${s.name}`,
+                    }))}
+                    placeholder='Selecciona una tienda'
+                    disabled={submitting}
+                    onChange={(v) => {
+                      onFormChange('storeId', v);
                       onFormChange('menuCategoryId', '');
                     }}
-                    disabled={submitting}
-                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
-                  >
-                    <option value="">Selecciona una tienda</option>
-                    {stores.map((store) => (
-                      <option key={store.id} value={store.id}>
-                        {store.storeType === 'RESTAURANT' ? '🍽️ ' : ''}{store.name}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 )}
               </Box>
             </Box>
@@ -412,50 +439,29 @@ export const ProductsManagementView = ({
                 <Label htmlFor="product-menu-category">
                   <span className='mr-1'>🍽️</span> Sección del menú
                 </Label>
-                <select
-                  id="product-menu-category"
+                <SelectDropdown
                   value={form.menuCategoryId}
-                  onChange={(event) => onFormChange('menuCategoryId', event.target.value)}
-                  disabled={submitting}
-                  className="w-full rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                >
-                  <option value="">Sin sección (aparece en "Otros")</option>
-                  {[...menuCategories]
+                  options={[...menuCategories]
                     .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name))
-                    .map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </option>
-                    ))}
-                </select>
+                    .map((c) => ({ value: c.id, label: c.name }))}
+                  placeholder='Sin sección (aparece en "Otros")'
+                  disabled={submitting}
+                  onChange={(v) => onFormChange('menuCategoryId', v)}
+                />
               </Box>
             ) : null}
 
             <Box>
-              <div className='mb-1 flex items-center justify-between'>
-                <Label htmlFor="product-supplier">Proveedor</Label>
-                <button
-                  type='button'
-                  onClick={() => setShowCreateSupplierModal(true)}
-                  className='flex items-center gap-1 text-xs font-semibold text-primary hover:underline'
-                >
-                  <i className='bx bx-plus' aria-hidden='true' /> Nuevo
-                </button>
-              </div>
-              <select
-                id="product-supplier"
+              <Label htmlFor="product-supplier">Proveedor</Label>
+              <SelectDropdown
                 value={form.supplierId}
-                onChange={(event) => onFormChange('supplierId', event.target.value)}
+                options={suppliers.map((s) => ({ value: s.id, label: s.name }))}
+                placeholder='Sin proveedor asociado'
                 disabled={submitting}
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="">Sin proveedor asociado</option>
-                {suppliers.map((supplier) => (
-                  <option key={supplier.id} value={supplier.id}>
-                    {supplier.name}
-                  </option>
-                ))}
-              </select>
+                onCreateClick={() => setShowCreateSupplierModal(true)}
+                createLabel='+ Nuevo proveedor'
+                onChange={(v) => onFormChange('supplierId', v)}
+              />
             </Box>
 
             {/* Image upload section */}
@@ -695,39 +701,75 @@ export const ProductsManagementView = ({
             </Box>
           ) : null}
 
-          {/* Videos section — only visible when editing an existing product */}
-          {editingId ? (
-            <Box className="mt-6 border-t border-neutral-gray/20 pt-6">
-              <Typography variant="h3" className="mb-4 text-base font-semibold">
-                Videos del producto
-              </Typography>
+          {/* Videos section */}
+          <Box className="mt-6 border-t border-neutral-gray/20 pt-6">
+            <Typography variant="h3" className="mb-4 text-base font-semibold">
+              Videos del producto
+            </Typography>
 
-              <form onSubmit={handleAddVideo} className="mb-4 space-y-3">
-                <Box>
-                  <Label htmlFor="video-url">URL de YouTube o Instagram</Label>
-                  <Input
-                    id="video-url"
-                    value={videoUrl}
-                    onChange={(event) => onVideoUrlChange(event.target.value)}
-                    placeholder="https://youtube.com/watch?v=... o https://instagram.com/p/..."
-                    disabled={videoSubmitting}
-                  />
+            <form onSubmit={handleAddVideo} className="mb-4 space-y-3">
+              <Box>
+                <Label htmlFor="video-url">URL de YouTube o Instagram</Label>
+                <Input
+                  id="video-url"
+                  value={videoUrl}
+                  onChange={(event) => onVideoUrlChange(event.target.value)}
+                  placeholder="https://youtube.com/watch?v=... o https://instagram.com/p/..."
+                  disabled={videoSubmitting}
+                />
+                {/* Video embed preview */}
+                {(() => {
+                  const preview = getVideoPreview(videoUrl);
+                  if (!preview) return null;
+                  return preview.isPortrait ? (
+                    <Box className="mt-3 mx-auto w-full max-w-[320px] overflow-hidden rounded-2xl border border-neutral-gray/20 shadow-sm">
+                      <div className="relative w-full" style={{ paddingBottom: '177.78%' }}>
+                        <iframe
+                          src={preview.embedUrl}
+                          title="Vista previa"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          scrolling="no"
+                          className="absolute inset-0 h-full w-full"
+                        />
+                      </div>
+                    </Box>
+                  ) : (
+                    <Box className="mt-3 overflow-hidden rounded-2xl border border-neutral-gray/20 shadow-sm">
+                      <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                        <iframe
+                          src={preview.embedUrl}
+                          title="Vista previa"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          scrolling="no"
+                          className="absolute inset-0 h-full w-full"
+                        />
+                      </div>
+                    </Box>
+                  );
+                })()}
+              </Box>
+              <Box>
+                <Label htmlFor="video-title">Título opcional</Label>
+                <Input
+                  id="video-title"
+                  value={videoTitle}
+                  onChange={(event) => onVideoTitleChange(event.target.value)}
+                  placeholder="Ej: Video de demostración"
+                  disabled={videoSubmitting}
+                />
+              </Box>
+              {videoError ? (
+                <Box className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                  {videoError}
                 </Box>
-                <Box>
-                  <Label htmlFor="video-title">Título opcional</Label>
-                  <Input
-                    id="video-title"
-                    value={videoTitle}
-                    onChange={(event) => onVideoTitleChange(event.target.value)}
-                    placeholder="Ej: Video de demostración"
-                    disabled={videoSubmitting}
-                  />
+              ) : null}
+              {!editingId ? (
+                <Box className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                  Guarda el producto primero para poder agregar videos.
                 </Box>
-                {videoError ? (
-                  <Box className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-                    {videoError}
-                  </Box>
-                ) : null}
+              ) : (
                 <Button
                   type="submit"
                   variant="secondary"
@@ -735,52 +777,69 @@ export const ProductsManagementView = ({
                 >
                   {videoSubmitting ? 'Agregando...' : 'Agregar video'}
                 </Button>
-              </form>
+              )}
+            </form>
 
-              {videos.length > 0 ? (
-                <Box className="space-y-2">
-                  {videos.map((video) => (
+            {videos.length > 0 ? (
+              <Box className="space-y-3">
+                {videos.map((video) => {
+                  const preview = getVideoPreviewFromType(video.videoUrl, video.videoType);
+                  return (
                     <Box
                       key={video.id}
-                      className="flex items-center justify-between gap-3 rounded-xl border border-neutral-gray/20 px-4 py-3"
+                      className={`overflow-hidden rounded-2xl border border-neutral-gray/20 ${preview?.isPortrait ? 'mx-auto max-w-[320px]' : ''}`}
                     >
-                      <Box className="min-w-0 flex-1">
-                        <Box className="flex items-center gap-2">
-                          <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                            video.videoType === 'YOUTUBE'
-                              ? 'bg-red-100 text-red-700'
-                              : 'bg-purple-100 text-purple-700'
-                          }`}>
-                            {video.videoType === 'YOUTUBE' ? 'YouTube' : 'Instagram'}
-                          </span>
-                          {video.title ? (
-                            <Typography className="truncate text-sm font-medium">
-                              {video.title}
-                            </Typography>
-                          ) : null}
+                      {preview ? (
+                        <div className="relative w-full" style={{ paddingBottom: preview.isPortrait ? '177.78%' : '56.25%' }}>
+                          <iframe
+                            src={preview.embedUrl}
+                            title={video.title ?? 'Video'}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            scrolling="no"
+                            className="absolute inset-0 h-full w-full"
+                          />
+                        </div>
+                      ) : null}
+                      <Box className="flex items-center justify-between gap-3 px-4 py-3">
+                        <Box className="min-w-0 flex-1">
+                          <Box className="flex items-center gap-2">
+                            <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                              video.videoType === 'YOUTUBE'
+                                ? 'bg-red-100 text-red-700'
+                                : 'bg-purple-100 text-purple-700'
+                            }`}>
+                              {video.videoType === 'YOUTUBE' ? 'YouTube' : 'Instagram'}
+                            </span>
+                            {video.title ? (
+                              <Typography className="truncate text-sm font-medium">
+                                {video.title}
+                              </Typography>
+                            ) : null}
+                          </Box>
+                          <Typography className="mt-0.5 truncate text-xs text-neutral-dark/50">
+                            {video.videoUrl}
+                          </Typography>
                         </Box>
-                        <Typography className="mt-1 truncate text-xs text-neutral-dark/50">
-                          {video.videoUrl}
-                        </Typography>
+                        <Button
+                          type="button"
+                          variant="danger"
+                          onClick={() => void onRemoveVideo(video.id)}
+                          disabled={videoSubmitting}
+                        >
+                          Eliminar
+                        </Button>
                       </Box>
-                      <Button
-                        type="button"
-                        variant="danger"
-                        onClick={() => void onRemoveVideo(video.id)}
-                        disabled={videoSubmitting}
-                      >
-                        Eliminar
-                      </Button>
                     </Box>
-                  ))}
-                </Box>
-              ) : (
-                <Typography className="text-sm text-neutral-dark/50">
-                  Sin videos agregados aún.
-                </Typography>
-              )}
-            </Box>
-          ) : null}
+                  );
+                })}
+              </Box>
+            ) : (
+              <Typography className="text-sm text-neutral-dark/50">
+                Sin videos agregados aún.
+              </Typography>
+            )}
+          </Box>
         </FeaturePanel>
 
         <FeaturePanel
@@ -794,18 +853,12 @@ export const ProductsManagementView = ({
                 onChange={(event) => onSearchChange(event.target.value)}
                 placeholder="Buscar por nombre"
               />
-              <select
+              <SelectDropdown
                 value={selectedCategoryId}
-                onChange={(event) => onCategoryFilterChange(event.target.value)}
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="">Todas las categorías</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
+                options={categories.map((c) => ({ value: c.id, label: c.name }))}
+                placeholder='Todas las categorías'
+                onChange={(v) => onCategoryFilterChange(v)}
+              />
             </Box>
           </Box>
 

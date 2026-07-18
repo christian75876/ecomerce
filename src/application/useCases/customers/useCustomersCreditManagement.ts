@@ -5,8 +5,10 @@ import {
 } from '@/application/dtos/customers/response/CustomerResponse';
 import { IUpdateCustomerRequest } from '@/application/dtos/customers/request/CustomerRequest';
 import { CustomersRepository } from '@/infrastructure/repositories/api/customers/CustomersRepository';
+import { useAdminStore } from '@/shared/contexts/AdminStoreContext';
 
 export const useCustomersCreditManagement = () => {
+  const { selectedStoreId: contextStoreId } = useAdminStore();
   const [customers, setCustomers] = useState<ICustomer[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
   const [ledger, setLedger] = useState<ICustomerLedgerEntry[]>([]);
@@ -22,14 +24,14 @@ export const useCustomersCreditManagement = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await CustomersRepository.getCustomers(search || undefined);
+      const response = await CustomersRepository.getCustomers(search || undefined, contextStoreId);
       setCustomers((response.data as unknown as { items?: ICustomer[] }).items ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No fue posible cargar clientes');
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }, [search, contextStoreId]);
 
   const loadCredit = useCallback(async (customerId: string) => {
     try {

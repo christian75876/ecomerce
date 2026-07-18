@@ -10,6 +10,7 @@ import PwaInstallBanner from '@molecules/common/PwaInstallBanner';
 import NotificationToast from '@molecules/common/NotificationToast';
 import AppBlockedScreen from '@molecules/common/AppBlockedScreen';
 import { OrderNotificationsProvider } from '@/shared/contexts/OrderNotificationsContext';
+import { AdminStoreProvider } from '@/shared/contexts/AdminStoreContext';
 import { AppConfigRepository, type IAppConfig } from '@/infrastructure/repositories/api/app-config/AppConfigRepository';
 import { canAccessAdminPanel } from '@/shared/utils/checkIsUserAuthenticated.util';
 
@@ -34,12 +35,14 @@ function App() {
       <HelmetProvider>
         <SnackbarProvider maxSnack={3} autoHideDuration={2500} preventDuplicate>
           <SnackbarUtilitiesConfigurator />
-          <OrderNotificationsProvider>
-            <OfflineIndicator />
-            <AppRouter />
-            <PwaInstallBanner />
-            <NotificationToast />
-          </OrderNotificationsProvider>
+          <AdminStoreProvider>
+            <OrderNotificationsProvider>
+              <OfflineIndicator />
+              <AppRouter />
+              <PwaInstallBanner />
+              <NotificationToast />
+            </OrderNotificationsProvider>
+          </AdminStoreProvider>
         </SnackbarProvider>
       </HelmetProvider>
     </BrowserRouter>

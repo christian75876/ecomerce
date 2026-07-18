@@ -4,6 +4,7 @@ import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
+import SelectDropdown from '@/presentation/ui/molecules/common/SelectDropdown';
 
 interface CashManagementViewProps {
   sessions: ICashSession[];
@@ -67,10 +68,12 @@ export const CashManagementView = ({
       <Box className='rounded-[1.75rem] border border-neutral-gray/30 bg-white p-6 shadow-sm space-y-6'>
         <Box className='space-y-3'>
           <Typography variant='h2' className='text-xl font-semibold'>Abrir caja</Typography>
-          <select value={storeId} onChange={(event) => onStoreChange(event.target.value)} className='w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary'>
-            <option value=''>Selecciona tienda</option>
-            {stores.map((store) => <option key={store.id} value={store.id}>{store.name}</option>)}
-          </select>
+          <SelectDropdown
+            value={storeId}
+            options={stores.map((s) => ({ value: s.id, label: s.name }))}
+            placeholder='Selecciona tienda'
+            onChange={(v) => onStoreChange(v)}
+          />
           <Input type='number' min='0' step='0.01' value={openingAmount} onChange={(event) => onOpeningAmountChange(event.target.value)} placeholder='Monto inicial' />
           <Button type='button' variant='primary' disabled={submitting} onClick={() => void onOpenSession()}>
             {submitting ? 'Guardando...' : 'Abrir caja'}
@@ -78,19 +81,25 @@ export const CashManagementView = ({
         </Box>
         <Box className='space-y-3'>
           <Typography variant='h2' className='text-xl font-semibold'>Operar sesión</Typography>
-          <select value={selectedSessionId} onChange={(event) => onSelectSession(event.target.value)} className='w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary'>
-            <option value=''>Selecciona sesión</option>
-            {sessions.map((session) => <option key={session.id} value={session.id}>{session.store.name} · {session.status}</option>)}
-          </select>
+          <SelectDropdown
+            value={selectedSessionId}
+            options={sessions.map((s) => ({ value: s.id, label: `${s.store.name} · ${s.status}` }))}
+            placeholder='Selecciona sesión'
+            onChange={(v) => onSelectSession(v)}
+          />
           <Input type='number' min='0' step='0.01' value={closingAmount} onChange={(event) => onClosingAmountChange(event.target.value)} placeholder='Monto de cierre' />
           <Button type='button' variant='secondary' disabled={submitting} onClick={() => void onCloseSession()}>
             Cerrar caja
           </Button>
-          <select value={movementType} onChange={(event) => onMovementTypeChange(event.target.value as 'MANUAL_IN' | 'MANUAL_OUT' | 'ADJUSTMENT')} className='w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary'>
-            <option value='MANUAL_IN'>Ingreso manual</option>
-            <option value='MANUAL_OUT'>Retiro</option>
-            <option value='ADJUSTMENT'>Ajuste</option>
-          </select>
+          <SelectDropdown
+            value={movementType}
+            options={[
+              { value: 'MANUAL_IN', label: 'Ingreso manual' },
+              { value: 'MANUAL_OUT', label: 'Retiro' },
+              { value: 'ADJUSTMENT', label: 'Ajuste' },
+            ]}
+            onChange={(v) => onMovementTypeChange(v as 'MANUAL_IN' | 'MANUAL_OUT' | 'ADJUSTMENT')}
+          />
           <Input type='number' min='0' step='0.01' value={movementAmount} onChange={(event) => onMovementAmountChange(event.target.value)} placeholder='Valor movimiento' />
           <Input value={movementReason} onChange={(event) => onMovementReasonChange(event.target.value)} placeholder='Motivo' />
           <Button type='button' variant='outlinePrimary' disabled={submitting} onClick={() => void onCreateMovement()}>

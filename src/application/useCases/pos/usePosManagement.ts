@@ -8,6 +8,7 @@ import { ProductRepository } from '@/infrastructure/repositories/api/products/Pr
 import { SalesRepository } from '@/infrastructure/repositories/api/sales/SalesRepository';
 import { StoresRepository } from '@/infrastructure/repositories/api/stores/StoresRepository';
 import { getAuthenticatedRole } from '@/shared/utils/checkIsUserAuthenticated.util';
+import { useAdminStore } from '@/shared/contexts/AdminStoreContext';
 
 export type PosCartItem = {
   product: IProduct;
@@ -15,6 +16,7 @@ export type PosCartItem = {
 };
 
 export const usePosManagement = () => {
+  const { selectedStoreId: contextStoreId } = useAdminStore();
   const [products, setProducts] = useState<IProduct[]>([]);
   const [customers, setCustomers] = useState<ICustomer[]>([]);
   const [cart, setCart] = useState<PosCartItem[]>([]);
@@ -52,15 +54,20 @@ export const usePosManagement = () => {
   const loadSupportingData = useCallback(async () => {
     try {
       const isSeller = getAuthenticatedRole() === 'seller';
-      const [customersResponse, storesResponse] = await Promise.all([
-        CustomersRepository.getCustomers(),
-        isSeller ? StoresRepository.getMyStores() : StoresRepository.getStores({ active: true }),
-      ]);
-
-      setCustomers((customersResponse.data as unknown as { items?: ICustomer[] }).items ?? []);
-      const storeList = storesResponse.data as unknown as IStore[];
-      if (storeList.length > 0) {
-        setSelectedStoreId(storeList[0].id);
+      if (isSeller) {
+        const [customersResponse, storesResponse] = await Promise.all([
+          CustomersRepository.getCustomers(),
+          StoresRepository.getMyStores(),
+        ]);
+        setCustomers((customersResponse.data as unknown as { items?: ICustomer[] }).items ?? []);
+        const storeList = storesResponse.data as unknown as IStore[];
+        if (storeList.length > 0) {
+          setSelectedStoreId(storeList[0].id);
+        }
+      } else {
+        // Admin: only load customers; storeId is controlled by the navbar context
+        const customersResponse = await CustomersRepository.getCustomers();
+        setCustomers((customersResponse.data as unknown as { items?: ICustomer[] }).items ?? []);
       }
     } catch (err) {
       setError(
@@ -76,6 +83,12 @@ export const usePosManagement = () => {
   useEffect(() => {
     void loadSupportingData();
   }, [loadSupportingData]);
+
+  useEffect(() => {
+    if (getAuthenticatedRole() === 'admin') {
+      setSelectedStoreId(contextStoreId ?? '');
+    }
+  }, [contextStoreId]);
 
   useEffect(() => {
     if (paymentMethod !== 'CREDIT') {

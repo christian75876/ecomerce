@@ -67,7 +67,7 @@ const RegisterPage = () => {
     const whatsappHref = `https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent('Hola, me interesa crear una tienda en el marketplace. ¿Cómo puedo solicitar una invitación?')}`;
 
     return (
-      <div className='min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,69,0,0.14),_transparent_32%),linear-gradient(135deg,_#fff7f2_0%,_#ffffff_45%,_#eef6ff_100%)] px-4 py-10'>
+      <div className='min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,69,0,0.14),_transparent_32%),linear-gradient(135deg,_#fff7f2_0%,_#ffffff_45%,_#eef6ff_100%)] px-4 py-4 sm:py-10'>
         <div className='mx-auto w-full max-w-md space-y-4'>
           {/* Header card */}
           <div className='rounded-[2rem] border border-white/70 bg-white/85 p-8 shadow-[0_30px_80px_rgba(34,34,34,0.12)] text-center backdrop-blur'>
@@ -159,7 +159,7 @@ const RegisterPage = () => {
   // Token error
   if (tokenError) {
     return (
-      <div className='min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,69,0,0.14),_transparent_32%),linear-gradient(135deg,_#fff7f2_0%,_#ffffff_45%,_#eef6ff_100%)] px-4 py-10'>
+      <div className='min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,69,0,0.14),_transparent_32%),linear-gradient(135deg,_#fff7f2_0%,_#ffffff_45%,_#eef6ff_100%)] px-4 py-4 sm:py-10'>
         <div className='mx-auto w-full max-w-md rounded-[2rem] border border-white/70 bg-white/85 p-10 shadow-[0_30px_80px_rgba(34,34,34,0.12)] text-center backdrop-blur'>
           <div className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-100'>
             <i className='bx bx-error-circle text-3xl text-red-500' aria-hidden='true' />
@@ -179,8 +179,25 @@ const RegisterPage = () => {
 
   // Valid token — show registration form
   return (
-    <div className='min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,69,0,0.14),_transparent_32%),linear-gradient(135deg,_#fff7f2_0%,_#ffffff_45%,_#eef6ff_100%)] px-4 py-10'>
+    <div className='min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,69,0,0.14),_transparent_32%),linear-gradient(135deg,_#fff7f2_0%,_#ffffff_45%,_#eef6ff_100%)] px-4 py-4 sm:py-10'>
       <div className='mx-auto w-full max-w-md rounded-[2rem] border border-white/70 bg-white/85 p-8 shadow-[0_30px_80px_rgba(34,34,34,0.12)] backdrop-blur'>
+        {/* Back link */}
+        <div className='mb-5 flex items-center justify-between'>
+          <Link
+            to={ROUTES.PUBLIC.HOME}
+            className='flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-500 transition hover:border-primary/30 hover:text-primary'
+          >
+            <i className='bx bx-arrow-back text-sm' aria-hidden='true' />
+            Volver al comercio
+          </Link>
+          <Link
+            to={ROUTES.PUBLIC.LOGIN}
+            className='text-xs font-medium text-slate-400 transition hover:text-primary'
+          >
+            ¿Ya tienes cuenta? Ingresar →
+          </Link>
+        </div>
+
         {/* Invite badge */}
         <div className='mb-6 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3'>
           <i className='bx bx-check-shield flex-shrink-0 text-xl text-emerald-600' aria-hidden='true' />

@@ -4,8 +4,11 @@ import {
   IDashboardAnalyticsQuery,
 } from '@/application/dtos/dashboard/response/DashboardResponse';
 import { DashboardRepository } from '@/infrastructure/repositories/api/dashboard/DashboardRepository';
+import { useAdminStore } from '@/shared/contexts/AdminStoreContext';
 
 export const useDashboardSummary = () => {
+  const { selectedStoreId: contextStoreId } = useAdminStore();
+
   const buildDefaultRange = () => {
     const endDate = new Date();
     const startDate = new Date();
@@ -47,6 +50,11 @@ export const useDashboardSummary = () => {
 
     void loadSummary();
   }, [filters]);
+
+  useEffect(() => {
+    updateFilter('storeId', contextStoreId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contextStoreId]);
 
   const updateFilter = <K extends keyof IDashboardAnalyticsQuery>(
     key: K,

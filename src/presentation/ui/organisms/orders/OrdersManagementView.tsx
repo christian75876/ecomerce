@@ -12,6 +12,7 @@ import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Label from '@/presentation/ui/atoms/label/SimpleLabel';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
+import SelectDropdown from '@/presentation/ui/molecules/common/SelectDropdown';
 
 // Fix Leaflet default icons in Vite
 delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
@@ -119,20 +120,16 @@ export const OrdersManagementView = ({
             </Typography>
             <Box className='mt-5 space-y-4'>
               <Box>
-                <Label htmlFor='order-customer'>Cliente existente</Label>
-                <select
-                  id='order-customer'
+                <Label>Cliente existente</Label>
+                <SelectDropdown
                   value={customerId}
-                  onChange={(e) => onCustomerIdChange(e.target.value)}
-                  className='w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary'
-                >
-                  <option value=''>Selecciona un cliente</option>
-                  {customers.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.firstName} {c.lastName} · {c.email}
-                    </option>
-                  ))}
-                </select>
+                  options={customers.map((c) => ({
+                    value: c.id,
+                    label: `${c.firstName} ${c.lastName} · ${c.email}`,
+                  }))}
+                  placeholder='Selecciona un cliente'
+                  onChange={(v) => onCustomerIdChange(v)}
+                />
               </Box>
 
               <Box className='rounded-2xl border border-neutral-gray/20 p-4'>
@@ -173,18 +170,15 @@ export const OrdersManagementView = ({
             <Box className='mt-5 space-y-3'>
               {cartRows.map((row, index) => (
                 <Box key={`${row.productId}-${index}`} className='grid gap-3 md:grid-cols-[minmax(0,1fr)_120px]'>
-                  <select
+                  <SelectDropdown
                     value={row.productId}
-                    onChange={(e) => onCartRowChange(index, { productId: e.target.value })}
-                    className='w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary'
-                  >
-                    <option value=''>Selecciona un producto</option>
-                    {products.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name} · {formatCurrencyCOP(p.price)}
-                      </option>
-                    ))}
-                  </select>
+                    options={products.map((p) => ({
+                      value: p.id,
+                      label: `${p.name} · ${formatCurrencyCOP(p.price)}`,
+                    }))}
+                    placeholder='Selecciona un producto'
+                    onChange={(v) => onCartRowChange(index, { productId: v })}
+                  />
                   <Input
                     type='number'
                     min='1'
@@ -385,19 +379,11 @@ export const OrdersManagementView = ({
                         {/* Status change */}
                         <Box className='flex items-center gap-3'>
                           <p className='text-xs font-bold uppercase tracking-wide text-slate-400'>Estado</p>
-                          <select
+                          <SelectDropdown
                             value={order.status}
-                            onChange={(e) =>
-                              void onStatusChange(order.id, e.target.value as (typeof ORDER_STATUSES)[number])
-                            }
-                            className='rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary'
-                          >
-                            {statuses.map((s) => (
-                              <option key={s} value={s}>
-                                {STATUS_CONFIG[s]?.label ?? s}
-                              </option>
-                            ))}
-                          </select>
+                            options={statuses.map((s) => ({ value: s, label: STATUS_CONFIG[s]?.label ?? s }))}
+                            onChange={(v) => void onStatusChange(order.id, v as (typeof ORDER_STATUSES)[number])}
+                          />
                           <span className='text-xs text-slate-400'>
                             Actualizado: {new Date(order.updatedAt).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' })}
                           </span>

@@ -13,9 +13,10 @@ import {
 import { ErrorHandler } from '@/infrastructure/repositories/api/errors/ErrorHandler';
 
 export class OrdersRepository {
-  static async getOrders(): Promise<IOrdersResp> {
+  static async getOrders(storeId?: string): Promise<IOrdersResp> {
+    const suffix = storeId ? `?storeId=${encodeURIComponent(storeId)}` : '';
     return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.get<IOrdersResp>('/orders'),
+      authenticatedClientHTTP.get<IOrdersResp>(`/orders${suffix}`),
     );
   }
 

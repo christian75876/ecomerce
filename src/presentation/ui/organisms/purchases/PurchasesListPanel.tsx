@@ -5,6 +5,7 @@ import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Label from '@/presentation/ui/atoms/label/SimpleLabel';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import PaginationControls from '@/presentation/ui/molecules/common/PaginationControls';
+import SelectDropdown from '@/presentation/ui/molecules/common/SelectDropdown';
 import FeaturePanel from '@/presentation/ui/templates/feature/FeaturePanel';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import { formatDate } from '@/shared/utils/formatDate';
@@ -44,22 +45,13 @@ const PurchasesListPanel = () => {
           />
         </Box>
         <Box>
-          <Label htmlFor='purchases-supplier-filter'>Proveedor</Label>
-          <select
-            id='purchases-supplier-filter'
+          <Label>Proveedor</Label>
+          <SelectDropdown
             value={filters.supplierId}
-            onChange={(event) =>
-              updateFilters('supplierId', event.target.value)
-            }
-            className='w-full rounded-2xl border border-neutral-gray/80 bg-white/90 px-4 py-3.5 shadow-sm transition-all focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20'
-          >
-            <option value=''>Todos</option>
-            {suppliers.map((supplier) => (
-              <option key={supplier.id} value={supplier.id}>
-                {supplier.name}
-              </option>
-            ))}
-          </select>
+            options={suppliers.map((s) => ({ value: s.id, label: s.name }))}
+            placeholder='Todos'
+            onChange={(v) => updateFilters('supplierId', v)}
+          />
         </Box>
         <Box>
           <Label htmlFor='purchases-date-from'>Desde</Label>

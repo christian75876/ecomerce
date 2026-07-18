@@ -22,6 +22,7 @@ import FeaturePanel from '@/presentation/ui/templates/feature/FeaturePanel';
 import FeatureScreen from '@/presentation/ui/templates/feature/FeatureScreen';
 import FeatureScreenHeader from '@/presentation/ui/templates/feature/FeatureScreenHeader';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
+import SelectDropdown from '@/presentation/ui/molecules/common/SelectDropdown';
 
 const QuickCreateProductModal = ({
   onConfirm,
@@ -162,33 +163,25 @@ const QuickCreateProductModal = ({
                 <label className='mb-1 block text-sm font-medium text-neutral-dark'>
                   Categoría <span className='text-red-500'>*</span>
                 </label>
-                <select
+                <SelectDropdown
                   value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
+                  options={categories.map((c) => ({ value: c.id, label: c.name }))}
+                  placeholder='Selecciona una categoría'
                   disabled={saving}
-                  className='w-full rounded-xl border border-neutral-gray/30 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary'
-                >
-                  <option value=''>Selecciona una categoría</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
+                  onChange={(v) => setCategoryId(v)}
+                />
               </div>
 
               {!isSeller ? (
                 <div>
                   <label className='mb-1 block text-sm font-medium text-neutral-dark'>Tienda</label>
-                  <select
+                  <SelectDropdown
                     value={storeId}
-                    onChange={(e) => setStoreId(e.target.value)}
+                    options={stores.map((s) => ({ value: s.id, label: s.name }))}
+                    placeholder='Sin tienda'
                     disabled={saving}
-                    className='w-full rounded-xl border border-neutral-gray/30 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary'
-                  >
-                    <option value=''>Sin tienda</option>
-                    {stores.map((s) => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
-                    ))}
-                  </select>
+                    onChange={(v) => setStoreId(v)}
+                  />
                 </div>
               ) : (
                 <div className='rounded-xl border border-neutral-gray/20 bg-background px-4 py-3 text-sm text-neutral-dark'>
@@ -400,47 +393,33 @@ export const InventoryManagementView = ({
         >
           <form onSubmit={handleSubmit} className='mt-6 space-y-4'>
             <Box>
-              <div className='mb-1 flex items-center justify-between'>
-                <Label htmlFor='inventory-product'>Producto</Label>
-                <button
-                  type='button'
-                  onClick={() => setShowCreateProductModal(true)}
-                  className='flex items-center gap-1 text-xs font-semibold text-primary hover:underline'
-                >
-                  <i className='bx bx-plus' aria-hidden='true' /> Nuevo
-                </button>
-              </div>
-              <select
-                id='inventory-product'
+              <Label htmlFor='inventory-product'>Producto</Label>
+              <SelectDropdown
                 value={productId}
-                onChange={(event) => onProductChange(event.target.value)}
+                options={products.map((p) => ({
+                  value: p.id,
+                  label: `${p.name}${p.sku ? ` (${p.sku})` : ''}`,
+                }))}
+                placeholder='Selecciona un producto'
                 disabled={submitting}
-                className='w-full rounded-2xl border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary'
-              >
-                <option value=''>Selecciona un producto</option>
-                {products.map((product) => (
-                  <option key={product.id} value={product.id}>
-                    {product.name}{product.sku ? ` (${product.sku})` : ''}
-                  </option>
-                ))}
-              </select>
+                onCreateClick={() => setShowCreateProductModal(true)}
+                createLabel='+ Nuevo producto'
+                onChange={(v) => onProductChange(v)}
+              />
             </Box>
 
             <Box className='grid gap-4 md:grid-cols-2'>
               <Box>
                 <Label htmlFor='movement-type'>Operación</Label>
-                <select
-                  id='movement-type'
+                <SelectDropdown
                   value={movementType}
-                  onChange={(event) =>
-                    onMovementTypeChange(event.target.value as 'IN' | 'ADJUSTMENT')
-                  }
+                  options={[
+                    { value: 'IN', label: 'Ingreso' },
+                    { value: 'ADJUSTMENT', label: 'Ajuste' },
+                  ]}
                   disabled={submitting}
-                  className='w-full rounded-2xl border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary'
-                >
-                  <option value='IN'>Ingreso</option>
-                  <option value='ADJUSTMENT'>Ajuste</option>
-                </select>
+                  onChange={(v) => onMovementTypeChange(v as 'IN' | 'ADJUSTMENT')}
+                />
               </Box>
 
               <Box>
@@ -486,30 +465,16 @@ export const InventoryManagementView = ({
 
                 <Box className='grid gap-4 md:grid-cols-2'>
                   <Box>
-                    <div className='mb-1 flex items-center justify-between'>
-                      <Label htmlFor='entry-supplier'>Proveedor</Label>
-                      <button
-                        type='button'
-                        onClick={() => setShowCreateSupplierModal(true)}
-                        className='flex items-center gap-1 text-xs font-semibold text-primary hover:underline'
-                      >
-                        <i className='bx bx-plus' aria-hidden='true' /> Nuevo
-                      </button>
-                    </div>
-                    <select
-                      id='entry-supplier'
+                    <Label htmlFor='entry-supplier'>Proveedor</Label>
+                    <SelectDropdown
                       value={supplierId}
-                      onChange={(event) => onSupplierChange(event.target.value)}
+                      options={suppliers.map((s) => ({ value: s.id, label: s.name }))}
+                      placeholder='Sin proveedor específico'
                       disabled={submitting}
-                      className='w-full rounded-2xl border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary'
-                    >
-                      <option value=''>Sin proveedor específico</option>
-                      {suppliers.map((supplier) => (
-                        <option key={supplier.id} value={supplier.id}>
-                          {supplier.name}
-                        </option>
-                      ))}
-                    </select>
+                      onCreateClick={() => setShowCreateSupplierModal(true)}
+                      createLabel='+ Nuevo proveedor'
+                      onChange={(v) => onSupplierChange(v)}
+                    />
                   </Box>
 
                   <Box>

@@ -6,6 +6,7 @@ import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
+import SelectDropdown from '@/presentation/ui/molecules/common/SelectDropdown';
 
 interface PosManagementViewProps {
   products: IProduct[];
@@ -71,29 +72,24 @@ export const PosManagementView = ({
             />
           </Box>
           <Box className="mb-5 grid gap-3 md:grid-cols-2">
-            <select
+            <SelectDropdown
               value={paymentMethod}
-              onChange={(event) =>
-                onPaymentMethodChange(event.target.value as 'CASH' | 'CREDIT')
-              }
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="CASH">Pago en efectivo</option>
-              <option value="CREDIT">Venta a crédito</option>
-            </select>
-            <select
+              options={[
+                { value: 'CASH', label: 'Pago en efectivo' },
+                { value: 'CREDIT', label: 'Venta a crédito' },
+              ]}
+              onChange={(v) => onPaymentMethodChange(v as 'CASH' | 'CREDIT')}
+            />
+            <SelectDropdown
               value={selectedCustomerId}
-              onChange={(event) => onCustomerChange(event.target.value)}
+              options={customers.map((c) => ({
+                value: c.id,
+                label: `${c.firstName} ${c.lastName} · saldo $${Number(c.creditBalance).toFixed(2)}`,
+              }))}
+              placeholder='Selecciona cliente para crédito'
               disabled={paymentMethod !== 'CREDIT'}
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="">Selecciona cliente para crédito</option>
-              {customers.map((customer) => (
-                <option key={customer.id} value={customer.id}>
-                  {customer.firstName} {customer.lastName} · saldo ${Number(customer.creditBalance).toFixed(2)}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => onCustomerChange(v)}
+            />
           </Box>
           <Box className="grid gap-3 md:grid-cols-2">
             {loading ? (

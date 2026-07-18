@@ -1,6 +1,7 @@
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
+import SelectDropdown from '@/presentation/ui/molecules/common/SelectDropdown';
 import PurchaseModalShell from './PurchaseModalShell';
 import { usePurchaseModalSection } from './PurchasesContext';
 
@@ -46,20 +47,12 @@ const CreateProductModal = () => {
           min='0'
           step='0.01'
         />
-        <select
+        <SelectDropdown
           value={productForm.categoryId}
-          onChange={(event) =>
-            updateProductForm('categoryId', event.target.value)
-          }
-          className='w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary'
-        >
-          <option value=''>Selecciona categoría</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
+          options={categories.map((c) => ({ value: c.id, label: c.name }))}
+          placeholder='Selecciona categoría'
+          onChange={(v) => updateProductForm('categoryId', v)}
+        />
         <Box className='md:col-span-2'>
           <Input
             value={productForm.description}

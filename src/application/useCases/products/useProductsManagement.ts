@@ -13,6 +13,7 @@ import { StoresRepository } from '@/infrastructure/repositories/api/stores/Store
 import { SuppliersRepository } from '@/infrastructure/repositories/api/suppliers/SuppliersRepository';
 import { MenuCategoriesRepository } from '@/infrastructure/repositories/api/menu-categories/MenuCategoriesRepository';
 import { getAuthenticatedRole } from '@/shared/utils/checkIsUserAuthenticated.util';
+import { useAdminStore } from '@/shared/contexts/AdminStoreContext';
 
 export type ProductFormState = {
   name: string;
@@ -56,6 +57,8 @@ export const initialProductFormState: ProductFormState = {
 
 export const useProductsManagement = () => {
   const isSeller = getAuthenticatedRole() === 'seller';
+  const isAdmin = getAuthenticatedRole() === 'admin';
+  const { selectedStoreId: contextStoreId } = useAdminStore();
   const [products, setProducts] = useState<IProduct[]>([]);
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [stores, setStores] = useState<IStore[]>([]);
@@ -120,6 +123,7 @@ export const useProductsManagement = () => {
       const response = await ProductRepository.getProducts({
         search: search || undefined,
         categoryId: selectedCategoryId || undefined,
+        storeId: isAdmin ? contextStoreId : undefined,
       });
       setProducts((response.data as unknown as { items?: IProduct[] }).items ?? []);
     } catch (err) {
@@ -129,7 +133,7 @@ export const useProductsManagement = () => {
     } finally {
       setLoading(false);
     }
-  }, [search, selectedCategoryId]);
+  }, [search, selectedCategoryId, isAdmin, contextStoreId]);
 
   const loadVideos = useCallback(async (productId: string) => {
     try {

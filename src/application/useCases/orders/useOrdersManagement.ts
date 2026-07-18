@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ICustomer } from '@/application/dtos/customers/response/CustomerResponse';
 import { IOrder } from '@/application/dtos/orders/response/OrderResponse';
 import { IProduct } from '@/application/dtos/products/response/ProductResponse';
 import { CustomersRepository } from '@/infrastructure/repositories/api/customers/CustomersRepository';
 import { OrdersRepository } from '@/infrastructure/repositories/api/orders/OrdersRepository';
 import { ProductRepository } from '@/infrastructure/repositories/api/products/ProductsRepository';
+import { useAdminStore } from '@/shared/contexts/AdminStoreContext';
 
 export const ORDER_STATUSES = [
   'PENDING',
@@ -21,6 +22,7 @@ export type CartRow = {
 };
 
 export const useOrdersManagement = () => {
+  const { selectedStoreId: contextStoreId } = useAdminStore();
   const [customers, setCustomers] = useState<ICustomer[]>([]);
   const [products, setProducts] = useState<IProduct[]>([]);
   const [orders, setOrders] = useState<IOrder[]>([]);
@@ -38,7 +40,7 @@ export const useOrdersManagement = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadScreen = async () => {
+  const loadScreen = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -47,7 +49,7 @@ export const useOrdersManagement = () => {
         await Promise.all([
           CustomersRepository.getCustomers(),
           ProductRepository.getProducts({ active: true }),
-          OrdersRepository.getOrders(),
+          OrdersRepository.getOrders(contextStoreId),
         ]);
       setCustomers((customersResponse.data as unknown as { items?: ICustomer[] }).items ?? []);
       setProducts((productsResponse.data as unknown as { items?: IProduct[] }).items ?? []);
@@ -59,11 +61,11 @@ export const useOrdersManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [contextStoreId]);
 
   useEffect(() => {
     void loadScreen();
-  }, []);
+  }, [loadScreen]);
 
   const createCustomer = async () => {
     if (

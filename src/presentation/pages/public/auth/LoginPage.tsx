@@ -33,13 +33,13 @@ const LoginPage = () => {
   } = useFormValidation(loginSchema, isloading, { email: '', password: '' });
 
   return (
-    <div className='relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-50 px-4 py-10'>
+    <div className='relative flex min-h-screen items-start justify-center overflow-hidden bg-slate-50 px-4 py-4 sm:items-center sm:py-10'>
       {/* BG blobs */}
       <div className='pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-primary/8 blur-3xl' aria-hidden='true' />
       <div className='pointer-events-none absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-accent/8 blur-3xl' aria-hidden='true' />
 
       <div className='relative z-10 w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-900/8'>
-        <div className='flex min-h-[560px]'>
+        <div className='flex sm:min-h-[560px]'>
 
           {/* ── Left panel ── */}
           <div className='relative hidden flex-col justify-between overflow-hidden bg-gradient-to-br from-primary-darker via-primary to-secondary p-10 lg:flex lg:w-[420px]'>
@@ -87,20 +87,22 @@ const LoginPage = () => {
           <div className='flex flex-1 flex-col justify-center px-6 py-10 sm:px-10'>
             <div className='mx-auto w-full max-w-sm'>
 
-              {/* Logo + back — solo visible en mobile (el panel izquierdo ya los muestra en desktop) */}
-              <div className='mb-6 flex items-center justify-between lg:hidden'>
-                <div className='flex items-center gap-2'>
-                  <img src='/icons/icon-96x96.png' alt='Hot Commerce' className='h-8 w-8 rounded-xl' />
-                  <span className='text-base font-extrabold tracking-tight text-slate-900'>
-                    Hot Commerce
-                  </span>
-                </div>
+                {/* Logo — solo mobile (el panel izq. ya lo muestra en desktop) */}
+              <div className='mb-1 flex items-center gap-2 lg:hidden'>
+                <img src='/icons/icon-96x96.png' alt='Hot Commerce' className='h-8 w-8 rounded-xl' />
+                <span className='text-base font-extrabold tracking-tight text-slate-900'>
+                  Hot Commerce
+                </span>
+              </div>
+
+              {/* Volver al comercio — siempre visible */}
+              <div className='mb-6 flex items-center justify-end lg:justify-start'>
                 <Link
                   to={ROUTES.PUBLIC.HOME}
                   className='flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-500 transition hover:border-primary/30 hover:text-primary'
                 >
                   <i className='bx bx-arrow-back text-sm' aria-hidden='true' />
-                  Volver al inicio
+                  Volver al comercio
                 </Link>
               </div>
 

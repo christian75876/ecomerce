@@ -6,6 +6,7 @@ import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Label from '@/presentation/ui/atoms/label/SimpleLabel';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import PaginationControls from '@/presentation/ui/molecules/common/PaginationControls';
+import SelectDropdown from '@/presentation/ui/molecules/common/SelectDropdown';
 import { buildAssetUrl } from '@/shared/utils/buildAssetUrl';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import { formatDate } from '@/shared/utils/formatDate';
@@ -338,26 +339,16 @@ const PurchaseDetailModal = () => {
                     </Box>
                     <Box className='grid gap-4 md:grid-cols-2'>
                       <Box>
-                        <Label htmlFor='purchase-payment-method'>Medio de pago</Label>
-                        <select
-                          id='purchase-payment-method'
+                        <Label>Medio de pago</Label>
+                        <SelectDropdown
                           value={paymentForm.paymentMethod}
-                          onChange={(event) =>
-                            updatePaymentForm(
-                              'paymentMethod',
-                              event.target.value as typeof paymentForm.paymentMethod,
-                            )
-                          }
-                          disabled={
-                            detailSubmitting ||
-                            selectedPurchase.status === 'CANCELLED' ||
-                            selectedPurchase.balance <= 0
-                          }
-                          className='w-full rounded-2xl border border-neutral-gray/80 bg-white/90 px-4 py-3.5 shadow-sm transition-all focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20'
-                        >
-                          <option value='CASH'>Efectivo</option>
-                          <option value='TRANSFER'>Transferencia</option>
-                        </select>
+                          options={[
+                            { value: 'CASH', label: 'Efectivo' },
+                            { value: 'TRANSFER', label: 'Transferencia' },
+                          ]}
+                          disabled={detailSubmitting || selectedPurchase.status === 'CANCELLED' || selectedPurchase.balance <= 0}
+                          onChange={(v) => updatePaymentForm('paymentMethod', v as typeof paymentForm.paymentMethod)}
+                        />
                       </Box>
                       <Box>
                         <Label htmlFor='purchase-payment-reference'>

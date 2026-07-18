@@ -31,7 +31,7 @@ const DesktopHeaderLayout = () => {
   const cartCount = items.reduce((acc, i) => acc + i.quantity, 0);
 
   return (
-    <Box className='sticky top-0 z-40 border-b border-slate-200/80 bg-white/97 backdrop-blur-sm'>
+    <Box className='fixed inset-x-0 top-0 z-40 border-b border-slate-200/80 bg-white/97 backdrop-blur-sm'>
       <Box className='mx-auto flex max-w-[1440px] items-center justify-between gap-3 px-4 py-3 sm:px-6'>
         {/* Logo */}
         <Box className='flex-shrink-0'>

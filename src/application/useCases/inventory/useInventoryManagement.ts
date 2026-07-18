@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   IInventoryBatch,
   IInventoryItem,
@@ -9,8 +9,10 @@ import { ISupplier } from '@/application/dtos/suppliers/response/SupplierRespons
 import { InventoryRepository } from '@/infrastructure/repositories/api/inventory/InventoryRepository';
 import { ProductRepository } from '@/infrastructure/repositories/api/products/ProductsRepository';
 import { SuppliersRepository } from '@/infrastructure/repositories/api/suppliers/SuppliersRepository';
+import { useAdminStore } from '@/shared/contexts/AdminStoreContext';
 
 export const useInventoryManagement = () => {
+  const { selectedStoreId: contextStoreId } = useAdminStore();
   const [products, setProducts] = useState<IProduct[]>([]);
   const [suppliers, setSuppliers] = useState<ISupplier[]>([]);
   const [inventory, setInventory] = useState<IInventoryItem[]>([]);
@@ -34,7 +36,7 @@ export const useInventoryManagement = () => {
     [productId, products],
   );
 
-  const loadScreen = async () => {
+  const loadScreen = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -50,10 +52,10 @@ export const useInventoryManagement = () => {
         await Promise.all([
           ProductRepository.getProducts(),
           SuppliersRepository.getSuppliers(),
-          InventoryRepository.getInventory(),
+          InventoryRepository.getInventory(contextStoreId),
           InventoryRepository.getMovements(),
-          InventoryRepository.getBatches(),
-          InventoryRepository.getExpiring(30),
+          InventoryRepository.getBatches({ storeId: contextStoreId }),
+          InventoryRepository.getExpiring(30, contextStoreId),
         ]);
 
       setProducts((productsResponse.data as unknown as { items?: IProduct[] }).items ?? []);
@@ -75,11 +77,11 @@ export const useInventoryManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [contextStoreId]);
 
   useEffect(() => {
     void loadScreen();
-  }, []);
+  }, [loadScreen]);
 
   const resetForm = () => {
     setProductId('');

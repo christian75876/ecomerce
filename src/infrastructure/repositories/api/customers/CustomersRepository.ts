@@ -12,8 +12,11 @@ import { authenticatedClientHTTP } from '@/infrastructure/repositories/api/Clien
 import { ErrorHandler } from '@/infrastructure/repositories/api/errors/ErrorHandler';
 
 export class CustomersRepository {
-  static async getCustomers(search?: string): Promise<ICustomersResp> {
-    const suffix = search ? `?search=${encodeURIComponent(search)}` : '';
+  static async getCustomers(search?: string, storeId?: string): Promise<ICustomersResp> {
+    const params = new URLSearchParams();
+    if (search) params.set('search', encodeURIComponent(search));
+    if (storeId) params.set('storeId', storeId);
+    const suffix = params.toString() ? `?${params.toString()}` : '';
     return ErrorHandler.handleApiErrors(() =>
       authenticatedClientHTTP.get<ICustomersResp>(`/customers${suffix}`),
     );

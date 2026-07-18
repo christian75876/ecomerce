@@ -15,9 +15,10 @@ import {
 import { ErrorHandler } from '@/infrastructure/repositories/api/errors/ErrorHandler';
 
 export class InventoryRepository {
-  static async getInventory(): Promise<IInventoryResp> {
+  static async getInventory(storeId?: string): Promise<IInventoryResp> {
+    const suffix = storeId ? `?storeId=${encodeURIComponent(storeId)}` : '';
     return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.get<IInventoryResp>('/inventory'),
+      authenticatedClientHTTP.get<IInventoryResp>(`/inventory${suffix}`),
     );
   }
 

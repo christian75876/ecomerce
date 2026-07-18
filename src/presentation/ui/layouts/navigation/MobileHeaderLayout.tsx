@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Box from '@atoms/box/SimpleBox';
 import Icon from '@atoms/icon/SimpleIcon';
 import Typography from '@atoms/typography/SimpleTypography';
@@ -48,6 +48,11 @@ const publicMoreNavItems = [
 
 const MobileHeaderLayout = () => {
   const [showMore, setShowMore] = useState(false);
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent(showMore ? 'mobile-nav-more-open' : 'mobile-nav-more-close'));
+  }, [showMore]);
+
   const adminView = isAuthenticated() && canAccessAdminPanel();
   const { unreadCount } = useOrderNotifications();
   const buyerView = isBuyerSession();
