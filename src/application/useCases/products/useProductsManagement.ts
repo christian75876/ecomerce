@@ -106,7 +106,10 @@ export const useProductsManagement = () => {
       setStores(loaded);
     } else {
       const response = await StoresRepository.getStores({ active: true });
-      setStores(response.data);
+      const loaded: IStore[] = Array.isArray(response.data)
+        ? response.data
+        : (response.data as unknown as { items?: IStore[] }).items ?? [];
+      setStores(loaded);
     }
   }, [isSeller]);
 

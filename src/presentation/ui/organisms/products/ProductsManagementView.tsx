@@ -915,7 +915,7 @@ export const ProductsManagementView = ({
                         </span>
                       </Box>
                       <Typography className="text-sm text-neutral-dark/70">
-                        SKU: {product.sku} · Categoría: {product.category.name} ·
+                        SKU: {product.sku} · Categoría: {product.category?.name ?? 'Sin categoría'} ·
                         Tienda: {product.store?.name ?? 'Sin tienda'}
                         {product.menuCategory ? ` · Sección: ${product.menuCategory.name}` : ''}
                       </Typography>
