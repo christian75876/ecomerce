@@ -242,7 +242,12 @@ export const CategoriesManagementView = ({
           </div>
 
           {loading ? (
-            <Typography>Cargando categorías...</Typography>
+            <Box className='space-y-3'>
+              <div className='h-14 skeleton rounded-2xl' />
+              <div className='h-14 skeleton rounded-2xl' />
+              <div className='h-14 skeleton rounded-2xl' />
+              <div className='h-14 skeleton rounded-2xl' />
+            </Box>
           ) : categories.length === 0 ? (
             <Box className="rounded-2xl border border-dashed border-neutral-gray/40 bg-background px-6 py-10 text-center">
               <Typography>{search ? 'No se encontraron categorías.' : 'No hay categorías creadas todavía.'}</Typography>

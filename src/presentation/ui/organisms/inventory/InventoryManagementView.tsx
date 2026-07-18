@@ -649,7 +649,13 @@ export const InventoryManagementView = ({
 
             <Box className='mt-4 overflow-x-auto'>
               {loading ? (
-                <Typography>Cargando inventario...</Typography>
+                <div className='space-y-3'>
+                  <div className='h-12 skeleton rounded-2xl' />
+                  <div className='h-12 skeleton rounded-2xl' />
+                  <div className='h-12 skeleton rounded-2xl' />
+                  <div className='h-12 skeleton rounded-2xl' />
+                  <div className='h-12 skeleton rounded-2xl' />
+                </div>
               ) : filteredInventory.length === 0 ? (
                 <div className='rounded-2xl border border-dashed border-neutral-gray/40 bg-background px-6 py-10 text-center'>
                   <p className='text-sm text-neutral-dark/55'>
@@ -745,7 +751,13 @@ export const InventoryManagementView = ({
           <Box className='grid gap-6 xl:grid-cols-2'>
             <FeaturePanel title='Lotes y vencimientos'>
               <Box className='mt-5 space-y-3'>
-                {batches.slice(0, 10).map((batch) => (
+                {batches.length === 0 && !loading ? (
+                  <Box className='flex flex-col items-center rounded-2xl border border-dashed border-neutral-gray/30 py-12 text-center'>
+                    <i className='bx bx-package mb-3 text-4xl text-neutral-dark/20' aria-hidden='true' />
+                    <Typography className='font-semibold text-neutral-dark/50'>Sin lotes registrados</Typography>
+                    <Typography className='mt-1 text-sm text-neutral-dark/35'>Los lotes aparecerán aquí al agregarlos al inventario.</Typography>
+                  </Box>
+                ) : batches.slice(0, 10).map((batch) => (
                   <Box key={batch.id} className='rounded-2xl border border-neutral-gray/20 px-4 py-4'>
                     <Box className='flex items-start justify-between gap-4'>
                       <Box>
@@ -795,7 +807,11 @@ export const InventoryManagementView = ({
           <FeaturePanel title='Movimientos recientes'>
             <Box className='mt-5 space-y-3'>
               {loading ? (
-                <Typography>Cargando movimientos...</Typography>
+                <>
+                  <div className='h-10 skeleton rounded-2xl' />
+                  <div className='h-10 skeleton rounded-2xl' />
+                  <div className='h-10 skeleton rounded-2xl' />
+                </>
               ) : movements.length === 0 ? (
                 <Typography>No hay movimientos registrados todavía.</Typography>
               ) : (

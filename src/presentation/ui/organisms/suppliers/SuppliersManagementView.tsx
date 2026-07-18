@@ -112,7 +112,15 @@ export const SuppliersManagementView = ({
             <Input value={search} onChange={(event) => onSearchChange(event.target.value)} placeholder='Buscar proveedor' className='max-w-72' />
           </Box>
           <Box className='mt-5 space-y-3'>
-            {loading ? <Typography>Cargando proveedores...</Typography> : suppliers.map((supplier) => (
+            {loading ? (
+              <Typography>Cargando proveedores...</Typography>
+            ) : suppliers.length === 0 ? (
+              <Box className='flex flex-col items-center rounded-2xl border border-dashed border-neutral-gray/30 py-10 text-center'>
+                <i className='bx bx-briefcase mb-3 text-4xl text-neutral-dark/20' aria-hidden='true' />
+                <Typography className='font-semibold text-neutral-dark/50'>No se encontraron proveedores</Typography>
+                <Typography className='mt-1 text-sm text-neutral-dark/35'>Ajusta la búsqueda o registra un nuevo proveedor.</Typography>
+              </Box>
+            ) : suppliers.map((supplier) => (
               <Box key={supplier.id} className='rounded-2xl border border-neutral-gray/20 px-5 py-4'>
                 <Box className='flex items-start justify-between gap-3'>
                   <Box>

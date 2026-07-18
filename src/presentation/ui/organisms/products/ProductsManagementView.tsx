@@ -875,7 +875,12 @@ export const ProductsManagementView = ({
 
           <Box className="mt-6 space-y-3">
             {loading ? (
-              <Typography>Cargando productos...</Typography>
+              <>
+                <div className='h-16 skeleton rounded-2xl' />
+                <div className='h-16 skeleton rounded-2xl' />
+                <div className='h-16 skeleton rounded-2xl' />
+                <div className='h-16 skeleton rounded-2xl' />
+              </>
             ) : products.length === 0 ? (
               <Box className="rounded-2xl border border-dashed border-neutral-gray/40 bg-background px-6 py-10 text-center">
                 <Typography>No hay productos registrados todavía.</Typography>

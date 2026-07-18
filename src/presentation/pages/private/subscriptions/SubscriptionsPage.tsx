@@ -514,6 +514,7 @@ const SubscriptionsPage = () => {
     registerPayment,
     cancelSubscription,
     updatePlan,
+    loadDashboard,
   } = useSubscriptionsManagement();
 
   const [registerTarget, setRegisterTarget] = useState<IStoreWithSubscriptionStatus | null>(null);

@@ -256,7 +256,12 @@ export const OrdersManagementView = ({
           {/* Orders */}
           <Box className='mt-4 space-y-3'>
             {loading ? (
-              <Typography className='py-8 text-center text-sm text-slate-400'>Cargando pedidos…</Typography>
+              <>
+                <div className='h-20 skeleton rounded-2xl' />
+                <div className='h-20 skeleton rounded-2xl' />
+                <div className='h-20 skeleton rounded-2xl' />
+                <div className='h-20 skeleton rounded-2xl' />
+              </>
             ) : filtered.length === 0 ? (
               <Typography className='py-8 text-center text-sm text-slate-400'>
                 {search || statusFilter ? 'Sin resultados para ese filtro.' : 'Aún no hay pedidos registrados.'}

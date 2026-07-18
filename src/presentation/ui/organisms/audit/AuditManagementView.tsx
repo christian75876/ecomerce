@@ -52,7 +52,21 @@ export const AuditManagementView = ({
       </Box>
       {error ? <Box className='mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600'>{error}</Box> : null}
       <Box className='mt-6 space-y-3'>
-        {loading ? <Typography>Cargando auditoría...</Typography> : logs.map((log) => (
+        {loading ? (
+          <>
+            <div className='h-14 skeleton rounded-2xl' />
+            <div className='h-14 skeleton rounded-2xl' />
+            <div className='h-14 skeleton rounded-2xl' />
+            <div className='h-14 skeleton rounded-2xl' />
+            <div className='h-14 skeleton rounded-2xl' />
+          </>
+        ) : logs.length === 0 ? (
+          <Box className='flex flex-col items-center rounded-2xl border border-dashed border-neutral-gray/30 py-12 text-center'>
+            <i className='bx bx-history mb-3 text-4xl text-neutral-dark/20' aria-hidden='true' />
+            <Typography className='font-semibold text-neutral-dark/50'>Sin registros de auditoría</Typography>
+            <Typography className='mt-1 text-sm text-neutral-dark/35'>Prueba ajustando los filtros de búsqueda.</Typography>
+          </Box>
+        ) : logs.map((log) => (
           <Box key={log.id} className='rounded-2xl border border-neutral-gray/20 px-5 py-4'>
             <Typography variant='h3' className='text-lg font-semibold'>{log.action}</Typography>
             <Typography className='mt-1 text-sm text-neutral-dark/65'>

@@ -25,6 +25,7 @@ export interface IStore {
   isAdultContent: boolean;
   isPremiumAdvertiser: boolean;
   subscriptionExpiresAt: string | null;
+  advertisingExpiresAt: string | null;
   userId: number | null;
   deliveryOptions: 'DELIVERY' | 'PICKUP' | 'BOTH';
   wppNotificationsEnabled: boolean;
