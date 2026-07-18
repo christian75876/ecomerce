@@ -1,5 +1,6 @@
 import { authenticatedClientHTTP, publicClientHTTP } from '../ClientHTTP';
 import { ErrorHandler } from '../errors/ErrorHandler';
+import { IApiResponse } from '@/application/dtos/common/HttpResponse';
 
 export interface IInvitation {
   id: string;
@@ -23,7 +24,7 @@ export class InvitationsRepository {
 
   static async getAll() {
     return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.get<IInvitation[]>('/invitations'),
+      authenticatedClientHTTP.get<IApiResponse<IInvitation[]>>('/invitations'),
     );
   }
 

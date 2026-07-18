@@ -1,8 +1,10 @@
 import { useIsMobile } from '@shared/hooks/useIsMobile';
+import { canAccessAdminPanel, isAuthenticated } from '@/shared/utils/checkIsUserAuthenticated.util';
 
 import Box from '@atoms/box/SimpleBox';
 import MobileHeaderLayout from '@presentation/ui/layouts/navigation/MobileHeaderLayout';
 import DesktopHeaderLayout from '@presentation/ui/layouts/navigation/DesktopHeaderLayout';
+import AdminSidebar from '@presentation/ui/layouts/navigation/AdminSidebar';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -14,7 +16,21 @@ const DashboardLayout = ({
   hasGradient = false
 }: DashboardLayoutProps) => {
   const isMobile = useIsMobile();
+  const isAdminUser = isAuthenticated() && canAccessAdminPanel();
 
+  // Admin desktop — sidebar layout
+  if (!isMobile && isAdminUser) {
+    return (
+      <div className={`flex min-h-screen bg-slate-50 ${hasGradient ? 'gradient-dashboard' : ''}`}>
+        <AdminSidebar />
+        <main className='ml-60 flex-1 min-w-0 px-6 py-6 lg:px-8 lg:py-8'>
+          {children}
+        </main>
+      </div>
+    );
+  }
+
+  // Mobile admin or public visitor — original top-bar layout
   return (
     <Box
       className={`min-h-screen w-full flex flex-col ${hasGradient ? 'gradient-dashboard' : ''}`}

@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import SimpleIcon from '@atoms/icon/SimpleIcon';
 import { useAdminStore } from '@/shared/contexts/AdminStoreContext';
 
-const StoreSearchSelector = () => {
+const StoreSearchSelector = ({ dropdownClassName }: { dropdownClassName?: string } = {}) => {
   const { stores, selectedStoreId, selectedStore, setSelectedStoreId, loadStores } = useAdminStore();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -69,7 +69,7 @@ const StoreSearchSelector = () => {
       </button>
 
       {open ? (
-        <div className='absolute right-0 top-[calc(100%+0.75rem)] z-50 w-72 rounded-[1.35rem] border border-neutral-gray/40 bg-white shadow-lg'>
+        <div className={`absolute top-[calc(100%+0.75rem)] z-50 w-72 rounded-[1.35rem] border border-neutral-gray/40 bg-white shadow-lg ${dropdownClassName ?? 'right-0'}`}>
           <div className='p-3 pb-2'>
             <input
               autoFocus

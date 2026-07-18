@@ -122,6 +122,7 @@ const StoresPage = () => {
         onSubmit={storesManagement.submitForm}
         onEdit={storesManagement.startEditing}
         onReset={storesManagement.resetForm}
+        onToggleActive={storesManagement.isSeller ? undefined : storesManagement.toggleActive}
       />
 
       {pendingPath !== null ? (

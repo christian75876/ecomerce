@@ -14,7 +14,7 @@ export const useInvitations = () => {
     setError(null);
     try {
       const res = await InvitationsRepository.getAll();
-      setInvitations(res ?? []);
+      setInvitations(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar invitaciones');
     } finally {

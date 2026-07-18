@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
 import { StoreFormState } from '@/application/useCases/stores/useStoresManagement';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
@@ -24,6 +25,7 @@ interface StoresManagementViewProps {
   onSubmit: () => Promise<boolean>;
   onEdit: (store: IStore) => void;
   onReset: () => void;
+  onToggleActive?: (store: IStore) => void;
 }
 
 type BrandingTab = 'info' | 'colors' | 'style' | 'delivery';
@@ -118,6 +120,58 @@ const THEME_PRESETS: Array<{
     },
   },
 ];
+
+const ConfirmToggleModal = ({
+  store,
+  onConfirm,
+  onCancel,
+}: {
+  store: IStore;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) => {
+  const deactivating = store.isActive;
+  return createPortal(
+    <div
+      className='fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm'
+      onClick={onCancel}
+    >
+      <div
+        className='w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl'
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-2xl ${deactivating ? 'bg-red-100' : 'bg-emerald-100'}`}>
+          <i className={`bx text-2xl ${deactivating ? 'bx-power-off text-red-500' : 'bx-check-circle text-emerald-600'}`} aria-hidden='true' />
+        </div>
+        <h2 className='text-lg font-bold text-slate-800'>
+          {deactivating ? 'Desactivar tienda' : 'Activar tienda'}
+        </h2>
+        <p className='mt-2 text-sm text-slate-500'>
+          {deactivating
+            ? <>La tienda <span className='font-semibold text-slate-700'>"{store.name}"</span> dejará de ser visible en el marketplace inmediatamente.</>
+            : <>La tienda <span className='font-semibold text-slate-700'>"{store.name}"</span> volverá a ser visible en el marketplace.</>}
+        </p>
+        <div className='mt-6 flex flex-col gap-2'>
+          <button
+            type='button'
+            onClick={onConfirm}
+            className={`w-full rounded-2xl py-2.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-95 ${deactivating ? 'bg-red-500' : 'bg-emerald-500'}`}
+          >
+            {deactivating ? 'Sí, desactivar' : 'Sí, activar'}
+          </button>
+          <button
+            type='button'
+            onClick={onCancel}
+            className='w-full rounded-2xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50'
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+};
 
 const buttonRadiusClass = (style: StoreFormState['buttonStyle']) => {
   if (style === 'SHARP') return 'rounded-none';
@@ -423,8 +477,10 @@ export const StoresManagementView = ({
   onSubmit,
   onEdit,
   onReset,
+  onToggleActive,
 }: StoresManagementViewProps) => {
   const [activeTab, setActiveTab] = useState<BrandingTab>('info');
+  const [confirmStore, setConfirmStore] = useState<IStore | null>(null);
   const menuCats = useMenuCategories(
     editingId && form.storeType === 'RESTAURANT' ? editingId : null,
   );
@@ -1051,11 +1107,15 @@ export const StoresManagementView = ({
               {stores.map((store) => (
                 <Box
                   key={store.id}
-                  className='flex items-center gap-3 rounded-2xl border border-neutral-gray/20 bg-white px-4 py-3 transition hover:border-primary/20 hover:shadow-sm'
+                  className={`flex items-center gap-3 rounded-2xl border px-4 py-3 transition hover:shadow-sm ${
+                    store.isActive
+                      ? 'border-neutral-gray/20 bg-white hover:border-primary/20'
+                      : 'border-red-200/60 bg-red-50/40 opacity-70'
+                  }`}
                 >
                   {/* Color swatch */}
                   <div
-                    className='h-8 w-8 flex-shrink-0 rounded-xl shadow-inner'
+                    className={`h-8 w-8 flex-shrink-0 rounded-xl shadow-inner ${!store.isActive ? 'grayscale' : ''}`}
                     style={{
                       background: store.primaryColor
                         ? `linear-gradient(135deg, ${store.primaryColor}, ${store.secondaryColor || store.primaryColor})`
@@ -1067,6 +1127,9 @@ export const StoresManagementView = ({
                       <Typography className='truncate text-sm font-semibold'>
                         {store.name}
                       </Typography>
+                      {!store.isActive ? (
+                        <span className='flex-shrink-0 rounded-full bg-red-100 px-1.5 py-0.5 text-[9px] font-bold text-red-600'>DESACTIVADA</span>
+                      ) : null}
                       {store.storeType === 'RESTAURANT' ? (
                         <span className='flex-shrink-0 rounded-full bg-amber-500 px-1.5 py-0.5 text-[9px] font-bold text-white'>🍽️</span>
                       ) : null}
@@ -1075,14 +1138,14 @@ export const StoresManagementView = ({
                       ) : null}
                     </div>
                     <Typography className='text-xs text-neutral-dark/45'>
-                      /{store.slug} · {store.isActive ? 'Activa' : 'Inactiva'}
+                      /{store.slug}
                       {(() => {
                         if (!store.subscriptionExpiresAt) return null;
                         const exp = new Date(store.subscriptionExpiresAt);
                         const now = new Date();
                         const daysLeft = Math.ceil((exp.getTime() - now.getTime()) / 86400000);
                         if (daysLeft < 0) return (
-                          <span className='ml-1.5 rounded-full bg-red-100 px-1.5 py-0.5 text-[9px] font-bold text-red-600'>EXPIRADO</span>
+                          <span className='ml-1.5 rounded-full bg-red-100 px-1.5 py-0.5 text-[9px] font-bold text-red-600'>Sub. expirada</span>
                         );
                         if (daysLeft <= 7) return (
                           <span className='ml-1.5 rounded-full bg-orange-100 px-1.5 py-0.5 text-[9px] font-bold text-orange-600'>Vence en {daysLeft}d</span>
@@ -1093,13 +1156,29 @@ export const StoresManagementView = ({
                       })()}
                     </Typography>
                   </Box>
-                  <button
-                    type='button'
-                    onClick={() => onEdit(store)}
-                    className='rounded-xl border border-primary/20 px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary/5'
-                  >
-                    Editar
-                  </button>
+                  <div className='flex items-center gap-1.5'>
+                    {onToggleActive ? (
+                      <button
+                        type='button'
+                        onClick={() => setConfirmStore(store)}
+                        disabled={submitting}
+                        className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition disabled:opacity-50 ${
+                          store.isActive
+                            ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                            : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                        }`}
+                      >
+                        {store.isActive ? 'Desactivar' : 'Activar'}
+                      </button>
+                    ) : null}
+                    <button
+                      type='button'
+                      onClick={() => onEdit(store)}
+                      className='rounded-xl border border-primary/20 px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary/5'
+                    >
+                      Editar
+                    </button>
+                  </div>
                 </Box>
               ))}
             </Box>
@@ -1131,6 +1210,17 @@ export const StoresManagementView = ({
           ) : null}
         </Box>
       </Box>
+
+      {confirmStore ? (
+        <ConfirmToggleModal
+          store={confirmStore}
+          onConfirm={() => {
+            if (onToggleActive) onToggleActive(confirmStore);
+            setConfirmStore(null);
+          }}
+          onCancel={() => setConfirmStore(null)}
+        />
+      ) : null}
     </Box>
   );
 };

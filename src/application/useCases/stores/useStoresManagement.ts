@@ -202,6 +202,19 @@ export const useStoresManagement = () => {
     setSavedForm(f);
   };
 
+  const toggleActive = async (store: IStore) => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      await StoresRepository.updateStore(store.id, { isActive: !store.isActive });
+      await loadStores();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No fue posible cambiar el estado de la tienda');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return {
     isSeller,
     isDirty,
@@ -215,6 +228,7 @@ export const useStoresManagement = () => {
     submitForm,
     startEditing,
     resetForm,
+    toggleActive,
     reload: loadStores,
   };
 };
