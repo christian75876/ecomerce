@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
+import PhoneInputCO from '@/presentation/ui/molecules/common/PhoneInputCO';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import Icon from '@/presentation/ui/atoms/icon/SimpleIcon';
 import { useCart } from '@/shared/hooks/useCart';
@@ -282,11 +283,10 @@ const CartPage = () => {
                 value={customer.email}
                 onChange={(e) => setCustomer((c) => ({ ...c, email: e.target.value }))}
               />
-              <Input
-                type='tel'
-                placeholder='Teléfono (opcional)'
+              <PhoneInputCO
                 value={customer.phone}
-                onChange={(e) => setCustomer((c) => ({ ...c, phone: e.target.value }))}
+                onChange={(v) => setCustomer((c) => ({ ...c, phone: v }))}
+                placeholder='300 123 4567 (opcional)'
               />
             </Box>
           </Box>

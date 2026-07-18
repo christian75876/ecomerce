@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import PaginationControls from '@/presentation/ui/molecules/common/PaginationControls';
 import SelectDropdown from '@/presentation/ui/molecules/common/SelectDropdown';
 import { ICategory } from '@/application/dtos/categories/response/CategoryResponse';
 import { IProduct, IProductImage, IProductVideo } from '@/application/dtos/products/response/ProductResponse';
@@ -60,6 +61,11 @@ interface ProductsManagementViewProps {
   onReset: () => void;
   onQuickCreateCategory: (name: string) => Promise<ICategory | null>;
   onQuickCreateSupplier: (name: string) => Promise<ISupplier | null>;
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+  onChangePage: (page: number) => void | Promise<void>;
 }
 
 const QuickCreateModal = ({
@@ -223,6 +229,11 @@ export const ProductsManagementView = ({
   onReset,
   onQuickCreateCategory,
   onQuickCreateSupplier,
+  currentPage,
+  totalPages,
+  totalItems,
+  itemsPerPage,
+  onChangePage,
 }: ProductsManagementViewProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
@@ -946,6 +957,15 @@ export const ProductsManagementView = ({
               ))
             )}
           </Box>
+
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            loading={loading}
+            onChangePage={onChangePage}
+          />
         </FeaturePanel>
       </Box>
 

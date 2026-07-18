@@ -111,6 +111,7 @@ const CategoryProductsPanel = ({
 
 interface CategoriesManagementViewProps {
   categories: ICategory[];
+  search: string;
   name: string;
   editingId: string | null;
   loading: boolean;
@@ -119,6 +120,7 @@ interface CategoriesManagementViewProps {
   viewingCategory: ICategory | null;
   categoryProducts: IProduct[];
   productsLoading: boolean;
+  onSearchChange: (value: string) => void;
   onNameChange: (value: string) => void;
   onSubmit: () => Promise<boolean>;
   onEdit: (category: ICategory) => void;
@@ -132,6 +134,7 @@ interface CategoriesManagementViewProps {
 
 export const CategoriesManagementView = ({
   categories,
+  search,
   name,
   editingId,
   loading,
@@ -140,6 +143,7 @@ export const CategoriesManagementView = ({
   viewingCategory,
   categoryProducts,
   productsLoading,
+  onSearchChange,
   onNameChange,
   onSubmit,
   onEdit,
@@ -216,11 +220,32 @@ export const CategoriesManagementView = ({
             </Button>
           }
         >
+          <div className='relative mb-4 mt-2'>
+            <i className='bx bx-search absolute left-3.5 top-1/2 -translate-y-1/2 text-base text-neutral-dark/40' aria-hidden='true' />
+            <input
+              type='text'
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder='Buscar categoría...'
+              className='w-full rounded-2xl border border-neutral-gray/80 bg-white/90 py-2.5 pl-9 pr-9 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/20'
+            />
+            {search ? (
+              <button
+                type='button'
+                onClick={() => onSearchChange('')}
+                className='absolute right-3 top-1/2 -translate-y-1/2 text-neutral-dark/40 transition hover:text-neutral-dark'
+                aria-label='Limpiar búsqueda'
+              >
+                <i className='bx bx-x text-base' aria-hidden='true' />
+              </button>
+            ) : null}
+          </div>
+
           {loading ? (
             <Typography>Cargando categorías...</Typography>
           ) : categories.length === 0 ? (
             <Box className="rounded-2xl border border-dashed border-neutral-gray/40 bg-background px-6 py-10 text-center">
-              <Typography>No hay categorías creadas todavía.</Typography>
+              <Typography>{search ? 'No se encontraron categorías.' : 'No hay categorías creadas todavía.'}</Typography>
             </Box>
           ) : (
             <Box className="space-y-3">

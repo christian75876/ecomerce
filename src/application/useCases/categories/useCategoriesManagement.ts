@@ -6,6 +6,7 @@ import { ProductRepository } from '@/infrastructure/repositories/api/products/Pr
 
 export const useCategoriesManagement = () => {
   const [categories, setCategories] = useState<ICategory[]>([]);
+  const [search, setSearch] = useState('');
   const [name, setName] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -141,8 +142,15 @@ export const useCategoriesManagement = () => {
     }
   };
 
+  const filteredCategories = search.trim()
+    ? categories.filter((c) =>
+        c.name.toLowerCase().includes(search.trim().toLowerCase()),
+      )
+    : categories;
+
   return {
-    categories,
+    categories: filteredCategories,
+    search,
     name,
     editingId,
     loading,
@@ -151,6 +159,7 @@ export const useCategoriesManagement = () => {
     viewingCategory,
     categoryProducts,
     productsLoading,
+    setSearch,
     setName,
     submitForm,
     startEditing,

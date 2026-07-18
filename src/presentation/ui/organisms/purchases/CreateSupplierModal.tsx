@@ -1,6 +1,7 @@
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
+import PhoneInputCO from '@/presentation/ui/molecules/common/PhoneInputCO';
 import PurchaseModalShell from './PurchaseModalShell';
 import { usePurchaseModalSection } from './PurchasesContext';
 
@@ -38,10 +39,9 @@ const CreateSupplierModal = () => {
           }
           placeholder='Documento o NIT'
         />
-        <Input
+        <PhoneInputCO
           value={supplierForm.phone}
-          onChange={(event) => updateSupplierForm('phone', event.target.value)}
-          placeholder='Teléfono'
+          onChange={(v) => updateSupplierForm('phone', v)}
         />
         <Input
           value={supplierForm.email}

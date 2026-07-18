@@ -13,12 +13,17 @@ const SuppliersPage = () => {
       loading={suppliersManagement.loading}
       submitting={suppliersManagement.submitting}
       error={suppliersManagement.error}
+      currentPage={suppliersManagement.currentPage}
+      totalPages={suppliersManagement.totalPages}
+      totalItems={suppliersManagement.totalItems}
+      itemsPerPage={suppliersManagement.itemsPerPage}
       onSearchChange={suppliersManagement.setSearch}
       onFormChange={suppliersManagement.updateForm}
       onSubmit={suppliersManagement.submitForm}
       onEdit={suppliersManagement.startEditing}
       onToggleStatus={suppliersManagement.toggleStatus}
       onReset={suppliersManagement.resetForm}
+      onChangePage={suppliersManagement.changePage}
     />
   );
 };

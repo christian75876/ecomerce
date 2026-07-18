@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
+import PhoneInputCO from '@/presentation/ui/molecules/common/PhoneInputCO';
 import { InvitationsRepository } from '@/infrastructure/repositories/api/invitations/InvitationsRepository';
 import { AuthRepository } from '@/infrastructure/repositories/api/auth/AuthRepository';
 import { ROUTES } from '@/shared/constants/routes';
@@ -242,12 +243,9 @@ const RegisterPage = () => {
 
           <div>
             <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Teléfono (opcional)</label>
-            <input
-              type='tel'
-              placeholder='3001234567'
+            <PhoneInputCO
               value={form.phone}
-              onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-              className='w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10'
+              onChange={(v) => setForm((f) => ({ ...f, phone: v }))}
             />
           </div>
 

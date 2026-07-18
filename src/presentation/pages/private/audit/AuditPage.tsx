@@ -12,9 +12,14 @@ const AuditPage = () => {
       userId={auditManagement.userId}
       loading={auditManagement.loading}
       error={auditManagement.error}
+      currentPage={auditManagement.currentPage}
+      totalPages={auditManagement.totalPages}
+      totalItems={auditManagement.totalItems}
+      itemsPerPage={auditManagement.itemsPerPage}
       onActionChange={auditManagement.setAction}
       onEntityChange={auditManagement.setEntity}
       onUserIdChange={auditManagement.setUserId}
+      onChangePage={auditManagement.changePage}
     />
   );
 };

@@ -71,6 +71,10 @@ export const useProductsManagement = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 20;
 
   // Image upload state (separate from form since File can't go in ProductFormState)
   const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
@@ -115,7 +119,7 @@ export const useProductsManagement = () => {
     setSuppliers(items.filter((s) => s.isActive));
   }, []);
 
-  const loadProducts = useCallback(async () => {
+  const loadProducts = useCallback(async (page = 1) => {
     setLoading(true);
     setError(null);
 
@@ -124,8 +128,17 @@ export const useProductsManagement = () => {
         search: search || undefined,
         categoryId: selectedCategoryId || undefined,
         storeId: isAdmin ? contextStoreId : undefined,
+        page,
+        limit: itemsPerPage,
       });
-      setProducts((response.data as unknown as { items?: IProduct[] }).items ?? []);
+      const data = response.data as unknown as {
+        items?: IProduct[];
+        pagination?: { currentPage: number; totalPages: number; totalItems: number };
+      };
+      setProducts(data.items ?? []);
+      setCurrentPage(data.pagination?.currentPage ?? page);
+      setTotalPages(data.pagination?.totalPages ?? 1);
+      setTotalItems(data.pagination?.totalItems ?? 0);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'No fue posible cargar los productos',
@@ -464,6 +477,10 @@ export const useProductsManagement = () => {
     }
   };
 
+  const changePage = async (page: number) => {
+    await loadProducts(page);
+  };
+
   return {
     isSeller,
     products,
@@ -505,5 +522,10 @@ export const useProductsManagement = () => {
     resetForm,
     quickCreateCategory,
     quickCreateSupplier,
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    changePage,
   };
 };

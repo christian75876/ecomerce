@@ -16,6 +16,10 @@ const CustomersPage = () => {
       loading={customersManagement.loading}
       submitting={customersManagement.submitting}
       error={customersManagement.error}
+      currentPage={customersManagement.currentPage}
+      totalPages={customersManagement.totalPages}
+      totalItems={customersManagement.totalItems}
+      itemsPerPage={customersManagement.itemsPerPage}
       onSelectCustomer={customersManagement.setSelectedCustomerId}
       onCreditLimitChange={customersManagement.setCreditLimit}
       onPaymentAmountChange={customersManagement.setPaymentAmount}
@@ -23,6 +27,7 @@ const CustomersPage = () => {
       onSearchChange={customersManagement.setSearch}
       onToggleCredit={customersManagement.updateCustomerCredit}
       onRegisterPayment={customersManagement.registerPayment}
+      onChangePage={customersManagement.changePage}
     />
   );
 };

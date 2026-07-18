@@ -21,6 +21,8 @@ const initialSupplierForm: SupplierFormState = {
   notes: '',
 };
 
+const itemsPerPage = 20;
+
 export const useSuppliersManagement = () => {
   const { selectedStoreId: contextStoreId } = useAdminStore();
   const [suppliers, setSuppliers] = useState<ISupplier[]>([]);
@@ -30,13 +32,20 @@ export const useSuppliersManagement = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
 
-  const loadSuppliers = useCallback(async () => {
+  const loadSuppliers = useCallback(async (page = 1) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await SuppliersRepository.getSuppliers(search || undefined, contextStoreId);
-      setSuppliers((response.data as unknown as { items?: ISupplier[] }).items ?? []);
+      const response = await SuppliersRepository.getSuppliers(search || undefined, contextStoreId, page, itemsPerPage);
+      const raw = response.data as unknown as { items: ISupplier[]; total: number; page: number; totalPages: number };
+      setSuppliers(raw.items ?? []);
+      setCurrentPage(raw.page ?? 1);
+      setTotalPages(raw.totalPages ?? 1);
+      setTotalItems(raw.total ?? 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No fue posible cargar proveedores');
     } finally {
@@ -120,6 +129,11 @@ export const useSuppliersManagement = () => {
     }
   };
 
+  const changePage = async (page: number) => {
+    if (page < 1 || page > totalPages || page === currentPage) return;
+    await loadSuppliers(page);
+  };
+
   return {
     suppliers,
     form,
@@ -128,12 +142,17 @@ export const useSuppliersManagement = () => {
     loading,
     submitting,
     error,
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
     setSearch,
     updateForm,
     submitForm,
     startEditing,
     toggleStatus,
     resetForm,
+    changePage,
     reload: loadSuppliers,
   };
 };

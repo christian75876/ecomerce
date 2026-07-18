@@ -1,4 +1,4 @@
-import { IApiResponse } from '@/application/dtos/common/HttpResponse';
+import { IApiResponse, IPaginatedData } from '@/application/dtos/common/HttpResponse';
 
 export interface IAuditLog {
   id: string;
@@ -10,4 +10,4 @@ export interface IAuditLog {
   createdAt: string;
 }
 
-export type IAuditLogsResp = IApiResponse<IAuditLog[]>;
+export type IAuditLogsResp = IApiResponse<IPaginatedData<IAuditLog>>;

@@ -371,6 +371,28 @@ export const InventoryManagementView = ({
   const [showCreateSupplierModal, setShowCreateSupplierModal] = useState(false);
   const [showCreateProductModal, setShowCreateProductModal] = useState(false);
 
+  // Inventory table filters (client-side)
+  const [invSearch, setInvSearch] = useState('');
+  const [invStockFilter, setInvStockFilter] = useState<'all' | 'with' | 'low' | 'out'>('all');
+  const [invTypeFilter, setInvTypeFilter] = useState<'all' | 'perishable' | 'non-perishable'>('all');
+
+  const filteredInventory = inventory.filter((item) => {
+    if (invSearch.trim()) {
+      const q = invSearch.trim().toLowerCase();
+      if (
+        !item.productName.toLowerCase().includes(q) &&
+        !(item.sku ?? '').toLowerCase().includes(q) &&
+        !(item.category ?? '').toLowerCase().includes(q)
+      ) return false;
+    }
+    if (invStockFilter === 'out' && item.stock !== 0) return false;
+    if (invStockFilter === 'with' && item.stock <= 0) return false;
+    if (invStockFilter === 'low' && !(item.lowStockThreshold != null && item.stock <= item.lowStockThreshold)) return false;
+    if (invTypeFilter === 'perishable' && !item.isPerishable) return false;
+    if (invTypeFilter === 'non-perishable' && item.isPerishable) return false;
+    return true;
+  });
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     await onSubmit();
@@ -552,14 +574,96 @@ export const InventoryManagementView = ({
           </Box>
 
           <FeaturePanel title='Inventario general'>
-            <Box className='mt-5 overflow-x-auto'>
+            {/* Search + filters */}
+            <div className='mt-4 flex flex-col gap-3 sm:flex-row sm:items-center'>
+              <div className='relative flex-1'>
+                <i className='bx bx-search absolute left-3.5 top-1/2 -translate-y-1/2 text-base text-neutral-dark/40' aria-hidden='true' />
+                <input
+                  type='text'
+                  value={invSearch}
+                  onChange={(e) => setInvSearch(e.target.value)}
+                  placeholder='Buscar por nombre, SKU o categoría...'
+                  className='w-full rounded-2xl border border-neutral-gray/80 bg-white/90 py-2.5 pl-9 pr-9 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/20'
+                />
+                {invSearch ? (
+                  <button
+                    type='button'
+                    onClick={() => setInvSearch('')}
+                    className='absolute right-3 top-1/2 -translate-y-1/2 text-neutral-dark/40 transition hover:text-neutral-dark'
+                    aria-label='Limpiar búsqueda'
+                  >
+                    <i className='bx bx-x text-base' aria-hidden='true' />
+                  </button>
+                ) : null}
+              </div>
+
+              {/* Stock filter pills */}
+              <div className='flex flex-wrap gap-1.5'>
+                {(
+                  [
+                    { key: 'all', label: 'Todos' },
+                    { key: 'with', label: 'Con stock' },
+                    { key: 'low', label: 'Stock bajo' },
+                    { key: 'out', label: 'Sin stock' },
+                  ] as const
+                ).map(({ key, label }) => (
+                  <button
+                    key={key}
+                    type='button'
+                    onClick={() => setInvStockFilter(key)}
+                    className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                      invStockFilter === key
+                        ? 'bg-primary text-white'
+                        : 'bg-neutral-gray/15 text-neutral-dark/60 hover:bg-neutral-gray/30'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Type filter pills */}
+              <div className='flex flex-wrap gap-1.5'>
+                {(
+                  [
+                    { key: 'all', label: 'Todos' },
+                    { key: 'perishable', label: 'Perecedero' },
+                    { key: 'non-perishable', label: 'No perecedero' },
+                  ] as const
+                ).map(({ key, label }) => (
+                  <button
+                    key={key}
+                    type='button'
+                    onClick={() => setInvTypeFilter(key)}
+                    className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                      invTypeFilter === key
+                        ? 'bg-accent text-white'
+                        : 'bg-neutral-gray/15 text-neutral-dark/60 hover:bg-neutral-gray/30'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <Box className='mt-4 overflow-x-auto'>
               {loading ? (
                 <Typography>Cargando inventario...</Typography>
+              ) : filteredInventory.length === 0 ? (
+                <div className='rounded-2xl border border-dashed border-neutral-gray/40 bg-background px-6 py-10 text-center'>
+                  <p className='text-sm text-neutral-dark/55'>
+                    {inventory.length === 0
+                      ? 'No hay productos en el inventario.'
+                      : 'No se encontraron productos con los filtros aplicados.'}
+                  </p>
+                </div>
               ) : (
                 <table className='min-w-full text-left text-sm'>
                   <thead>
                     <tr className='border-b border-neutral-gray/50 text-neutral-dark/55'>
                       <th className='px-3 py-3'>Producto</th>
+                      <th className='px-3 py-3'>Categoría</th>
                       <th className='px-3 py-3'>Stock</th>
                       <th className='px-3 py-3'>Lotes</th>
                       <th className='px-3 py-3'>Próximo vencimiento</th>
@@ -567,7 +671,7 @@ export const InventoryManagementView = ({
                     </tr>
                   </thead>
                   <tbody>
-                    {inventory.map((item) => {
+                    {filteredInventory.map((item) => {
                       const isLow = item.lowStockThreshold != null && item.stock <= item.lowStockThreshold;
                       return (
                       <tr key={item.productId} className={`border-b border-neutral-gray/30 last:border-b-0 ${isLow ? 'bg-red-50/60' : ''}`}>
@@ -585,6 +689,7 @@ export const InventoryManagementView = ({
                             {item.sku} · {item.isPerishable ? 'Perecedero' : 'No perecedero'}
                           </div>
                         </td>
+                        <td className='px-3 py-3 text-neutral-dark/65'>{item.category ?? '—'}</td>
                         <td className={`px-3 py-3 font-semibold tabular-nums ${isLow ? 'text-red-600' : ''}`}>
                           {item.stock}
                           {item.lowStockThreshold != null ? (
@@ -605,6 +710,11 @@ export const InventoryManagementView = ({
                 </table>
               )}
             </Box>
+            {!loading && filteredInventory.length > 0 ? (
+              <p className='mt-2 text-right text-xs text-neutral-dark/40'>
+                {filteredInventory.length} de {inventory.length} productos
+              </p>
+            ) : null}
           </FeaturePanel>
 
           {/* Low stock alerts panel */}

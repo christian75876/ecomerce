@@ -21,6 +21,16 @@ export type CartRow = {
   quantity: number;
 };
 
+const ORDERS_PER_PAGE = 20;
+
+type OrdersPageRaw = {
+  items: IOrder[];
+  total: number;
+  page: number;
+  totalPages: number;
+  limit: number;
+};
+
 export const useOrdersManagement = () => {
   const { selectedStoreId: contextStoreId } = useAdminStore();
   const [customers, setCustomers] = useState<ICustomer[]>([]);
@@ -39,6 +49,33 @@ export const useOrdersManagement = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = ORDERS_PER_PAGE;
+
+  const loadOrders = useCallback(async (page = 1) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await OrdersRepository.getOrders({
+        storeId: contextStoreId,
+        page,
+        limit: ORDERS_PER_PAGE,
+      });
+      const raw = response.data as unknown as OrdersPageRaw;
+      setOrders(raw.items ?? []);
+      setCurrentPage(raw.page ?? 1);
+      setTotalPages(raw.totalPages ?? 1);
+      setTotalItems(raw.total ?? 0);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'No fue posible cargar pedidos',
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [contextStoreId]);
 
   const loadScreen = useCallback(async () => {
     setLoading(true);
@@ -49,11 +86,15 @@ export const useOrdersManagement = () => {
         await Promise.all([
           CustomersRepository.getCustomers(),
           ProductRepository.getProducts({ active: true }),
-          OrdersRepository.getOrders(contextStoreId),
+          OrdersRepository.getOrders({ storeId: contextStoreId, page: 1, limit: ORDERS_PER_PAGE }),
         ]);
       setCustomers((customersResponse.data as unknown as { items?: ICustomer[] }).items ?? []);
       setProducts((productsResponse.data as unknown as { items?: IProduct[] }).items ?? []);
-      setOrders((ordersResponse.data as unknown as { items?: IOrder[] }).items ?? []);
+      const raw = ordersResponse.data as unknown as OrdersPageRaw;
+      setOrders(raw.items ?? []);
+      setCurrentPage(raw.page ?? 1);
+      setTotalPages(raw.totalPages ?? 1);
+      setTotalItems(raw.total ?? 0);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'No fue posible cargar pedidos',
@@ -157,6 +198,11 @@ export const useOrdersManagement = () => {
     }
   };
 
+  const changePage = async (page: number) => {
+    if (page < 1 || page > totalPages || page === currentPage) return;
+    await loadOrders(page);
+  };
+
   return {
     customers,
     products,
@@ -167,6 +213,10 @@ export const useOrdersManagement = () => {
     loading,
     submitting,
     error,
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
     setCustomerId,
     setNewCustomer,
     updateCartRow,
@@ -174,5 +224,6 @@ export const useOrdersManagement = () => {
     createCustomer,
     createOrder,
     changeOrderStatus,
+    changePage,
   };
 };

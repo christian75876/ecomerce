@@ -2,6 +2,7 @@ import { IAuditLog } from '@/application/dtos/audit/response/AuditResponse';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
+import PaginationControls from '@/presentation/ui/molecules/common/PaginationControls';
 
 interface AuditManagementViewProps {
   logs: IAuditLog[];
@@ -10,9 +11,14 @@ interface AuditManagementViewProps {
   userId: string;
   loading: boolean;
   error: string | null;
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
   onActionChange: (value: string) => void;
   onEntityChange: (value: string) => void;
   onUserIdChange: (value: string) => void;
+  onChangePage: (page: number) => void | Promise<void>;
 }
 
 export const AuditManagementView = ({
@@ -22,9 +28,14 @@ export const AuditManagementView = ({
   userId,
   loading,
   error,
+  currentPage,
+  totalPages,
+  totalItems,
+  itemsPerPage,
   onActionChange,
   onEntityChange,
   onUserIdChange,
+  onChangePage,
 }: AuditManagementViewProps) => (
   <Box className='space-y-8'>
     <Box>
@@ -53,6 +64,14 @@ export const AuditManagementView = ({
           </Box>
         ))}
       </Box>
+      <PaginationControls
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        loading={loading}
+        onChangePage={onChangePage}
+      />
     </Box>
   </Box>
 );

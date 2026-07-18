@@ -3,6 +3,7 @@ import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
+import PaginationControls from '@/presentation/ui/molecules/common/PaginationControls';
 
 interface CustomersCreditManagementViewProps {
   customers: ICustomer[];
@@ -15,6 +16,10 @@ interface CustomersCreditManagementViewProps {
   loading: boolean;
   submitting: boolean;
   error: string | null;
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
   onSelectCustomer: (value: string) => void;
   onCreditLimitChange: (value: string) => void;
   onPaymentAmountChange: (value: string) => void;
@@ -22,6 +27,7 @@ interface CustomersCreditManagementViewProps {
   onSearchChange: (value: string) => void;
   onToggleCredit: (customer: ICustomer, payload: Partial<ICustomer>) => Promise<void>;
   onRegisterPayment: () => Promise<boolean>;
+  onChangePage: (page: number) => void | Promise<void>;
 }
 
 export const CustomersCreditManagementView = ({
@@ -35,6 +41,10 @@ export const CustomersCreditManagementView = ({
   loading,
   submitting,
   error,
+  currentPage,
+  totalPages,
+  totalItems,
+  itemsPerPage,
   onSelectCustomer,
   onCreditLimitChange,
   onPaymentAmountChange,
@@ -42,6 +52,7 @@ export const CustomersCreditManagementView = ({
   onSearchChange,
   onToggleCredit,
   onRegisterPayment,
+  onChangePage,
 }: CustomersCreditManagementViewProps) => {
   const selectedCustomer = customers.find((item) => item.id === selectedCustomerId) ?? null;
   const customersWithDebt = customers.filter((customer) => Number(customer.creditBalance) > 0);
@@ -149,6 +160,14 @@ export const CustomersCreditManagementView = ({
               </Box>
             ))}
           </Box>
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            loading={loading}
+            onChangePage={onChangePage}
+          />
         </Box>
         <Box className='surface-panel rounded-[1.75rem] p-6'>
           <Typography variant='h2' className='text-xl font-semibold'>Detalle de cartera</Typography>

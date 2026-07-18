@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Navigate, Link } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import PhoneInputCO from '@/presentation/ui/molecules/common/PhoneInputCO';
 import { AuthRepository } from '@/infrastructure/repositories/api/auth/AuthRepository';
 import type { IAuthenticatedUser, IAuthMeResp } from '@/application/dtos/auth/login/response/LoginResponse';
 import { isAuthenticated } from '@/shared/utils/checkIsUserAuthenticated.util';
@@ -130,35 +131,6 @@ const ProfilePage = () => {
               ) : null}
             </Box>
 
-            {/* Quick links */}
-            <Box className='rounded-[1.75rem] border border-neutral-gray/20 bg-white p-4 shadow-sm'>
-              <p className='mb-3 px-2 text-xs font-semibold uppercase tracking-wide text-slate-400'>
-                Accesos rápidos
-              </p>
-              <div className='flex flex-col gap-1'>
-                <Link
-                  to={ROUTES.PUBLIC.MY_ORDERS}
-                  className='flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-primary/5 hover:text-primary'
-                >
-                  <i className='bx bx-receipt text-lg' />
-                  Mis pedidos
-                </Link>
-                <Link
-                  to={ROUTES.PUBLIC.FAVORITES}
-                  className='flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-primary/5 hover:text-primary'
-                >
-                  <i className='bx bx-heart text-lg' />
-                  Favoritos
-                </Link>
-                <Link
-                  to={ROUTES.PUBLIC.CART}
-                  className='flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-primary/5 hover:text-primary'
-                >
-                  <i className='bx bx-cart text-lg' />
-                  Carrito
-                </Link>
-              </div>
-            </Box>
           </Box>
 
           {/* ── Right: edit form ── */}
@@ -222,14 +194,10 @@ const ProfilePage = () => {
                   <label className='text-xs font-semibold text-slate-500 uppercase tracking-wide'>
                     Teléfono
                   </label>
-                  <input
-                    type='tel'
+                  <PhoneInputCO
                     name='phone'
                     value={form.phone}
-                    onChange={handleChange}
-                    maxLength={30}
-                    placeholder='Ej: 300 123 4567'
-                    className='rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/20'
+                    onChange={(v) => handleChange({ target: { name: 'phone', value: v } } as React.ChangeEvent<HTMLInputElement>)}
                   />
                 </div>
 

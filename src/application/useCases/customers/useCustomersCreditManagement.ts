@@ -19,13 +19,21 @@ export const useCustomersCreditManagement = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 20;
 
-  const loadCustomers = useCallback(async () => {
+  const loadCustomers = useCallback(async (page = 1) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await CustomersRepository.getCustomers(search || undefined, contextStoreId);
-      setCustomers((response.data as unknown as { items?: ICustomer[] }).items ?? []);
+      const response = await CustomersRepository.getCustomers(search || undefined, contextStoreId, page, itemsPerPage);
+      const raw = response.data as unknown as { items: ICustomer[]; pagination: { currentPage: number; totalPages: number; totalItems: number; itemsPerPage: number } };
+      setCustomers(raw.items ?? []);
+      setCurrentPage(raw.pagination?.currentPage ?? 1);
+      setTotalPages(raw.pagination?.totalPages ?? 1);
+      setTotalItems(raw.pagination?.totalItems ?? 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No fue posible cargar clientes');
     } finally {
@@ -43,7 +51,7 @@ export const useCustomersCreditManagement = () => {
   }, []);
 
   useEffect(() => {
-    void loadCustomers();
+    void loadCustomers(1);
   }, [loadCustomers]);
 
   useEffect(() => {
@@ -79,7 +87,7 @@ export const useCustomersCreditManagement = () => {
       };
 
       await CustomersRepository.updateCustomer(customer.id, request);
-      await loadCustomers();
+      await loadCustomers(currentPage);
       if (selectedCustomerId === customer.id) {
         await loadCredit(customer.id);
       }
@@ -88,6 +96,11 @@ export const useCustomersCreditManagement = () => {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const changePage = async (page: number) => {
+    if (page < 1 || page > totalPages || page === currentPage) return;
+    await loadCustomers(page);
   };
 
   const registerPayment = async () => {
@@ -105,7 +118,7 @@ export const useCustomersCreditManagement = () => {
       });
       setPaymentAmount('');
       setPaymentNote('');
-      await loadCustomers();
+      await loadCustomers(currentPage);
       await loadCredit(selectedCustomerId);
       return true;
     } catch (err) {
@@ -127,6 +140,10 @@ export const useCustomersCreditManagement = () => {
     loading,
     submitting,
     error,
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
     setSelectedCustomerId,
     setCreditLimit,
     setPaymentAmount,
@@ -134,6 +151,7 @@ export const useCustomersCreditManagement = () => {
     setSearch,
     updateCustomerCredit,
     registerPayment,
+    changePage,
     reload: loadCustomers,
   };
 };

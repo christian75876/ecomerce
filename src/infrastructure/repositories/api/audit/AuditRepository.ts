@@ -10,6 +10,8 @@ export class AuditRepository {
     if (query.action) params.set('action', query.action);
     if (query.entity) params.set('entity', query.entity);
     if (query.userId) params.set('userId', query.userId);
+    if (query.page !== undefined) params.set('page', String(query.page));
+    if (query.limit !== undefined) params.set('limit', String(query.limit));
 
     const suffix = params.toString() ? `?${params.toString()}` : '';
 

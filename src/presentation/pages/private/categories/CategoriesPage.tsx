@@ -7,6 +7,7 @@ const CategoriesPage = () => {
   return (
     <CategoriesManagementView
       categories={cm.categories}
+      search={cm.search}
       name={cm.name}
       editingId={cm.editingId}
       loading={cm.loading}
@@ -15,6 +16,7 @@ const CategoriesPage = () => {
       viewingCategory={cm.viewingCategory}
       categoryProducts={cm.categoryProducts}
       productsLoading={cm.productsLoading}
+      onSearchChange={cm.setSearch}
       onNameChange={cm.setName}
       onSubmit={cm.submitForm}
       onEdit={cm.startEditing}

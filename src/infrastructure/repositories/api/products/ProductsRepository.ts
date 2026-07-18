@@ -58,6 +58,10 @@ export class ProductRepository {
       params.set('limit', String(query.limit));
     }
 
+    if (query.page !== undefined) {
+      params.set('page', String(query.page));
+    }
+
     const suffix = params.toString() ? `?${params.toString()}` : '';
 
     return ErrorHandler.handleApiErrors(() =>

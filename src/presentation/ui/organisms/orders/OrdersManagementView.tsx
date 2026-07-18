@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import PhoneInputCO from '@/presentation/ui/molecules/common/PhoneInputCO';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { ICustomer } from '@/application/dtos/customers/response/CustomerResponse';
@@ -12,6 +13,7 @@ import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Label from '@/presentation/ui/atoms/label/SimpleLabel';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
+import PaginationControls from '@/presentation/ui/molecules/common/PaginationControls';
 import SelectDropdown from '@/presentation/ui/molecules/common/SelectDropdown';
 
 // Fix Leaflet default icons in Vite
@@ -52,6 +54,10 @@ interface OrdersManagementViewProps {
   submitting: boolean;
   error: string | null;
   statuses: readonly string[];
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
   onCustomerIdChange: (value: string) => void;
   onNewCustomerChange: (value: OrdersManagementViewProps['newCustomer']) => void;
   onCartRowChange: (index: number, patch: Partial<CartRow>) => void;
@@ -59,6 +65,7 @@ interface OrdersManagementViewProps {
   onCreateCustomer: () => Promise<boolean>;
   onCreateOrder: () => Promise<boolean>;
   onStatusChange: (orderId: string, status: (typeof ORDER_STATUSES)[number]) => Promise<boolean>;
+  onChangePage: (page: number) => void | Promise<void>;
 }
 
 export const OrdersManagementView = ({
@@ -72,6 +79,10 @@ export const OrdersManagementView = ({
   submitting,
   error,
   statuses,
+  currentPage,
+  totalPages,
+  totalItems,
+  itemsPerPage,
   onCustomerIdChange,
   onNewCustomerChange,
   onCartRowChange,
@@ -79,6 +90,7 @@ export const OrdersManagementView = ({
   onCreateCustomer,
   onCreateOrder,
   onStatusChange,
+  onChangePage,
 }: OrdersManagementViewProps) => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -150,10 +162,9 @@ export const OrdersManagementView = ({
                     value={newCustomer.email}
                     onChange={(e) => onNewCustomerChange({ ...newCustomer, email: e.target.value })}
                   />
-                  <Input
-                    placeholder='Teléfono'
+                  <PhoneInputCO
                     value={newCustomer.phone}
-                    onChange={(e) => onNewCustomerChange({ ...newCustomer, phone: e.target.value })}
+                    onChange={(v) => onNewCustomerChange({ ...newCustomer, phone: v })}
                   />
                   <Button type='button' variant='secondary' onClick={() => void onCreateCustomer()} disabled={submitting}>
                     Crear cliente
@@ -395,6 +406,15 @@ export const OrdersManagementView = ({
               })
             )}
           </Box>
+
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            loading={loading}
+            onChangePage={onChangePage}
+          />
         </Box>
       </Box>
     </Box>

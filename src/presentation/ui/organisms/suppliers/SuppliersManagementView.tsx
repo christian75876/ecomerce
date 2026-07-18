@@ -5,6 +5,7 @@ import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Label from '@/presentation/ui/atoms/label/SimpleLabel';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
+import PaginationControls from '@/presentation/ui/molecules/common/PaginationControls';
 
 interface SuppliersManagementViewProps {
   suppliers: ISupplier[];
@@ -14,12 +15,17 @@ interface SuppliersManagementViewProps {
   loading: boolean;
   submitting: boolean;
   error: string | null;
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
   onSearchChange: (value: string) => void;
   onFormChange: <K extends keyof SupplierFormState>(key: K, value: SupplierFormState[K]) => void;
   onSubmit: () => Promise<boolean>;
   onEdit: (supplier: ISupplier) => void;
   onToggleStatus: (supplier: ISupplier) => Promise<void>;
   onReset: () => void;
+  onChangePage: (page: number) => void | Promise<void>;
 }
 
 export const SuppliersManagementView = ({
@@ -30,12 +36,17 @@ export const SuppliersManagementView = ({
   loading,
   submitting,
   error,
+  currentPage,
+  totalPages,
+  totalItems,
+  itemsPerPage,
   onSearchChange,
   onFormChange,
   onSubmit,
   onEdit,
   onToggleStatus,
   onReset,
+  onChangePage,
 }: SuppliersManagementViewProps) => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -128,6 +139,14 @@ export const SuppliersManagementView = ({
               </Box>
             ))}
           </Box>
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            loading={loading}
+            onChangePage={onChangePage}
+          />
         </Box>
       </Box>
     </Box>

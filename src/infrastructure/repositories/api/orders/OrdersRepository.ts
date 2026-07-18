@@ -12,9 +12,23 @@ import {
 } from '@/infrastructure/repositories/api/ClientHTTP';
 import { ErrorHandler } from '@/infrastructure/repositories/api/errors/ErrorHandler';
 
+interface GetOrdersQuery {
+  storeId?: string;
+  page?: number;
+  limit?: number;
+  status?: string;
+  search?: string;
+}
+
 export class OrdersRepository {
-  static async getOrders(storeId?: string): Promise<IOrdersResp> {
-    const suffix = storeId ? `?storeId=${encodeURIComponent(storeId)}` : '';
+  static async getOrders(params: GetOrdersQuery = {}): Promise<IOrdersResp> {
+    const query = new URLSearchParams();
+    if (params.storeId) query.set('storeId', params.storeId);
+    if (params.page !== undefined) query.set('page', String(params.page));
+    if (params.limit !== undefined) query.set('limit', String(params.limit));
+    if (params.status) query.set('status', params.status);
+    if (params.search) query.set('search', params.search);
+    const suffix = query.toString() ? `?${query.toString()}` : '';
     return ErrorHandler.handleApiErrors(() =>
       authenticatedClientHTTP.get<IOrdersResp>(`/orders${suffix}`),
     );

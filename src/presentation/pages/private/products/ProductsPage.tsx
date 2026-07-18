@@ -45,6 +45,11 @@ const ProductsPage = () => {
       onReset={pm.resetForm}
       onQuickCreateCategory={pm.quickCreateCategory}
       onQuickCreateSupplier={pm.quickCreateSupplier}
+      currentPage={pm.currentPage}
+      totalPages={pm.totalPages}
+      totalItems={pm.totalItems}
+      itemsPerPage={pm.itemsPerPage}
+      onChangePage={pm.changePage}
     />
   );
 };

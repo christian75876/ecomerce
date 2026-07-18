@@ -7,6 +7,7 @@ export interface IProductsQuery {
   minPrice?: number;
   maxPrice?: number;
   limit?: number;
+  page?: number;
 }
 
 export interface ICreateProductRequest {

@@ -19,6 +19,10 @@ const OrdersPage = () => {
       submitting={ordersManagement.submitting}
       error={ordersManagement.error}
       statuses={ORDER_STATUSES}
+      currentPage={ordersManagement.currentPage}
+      totalPages={ordersManagement.totalPages}
+      totalItems={ordersManagement.totalItems}
+      itemsPerPage={ordersManagement.itemsPerPage}
       onCustomerIdChange={ordersManagement.setCustomerId}
       onNewCustomerChange={ordersManagement.setNewCustomer}
       onCartRowChange={ordersManagement.updateCartRow}
@@ -26,6 +30,7 @@ const OrdersPage = () => {
       onCreateCustomer={ordersManagement.createCustomer}
       onCreateOrder={ordersManagement.createOrder}
       onStatusChange={ordersManagement.changeOrderStatus}
+      onChangePage={ordersManagement.changePage}
     />
   );
 };
