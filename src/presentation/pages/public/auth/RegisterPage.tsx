@@ -24,8 +24,8 @@ const RegisterPage = () => {
     if (!token) return;
     InvitationsRepository.validateToken(token)
       .then((res) => {
-        setInviteEmail(res.email);
-        setForm((f) => ({ ...f, email: res.email }));
+        setInviteEmail(res.data.email);
+        setForm((f) => ({ ...f, email: res.data.email }));
       })
       .catch((err) => {
         setTokenError(err instanceof Error ? err.message : 'Invitación no válida');
@@ -88,50 +88,54 @@ const RegisterPage = () => {
           </div>
 
           {/* Contact options */}
-          <div className='grid grid-cols-2 gap-3'>
+          <div className={`grid gap-3 ${ADMIN_WHATSAPP ? 'grid-cols-2' : 'grid-cols-1'}`}>
             {/* Email */}
-            <a
-              href={gmailHref}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='flex flex-col items-center gap-3 rounded-[1.5rem] border border-white/70 bg-white/85 p-5 shadow-[0_8px_32px_rgba(34,34,34,0.08)] backdrop-blur transition hover:shadow-[0_12px_40px_rgba(99,102,241,0.15)] hover:-translate-y-0.5'
-            >
-              <div className='flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10'>
-                <i
-                  className='bx bx-envelope text-2xl text-primary'
-                  aria-hidden='true'
-                />
-              </div>
-              <div className='text-center'>
-                <p className='text-sm font-semibold text-slate-800'>
-                  Solicitar por correo
-                </p>
-                <p className='mt-0.5 text-xs text-slate-400'>
-                  Se abre tu app de email
-                </p>
-              </div>
-            </a>
+            {ADMIN_EMAIL ? (
+              <a
+                href={gmailHref}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='flex flex-col items-center gap-3 rounded-[1.5rem] border border-white/70 bg-white/85 p-5 shadow-[0_8px_32px_rgba(34,34,34,0.08)] backdrop-blur transition hover:shadow-[0_12px_40px_rgba(99,102,241,0.15)] hover:-translate-y-0.5'
+              >
+                <div className='flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10'>
+                  <i
+                    className='bx bx-envelope text-2xl text-primary'
+                    aria-hidden='true'
+                  />
+                </div>
+                <div className='text-center'>
+                  <p className='text-sm font-semibold text-slate-800'>
+                    Solicitar por correo
+                  </p>
+                  <p className='mt-0.5 text-xs text-slate-400'>
+                    Se abre tu app de email
+                  </p>
+                </div>
+              </a>
+            ) : null}
 
             {/* WhatsApp */}
-            <a
-              href={whatsappHref}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='flex flex-col items-center gap-3 rounded-[1.5rem] border border-white/70 bg-white/85 p-5 shadow-[0_8px_32px_rgba(34,34,34,0.08)] backdrop-blur transition hover:shadow-[0_12px_40px_rgba(37,211,102,0.18)] hover:-translate-y-0.5'
-            >
-              <div className='flex h-12 w-12 items-center justify-center rounded-xl bg-[#25D366]/10'>
-                <i
-                  className='bx bxl-whatsapp text-2xl text-[#25D366]'
-                  aria-hidden='true'
-                />
-              </div>
-              <div className='text-center'>
-                <p className='text-sm font-semibold text-slate-800'>
-                  Contactar por WhatsApp
-                </p>
-                <p className='mt-0.5 text-xs text-slate-400'>Respuesta inmediata</p>
-              </div>
-            </a>
+            {ADMIN_WHATSAPP ? (
+              <a
+                href={whatsappHref}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='flex flex-col items-center gap-3 rounded-[1.5rem] border border-white/70 bg-white/85 p-5 shadow-[0_8px_32px_rgba(34,34,34,0.08)] backdrop-blur transition hover:shadow-[0_12px_40px_rgba(37,211,102,0.18)] hover:-translate-y-0.5'
+              >
+                <div className='flex h-12 w-12 items-center justify-center rounded-xl bg-[#25D366]/10'>
+                  <i
+                    className='bx bxl-whatsapp text-2xl text-[#25D366]'
+                    aria-hidden='true'
+                  />
+                </div>
+                <div className='text-center'>
+                  <p className='text-sm font-semibold text-slate-800'>
+                    Contactar por WhatsApp
+                  </p>
+                  <p className='mt-0.5 text-xs text-slate-400'>Respuesta inmediata</p>
+                </div>
+              </a>
+            ) : null}
           </div>
 
           {/* Back link */}

@@ -31,15 +31,29 @@ body {
 
 :root {
   --surface-base: #ffffff;
-  --surface-muted: #f8fafc;
-  --surface-soft: #f2f4f7;
-  --border-soft: rgba(16, 24, 40, 0.08);
-  --border-strong: rgba(16, 24, 40, 0.14);
-  --text-primary: #101828;
+  --surface-muted: #f5f5fb;
+  --surface-soft: #f0f0f8;
+  --border-soft: rgba(99, 102, 241, 0.08);
+  --border-strong: rgba(99, 102, 241, 0.15);
+  --text-primary: #0f172a;
   --text-secondary: #475467;
-  --text-tertiary: #667085;
-  --shadow-soft: 0 16px 40px rgba(15, 23, 42, 0.08);
-  --shadow-strong: 0 24px 60px rgba(15, 23, 42, 0.14);
-  --radius-card: 1.5rem;
-  --radius-panel: 2rem;
+  --text-tertiary: #64748b;
+  --shadow-soft: 0 8px 32px rgba(99, 102, 241, 0.10);
+  --shadow-strong: 0 16px 48px rgba(99, 102, 241, 0.16);
+  --radius-card: 1rem;
+  --radius-panel: 1.5rem;
+
+  --page-bg: #f5f5fb;
+  --panel-bg: #ffffff;
+  --surface-bg: #ffffff;
+  --input-bg: #ffffff;
+  --panel-border: rgba(99, 102, 241, 0.1);
+  --input-border: #e2e8f0;
+  --text-heading: #0f172a;
+  --text-body: #334155;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+  --row-bg: #ffffff;
+  --row-hover-bg: #f8f8fd;
+  --row-border: rgba(15, 23, 42, 0.07);
 }

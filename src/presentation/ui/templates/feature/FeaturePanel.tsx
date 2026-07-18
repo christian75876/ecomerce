@@ -1,5 +1,4 @@
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
-import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 
 interface FeaturePanelProps {
   children: React.ReactNode;
@@ -18,27 +17,31 @@ const FeaturePanel = ({
 }: FeaturePanelProps) => {
   return (
     <Box
-      className={`rounded-[1.75rem] border border-neutral-gray/30 bg-white p-6 shadow-sm ${className}`.trim()}
+      className={`rounded-2xl bg-white p-6 ${className}`.trim()}
+      style={{
+        border: '1px solid rgba(99, 102, 241, 0.1)',
+        boxShadow: '0 1px 3px rgba(15,23,42,0.04), 0 8px 32px rgba(99,102,241,0.06)',
+      }}
     >
       {title || subtitle || action ? (
         <Box className='flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between'>
           <Box>
             {title ? (
-              <Typography variant='h2' className='text-xl font-semibold'>
+              <h2 className='text-[17px] font-semibold tracking-tight text-slate-800'>
                 {title}
-              </Typography>
+              </h2>
             ) : null}
             {subtitle ? (
-              <Typography className='mt-2 text-sm text-neutral-dark/65'>
+              <p className='mt-1.5 text-sm text-slate-400'>
                 {subtitle}
-              </Typography>
+              </p>
             ) : null}
           </Box>
           {action}
         </Box>
       ) : null}
 
-      <Box className={title || subtitle || action ? 'mt-6' : ''}>{children}</Box>
+      <Box className={title || subtitle || action ? 'mt-5' : ''}>{children}</Box>
     </Box>
   );
 };

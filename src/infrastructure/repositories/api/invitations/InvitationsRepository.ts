@@ -30,7 +30,7 @@ export class InvitationsRepository {
 
   static async validateToken(token: string) {
     return ErrorHandler.handleApiErrors(() =>
-      publicClientHTTP.get<{ valid: boolean; email: string }>(
+      publicClientHTTP.get<IApiResponse<{ valid: boolean; email: string }>>(
         `/invitations/validate/${encodeURIComponent(token)}`,
       ),
     );

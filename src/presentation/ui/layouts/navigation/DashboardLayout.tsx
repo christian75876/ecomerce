@@ -21,9 +21,12 @@ const DashboardLayout = ({
   // Admin desktop — sidebar layout
   if (!isMobile && isAdminUser) {
     return (
-      <div className={`flex min-h-screen bg-slate-50 ${hasGradient ? 'gradient-dashboard' : ''}`}>
+      <div
+        className={`flex min-h-screen ${hasGradient ? 'gradient-dashboard' : ''}`}
+        style={{ background: hasGradient ? undefined : '#f5f5fb' }}
+      >
         <AdminSidebar />
-        <main className='ml-60 flex-1 min-w-0 px-6 py-6 lg:px-8 lg:py-8'>
+        <main className='ml-60 flex-1 min-w-0 px-6 py-7 lg:px-8 lg:py-8'>
           {children}
         </main>
       </div>
