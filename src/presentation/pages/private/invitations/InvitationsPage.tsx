@@ -72,10 +72,25 @@ const InvitationsPage = () => {
           </div>
         ) : null}
         {success ? (
-          <div className='mt-3 flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-emerald-700'>
-            <i className='bx bx-check-circle' aria-hidden='true' /> {success}
+          <div className='mt-3 space-y-2'>
+            <div className='flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-emerald-700'>
+              <i className='bx bx-check-circle' aria-hidden='true' /> {success}
+            </div>
+            <div className='flex items-start gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-700'>
+              <i className='bx bx-info-circle mt-0.5 flex-shrink-0' aria-hidden='true' />
+              <span>
+                El correo puede llegar a la carpeta <strong>Spam / No deseado</strong> del destinatario.
+                Pídele que lo revise y marque como "No es spam" para futuros envíos.
+              </span>
+            </div>
           </div>
         ) : null}
+
+        {/* Spam notice — always visible */}
+        <p className='mt-3 flex items-center gap-1.5 text-xs text-slate-400'>
+          <i className='bx bx-shield-x text-sm' aria-hidden='true' />
+          Si el destinatario no encuentra el correo, indica que revise Spam o correo no deseado.
+        </p>
       </div>
 
       {/* List */}

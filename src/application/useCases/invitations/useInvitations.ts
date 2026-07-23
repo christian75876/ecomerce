@@ -30,16 +30,24 @@ export const useInvitations = () => {
     setSubmitting(true);
     setError(null);
     setSuccess(null);
+    const timeout = setTimeout(() => {
+      setSubmitting(false);
+      setSuccess('Invitación registrada — el correo se está procesando en segundo plano. Revisa la tabla en unos segundos.');
+      void load();
+    }, 20_000);
     try {
       const res = await InvitationsRepository.create(email.trim());
+      clearTimeout(timeout);
       const msg = (res as unknown as { data?: { message?: string; emailSent?: boolean } }).data;
       setSuccess(msg?.message ?? 'Invitación enviada');
       if (msg?.emailSent === false) setError('La invitación se guardó pero el correo no pudo enviarse. Revisa los logs del servidor.');
       setEmail('');
       await load();
     } catch (err) {
+      clearTimeout(timeout);
       setError(err instanceof Error ? err.message : 'No se pudo enviar la invitación');
     } finally {
+      clearTimeout(timeout);
       setSubmitting(false);
     }
   };

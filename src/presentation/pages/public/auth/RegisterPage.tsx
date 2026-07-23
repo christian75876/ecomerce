@@ -138,6 +138,18 @@ const RegisterPage = () => {
             ) : null}
           </div>
 
+          {/* Spam notice */}
+          <div className='flex items-start gap-3 rounded-[1.5rem] border border-amber-200 bg-amber-50/80 px-5 py-4 backdrop-blur'>
+            <i className='bx bx-mail-send mt-0.5 flex-shrink-0 text-xl text-amber-500' aria-hidden='true' />
+            <div>
+              <p className='text-sm font-semibold text-amber-800'>¿Ya te enviaron una invitación?</p>
+              <p className='mt-0.5 text-xs text-amber-700'>
+                Revisa tu carpeta de <strong>Spam o Correo no deseado</strong> — a veces el email de invitación llega ahí.
+                Si lo encuentras, márcalo como "No es spam" y haz clic en el enlace.
+              </p>
+            </div>
+          </div>
+
           {/* Back link */}
           <div className='text-center'>
             <Link
