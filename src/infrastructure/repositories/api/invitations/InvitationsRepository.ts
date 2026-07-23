@@ -28,6 +28,21 @@ export class InvitationsRepository {
     );
   }
 
+  static async resend(id: string) {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.post<{ message: string; email: string; emailSent: boolean }>(
+        `/invitations/${id}/resend`,
+        {},
+      ),
+    );
+  }
+
+  static async delete(id: string) {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.delete<{ message: string }>(`/invitations/${id}`),
+    );
+  }
+
   static async validateToken(token: string) {
     return ErrorHandler.handleApiErrors(() =>
       publicClientHTTP.get<IApiResponse<{ valid: boolean; email: string }>>(

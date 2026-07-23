@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useInvitations } from '@/application/useCases/invitations/useInvitations';
 
 const STATUS_LABEL: Record<string, string> = {
@@ -13,8 +14,22 @@ const STATUS_CLASS: Record<string, string> = {
 };
 
 const InvitationsPage = () => {
-  const { invitations, loading, submitting, email, setEmail, error, success, sendInvitation } =
-    useInvitations();
+  const {
+    invitations, loading, submitting, actionIds,
+    email, setEmail, error, success,
+    sendInvitation, resendInvitation, deleteInvitation,
+  } = useInvitations();
+
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  const handleDelete = (id: string) => {
+    if (confirmDeleteId === id) {
+      setConfirmDeleteId(null);
+      void deleteInvitation(id);
+    } else {
+      setConfirmDeleteId(id);
+    }
+  };
 
   return (
     <div className='space-y-6 animate-fade-up'>
@@ -84,24 +99,71 @@ const InvitationsPage = () => {
           </div>
         ) : (
           <div className='divide-y divide-slate-100'>
-            {invitations.map((inv) => (
-              <div key={inv.id} className='flex items-center justify-between px-6 py-4'>
-                <div className='min-w-0'>
-                  <p className='truncate font-medium text-slate-800'>{inv.email}</p>
-                  <p className='text-xs text-slate-400'>
-                    Enviada {new Date(inv.createdAt).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
-                    {inv.status === 'PENDING'
-                      ? ` · Expira ${new Date(inv.expiresAt).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })}`
-                      : inv.acceptedAt
-                      ? ` · Aceptada ${new Date(inv.acceptedAt).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}`
-                      : null}
-                  </p>
+            {invitations.map((inv) => {
+              const busy = actionIds.has(inv.id);
+              const pendingDelete = confirmDeleteId === inv.id;
+              return (
+                <div
+                  key={inv.id}
+                  className='flex items-center gap-4 px-6 py-4'
+                  onMouseLeave={() => { if (pendingDelete) setConfirmDeleteId(null); }}
+                >
+                  {/* Info */}
+                  <div className='min-w-0 flex-1'>
+                    <p className='truncate font-medium text-slate-800'>{inv.email}</p>
+                    <p className='text-xs text-slate-400'>
+                      Enviada {new Date(inv.createdAt).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      {inv.status === 'PENDING'
+                        ? ` · Expira ${new Date(inv.expiresAt).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })}`
+                        : inv.acceptedAt
+                        ? ` · Aceptada ${new Date(inv.acceptedAt).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}`
+                        : null}
+                    </p>
+                  </div>
+
+                  {/* Status badge */}
+                  <span className={`flex-shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${STATUS_CLASS[inv.status] ?? 'bg-slate-100 text-slate-500'}`}>
+                    {STATUS_LABEL[inv.status] ?? inv.status}
+                  </span>
+
+                  {/* Actions — only for non-accepted */}
+                  {inv.status !== 'ACCEPTED' ? (
+                    <div className='flex flex-shrink-0 items-center gap-1'>
+                      {/* Resend */}
+                      <button
+                        type='button'
+                        disabled={busy}
+                        onClick={() => void resendInvitation(inv.id)}
+                        title='Reenviar invitación'
+                        className='flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-primary disabled:opacity-40'
+                      >
+                        {busy ? (
+                          <i className='bx bx-loader-alt animate-spin text-base' aria-hidden='true' />
+                        ) : (
+                          <i className='bx bx-refresh text-base' aria-hidden='true' />
+                        )}
+                      </button>
+
+                      {/* Delete — two-tap confirm */}
+                      <button
+                        type='button'
+                        disabled={busy}
+                        onClick={() => handleDelete(inv.id)}
+                        title={pendingDelete ? 'Confirmar eliminación' : 'Eliminar invitación'}
+                        className={`flex h-8 items-center gap-1.5 rounded-xl px-2 text-xs font-medium transition disabled:opacity-40 ${
+                          pendingDelete
+                            ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                            : 'text-slate-400 hover:bg-slate-100 hover:text-red-500'
+                        }`}
+                      >
+                        <i className='bx bx-trash text-base' aria-hidden='true' />
+                        {pendingDelete ? 'Confirmar' : null}
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
-                <span className={`ml-4 flex-shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${STATUS_CLASS[inv.status] ?? 'bg-slate-100 text-slate-500'}`}>
-                  {STATUS_LABEL[inv.status] ?? inv.status}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

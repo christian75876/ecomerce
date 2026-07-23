@@ -5,6 +5,7 @@ export const useInvitations = () => {
   const [invitations, setInvitations] = useState<IInvitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [actionIds, setActionIds] = useState<Set<string>>(new Set());
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -31,7 +32,9 @@ export const useInvitations = () => {
     setSuccess(null);
     try {
       const res = await InvitationsRepository.create(email.trim());
-      setSuccess(res.message);
+      const msg = (res as unknown as { data?: { message?: string; emailSent?: boolean } }).data;
+      setSuccess(msg?.message ?? 'Invitación enviada');
+      if (msg?.emailSent === false) setError('La invitación se guardó pero el correo no pudo enviarse. Revisa los logs del servidor.');
       setEmail('');
       await load();
     } catch (err) {
@@ -41,5 +44,41 @@ export const useInvitations = () => {
     }
   };
 
-  return { invitations, loading, submitting, email, setEmail, error, success, sendInvitation };
+  const resendInvitation = async (id: string) => {
+    setActionIds((prev) => new Set(prev).add(id));
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await InvitationsRepository.resend(id);
+      const msg = (res as unknown as { data?: { message?: string; emailSent?: boolean } }).data;
+      setSuccess(msg?.message ?? 'Invitación reenviada');
+      if (msg?.emailSent === false) setError('La invitación se renovó pero el correo no pudo enviarse.');
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo reenviar la invitación');
+    } finally {
+      setActionIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
+    }
+  };
+
+  const deleteInvitation = async (id: string) => {
+    setActionIds((prev) => new Set(prev).add(id));
+    setError(null);
+    setSuccess(null);
+    try {
+      await InvitationsRepository.delete(id);
+      setSuccess('Invitación eliminada');
+      setInvitations((prev) => prev.filter((inv) => inv.id !== id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo eliminar la invitación');
+    } finally {
+      setActionIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
+    }
+  };
+
+  return {
+    invitations, loading, submitting, actionIds,
+    email, setEmail, error, success,
+    sendInvitation, resendInvitation, deleteInvitation,
+  };
 };
