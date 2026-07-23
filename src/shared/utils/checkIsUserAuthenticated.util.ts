@@ -1,6 +1,15 @@
 import { authSession } from '@/shared/utils/authSession';
 
-export const isAuthenticated = () => Boolean(authSession.getToken());
+export const isAuthenticated = () => {
+  const token = authSession.getToken();
+  if (!token) return false;
+  const expiry = authSession.getTokenExpiry();
+  if (expiry !== null && expiry <= Date.now()) {
+    authSession.clearToken();
+    return false;
+  }
+  return true;
+};
 
 export const getAuthenticatedUser = () => authSession.getUser();
 

@@ -1,4 +1,14 @@
-import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import { handleUnauthorized } from '@/infrastructure/repositories/api/errors/ErrorUtils';
+
+// Shared refresh state — prevents duplicate refresh calls across concurrent 401s
+let isRefreshing = false;
+let refreshQueue: Array<(newToken: string | null) => void> = [];
+
+function flushRefreshQueue(newToken: string | null) {
+  refreshQueue.forEach((cb) => cb(newToken));
+  refreshQueue = [];
+}
 
 /**
  * Configuration options for creating an HTTP client.
@@ -59,6 +69,10 @@ class ClientHTTP {
         instance.interceptors.request.use(this.requestInterceptor, error =>
           Promise.reject(error)
         );
+        instance.interceptors.response.use(
+          (res) => res,
+          (error: AxiosError) => ClientHTTP.responseErrorInterceptor(error),
+        );
       }
 
       this.instances.set(key, instance);
@@ -80,6 +94,49 @@ class ClientHTTP {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
+  }
+
+  private static async responseErrorInterceptor(error: AxiosError): Promise<unknown> {
+    const config = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined;
+
+    if (error.response?.status !== 401 || !config || config._retry) {
+      return Promise.reject(error);
+    }
+
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        refreshQueue.push((newToken) => {
+          if (!newToken) return reject(error);
+          config.headers['Authorization'] = `Bearer ${newToken}`;
+          resolve(axios(config));
+        });
+      });
+    }
+
+    config._retry = true;
+    isRefreshing = true;
+
+    try {
+      const expiredToken = localStorage.getItem('token');
+      const res = await axios.post(
+        `${ClientHTTP.defaultBaseURL}auth/refresh`,
+        {},
+        { headers: { Authorization: `Bearer ${expiredToken}`, 'Content-Type': 'application/json' } },
+      );
+      // Backend wraps response via ResponseInterceptor: { success, data: { token }, ... }
+      const newToken: string = res.data?.data?.token ?? res.data?.token;
+      if (!newToken) throw new Error('refresh_empty');
+      localStorage.setItem('token', newToken);
+      config.headers['Authorization'] = `Bearer ${newToken}`;
+      flushRefreshQueue(newToken);
+      return axios(config);
+    } catch {
+      flushRefreshQueue(null);
+      handleUnauthorized();
+      return Promise.reject(error);
+    } finally {
+      isRefreshing = false;
+    }
   }
 
   /**

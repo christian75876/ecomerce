@@ -39,6 +39,18 @@ export const authSession = {
     localStorage.removeItem(USER_KEY);
   },
 
+  getTokenExpiry(): number | null {
+    const token = this.getToken();
+    if (!token) return null;
+    try {
+      const b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(atob(b64)) as { exp?: number };
+      return typeof payload.exp === 'number' ? payload.exp * 1000 : null;
+    } catch {
+      return null;
+    }
+  },
+
   clear() {
     this.clearToken();
     this.clearUser();

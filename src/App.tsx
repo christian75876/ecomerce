@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTokenRefresh } from '@/shared/hooks/useTokenRefresh';
 import { BrowserRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { SnackbarProvider } from 'notistack';
@@ -15,6 +16,7 @@ import { AppConfigRepository, type IAppConfig } from '@/infrastructure/repositor
 import { canAccessAdminPanel } from '@/shared/utils/checkIsUserAuthenticated.util';
 
 function App() {
+  useTokenRefresh();
   const [appConfig, setAppConfig] = useState<IAppConfig | null>(null);
 
   useEffect(() => {

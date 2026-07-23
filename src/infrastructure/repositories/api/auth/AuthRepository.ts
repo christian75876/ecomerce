@@ -88,6 +88,18 @@ export class AuthRepository {
     );
   }
 
+  static async refreshToken(): Promise<string> {
+    const response = await ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.post<{ token: string }>('/auth/refresh', {})
+    );
+    // response is the IApiResponse wrapper; actual token is at .data.token
+    const newToken = (response as unknown as { data: { token: string } }).data?.token
+      ?? (response as unknown as { token: string }).token;
+    if (!newToken) throw new Error('refresh_empty');
+    localStorage.setItem('token', newToken);
+    return newToken;
+  }
+
   /**
    * Logs out the user by invalidating the token.
    */
