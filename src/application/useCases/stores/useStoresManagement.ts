@@ -28,6 +28,9 @@ export type StoreFormState = {
   storeType: 'STORE' | 'RESTAURANT';
   menuPdfUrl: string;
   deliveryOptions: 'DELIVERY' | 'PICKUP' | 'BOTH';
+  lat: number | null;
+  lng: number | null;
+  addressText: string;
 };
 
 const initialStoreForm: StoreFormState = {
@@ -55,6 +58,9 @@ const initialStoreForm: StoreFormState = {
   storeType: 'STORE',
   menuPdfUrl: '',
   deliveryOptions: 'BOTH',
+  lat: null,
+  lng: null,
+  addressText: '',
 };
 
 function storeToForm(store: IStore): StoreFormState {
@@ -85,6 +91,9 @@ function storeToForm(store: IStore): StoreFormState {
     buttonStyle: store.buttonStyle ?? 'ROUNDED',
     layoutStyle: store.layoutStyle ?? 'GRID',
     coverStyle: store.coverStyle ?? 'GRADIENT',
+    lat: store.lat ?? null,
+    lng: store.lng ?? null,
+    addressText: store.addressText ?? '',
   };
 }
 
@@ -175,6 +184,9 @@ export const useStoresManagement = () => {
         buttonStyle: form.buttonStyle,
         layoutStyle: form.layoutStyle,
         coverStyle: form.coverStyle,
+        lat: form.lat ?? undefined,
+        lng: form.lng ?? undefined,
+        addressText: form.addressText.trim() || undefined,
       };
 
       if (editingId) {

@@ -11,6 +11,7 @@ import ColorPicker from '@/presentation/ui/atoms/color-picker/ColorPicker';
 import { useMenuCategories } from '@/application/useCases/menu-categories/useMenuCategories';
 import MenuCategoriesManager from '@/presentation/ui/organisms/menu-categories/MenuCategoriesManager';
 import { ADMIN_WHATSAPP } from '@/shared/config/appContact';
+import MapAddressPicker, { MapAddress } from '@/presentation/ui/molecules/common/MapAddressPicker';
 
 interface StoresManagementViewProps {
   stores: IStore[];
@@ -28,7 +29,7 @@ interface StoresManagementViewProps {
   onToggleActive?: (store: IStore) => void;
 }
 
-type BrandingTab = 'info' | 'colors' | 'style' | 'delivery';
+type BrandingTab = 'info' | 'colors' | 'style' | 'delivery' | 'location';
 
 const THEME_PRESETS: Array<{
   label: string;
@@ -501,6 +502,7 @@ export const StoresManagementView = ({
     { id: 'colors', label: 'Colores', icon: 'bx-palette' },
     { id: 'style', label: 'Estilo', icon: 'bxs-magic-wand' },
     { id: 'delivery', label: 'Entrega', icon: 'bx-package' },
+    { id: 'location', label: 'Ubicación', icon: 'bx-map-pin' },
   ];
 
   return (
@@ -1042,6 +1044,41 @@ export const StoresManagementView = ({
                     ) : null}
                   </button>
                 ))}
+              </Box>
+            ) : null}
+
+            {/* ── Tab: Ubicación ── */}
+            {activeTab === 'location' ? (
+              <Box className='space-y-4'>
+                <p className='text-sm text-neutral-dark/60'>
+                  Marca la ubicación física de tu tienda en el mapa. Los clientes podrán verla en tu página.
+                </p>
+                <MapAddressPicker
+                  value={
+                    form.lat && form.lng
+                      ? { lat: form.lat, lng: form.lng, street: form.addressText, city: '', department: '' }
+                      : null
+                  }
+                  onChange={(addr: MapAddress) => {
+                    onFormChange('lat', addr.lat);
+                    onFormChange('lng', addr.lng);
+                    onFormChange(
+                      'addressText',
+                      [addr.street, addr.city, addr.department].filter(Boolean).join(', '),
+                    );
+                  }}
+                />
+                {form.lat && form.lng ? (
+                  <a
+                    href={`https://www.google.com/maps?q=${form.lat},${form.lng}`}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline'
+                  >
+                    <i className='bx bx-link-external text-sm' aria-hidden='true' />
+                    Ver en Google Maps
+                  </a>
+                ) : null}
               </Box>
             ) : null}
 

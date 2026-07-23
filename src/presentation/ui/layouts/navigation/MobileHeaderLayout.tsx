@@ -35,6 +35,7 @@ const adminMoreNavItems = [
 const publicPrimaryNavItems = [
   { label: 'Inicio', path: ROUTES.PUBLIC.HOME, icon: 'bx-home' },
   { label: 'Tiendas', path: ROUTES.PUBLIC.STORES, icon: 'bx-store' },
+  { label: 'Mapa', path: ROUTES.PUBLIC.STORE_MAP, icon: 'bx-map-alt' },
   { label: 'Carrito', path: ROUTES.PUBLIC.CART, icon: 'bx-cart' },
 ];
 

@@ -14,11 +14,22 @@ interface HttpClientConfig {
  */
 class ClientHTTP {
   private static instances = new Map<string, AxiosInstance>();
-  private static normalizeBaseURL(url: string): string {
-    return url.endsWith('/') ? url : `${url}/`;
+
+  private static ensureProtocol(url: string): string {
+    if (!/^https?:\/\//i.test(url)) return `https://${url}`;
+    return url;
   }
+
+  private static normalizeBaseURL(url: string): string {
+    const safe = ClientHTTP.ensureProtocol(url);
+    return safe.endsWith('/') ? safe : `${safe}/`;
+  }
+
+  // Accepts VITE_API_URL (local .env) or VITE_API_BASE_URL (Vercel)
   private static defaultBaseURL = this.normalizeBaseURL(
-    import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:3000/api/'
+    import.meta.env.VITE_API_URL ||
+    import.meta.env.VITE_API_BASE_URL ||
+    'http://127.0.0.1:3000/api/'
   );
 
   /**

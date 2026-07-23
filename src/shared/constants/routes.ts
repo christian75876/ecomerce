@@ -6,6 +6,7 @@ export const ROUTES = {
     NOT_FOUND: '*',
     HOME: '/home',
     STORES: '/stores',
+    STORE_MAP: '/stores/map',
     STORE_DETAILS: '/stores/:slug',
     CART: '/cart',
     FAVORITES: '/favorites',

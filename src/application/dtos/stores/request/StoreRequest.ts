@@ -27,6 +27,9 @@ export interface ICreateStoreRequest {
   storeType?: 'STORE' | 'RESTAURANT';
   menuPdfUrl?: string;
   deliveryOptions?: 'DELIVERY' | 'PICKUP' | 'BOTH';
+  lat?: number | null;
+  lng?: number | null;
+  addressText?: string;
 }
 
 export interface IUpdateStoreNotificationRequest {

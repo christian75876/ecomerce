@@ -30,6 +30,9 @@ export interface IStore {
   deliveryOptions: 'DELIVERY' | 'PICKUP' | 'BOTH';
   wppNotificationsEnabled: boolean;
   wppApiKey: string | null;
+  lat: number | null;
+  lng: number | null;
+  addressText: string | null;
   createdAt: string;
   updatedAt: string;
 }

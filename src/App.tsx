@@ -20,7 +20,13 @@ function App() {
   useEffect(() => {
     AppConfigRepository.getConfig()
       .then(setAppConfig)
-      .catch(() => setAppConfig({ isAccessBlocked: false, blockedMessage: null, updatedAt: '' }));
+      .catch(() =>
+        setAppConfig({
+          isAccessBlocked: false,
+          blockedMessage: null,
+          updatedAt: ''
+        })
+      );
   }, []);
 
   // Admins always bypass the block so they can re-enable the app

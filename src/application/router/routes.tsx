@@ -23,6 +23,9 @@ const StoresPage = lazy(
 const StoreDetailPage = lazy(
   () => import('@presentation/pages/public/stores/StoreDetailPage')
 );
+const StoreMapPage = lazy(
+  () => import('@presentation/pages/public/stores/StoreMapPage')
+);
 const FavoritesPage = lazy(
   () => import('@presentation/pages/public/favorites/FavoritesPage')
 );
@@ -142,6 +145,12 @@ export const routes: AppRoute[] = [
   {
     path: ROUTES.PUBLIC.STORES,
     element: <StoresPage />,
+    layout: DashboardLayout,
+    publicOnly: false
+  },
+  {
+    path: ROUTES.PUBLIC.STORE_MAP,
+    element: <StoreMapPage />,
     layout: DashboardLayout,
     publicOnly: false
   },

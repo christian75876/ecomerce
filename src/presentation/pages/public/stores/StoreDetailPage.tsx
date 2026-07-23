@@ -1,5 +1,8 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -13,6 +16,14 @@ import WhatsAppFloat from '@/presentation/ui/atoms/whatsapp/WhatsAppFloat';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
 import AgeGate, { isStoreVerified, markStoreVerified } from '@/presentation/ui/molecules/common/AgeGate';
 import RestaurantMenuView from '@/presentation/ui/organisms/stores/RestaurantMenuView';
+
+// Fix Leaflet marker icons in Vite builds (same as MapAddressPicker)
+delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
 
 function buildStoreTheme(store: IStore): React.CSSProperties {
   const primary = store.primaryColor || '#6366f1';
@@ -229,6 +240,45 @@ const StoreDetailPage = () => {
             </div>
           </div>
         </div>
+
+        {/* ── Store location map ── */}
+        {store.lat && store.lng ? (
+          <div className='rounded-[2rem] overflow-hidden border border-slate-200 shadow-sm'>
+            <div className='flex items-center justify-between px-5 py-3 bg-white border-b border-slate-100'>
+              <div className='flex items-center gap-2'>
+                <i className='bx bx-map-pin text-lg text-primary' aria-hidden='true' />
+                <span className='text-sm font-semibold text-slate-800'>Ubicación de la tienda</span>
+              </div>
+              {store.addressText ? (
+                <span className='text-xs text-slate-500 max-w-[60%] truncate'>{store.addressText}</span>
+              ) : null}
+              <a
+                href={`https://www.google.com/maps?q=${store.lat},${store.lng}`}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='ml-3 flex-shrink-0 flex items-center gap-1 text-xs font-medium text-primary hover:underline'
+              >
+                <i className='bx bx-link-external text-sm' aria-hidden='true' />
+                <span className='hidden sm:inline'>Ver en Google Maps</span>
+              </a>
+            </div>
+            <div style={{ height: 240 }}>
+              <MapContainer
+                center={[store.lat, store.lng]}
+                zoom={16}
+                style={{ height: '100%', width: '100%' }}
+                scrollWheelZoom={false}
+                zoomControl={false}
+              >
+                <TileLayer
+                  url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                />
+                <Marker position={[store.lat, store.lng]} />
+              </MapContainer>
+            </div>
+          </div>
+        ) : null}
 
         {/* ── Products / Menu ── */}
         <div style={{ backgroundColor: themeVars.backgroundColor }}>
