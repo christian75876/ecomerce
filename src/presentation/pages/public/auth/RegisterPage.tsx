@@ -47,7 +47,7 @@ const RegisterPage = () => {
       const res = await AuthRepository.registerCustomer({
         name: form.name.trim(),
         email: form.email.trim(),
-        phone: form.phone.trim() || undefined,
+        phone: form.phone.trim(),
         password: form.password,
         inviteToken: token ?? undefined,
       });
