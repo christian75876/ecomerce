@@ -10,6 +10,7 @@ import {
   isBuyerSession,
 } from '@/shared/utils/checkIsUserAuthenticated.util';
 import { useOrderNotifications } from '@/shared/hooks/useOrderNotifications';
+import { useCart } from '@/shared/hooks/useCart';
 
 const adminPrimaryNavItems = [
   { label: 'Inicio', path: ROUTES.PRIVATE.DASHBOARD, icon: 'bx-home' },
@@ -56,6 +57,8 @@ const MobileHeaderLayout = () => {
 
   const adminView = isAuthenticated() && canAccessAdminPanel();
   const { unreadCount } = useOrderNotifications();
+  const { items: cartItems } = useCart();
+  const cartCount = cartItems.reduce((acc, i) => acc + i.quantity, 0);
   const buyerView = isBuyerSession();
   const primaryNavItems = adminView ? adminPrimaryNavItems : publicPrimaryNavItems;
   const moreNavItems = adminView
@@ -112,7 +115,10 @@ const MobileHeaderLayout = () => {
         <Box className='flex justify-around'>
           {primaryNavItems.map(({ label, path, icon }) => {
             const isOrders = adminView && path === ROUTES.PRIVATE.ORDERS;
-            const badge = isOrders && unreadCount > 0 ? unreadCount : 0;
+            const isCart = !adminView && path === ROUTES.PUBLIC.CART;
+            const badge =
+              (isOrders && unreadCount > 0 ? unreadCount : 0) ||
+              (isCart && cartCount > 0 ? cartCount : 0);
             return (
               <NavLink
                 key={path}

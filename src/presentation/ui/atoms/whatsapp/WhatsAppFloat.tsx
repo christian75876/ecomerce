@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 interface WhatsAppFloatProps {
   phoneNumber: string;
   message?: string;
+  /** Raise above a fixed bottom bar (e.g. floating cart bar on product detail) */
+  raised?: boolean;
 }
 
 function buildWhatsAppUrl(phoneNumber: string, message?: string): string {
@@ -11,7 +13,7 @@ function buildWhatsAppUrl(phoneNumber: string, message?: string): string {
   return `https://wa.me/${clean}${encoded ? `?text=${encoded}` : ''}`;
 }
 
-const WhatsAppFloat = ({ phoneNumber, message }: WhatsAppFloatProps) => {
+const WhatsAppFloat = ({ phoneNumber, message, raised = false }: WhatsAppFloatProps) => {
   const [hiddenByNav, setHiddenByNav] = useState(false);
 
   useEffect(() => {
@@ -33,7 +35,7 @@ const WhatsAppFloat = ({ phoneNumber, message }: WhatsAppFloatProps) => {
       target='_blank'
       rel='noopener noreferrer'
       aria-label='Chatear por WhatsApp'
-      className='fixed bottom-24 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] shadow-lg transition-transform hover:scale-110 active:scale-95 sm:bottom-6'
+      className={`fixed right-4 z-[90] flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] shadow-lg transition-transform hover:scale-110 active:scale-95 ${raised ? 'bottom-40 lg:bottom-28' : 'bottom-24 sm:bottom-6'}`}
     >
       <span className='absolute inset-0 animate-ping rounded-full bg-[#25D366] opacity-30' />
       <svg

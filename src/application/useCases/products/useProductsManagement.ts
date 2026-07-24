@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { z } from 'zod';
 import { ICategory } from '@/application/dtos/categories/response/CategoryResponse';
 import {
   ICreateProductRequest,
@@ -55,6 +56,26 @@ export const initialProductFormState: ProductFormState = {
   initialExpiresAt: '',
 };
 
+const optionalNonNegative = z
+  .string()
+  .refine((v) => v === '' || (Number(v) >= 0 && !isNaN(Number(v))), 'Debe ser un número válido');
+
+const productSchema = z.object({
+  name: z.string().min(1, 'El nombre es obligatorio'),
+  description: z.string().min(1, 'La descripción es obligatoria'),
+  sku: z.string().min(1, 'El SKU es obligatorio'),
+  price: z
+    .string()
+    .refine((v) => v !== '' && Number(v) > 0, 'Ingresa un precio mayor a cero'),
+  categoryId: z.string().min(1, 'Selecciona una categoría'),
+  storeId: z.string().min(1, 'Selecciona una tienda'),
+  cost: optionalNonNegative,
+  compareAtPrice: optionalNonNegative,
+  initialStock: optionalNonNegative,
+});
+
+export type ProductFieldErrors = Partial<Record<keyof typeof productSchema.shape, string>>;
+
 export const useProductsManagement = () => {
   const isSeller = getAuthenticatedRole() === 'seller';
   const isAdmin = getAuthenticatedRole() === 'admin';
@@ -71,6 +92,7 @@ export const useProductsManagement = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<ProductFieldErrors>({});
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -85,12 +107,19 @@ export const useProductsManagement = () => {
   const [gallerySubmitting, setGallerySubmitting] = useState(false);
   const [galleryError, setGalleryError] = useState<string | null>(null);
 
+  // Pending gallery files for create mode (uploaded after product is saved)
+  const [pendingGalleryFiles, setPendingGalleryFiles] = useState<File[]>([]);
+  const [pendingGalleryPreviews, setPendingGalleryPreviews] = useState<string[]>([]);
+
   // Videos state
   const [videos, setVideos] = useState<IProductVideo[]>([]);
   const [videoUrl, setVideoUrl] = useState('');
   const [videoTitle, setVideoTitle] = useState('');
   const [videoSubmitting, setVideoSubmitting] = useState(false);
   const [videoError, setVideoError] = useState<string | null>(null);
+
+  // Pending videos for create mode (submitted after product is saved)
+  const [pendingVideos, setPendingVideos] = useState<Array<{ videoUrl: string; videoTitle: string }>>([]);
 
   const loadCategories = useCallback(async () => {
     const response = await CategoriesRepository.getCategories(true);
@@ -221,6 +250,26 @@ export const useProductsManagement = () => {
     }
   };
 
+  const addPendingGalleryFiles = (files: File[]) => {
+    const urls = files.map((f) => URL.createObjectURL(f));
+    setPendingGalleryFiles((prev) => [...prev, ...files]);
+    setPendingGalleryPreviews((prev) => [...prev, ...urls]);
+  };
+
+  const removePendingGalleryFile = (index: number) => {
+    setPendingGalleryPreviews((prev) => {
+      URL.revokeObjectURL(prev[index]);
+      const next = [...prev];
+      next.splice(index, 1);
+      return next;
+    });
+    setPendingGalleryFiles((prev) => {
+      const next = [...prev];
+      next.splice(index, 1);
+      return next;
+    });
+  };
+
   const resetForm = () => {
     setForm((prev) => ({
       ...initialProductFormState,
@@ -235,6 +284,14 @@ export const useProductsManagement = () => {
     setVideoUrl('');
     setVideoTitle('');
     setVideoError(null);
+    setPendingGalleryPreviews((prev) => {
+      prev.forEach((url) => URL.revokeObjectURL(url));
+      return [];
+    });
+    setPendingGalleryFiles([]);
+    setPendingVideos([]);
+    setFieldErrors({});
+    setError(null);
   };
 
   const quickCreateCategory = async (name: string): Promise<ICategory | null> => {
@@ -258,32 +315,19 @@ export const useProductsManagement = () => {
   };
 
   const buildPayload = (currentForm: ProductFormState): ICreateProductRequest | null => {
-    if (
-      !currentForm.name.trim() ||
-      !currentForm.description.trim() ||
-      !currentForm.sku.trim() ||
-      !currentForm.price ||
-      !currentForm.categoryId ||
-      !currentForm.storeId
-    ) {
-      setError('Completa nombre, descripción, SKU, precio, categoría y tienda');
+    const parsed = productSchema.safeParse(currentForm);
+
+    if (!parsed.success) {
+      const flat = parsed.error.flatten().fieldErrors;
+      const errors: ProductFieldErrors = {};
+      for (const [k, msgs] of Object.entries(flat)) {
+        if (msgs?.[0]) errors[k as keyof ProductFieldErrors] = msgs[0];
+      }
+      setFieldErrors(errors);
       return null;
     }
 
-    if (Number(currentForm.price) < 0) {
-      setError('El precio no puede ser negativo');
-      return null;
-    }
-
-    if (currentForm.cost && Number(currentForm.cost) < 0) {
-      setError('El costo no puede ser negativo');
-      return null;
-    }
-
-    if (currentForm.initialStock && Number(currentForm.initialStock) < 0) {
-      setError('El stock inicial no puede ser negativo');
-      return null;
-    }
+    setFieldErrors({});
 
     if (
       currentForm.isPerishable &&
@@ -291,7 +335,7 @@ export const useProductsManagement = () => {
       Number(currentForm.initialStock) > 0 &&
       !currentForm.initialExpiresAt
     ) {
-      setError('Los productos perecederos requieren vencimiento para el stock inicial');
+      setError('Los productos perecederos requieren fecha de vencimiento para el stock inicial');
       return null;
     }
 
@@ -306,9 +350,7 @@ export const useProductsManagement = () => {
       supplierId: currentForm.supplierId || undefined,
       cost: currentForm.cost ? Number(currentForm.cost) : undefined,
       compareAtPrice: currentForm.compareAtPrice ? Number(currentForm.compareAtPrice) : undefined,
-      initialStock: currentForm.initialStock
-        ? Number(currentForm.initialStock)
-        : undefined,
+      initialStock: currentForm.initialStock ? Number(currentForm.initialStock) : undefined,
       imageUrl: currentForm.imageUrl.trim() || undefined,
       showStock: currentForm.showStock,
       isPerishable: currentForm.isPerishable,
@@ -342,6 +384,20 @@ export const useProductsManagement = () => {
       // Upload image file if user selected one
       if (pendingImageFile) {
         await ProductRepository.uploadProductImage(savedId, pendingImageFile);
+      }
+
+      // Upload pending gallery files (create mode only)
+      if (!editingId && pendingGalleryFiles.length > 0) {
+        for (const file of pendingGalleryFiles) {
+          await ProductRepository.uploadGalleryImage(savedId, file);
+        }
+      }
+
+      // Upload pending videos (create mode only)
+      if (!editingId && pendingVideos.length > 0) {
+        for (const pv of pendingVideos) {
+          await ProductRepository.addProductVideo(savedId, pv.videoUrl, pv.videoTitle || undefined);
+        }
       }
 
       resetForm();
@@ -451,7 +507,17 @@ export const useProductsManagement = () => {
   };
 
   const addVideo = async () => {
-    if (!editingId || !videoUrl.trim()) return;
+    if (!videoUrl.trim()) return;
+    if (!editingId) {
+      // Create mode: store locally, submitted after product is saved
+      setPendingVideos((prev) => [
+        ...prev,
+        { videoUrl: videoUrl.trim(), videoTitle: videoTitle.trim() },
+      ]);
+      setVideoUrl('');
+      setVideoTitle('');
+      return;
+    }
     setVideoSubmitting(true);
     setVideoError(null);
     try {
@@ -464,6 +530,10 @@ export const useProductsManagement = () => {
     } finally {
       setVideoSubmitting(false);
     }
+  };
+
+  const removePendingVideo = (index: number) => {
+    setPendingVideos((prev) => prev.filter((_, i) => i !== index));
   };
 
   const removeVideo = async (videoId: string) => {
@@ -498,12 +568,18 @@ export const useProductsManagement = () => {
     loading,
     submitting,
     error,
+    fieldErrors,
     pendingImageFile,
     imagePreview,
     gallery,
     gallerySubmitting,
     galleryError,
+    pendingGalleryFiles,
+    pendingGalleryPreviews,
+    addPendingGalleryFiles,
+    removePendingGalleryFile,
     videos,
+    pendingVideos,
     videoUrl,
     videoTitle,
     videoSubmitting,
@@ -518,6 +594,7 @@ export const useProductsManagement = () => {
     setVideoUrl,
     setVideoTitle,
     addVideo,
+    removePendingVideo,
     removeVideo,
     submitForm,
     startEditing,

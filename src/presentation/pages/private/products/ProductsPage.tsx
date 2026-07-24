@@ -19,11 +19,13 @@ const ProductsPage = () => {
       loading={pm.loading}
       submitting={pm.submitting}
       error={pm.error}
+      fieldErrors={pm.fieldErrors}
       imagePreview={pm.imagePreview}
       gallery={pm.gallery}
       gallerySubmitting={pm.gallerySubmitting}
       galleryError={pm.galleryError}
       videos={pm.videos}
+      pendingVideos={pm.pendingVideos}
       videoUrl={pm.videoUrl}
       videoTitle={pm.videoTitle}
       videoSubmitting={pm.videoSubmitting}
@@ -35,9 +37,13 @@ const ProductsPage = () => {
       onGalleryImageUpload={pm.uploadGalleryImages}
       onGalleryImageRemove={pm.removeGalleryImage}
       onGalleryImageReorder={pm.reorderGallery}
+      pendingGalleryPreviews={pm.pendingGalleryPreviews}
+      onPendingGalleryAdd={pm.addPendingGalleryFiles}
+      onPendingGalleryRemove={pm.removePendingGalleryFile}
       onVideoUrlChange={pm.setVideoUrl}
       onVideoTitleChange={pm.setVideoTitle}
       onAddVideo={pm.addVideo}
+      onRemovePendingVideo={pm.removePendingVideo}
       onRemoveVideo={pm.removeVideo}
       onSubmit={pm.submitForm}
       onEdit={pm.startEditing}

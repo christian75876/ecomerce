@@ -58,7 +58,7 @@ const DesktopHeaderLayout = () => {
             >
               <i className='bx bx-cart text-lg' aria-hidden='true' />
               {cartCount > 0 ? (
-                <span className='absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-white'>
+                <span className='absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white'>
                   {cartCount > 9 ? '9+' : cartCount}
                 </span>
               ) : null}

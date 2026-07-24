@@ -7,7 +7,7 @@ import { IProduct, IProductImage, IProductVideo } from '@/application/dtos/produ
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
 import { IMenuCategory } from '@/application/dtos/menu-categories/response/MenuCategoryResponse';
 import { ISupplier } from '@/application/dtos/suppliers/response/SupplierResponse';
-import { ProductFormState } from '@/application/useCases/products/useProductsManagement';
+import { ProductFieldErrors, ProductFormState } from '@/application/useCases/products/useProductsManagement';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
@@ -17,6 +17,13 @@ import FeaturePanel from '@/presentation/ui/templates/feature/FeaturePanel';
 import FeatureScreen from '@/presentation/ui/templates/feature/FeatureScreen';
 import FeatureScreenHeader from '@/presentation/ui/templates/feature/FeatureScreenHeader';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
+import InstagramEmbed from '@/presentation/ui/atoms/video/InstagramEmbed';
+
+function formatThousands(raw: string): string {
+  const n = raw.replace(/\D/g, '');
+  if (!n) return '';
+  return Number(n).toLocaleString('es-CO');
+}
 
 interface ProductsManagementViewProps {
   isSeller: boolean;
@@ -32,11 +39,16 @@ interface ProductsManagementViewProps {
   loading: boolean;
   submitting: boolean;
   error: string | null;
+  fieldErrors: ProductFieldErrors;
   imagePreview: string | null;
   gallery: IProductImage[];
   gallerySubmitting: boolean;
   galleryError: string | null;
+  pendingGalleryPreviews: string[];
+  onPendingGalleryAdd: (files: File[]) => void;
+  onPendingGalleryRemove: (index: number) => void;
   videos: IProductVideo[];
+  pendingVideos: Array<{ videoUrl: string; videoTitle: string }>;
   videoUrl: string;
   videoTitle: string;
   videoSubmitting: boolean;
@@ -54,6 +66,7 @@ interface ProductsManagementViewProps {
   onVideoUrlChange: (value: string) => void;
   onVideoTitleChange: (value: string) => void;
   onAddVideo: () => Promise<void>;
+  onRemovePendingVideo: (index: number) => void;
   onRemoveVideo: (videoId: string) => Promise<void>;
   onSubmit: () => Promise<boolean>;
   onEdit: (product: IProduct) => void;
@@ -203,11 +216,16 @@ export const ProductsManagementView = ({
   loading,
   submitting,
   error,
+  fieldErrors,
   imagePreview,
   gallery,
   gallerySubmitting,
   galleryError,
+  pendingGalleryPreviews,
+  onPendingGalleryAdd,
+  onPendingGalleryRemove,
   videos,
+  pendingVideos,
   videoUrl,
   videoTitle,
   videoSubmitting,
@@ -222,6 +240,7 @@ export const ProductsManagementView = ({
   onVideoUrlChange,
   onVideoTitleChange,
   onAddVideo,
+  onRemovePendingVideo,
   onRemoveVideo,
   onSubmit,
   onEdit,
@@ -237,6 +256,7 @@ export const ProductsManagementView = ({
 }: ProductsManagementViewProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const pendingGalleryInputRef = useRef<HTMLInputElement>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [dropZoneActive, setDropZoneActive] = useState(false);
   const dragIndexRef = useRef<number | null>(null);
@@ -277,6 +297,7 @@ export const ProductsManagementView = ({
                 value={form.name}
                 onChange={(event) => onFormChange('name', event.target.value)}
                 disabled={submitting}
+                error={fieldErrors.name}
               />
             </Box>
 
@@ -289,8 +310,11 @@ export const ProductsManagementView = ({
                   onFormChange('description', event.target.value)
                 }
                 disabled={submitting}
-                className="min-h-28 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
+                className={`min-h-28 w-full rounded-lg border bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary ${fieldErrors.description ? 'border-red-300 bg-red-50/40' : 'border-gray-300'}`}
               />
+              {fieldErrors.description ? (
+                <p className="mt-1 text-xs text-red-500">{fieldErrors.description}</p>
+              ) : null}
             </Box>
 
             <Box className="grid gap-4 md:grid-cols-2">
@@ -301,48 +325,62 @@ export const ProductsManagementView = ({
                   value={form.sku}
                   onChange={(event) => onFormChange('sku', event.target.value)}
                   disabled={submitting}
+                  error={fieldErrors.sku}
                 />
               </Box>
               <Box>
                 <Label htmlFor="product-price">Precio</Label>
-                <Input
-                  id="product-price"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={form.price}
-                  onChange={(event) => onFormChange('price', event.target.value)}
-                  disabled={submitting}
-                />
+                <div className="relative">
+                  <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 select-none text-sm text-slate-400">$</span>
+                  <input
+                    id="product-price"
+                    type="text"
+                    inputMode="numeric"
+                    value={formatThousands(form.price)}
+                    onChange={(e) => onFormChange('price', e.target.value.replace(/\D/g, ''))}
+                    disabled={submitting}
+                    placeholder="0"
+                    className={`w-full rounded-xl border py-2.5 pl-7 pr-4 text-sm text-slate-800 placeholder:text-slate-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-60 ${fieldErrors.price ? 'border-red-300 bg-red-50/40 focus:border-red-400 focus:ring-red-300/30' : 'border-slate-200 bg-white hover:border-indigo-200 focus:border-indigo-400 focus:ring-indigo-400/20'}`}
+                  />
+                </div>
+                {fieldErrors.price ? (
+                  <p className="mt-1 text-xs text-red-500">{fieldErrors.price}</p>
+                ) : null}
               </Box>
             </Box>
 
             <Box className="grid gap-4 md:grid-cols-2">
               <Box>
                 <Label htmlFor="product-compare-at-price">Precio antes (tachado)</Label>
-                <Input
-                  id="product-compare-at-price"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="Precio original (opcional)"
-                  value={form.compareAtPrice}
-                  onChange={(event) => onFormChange('compareAtPrice', event.target.value)}
-                  disabled={submitting}
-                />
+                <div className="relative">
+                  <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 select-none text-sm text-slate-400">$</span>
+                  <input
+                    id="product-compare-at-price"
+                    type="text"
+                    inputMode="numeric"
+                    value={formatThousands(form.compareAtPrice)}
+                    onChange={(e) => onFormChange('compareAtPrice', e.target.value.replace(/\D/g, ''))}
+                    disabled={submitting}
+                    placeholder="Precio original (opcional)"
+                    className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-7 pr-4 text-sm text-slate-800 placeholder:text-slate-300 transition-all duration-200 hover:border-indigo-200 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-60"
+                  />
+                </div>
               </Box>
               <Box>
                 <Label htmlFor="product-cost">Precio de costo</Label>
-                <Input
-                  id="product-cost"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="Costo de adquisición"
-                  value={form.cost}
-                  onChange={(event) => onFormChange('cost', event.target.value)}
-                  disabled={submitting}
-                />
+                <div className="relative">
+                  <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 select-none text-sm text-slate-400">$</span>
+                  <input
+                    id="product-cost"
+                    type="text"
+                    inputMode="numeric"
+                    value={formatThousands(form.cost)}
+                    onChange={(e) => onFormChange('cost', e.target.value.replace(/\D/g, ''))}
+                    disabled={submitting}
+                    placeholder="Costo de adquisición"
+                    className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-7 pr-4 text-sm text-slate-800 placeholder:text-slate-300 transition-all duration-200 hover:border-indigo-200 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-60"
+                  />
+                </div>
               </Box>
             </Box>
 
@@ -419,6 +457,9 @@ export const ProductsManagementView = ({
                   createLabel='+ Nueva categoría'
                   onChange={(v) => onFormChange('categoryId', v)}
                 />
+                {fieldErrors.categoryId ? (
+                  <p className="mt-1 text-xs text-red-500">{fieldErrors.categoryId}</p>
+                ) : null}
               </Box>
               <Box>
                 <Label htmlFor="product-store">Tienda</Label>
@@ -427,19 +468,24 @@ export const ProductsManagementView = ({
                     {stores[0]?.name ?? 'Cargando...'}
                   </div>
                 ) : (
-                  <SelectDropdown
-                    value={form.storeId}
-                    options={stores.map((s) => ({
-                      value: s.id,
-                      label: `${s.storeType === 'RESTAURANT' ? '🍽️ ' : ''}${s.name}`,
-                    }))}
-                    placeholder='Selecciona una tienda'
-                    disabled={submitting}
-                    onChange={(v) => {
-                      onFormChange('storeId', v);
-                      onFormChange('menuCategoryId', '');
-                    }}
-                  />
+                  <>
+                    <SelectDropdown
+                      value={form.storeId}
+                      options={stores.map((s) => ({
+                        value: s.id,
+                        label: `${s.storeType === 'RESTAURANT' ? '🍽️ ' : ''}${s.name}`,
+                      }))}
+                      placeholder='Selecciona una tienda'
+                      disabled={submitting}
+                      onChange={(v) => {
+                        onFormChange('storeId', v);
+                        onFormChange('menuCategoryId', '');
+                      }}
+                    />
+                    {fieldErrors.storeId ? (
+                      <p className="mt-1 text-xs text-red-500">{fieldErrors.storeId}</p>
+                    ) : null}
+                  </>
                 )}
               </Box>
             </Box>
@@ -574,7 +620,7 @@ export const ProductsManagementView = ({
             </Box>
           </form>
 
-          {/* Gallery section — only visible when editing an existing product */}
+          {/* Gallery section */}
           {editingId ? (
             <Box className="mt-6 border-t border-neutral-gray/20 pt-6">
               <Typography variant="h3" className="mb-4 text-base font-semibold">
@@ -710,7 +756,71 @@ export const ProductsManagementView = ({
                 </Typography>
               )}
             </Box>
-          ) : null}
+          ) : (
+            /* Create mode: pending gallery (local previews, uploaded after save) */
+            <Box className="mt-6 border-t border-neutral-gray/20 pt-6">
+              <Typography variant="h3" className="mb-1 text-base font-semibold">
+                Fotos adicionales
+              </Typography>
+              <p className="mb-4 text-xs text-neutral-dark/50">
+                Se subirán automáticamente al crear el producto.
+              </p>
+
+              <input
+                ref={pendingGalleryInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                className="hidden"
+                onChange={(e) => {
+                  const files = Array.from(e.target.files ?? []);
+                  if (files.length > 0) onPendingGalleryAdd(files);
+                  e.target.value = '';
+                }}
+              />
+
+              <div
+                className="mb-4 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center transition-colors hover:border-primary/40 hover:bg-primary/5"
+                onClick={() => pendingGalleryInputRef.current?.click()}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') pendingGalleryInputRef.current?.click(); }}
+                aria-label="Agregar fotos adicionales del producto"
+              >
+                <i className="bx bx-images text-2xl text-slate-400" aria-hidden="true" />
+                <span className="text-sm font-medium text-slate-600">
+                  Arrastra fotos aquí o{' '}
+                  <span className="text-primary underline">haz clic para seleccionar</span>
+                </span>
+                <span className="text-xs text-slate-400">JPEG · PNG · WebP · múltiples archivos</span>
+              </div>
+
+              {pendingGalleryPreviews.length > 0 ? (
+                <Box className="grid grid-cols-3 gap-3">
+                  {pendingGalleryPreviews.map((url, idx) => (
+                    <Box key={idx} className="group relative overflow-hidden rounded-xl border-2 border-neutral-gray/20">
+                      <span className="absolute left-1.5 top-1.5 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-black/50 text-[10px] font-bold text-white">
+                        {idx + 1}
+                      </span>
+                      <img src={url} alt={`Foto ${idx + 1}`} className="h-24 w-full object-cover" draggable={false} />
+                      <button
+                        type="button"
+                        onClick={() => onPendingGalleryRemove(idx)}
+                        aria-label="Quitar imagen"
+                        className="absolute right-1 top-1 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs text-white opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+                      >
+                        <i className="bx bx-x text-sm" aria-hidden="true" />
+                      </button>
+                    </Box>
+                  ))}
+                </Box>
+              ) : (
+                <Typography className="text-sm text-neutral-dark/50">
+                  Sin fotos adicionales aún.
+                </Typography>
+              )}
+            </Box>
+          )}
 
           {/* Videos section */}
           <Box className="mt-6 border-t border-neutral-gray/20 pt-6">
@@ -730,6 +840,17 @@ export const ProductsManagementView = ({
                 />
                 {/* Video embed preview */}
                 {(() => {
+                  if (!videoUrl.trim()) return null;
+                  // Instagram: use official embed.js approach for inline playback
+                  if (videoUrl.includes('instagram.com')) {
+                    const match = videoUrl.match(/instagram\.com\/(p|reel|tv)\/([\w-]+)/);
+                    if (!match) return null;
+                    return (
+                      <Box className="mt-3">
+                        <InstagramEmbed url={videoUrl} />
+                      </Box>
+                    );
+                  }
                   const preview = getVideoPreview(videoUrl);
                   if (!preview) return null;
                   return preview.isPortrait ? (
@@ -776,79 +897,101 @@ export const ProductsManagementView = ({
                   {videoError}
                 </Box>
               ) : null}
-              {!editingId ? (
-                <Box className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-                  Guarda el producto primero para poder agregar videos.
-                </Box>
-              ) : (
-                <Button
-                  type="submit"
-                  variant="secondary"
-                  disabled={videoSubmitting || !videoUrl.trim()}
-                >
-                  {videoSubmitting ? 'Agregando...' : 'Agregar video'}
-                </Button>
-              )}
+              <Button
+                type="submit"
+                variant="secondary"
+                disabled={videoSubmitting || !videoUrl.trim()}
+              >
+                {videoSubmitting ? 'Agregando...' : 'Agregar video'}
+              </Button>
             </form>
 
-            {videos.length > 0 ? (
-              <Box className="space-y-3">
-                {videos.map((video) => {
-                  const preview = getVideoPreviewFromType(video.videoUrl, video.videoType);
-                  return (
-                    <Box
-                      key={video.id}
-                      className={`overflow-hidden rounded-2xl border border-neutral-gray/20 ${preview?.isPortrait ? 'mx-auto max-w-[320px]' : ''}`}
-                    >
-                      {preview ? (
-                        <div className="relative w-full" style={{ paddingBottom: preview.isPortrait ? '177.78%' : '56.25%' }}>
-                          <iframe
-                            src={preview.embedUrl}
-                            title={video.title ?? 'Video'}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                            scrolling="no"
-                            className="absolute inset-0 h-full w-full"
-                          />
-                        </div>
-                      ) : null}
-                      <Box className="flex items-center justify-between gap-3 px-4 py-3">
-                        <Box className="min-w-0 flex-1">
-                          <Box className="flex items-center gap-2">
-                            <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                              video.videoType === 'YOUTUBE'
-                                ? 'bg-red-100 text-red-700'
-                                : 'bg-purple-100 text-purple-700'
-                            }`}>
-                              {video.videoType === 'YOUTUBE' ? 'YouTube' : 'Instagram'}
-                            </span>
-                            {video.title ? (
-                              <Typography className="truncate text-sm font-medium">
-                                {video.title}
-                              </Typography>
-                            ) : null}
+            {editingId ? (
+              /* Edit mode: API-backed video list */
+              videos.length > 0 ? (
+                <Box className="space-y-3">
+                  {videos.map((video) => {
+                    const preview = getVideoPreviewFromType(video.videoUrl, video.videoType);
+                    return (
+                      <Box
+                        key={video.id}
+                        className={`overflow-hidden rounded-2xl border border-neutral-gray/20 ${preview?.isPortrait && video.videoType !== 'INSTAGRAM' ? 'mx-auto max-w-[320px]' : ''}`}
+                      >
+                        {video.videoType === 'INSTAGRAM' ? (
+                          <div className="p-3">
+                            <InstagramEmbed url={video.videoUrl} />
+                          </div>
+                        ) : preview ? (
+                          <div className="relative w-full" style={{ paddingBottom: preview.isPortrait ? '177.78%' : '56.25%' }}>
+                            <iframe
+                              src={preview.embedUrl}
+                              title={video.title ?? 'Video'}
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              scrolling="no"
+                              className="absolute inset-0 h-full w-full"
+                            />
+                          </div>
+                        ) : null}
+                        <Box className="flex items-center justify-between gap-3 px-4 py-3">
+                          <Box className="min-w-0 flex-1">
+                            <Box className="flex items-center gap-2">
+                              <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                video.videoType === 'YOUTUBE' ? 'bg-red-100 text-red-700' : 'bg-purple-100 text-purple-700'
+                              }`}>
+                                {video.videoType === 'YOUTUBE' ? 'YouTube' : 'Instagram'}
+                              </span>
+                              {video.title ? (
+                                <Typography className="truncate text-sm font-medium">{video.title}</Typography>
+                              ) : null}
+                            </Box>
+                            <Typography className="mt-0.5 truncate text-xs text-neutral-dark/50">
+                              {video.videoUrl}
+                            </Typography>
                           </Box>
-                          <Typography className="mt-0.5 truncate text-xs text-neutral-dark/50">
-                            {video.videoUrl}
-                          </Typography>
+                          <Button type="button" variant="danger" onClick={() => void onRemoveVideo(video.id)} disabled={videoSubmitting}>
+                            Eliminar
+                          </Button>
                         </Box>
-                        <Button
-                          type="button"
-                          variant="danger"
-                          onClick={() => void onRemoveVideo(video.id)}
-                          disabled={videoSubmitting}
-                        >
-                          Eliminar
-                        </Button>
                       </Box>
-                    </Box>
-                  );
-                })}
-              </Box>
+                    );
+                  })}
+                </Box>
+              ) : (
+                <Typography className="text-sm text-neutral-dark/50">Sin videos agregados aún.</Typography>
+              )
             ) : (
-              <Typography className="text-sm text-neutral-dark/50">
-                Sin videos agregados aún.
-              </Typography>
+              /* Create mode: pending video list (local, submitted after product is saved) */
+              pendingVideos.length > 0 ? (
+                <Box className="space-y-2">
+                  <p className="text-xs text-neutral-dark/50">Se subirán automáticamente al crear el producto.</p>
+                  {pendingVideos.map((pv, idx) => {
+                    const isInstagram = pv.videoUrl.includes('instagram.com');
+                    return (
+                      <Box key={idx} className="flex items-center gap-3 rounded-2xl border border-neutral-gray/20 px-4 py-3">
+                        <span className={`flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${isInstagram ? 'bg-purple-100 text-purple-700' : 'bg-red-100 text-red-700'}`}>
+                          {isInstagram ? 'Instagram' : 'YouTube'}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          {pv.videoTitle ? (
+                            <p className="truncate text-sm font-medium">{pv.videoTitle}</p>
+                          ) : null}
+                          <p className="truncate text-xs text-neutral-dark/50">{pv.videoUrl}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => onRemovePendingVideo(idx)}
+                          className="flex-shrink-0 text-xs font-semibold text-red-500 hover:text-red-700"
+                        >
+                          Quitar
+                        </button>
+                      </Box>
+                    );
+                  })}
+                </Box>
+              ) : (
+                <Typography className="text-sm text-neutral-dark/50">Sin videos agregados aún.</Typography>
+              )
             )}
           </Box>
         </FeaturePanel>
