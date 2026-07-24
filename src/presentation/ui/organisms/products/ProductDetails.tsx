@@ -292,9 +292,9 @@ const ProductDetails = () => {
         </div>
       </div>
 
-      {(product.store?.whatsappNumber || product.store?.phone) ? (
+      {(product.store?.whatsappNumber || product.store?.phone || import.meta.env.VITE_WHATSAPP_SUPPORT) ? (
         <WhatsAppFloat
-          phoneNumber={(product.store.whatsappNumber || product.store.phone)!}
+          phoneNumber={(product.store?.whatsappNumber || product.store?.phone || import.meta.env.VITE_WHATSAPP_SUPPORT)!}
           message={`Hola, estoy interesado en el producto "${product.name}"`}
         />
       ) : null}
