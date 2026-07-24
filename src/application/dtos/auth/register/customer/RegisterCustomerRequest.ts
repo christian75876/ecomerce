@@ -2,7 +2,7 @@ export interface IRegisterCustomerRequest {
   name: string;
   email: string;
   password: string;
-  phone?: string;
+  phone: string;
   inviteToken?: string;
 }
 

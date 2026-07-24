@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
-import PhoneInputCO from '@/presentation/ui/molecules/common/PhoneInputCO';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import Icon from '@/presentation/ui/atoms/icon/SimpleIcon';
 import { useCart } from '@/shared/hooks/useCart';
@@ -19,12 +18,6 @@ const CartPage = () => {
   const { items, total, updateQuantity, removeItem, clear } = useCart();
   const authenticated = isAuthenticated();
   const sessionUser = getAuthenticatedUser();
-  const [customer, setCustomer] = useState({
-    firstName: sessionUser?.customer?.firstName ?? '',
-    lastName: sessionUser?.customer?.lastName ?? '',
-    email: sessionUser?.email ?? '',
-    phone: sessionUser?.customer?.phone ?? '',
-  });
   const [deliveryMethod, setDeliveryMethod] = useState<'DELIVERY' | 'PICKUP'>('PICKUP');
   const [mapAddress, setMapAddress] = useState<MapAddress | null>(null);
   const [deliveryNotes, setDeliveryNotes] = useState('');
@@ -63,8 +56,8 @@ const CartPage = () => {
       setError('Agrega productos al carrito antes de continuar');
       return;
     }
-    if (!customer.firstName.trim() || !customer.lastName.trim() || !customer.email.trim()) {
-      setError('Nombre, apellido y correo son obligatorios');
+    if (!sessionUser?.email) {
+      setError('Tu sesión expiró. Vuelve a iniciar sesión.');
       return;
     }
     if (deliveryMethod === 'DELIVERY' && !mapAddress) {
@@ -79,10 +72,10 @@ const CartPage = () => {
     try {
       await OrdersRepository.createOrder({
         customer: {
-          firstName: customer.firstName.trim(),
-          lastName: customer.lastName.trim(),
-          email: customer.email.trim(),
-          phone: customer.phone.trim() || undefined,
+          firstName: sessionUser.customer?.firstName ?? sessionUser.email.split('@')[0],
+          lastName: sessionUser.customer?.lastName ?? '',
+          email: sessionUser.email,
+          phone: sessionUser.customer?.phone ?? undefined,
         },
         items: items.map((item) => ({
           productId: item.productId,
@@ -99,7 +92,6 @@ const CartPage = () => {
       });
 
       clear();
-      setCustomer({ firstName: '', lastName: '', email: '', phone: '' });
       setMapAddress(null);
       setDeliveryNotes('');
       setCouponInput('');
@@ -254,43 +246,9 @@ const CartPage = () => {
             </Box>
           ) : null}
 
-          {/* Customer form, delivery and summary — only when authenticated */}
+          {/* Delivery and summary — only when authenticated */}
           {authenticated ? (
           <>
-          <Box className='surface-elevated rounded-2xl p-4 sm:rounded-[1.75rem] sm:p-6'>
-            <Box className='mb-4 flex items-center gap-2 sm:mb-5'>
-              <Icon name='bx-user-circle' className='text-xl text-primary' />
-              <Typography variant='h2' className='text-base font-semibold sm:text-lg'>
-                Datos del cliente
-              </Typography>
-            </Box>
-            <Box className='space-y-3'>
-              <Box className='grid grid-cols-2 gap-3'>
-                <Input
-                  placeholder='Nombre'
-                  value={customer.firstName}
-                  onChange={(e) => setCustomer((c) => ({ ...c, firstName: e.target.value }))}
-                />
-                <Input
-                  placeholder='Apellido'
-                  value={customer.lastName}
-                  onChange={(e) => setCustomer((c) => ({ ...c, lastName: e.target.value }))}
-                />
-              </Box>
-              <Input
-                type='email'
-                placeholder='correo@ejemplo.com'
-                value={customer.email}
-                onChange={(e) => setCustomer((c) => ({ ...c, email: e.target.value }))}
-              />
-              <PhoneInputCO
-                value={customer.phone}
-                onChange={(v) => setCustomer((c) => ({ ...c, phone: v }))}
-                placeholder='300 123 4567 (opcional)'
-              />
-            </Box>
-          </Box>
-
           {/* Delivery method */}
           <Box className='surface-elevated rounded-2xl p-4 sm:rounded-[1.75rem] sm:p-6'>
             <Box className='mb-4 flex items-center gap-2'>

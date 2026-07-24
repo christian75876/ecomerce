@@ -53,7 +53,7 @@ const CustomerRegisterForm = ({
         label='Teléfono'
         control={control}
         type='text'
-        placeholder='Opcional'
+        placeholder='300 123 4567'
         showLabel
         boxClassName='w-full'
       />

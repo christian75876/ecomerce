@@ -19,6 +19,7 @@ export const registerCustomerSchema = yup.object({
     .oneOf([yup.ref('password')], 'Las contraseñas no coinciden'),
   phone: yup
     .string()
-    .optional()
+    .required('El teléfono es obligatorio')
+    .min(7, 'El teléfono es demasiado corto')
     .max(30, 'El teléfono es demasiado largo'),
 });
