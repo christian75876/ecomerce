@@ -36,7 +36,7 @@ export class OrdersRepository {
 
   static async createOrder(payload: ICreateOrderRequest): Promise<IOrderResp> {
     return ErrorHandler.handleApiErrors(() =>
-      publicClientHTTP.post<IOrderResp>('/orders', payload),
+      authenticatedClientHTTP.post<IOrderResp>('/orders', payload),
     );
   }
 
