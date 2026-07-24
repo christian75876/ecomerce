@@ -6,12 +6,7 @@ import Box from '@atoms/box/SimpleBox';
 import MobileHeaderLayout from '@presentation/ui/layouts/navigation/MobileHeaderLayout';
 import DesktopHeaderLayout from '@presentation/ui/layouts/navigation/DesktopHeaderLayout';
 import AdminSidebar from '@presentation/ui/layouts/navigation/AdminSidebar';
-
-const ContentFallback = () => (
-  <div className='flex min-h-[50vh] items-center justify-center'>
-    <div className='h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent' />
-  </div>
-);
+import RouteFallback from '@organisms/navigation/RouteFallback';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -34,7 +29,7 @@ const DashboardLayout = ({
       >
         <AdminSidebar />
         <main className='ml-60 flex-1 min-w-0 px-6 py-7 lg:px-8 lg:py-8'>
-          <Suspense fallback={<ContentFallback />}>{children}</Suspense>
+          <Suspense fallback={<RouteFallback />}>{children}</Suspense>
         </main>
       </div>
     );
@@ -50,7 +45,7 @@ const DashboardLayout = ({
       <main
         className={`mx-auto flex-1 w-full max-w-[1440px] px-4 sm:px-6 lg:px-8 ${isMobile ? 'py-6 pb-24' : 'pt-20 pb-10'}`}
       >
-        <Suspense fallback={<ContentFallback />}>{children}</Suspense>
+        <Suspense fallback={<RouteFallback />}>{children}</Suspense>
       </main>
     </Box>
   );
