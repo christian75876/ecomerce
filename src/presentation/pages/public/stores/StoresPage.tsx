@@ -33,31 +33,44 @@ const TABS: { value: StoreTab; label: string; icon: string }[] = [
 const StoresPage = () => {
   const { stores, loading, error } = usePublicStores();
   const [activeTab, setActiveTab] = useState<StoreTab>('all');
+  const [search, setSearch] = useState('');
 
   const hasRestaurants = stores.some((s) => s.storeType === 'RESTAURANT');
   const hasRegularStores = stores.some((s) => s.storeType === 'STORE');
   const showTabs = hasRestaurants && hasRegularStores;
 
-  const visibleStores = activeTab === 'all'
-    ? stores
-    : stores.filter((s) => s.storeType === activeTab);
-
-  const tabLabel = activeTab === 'RESTAURANT' ? 'restaurantes' : activeTab === 'STORE' ? 'tiendas' : 'comercios';
+  const visibleStores = stores
+    .filter((s) => activeTab === 'all' || s.storeType === activeTab)
+    .filter((s) => !search || s.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div className='space-y-6 animate-fade-up'>
       {/* Header */}
-      <div className='gradient-hero relative overflow-hidden rounded-3xl px-6 py-10 text-white shadow-lg sm:px-10'>
-        <div className='pointer-events-none absolute inset-0 opacity-10' aria-hidden='true' />
-        <p className='text-xs font-semibold uppercase tracking-[0.2em] text-white/60'>Marketplace</p>
-        <h1 className='mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl'>
-          {activeTab === 'RESTAURANT' ? 'Restaurantes' : 'Tiendas activas'}
-        </h1>
-        <p className='mt-2 text-sm text-white/70'>
-          {loading
-            ? 'Cargando...'
-            : `${visibleStores.length} ${tabLabel} disponibles`}
-        </p>
+      <div className='gradient-hero relative overflow-hidden rounded-3xl px-6 py-6 text-white shadow-lg sm:px-10'>
+        <div className='pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/5' aria-hidden='true' />
+        <div className='pointer-events-none absolute -bottom-20 left-8 h-48 w-48 rounded-full bg-white/5' aria-hidden='true' />
+        <div className='relative z-10 mx-auto max-w-2xl text-center'>
+          <p className='mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/60'>Marketplace</p>
+          <h1 className='mb-3 text-2xl font-extrabold tracking-tight'>
+            {activeTab === 'RESTAURANT' ? 'Restaurantes' : 'Tiendas disponibles'}
+          </h1>
+          <div className='flex items-center gap-2 rounded-2xl bg-white/15 px-4 py-2.5 ring-1 ring-white/20 backdrop-blur-sm transition-all focus-within:bg-white/20 focus-within:ring-white/40'>
+            <i className='bx bx-search text-xl text-white/70' aria-hidden='true' />
+            <input
+              type='search'
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder='Buscar tiendas...'
+              className='flex-1 bg-transparent text-sm font-medium text-white placeholder:text-white/50 focus:outline-none'
+              aria-label='Buscar tiendas'
+            />
+            {search ? (
+              <button type='button' onClick={() => setSearch('')} className='text-white/60 hover:text-white' aria-label='Limpiar'>
+                <i className='bx bx-x text-lg' aria-hidden='true' />
+              </button>
+            ) : null}
+          </div>
+        </div>
       </div>
 
       {/* Tabs */}

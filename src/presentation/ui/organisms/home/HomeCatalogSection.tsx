@@ -1,5 +1,4 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { ICategory } from '@/application/dtos/categories/response/CategoryResponse';
 import { IProduct } from '@/application/dtos/products/response/ProductResponse';
 import ProductBody from '@/presentation/ui/organisms/products/ProductBody';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
@@ -16,7 +15,6 @@ const SORT_OPTIONS: { value: SortOption; label: string; icon: string }[] = [
 
 interface HomeCatalogSectionProps {
   products: IProduct[];
-  categories: ICategory[];
   search: string;
   selectedCategoryId: string;
   loading: boolean;
@@ -28,7 +26,6 @@ interface HomeCatalogSectionProps {
 
 const HomeCatalogSection = ({
   products,
-  categories,
   search,
   selectedCategoryId,
   loading,
@@ -154,7 +151,7 @@ const HomeCatalogSection = ({
   return (
     <div className='space-y-5'>
       {/* ── Hero search banner ── */}
-      <div className='gradient-hero relative overflow-hidden rounded-3xl px-6 py-4 text-white shadow-lg sm:px-10'>
+      <div className='gradient-hero relative overflow-hidden rounded-3xl px-6 py-6 text-white shadow-lg sm:px-10'>
         <div
           className='pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/5'
           aria-hidden='true'
@@ -165,22 +162,11 @@ const HomeCatalogSection = ({
         />
 
         <div className='relative z-10 mx-auto max-w-2xl text-center'>
-          <p className='mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/60'>
-            Marketplace
-          </p>
-          <h1 className='text-3xl font-extrabold tracking-tight sm:text-4xl'>
+          <p className='mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/60'>Marketplace</p>
+          <h1 className='mb-3 text-2xl font-extrabold tracking-tight'>
             Encuentra lo que necesitas
           </h1>
-          <p className='mt-2 text-sm text-white/70'>
-            {loading
-              ? 'Cargando...'
-              : processedProducts.length !== products.length
-                ? `${processedProducts.length} de ${products.length} producto${products.length === 1 ? '' : 's'}`
-                : `${products.length} producto${products.length === 1 ? '' : 's'} disponibles`}
-          </p>
-
-          {/* Search input */}
-          <div className='mt-6 flex items-center gap-2 rounded-2xl bg-white/15 px-4 py-2.5 ring-1 ring-white/20 backdrop-blur-sm transition-all focus-within:bg-white/20 focus-within:ring-white/40'>
+          <div className='flex items-center gap-2 rounded-2xl bg-white/15 px-4 py-2.5 ring-1 ring-white/20 backdrop-blur-sm transition-all focus-within:bg-white/20 focus-within:ring-white/40'>
             <i
               className='bx bx-search text-xl text-white/70'
               aria-hidden='true'
@@ -207,41 +193,9 @@ const HomeCatalogSection = ({
         </div>
       </div>
 
-      {/* ── Category pills + controls ── */}
+      {/* ── Controls ── */}
       <div className='flex flex-col gap-3'>
-        {/* Row 1: categories + sort + filters toggle */}
-        <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3'>
-          {/* Category pills */}
-          <div className='flex flex-1 gap-2 overflow-x-auto pb-1 scrollbar-hide'>
-            <button
-              type='button'
-              onClick={() => handleCategoryChange('')}
-              className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition-all duration-150 ${
-                selectedCategoryId === ''
-                  ? 'border-primary bg-primary text-white shadow-sm'
-                  : 'border-slate-200 bg-white text-slate-600 hover:border-primary/40 hover:text-primary'
-              }`}
-            >
-              Todo
-            </button>
-            {categories.map(cat => (
-              <button
-                key={cat.id}
-                type='button'
-                onClick={() => handleCategoryChange(cat.id)}
-                className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition-all duration-150 ${
-                  selectedCategoryId === cat.id
-                    ? 'border-primary bg-primary text-white shadow-sm'
-                    : 'border-slate-200 bg-white text-slate-600 hover:border-primary/40 hover:text-primary'
-                }`}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
-
-          {/* Right controls */}
-          <div className='flex shrink-0 items-center gap-2 self-end sm:self-auto'>
+        <div className='flex items-center gap-2'>
             {/* Filters toggle */}
             <button
               type='button'
@@ -319,7 +273,6 @@ const HomeCatalogSection = ({
               ) : null}
             </div>
           </div>
-        </div>
 
         {/* Row 2: collapsible filter panel */}
         {filtersOpen ? (

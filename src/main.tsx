@@ -12,12 +12,12 @@ import 'boxicons/css/boxicons.min.css';
 import { registerSW } from 'virtual:pwa-register';
 
 registerSW({
-  onNeedRefresh() {
-    console.log('Nueva versión disponible. Recarga para actualizar.');
+  immediate: true,
+  onNeedRefresh() {},
+  onOfflineReady() {},
+  onRegisterError(e) {
+    console.error('[SW] Error al registrar:', e);
   },
-  onOfflineReady() {
-    console.log('La aplicación está lista para usarse sin conexión.');
-  }
 });
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

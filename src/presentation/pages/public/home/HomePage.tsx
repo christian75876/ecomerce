@@ -11,7 +11,6 @@ import HomeProductRail from '@/presentation/ui/organisms/home/HomeProductRail';
 export const HomePage = () => {
   const {
     products,
-    categories,
     search,
     selectedCategoryId,
     setSearch,
@@ -48,7 +47,7 @@ export const HomePage = () => {
   return (
     <Box className='space-y-8'>
       <Helmet>
-        <title>Marketplace — Encuentra lo que necesitas</title>
+        <title>Marketplace</title>
         <meta name='description' content='Explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.' />
         <meta property='og:title' content='Marketplace' />
         <meta property='og:description' content='Explora cientos de productos de tiendas locales.' />
@@ -56,7 +55,6 @@ export const HomePage = () => {
       </Helmet>
       <HomeCatalogSection
         products={products}
-        categories={categories}
         search={search}
         selectedCategoryId={selectedCategoryId}
         loading={loading}

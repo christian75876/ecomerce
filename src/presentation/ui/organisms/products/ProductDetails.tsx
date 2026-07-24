@@ -152,6 +152,25 @@ const ProductDetails = () => {
               </button>
             </Box>
           </Box>
+
+          {/* Add to cart — inline below share */}
+          <Box className='mt-4'>
+            <button
+              type='button'
+              onClick={handleAddToCart}
+              disabled={isOutOfStock}
+              className={`flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-3 text-sm font-bold text-white shadow-sm transition active:scale-95 ${
+                isOutOfStock
+                  ? 'cursor-not-allowed bg-slate-300'
+                  : added
+                    ? 'bg-emerald-500'
+                    : 'bg-primary hover:opacity-90'
+              }`}
+            >
+              <i className={`bx text-base ${added ? 'bx-check' : isOutOfStock ? 'bx-x-circle' : 'bx-cart-add'}`} aria-hidden='true' />
+              {isOutOfStock ? 'Sin stock' : added ? '¡Agregado!' : 'Agregar al carrito'}
+            </button>
+          </Box>
         </Box>
 
         {/* ── 2. Videos ── */}
