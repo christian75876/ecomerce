@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { StoresRepository } from '@/infrastructure/repositories/api/stores/StoresRepository';
 import { createPortal } from 'react-dom';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
 import { StoreFormState } from '@/application/useCases/stores/useStoresManagement';
@@ -186,13 +187,13 @@ const fontClass = (style: StoreFormState['fontStyle']) => {
   return 'font-sans';
 };
 
-const ImageUrlInput = ({
+const ImagePickerInput = ({
   id,
   label,
   value,
   onChange,
   disabled,
-  placeholder = 'https://...',
+  storeId,
   variant = 'logo',
 }: {
   id: string;
@@ -200,58 +201,108 @@ const ImageUrlInput = ({
   value: string;
   onChange: (v: string) => void;
   disabled?: boolean;
-  placeholder?: string;
+  storeId: string | null;
   variant?: 'logo' | 'banner';
 }) => {
   const [imgError, setImgError] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setImgError(false);
+    setLocalPreview(null);
     onChange(e.target.value);
   };
 
-  const showPreview = Boolean(value) && !imgError;
-  const showError = Boolean(value) && imgError;
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !storeId) return;
+    setUploadError(null);
+
+    const reader = new FileReader();
+    reader.onloadend = () => setLocalPreview(reader.result as string);
+    reader.readAsDataURL(file);
+
+    setUploading(true);
+    try {
+      const res = variant === 'logo'
+        ? await StoresRepository.uploadLogo(storeId, file)
+        : await StoresRepository.uploadBanner(storeId, file);
+      const url = (res as unknown as { data?: { logoUrl?: string; bannerUrl?: string } }).data;
+      const newUrl = variant === 'logo' ? url?.logoUrl : url?.bannerUrl;
+      if (newUrl) { onChange(newUrl); setLocalPreview(null); }
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Error al subir imagen');
+      setLocalPreview(null);
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
+
+  const preview = localPreview || (value && !imgError ? value : null);
 
   return (
     <div className='space-y-2'>
       <label htmlFor={id} className='block text-sm font-medium text-neutral-dark/70'>{label}</label>
-      <input
-        id={id}
-        type='text'
-        value={value}
-        onChange={handleChange}
-        disabled={disabled}
-        placeholder={placeholder}
-        className='w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50'
-      />
-      {showPreview ? (
+
+      <div className='flex gap-2'>
+        <input
+          id={id}
+          type='text'
+          value={value}
+          onChange={handleUrlChange}
+          disabled={disabled || uploading}
+          placeholder='https://... o sube un archivo →'
+          className='min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50'
+        />
+        <button
+          type='button'
+          disabled={disabled || uploading || !storeId}
+          onClick={() => fileRef.current?.click()}
+          title={!storeId ? 'Guarda la tienda primero' : 'Subir imagen desde tu dispositivo'}
+          className='flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-neutral-dark/70 transition hover:border-primary/40 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40'
+        >
+          {uploading
+            ? <i className='bx bx-loader-alt animate-spin text-base' />
+            : <i className='bx bx-upload text-base' />}
+          {uploading ? 'Subiendo...' : 'Subir'}
+        </button>
+        <input
+          ref={fileRef}
+          type='file'
+          accept='image/jpeg,image/png,image/webp'
+          className='hidden'
+          onChange={(e) => void handleFileChange(e)}
+        />
+      </div>
+
+      {uploadError ? (
+        <div className='flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-500'>
+          <i className='bx bx-error-circle text-base' /> {uploadError}
+        </div>
+      ) : null}
+
+      {preview ? (
         variant === 'banner' ? (
           <div className='relative overflow-hidden rounded-xl border border-neutral-gray/20 shadow-sm' style={{ aspectRatio: '4/1' }}>
-            <img
-              src={value}
-              alt={label}
-              onError={() => setImgError(true)}
-              className='h-full w-full object-cover'
-            />
+            {uploading ? <div className='absolute inset-0 flex items-center justify-center bg-white/70'><i className='bx bx-loader-alt animate-spin text-2xl text-primary' /></div> : null}
+            <img src={preview} alt={label} onError={() => setImgError(true)} className='h-full w-full object-cover' />
           </div>
         ) : (
           <div className='flex items-center gap-3'>
             <div className='relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border border-neutral-gray/20 shadow-sm'>
-              <img
-                src={value}
-                alt={label}
-                onError={() => setImgError(true)}
-                className='h-full w-full object-cover'
-              />
+              {uploading ? <div className='absolute inset-0 flex items-center justify-center bg-white/70'><i className='bx bx-loader-alt animate-spin text-lg text-primary' /></div> : null}
+              <img src={preview} alt={label} onError={() => setImgError(true)} className='h-full w-full object-cover' />
             </div>
-            <p className='text-xs text-neutral-dark/45'>Vista previa del logo</p>
+            <p className='text-xs text-neutral-dark/45'>Vista previa</p>
           </div>
         )
-      ) : showError ? (
+      ) : value && imgError ? (
         <div className='flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-500'>
-          <i className='bx bx-error-circle text-base' aria-hidden='true' />
-          No se pudo cargar la imagen — verifica la URL
+          <i className='bx bx-error-circle text-base' /> No se pudo cargar la imagen — verifica la URL
         </div>
       ) : null}
     </div>
@@ -605,23 +656,25 @@ export const StoresManagementView = ({
                 </Box>
 
                 <Box>
-                  <ImageUrlInput
+                  <ImagePickerInput
                     id='store-logo'
-                    label='Logo URL'
+                    label='Logo'
                     value={form.logoUrl}
                     onChange={(v) => onFormChange('logoUrl', v)}
                     disabled={submitting}
+                    storeId={editingId}
                     variant='logo'
                   />
                 </Box>
 
                 <Box>
-                  <ImageUrlInput
+                  <ImagePickerInput
                     id='store-banner'
-                    label='Banner URL'
+                    label='Banner'
                     value={form.bannerUrl}
                     onChange={(v) => onFormChange('bannerUrl', v)}
                     disabled={submitting}
+                    storeId={editingId}
                     variant='banner'
                   />
                 </Box>

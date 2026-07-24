@@ -1,5 +1,6 @@
 import {
   authenticatedClientHTTP,
+  multiPartClientHTTP,
   publicClientHTTP,
 } from '@/infrastructure/repositories/api/ClientHTTP';
 import { ErrorHandler } from '@/infrastructure/repositories/api/errors/ErrorHandler';
@@ -67,6 +68,22 @@ export class StoresRepository {
   ): Promise<IStoreResp> {
     return ErrorHandler.handleApiErrors(() =>
       authenticatedClientHTTP.patch<IStoreResp>(`/stores/${id}`, payload),
+    );
+  }
+
+  static async uploadLogo(id: string, file: File): Promise<IStoreResp> {
+    const formData = new FormData();
+    formData.append('image', file);
+    return ErrorHandler.handleApiErrors(() =>
+      multiPartClientHTTP.post<IStoreResp>(`/stores/${id}/logo`, formData),
+    );
+  }
+
+  static async uploadBanner(id: string, file: File): Promise<IStoreResp> {
+    const formData = new FormData();
+    formData.append('image', file);
+    return ErrorHandler.handleApiErrors(() =>
+      multiPartClientHTTP.post<IStoreResp>(`/stores/${id}/banner`, formData),
     );
   }
 }

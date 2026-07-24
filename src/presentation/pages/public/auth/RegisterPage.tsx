@@ -17,6 +17,8 @@ const RegisterPage = () => {
   const [tokenError, setTokenError] = useState<string | null>(null);
 
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirm: '' });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -267,27 +269,47 @@ const RegisterPage = () => {
 
           <div>
             <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Contraseña *</label>
-            <input
-              required
-              type='password'
-              minLength={6}
-              placeholder='Mínimo 6 caracteres'
-              value={form.password}
-              onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-              className='w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10'
-            />
+            <div className='relative'>
+              <input
+                required
+                type={showPassword ? 'text' : 'password'}
+                minLength={6}
+                placeholder='Mínimo 6 caracteres'
+                value={form.password}
+                onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+                className='w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 pr-11 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10'
+              />
+              <button
+                type='button'
+                onClick={() => setShowPassword((v) => !v)}
+                className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600'
+                tabIndex={-1}
+              >
+                <i className={`bx ${showPassword ? 'bx-hide' : 'bx-show'} text-lg`} aria-hidden='true' />
+              </button>
+            </div>
           </div>
 
           <div>
             <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Confirmar contraseña *</label>
-            <input
-              required
-              type='password'
-              placeholder='Repite tu contraseña'
-              value={form.confirm}
-              onChange={(e) => setForm((f) => ({ ...f, confirm: e.target.value }))}
-              className='w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10'
-            />
+            <div className='relative'>
+              <input
+                required
+                type={showConfirm ? 'text' : 'password'}
+                placeholder='Repite tu contraseña'
+                value={form.confirm}
+                onChange={(e) => setForm((f) => ({ ...f, confirm: e.target.value }))}
+                className='w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 pr-11 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10'
+              />
+              <button
+                type='button'
+                onClick={() => setShowConfirm((v) => !v)}
+                className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600'
+                tabIndex={-1}
+              >
+                <i className={`bx ${showConfirm ? 'bx-hide' : 'bx-show'} text-lg`} aria-hidden='true' />
+              </button>
+            </div>
           </div>
 
           <button
