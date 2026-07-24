@@ -84,7 +84,6 @@ export default defineConfig({
         start_url: '/',
         scope: '/',
         display: 'standalone',
-        display_override: ['window-controls-overlay', 'standalone'],
         orientation: 'portrait',
         theme_color: '#f97316',
         background_color: '#0f172a',
@@ -120,12 +119,12 @@ export default defineConfig({
         shortcuts: [
           {
             name: 'Ver tiendas',
-            url: '/tiendas',
+            url: '/stores',
             description: 'Explorar todas las tiendas y restaurantes',
           },
           {
             name: 'Mi carrito',
-            url: '/carrito',
+            url: '/cart',
             description: 'Ver artículos en el carrito',
           },
         ],
