@@ -20,10 +20,10 @@ const CartPage = () => {
   const authenticated = isAuthenticated();
   const sessionUser = getAuthenticatedUser();
   const [customer, setCustomer] = useState({
-    firstName: '',
-    lastName: '',
+    firstName: sessionUser?.customer?.firstName ?? '',
+    lastName: sessionUser?.customer?.lastName ?? '',
     email: sessionUser?.email ?? '',
-    phone: '',
+    phone: sessionUser?.customer?.phone ?? '',
   });
   const [deliveryMethod, setDeliveryMethod] = useState<'DELIVERY' | 'PICKUP'>('PICKUP');
   const [mapAddress, setMapAddress] = useState<MapAddress | null>(null);
