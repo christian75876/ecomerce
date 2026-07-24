@@ -292,9 +292,9 @@ const ProductDetails = () => {
         </div>
       </div>
 
-      {product.store?.whatsappNumber ? (
+      {(product.store?.whatsappNumber || product.store?.phone) ? (
         <WhatsAppFloat
-          phoneNumber={product.store.whatsappNumber}
+          phoneNumber={(product.store.whatsappNumber || product.store.phone)!}
           message={`Hola, estoy interesado en el producto "${product.name}"`}
         />
       ) : null}
