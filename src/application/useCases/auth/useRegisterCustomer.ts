@@ -1,15 +1,13 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { IRegisterCustomerForm } from '@/application/dtos/auth/register/customer/RegisterCustomerRequest';
 import { AuthRepository } from '@/infrastructure/repositories/api/auth/AuthRepository';
 import { authSession } from '@/shared/utils/authSession';
-import { ROUTES } from '@/shared/constants/routes';
 import { SnackbarUtilities } from '@/shared/utils/SnackbarManager';
 
 export const useRegisterCustomer = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
+  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
 
   const handleRegisterCustomer = async ({
     password_confirm: _passwordConfirm,
@@ -20,11 +18,19 @@ export const useRegisterCustomer = () => {
 
     try {
       const response = await AuthRepository.registerCustomer(payload);
-      authSession.setToken(response.data.token);
-      authSession.setUser(response.data.user);
-      SnackbarUtilities.success(response.data.message, 'top', 'center');
-      navigate(ROUTES.PUBLIC.HOME);
-      return response;
+      const data = response.data;
+
+      if (data.token && data.user) {
+        // Invited seller — auto-login
+        authSession.setToken(data.token);
+        authSession.setUser(data.user);
+        SnackbarUtilities.success(data.message, 'top', 'center');
+        return { autoLogin: true };
+      }
+
+      // Regular buyer — email verification required
+      setRegisteredEmail(payload.email);
+      return { autoLogin: false, message: data.message };
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'No fue posible registrar la cuenta',
@@ -39,5 +45,6 @@ export const useRegisterCustomer = () => {
     handleRegisterCustomer,
     isLoading,
     error,
+    registeredEmail,
   };
 };

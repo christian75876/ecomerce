@@ -3,9 +3,10 @@ import { IAuthenticatedUser } from '@/application/dtos/auth/login/response/Login
 
 export type IRegisterCustomerResp = IApiResponse<{
   message: string;
-  token: string;
-  user: IAuthenticatedUser;
-  customer: {
+  email_delivery?: 'sent' | 'failed';
+  token?: string;
+  user?: IAuthenticatedUser;
+  customer?: {
     id: string;
     firstName: string;
     lastName: string;

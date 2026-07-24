@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { useLogin } from '@/application/useCases/auth/useLogin';
 import { useRegisterCustomer } from '@/application/useCases/auth/useRegisterCustomer';
@@ -19,13 +19,25 @@ const FEATURES = [
 ];
 
 const LoginPage = () => {
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const navigate = useNavigate();
+  const [mode, setMode] = useState<'login' | 'register' | 'verify'>('login');
   const { handleLogin, isloading, error } = useLogin();
   const {
-    handleRegisterCustomer,
+    handleRegisterCustomer: _handleRegisterCustomer,
     isLoading: isCustomerRegisterLoading,
     error: customerRegisterError,
+    registeredEmail,
   } = useRegisterCustomer();
+
+  const handleRegisterCustomer = async (form: Parameters<typeof _handleRegisterCustomer>[0]) => {
+    const result = await _handleRegisterCustomer(form);
+    if (!result) return;
+    if (result.autoLogin) {
+      navigate(ROUTES.PUBLIC.HOME);
+    } else {
+      setMode('verify');
+    }
+  };
   const {
     control,
     handleSubmit,
@@ -106,32 +118,66 @@ const LoginPage = () => {
                 </Link>
               </div>
 
-              {/* Mode toggle */}
-              <div className='mb-8 inline-flex rounded-full border border-slate-200 bg-slate-50 p-1'>
-                {(['login', 'register'] as const).map((m) => (
-                  <button
-                    key={m}
-                    type='button'
-                    onClick={() => setMode(m)}
-                    className={`rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200 ${
-                      mode === m
-                        ? 'bg-white text-slate-900 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-600'
-                    }`}
-                  >
-                    {m === 'login' ? 'Ingresar' : 'Registrarse'}
-                  </button>
-                ))}
-              </div>
+              {/* Mode toggle — hidden on verify screen */}
+              {mode !== 'verify' ? (
+                <div className='mb-8 inline-flex rounded-full border border-slate-200 bg-slate-50 p-1'>
+                  {(['login', 'register'] as const).map((m) => (
+                    <button
+                      key={m}
+                      type='button'
+                      onClick={() => setMode(m)}
+                      className={`rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200 ${
+                        mode === m
+                          ? 'bg-white text-slate-900 shadow-sm'
+                          : 'text-slate-400 hover:text-slate-600'
+                      }`}
+                    >
+                      {m === 'login' ? 'Ingresar' : 'Registrarse'}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
 
               <h1 className='text-2xl font-extrabold tracking-tight text-slate-900'>
-                {mode === 'login' ? 'Bienvenido de nuevo' : 'Crea tu cuenta'}
+                {mode === 'login' ? 'Bienvenido de nuevo' : mode === 'register' ? 'Crea tu cuenta' : '¡Revisa tu correo!'}
               </h1>
               <p className='mt-1.5 text-sm text-slate-500'>
                 {mode === 'login'
                   ? 'Compradores y vendedores entran desde aquí.'
-                  : 'Regístrate como comprador. Para vender usa el registro de vendedor.'}
+                  : mode === 'register'
+                  ? 'Regístrate como comprador. Para vender usa el registro de vendedor.'
+                  : 'Te enviamos un enlace de verificación.'}
               </p>
+
+              {/* Verify email panel */}
+              {mode === 'verify' ? (
+                <div className='mt-7 space-y-5'>
+                  <div className='flex flex-col items-center gap-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-8 text-center'>
+                    <div className='flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100'>
+                      <i className='bx bx-mail-send text-4xl text-emerald-600' aria-hidden='true' />
+                    </div>
+                    <div>
+                      <p className='font-bold text-emerald-800'>Correo enviado</p>
+                      {registeredEmail ? (
+                        <p className='mt-1 text-sm text-emerald-700'>
+                          Hemos enviado un enlace de verificación a{' '}
+                          <strong>{registeredEmail}</strong>
+                        </p>
+                      ) : null}
+                      <p className='mt-2 text-xs text-emerald-600'>
+                        Haz clic en el enlace del correo para activar tu cuenta. Si no lo ves, revisa la carpeta de Spam.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type='button'
+                    onClick={() => setMode('login')}
+                    className='w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-primary/30 hover:text-primary'
+                  >
+                    Volver a iniciar sesión
+                  </button>
+                </div>
+              ) : null}
 
               {/* Login form */}
               {mode === 'login' ? (
