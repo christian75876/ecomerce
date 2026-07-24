@@ -57,7 +57,7 @@ const StoresPage = () => {
           <div className='flex items-center gap-2 rounded-2xl bg-white/15 px-4 py-2.5 ring-1 ring-white/20 backdrop-blur-sm transition-all focus-within:bg-white/20 focus-within:ring-white/40'>
             <i className='bx bx-search text-xl text-white/70' aria-hidden='true' />
             <input
-              type='search'
+              type='text'
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder='Buscar tiendas...'

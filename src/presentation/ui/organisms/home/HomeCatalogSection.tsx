@@ -172,7 +172,7 @@ const HomeCatalogSection = ({
               aria-hidden='true'
             />
             <input
-              type='search'
+              type='text'
               value={search}
               onChange={e => onSearchChange(e.target.value)}
               placeholder='Buscar productos...'
