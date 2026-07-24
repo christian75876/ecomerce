@@ -123,7 +123,7 @@ const StoresPage = () => {
         <div className='flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white py-16 text-center'>
           <i className='bx bx-store mb-3 text-5xl text-slate-300' aria-hidden='true' />
           <p className='font-semibold text-slate-500'>
-            {activeTab === 'all' ? 'Aún no hay tiendas registradas' : `No hay ${tabLabel} registrados`}
+            {activeTab === 'all' ? 'Aún no hay tiendas registradas' : activeTab === 'RESTAURANT' ? 'No hay restaurantes registrados' : 'No hay tiendas registradas'}
           </p>
         </div>
       ) : null}
