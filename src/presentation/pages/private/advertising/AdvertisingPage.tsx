@@ -5,6 +5,7 @@ import type { IStoreWithAdStatus } from '@/application/dtos/advertising/Advertis
 import type { IRegisterAdvertisementDto } from '@/infrastructure/repositories/api/advertising/AdvertisingRepository';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import StorePaymentHistoryPanel from '@/presentation/ui/organisms/payments/StorePaymentHistoryPanel';
+import DateRangeFilter from '@/presentation/ui/molecules/common/DateRangeFilter';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -309,6 +310,8 @@ const AdvertisingPage = () => {
     setSearch,
     statusFilter,
     setStatusFilter,
+    dateRange,
+    applyDateRange,
     filteredStores,
     loadDashboard,
     registerAdvertisement,
@@ -363,6 +366,9 @@ const AdvertisingPage = () => {
         </div>
       ) : null}
 
+      {/* ── Date range filter ── */}
+      <DateRangeFilter value={dateRange} onChange={applyDateRange} />
+
       {/* ── Metric cards ── */}
       {loading ? (
         <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4'>
@@ -396,18 +402,45 @@ const AdvertisingPage = () => {
             icon='bx-alarm'
             accent='text-amber-500'
           />
-          <MetricCard
-            label='Este mes'
-            value={formatCurrencyCOP(revenue?.thisMonthCollected ?? 0)}
-            icon='bx-calendar-check'
-            accent='text-primary'
-          />
-          <MetricCard
-            label='Total recaudado'
-            value={formatCurrencyCOP(revenue?.totalCollected ?? 0)}
-            icon='bx-bar-chart-alt-2'
-            accent='text-primary'
-          />
+          {dateRange ? (
+            <>
+              <MetricCard
+                label={`Recaudado · ${dateRange.label}`}
+                value={formatCurrencyCOP(revenue?.periodCollected ?? 0)}
+                icon='bx-wallet'
+                accent='text-amber-600'
+              />
+              <MetricCard
+                label='Pagos en período'
+                value={String(revenue?.periodPaymentCount ?? 0)}
+                icon='bx-receipt'
+                accent='text-primary'
+              />
+              {(revenue?.periodPaymentCount ?? 0) > 0 ? (
+                <MetricCard
+                  label='Promedio por pago'
+                  value={formatCurrencyCOP(Math.round((revenue?.periodCollected ?? 0) / (revenue?.periodPaymentCount ?? 1)))}
+                  icon='bx-stats'
+                  accent='text-primary'
+                />
+              ) : null}
+            </>
+          ) : (
+            <>
+              <MetricCard
+                label='Este mes'
+                value={formatCurrencyCOP(revenue?.thisMonthCollected ?? 0)}
+                icon='bx-calendar-check'
+                accent='text-primary'
+              />
+              <MetricCard
+                label='Total recaudado'
+                value={formatCurrencyCOP(revenue?.totalCollected ?? 0)}
+                icon='bx-bar-chart-alt-2'
+                accent='text-primary'
+              />
+            </>
+          )}
         </div>
       )}
 

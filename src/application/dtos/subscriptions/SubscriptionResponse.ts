@@ -65,6 +65,8 @@ export interface ISubscriptionRevenue {
   lastMonthCollected: number;
   newSubscriptionsThisMonth: number;
   growthVsLastMonth: number;
+  periodCollected?: number;
+  periodPaymentCount?: number;
 }
 
 export interface IRevenueByMonth {

@@ -43,6 +43,8 @@ export interface IAdvertisingRevenue {
   totalCollected: number;
   thisMonthCollected: number;
   lastMonthCollected: number;
+  periodCollected?: number;
+  periodPaymentCount?: number;
 }
 
 export interface IAdvertisingDashboard {

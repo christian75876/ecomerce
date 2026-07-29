@@ -20,11 +20,12 @@ export const useSubscriptionsManagement = () => {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [dateRange, setDateRange] = useState<{ from: string; to: string } | null>(null);
 
-  const loadDashboard = async () => {
+  const loadDashboard = async (from?: string, to?: string) => {
     setError(null);
     try {
-      const res = await SubscriptionsRepository.getDashboard();
+      const res = await SubscriptionsRepository.getDashboard(from, to);
       setDashboard((res as unknown as { data: ISubscriptionAdminDashboard }).data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar el dashboard');
@@ -41,9 +42,9 @@ export const useSubscriptionsManagement = () => {
     }
   };
 
-  const load = async () => {
+  const load = async (from?: string, to?: string) => {
     setLoading(true);
-    await Promise.all([loadDashboard(), loadPlans()]);
+    await Promise.all([loadDashboard(from, to), loadPlans()]);
     setLoading(false);
   };
 
@@ -51,6 +52,11 @@ export const useSubscriptionsManagement = () => {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const applyDateRange = (range: { from: string; to: string } | null) => {
+    setDateRange(range);
+    void loadDashboard(range?.from, range?.to);
+  };
 
   const registerPayment = async (dto: IRegisterPaymentDto) => {
     setSubmitting(true);
@@ -129,6 +135,8 @@ export const useSubscriptionsManagement = () => {
     setSearch,
     statusFilter,
     setStatusFilter,
+    dateRange,
+    applyDateRange,
     filteredStores,
     loadDashboard,
     loadPlans,

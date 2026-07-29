@@ -9,6 +9,7 @@ import type { IRegisterPaymentDto } from '@/infrastructure/repositories/api/subs
 import { StoresRepository } from '@/infrastructure/repositories/api/stores/StoresRepository';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import StorePaymentHistoryPanel from '@/presentation/ui/organisms/payments/StorePaymentHistoryPanel';
+import DateRangeFilter from '@/presentation/ui/molecules/common/DateRangeFilter';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -512,6 +513,8 @@ const SubscriptionsPage = () => {
     setSearch,
     statusFilter,
     setStatusFilter,
+    dateRange,
+    applyDateRange,
     filteredStores,
     registerPayment,
     cancelSubscription,
@@ -586,6 +589,9 @@ const SubscriptionsPage = () => {
         </div>
       ) : null}
 
+      {/* ── Date range filter ── */}
+      <DateRangeFilter value={dateRange} onChange={applyDateRange} />
+
       {/* ── Metric cards ── */}
       {loading ? (
         <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4'>
@@ -619,18 +625,45 @@ const SubscriptionsPage = () => {
             icon='bx-alarm'
             accent='text-amber-500'
           />
-          <MetricCard
-            label='MRR'
-            value={formatCurrencyCOP(revenue?.mrr ?? 0)}
-            icon='bx-trending-up'
-            accent='text-primary'
-          />
-          <MetricCard
-            label='ARR'
-            value={formatCurrencyCOP(revenue?.arr ?? 0)}
-            icon='bx-bar-chart-alt-2'
-            accent='text-primary'
-          />
+          {dateRange ? (
+            <>
+              <MetricCard
+                label={`Recaudado · ${dateRange.label}`}
+                value={formatCurrencyCOP(revenue?.periodCollected ?? 0)}
+                icon='bx-wallet'
+                accent='text-emerald-600'
+              />
+              <MetricCard
+                label='Pagos en período'
+                value={String(revenue?.periodPaymentCount ?? 0)}
+                icon='bx-receipt'
+                accent='text-primary'
+              />
+              {(revenue?.periodPaymentCount ?? 0) > 0 ? (
+                <MetricCard
+                  label='Promedio por pago'
+                  value={formatCurrencyCOP(Math.round((revenue?.periodCollected ?? 0) / (revenue?.periodPaymentCount ?? 1)))}
+                  icon='bx-stats'
+                  accent='text-primary'
+                />
+              ) : null}
+            </>
+          ) : (
+            <>
+              <MetricCard
+                label='MRR'
+                value={formatCurrencyCOP(revenue?.mrr ?? 0)}
+                icon='bx-trending-up'
+                accent='text-primary'
+              />
+              <MetricCard
+                label='ARR'
+                value={formatCurrencyCOP(revenue?.arr ?? 0)}
+                icon='bx-bar-chart-alt-2'
+                accent='text-primary'
+              />
+            </>
+          )}
         </div>
       )}
 

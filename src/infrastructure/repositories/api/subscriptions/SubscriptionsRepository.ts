@@ -29,9 +29,15 @@ export interface ICreatePlanDto {
 }
 
 export class SubscriptionsRepository {
-  static async getDashboard(): Promise<ISubscriptionDashboardResp> {
+  static async getDashboard(from?: string, to?: string): Promise<ISubscriptionDashboardResp> {
+    const params = new URLSearchParams();
+    if (from) params.set('from', from);
+    if (to) params.set('to', to);
+    const query = params.toString();
     return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.get<ISubscriptionDashboardResp>('/subscriptions/admin-dashboard'),
+      authenticatedClientHTTP.get<ISubscriptionDashboardResp>(
+        query ? `/subscriptions/admin-dashboard?${query}` : '/subscriptions/admin-dashboard',
+      ),
     );
   }
 

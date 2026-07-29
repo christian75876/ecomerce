@@ -17,11 +17,12 @@ export const useAdvertisingManagement = () => {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<AdStatusFilter>('all');
+  const [dateRange, setDateRange] = useState<{ from: string; to: string } | null>(null);
 
-  const loadDashboard = async () => {
+  const loadDashboard = async (from?: string, to?: string) => {
     setError(null);
     try {
-      const res = await AdvertisingRepository.getDashboard();
+      const res = await AdvertisingRepository.getDashboard(from, to);
       setDashboard((res as unknown as { data: IAdvertisingDashboard }).data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar el dashboard');
@@ -38,6 +39,11 @@ export const useAdvertisingManagement = () => {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const applyDateRange = (range: { from: string; to: string } | null) => {
+    setDateRange(range);
+    void loadDashboard(range?.from, range?.to);
+  };
 
   const registerAdvertisement = async (dto: IRegisterAdvertisementDto) => {
     setSubmitting(true);
@@ -87,6 +93,8 @@ export const useAdvertisingManagement = () => {
     setSearch,
     statusFilter,
     setStatusFilter,
+    dateRange,
+    applyDateRange,
     filteredStores,
     loadDashboard,
     registerAdvertisement,

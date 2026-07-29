@@ -16,9 +16,15 @@ export interface IRegisterAdvertisementDto {
 }
 
 export class AdvertisingRepository {
-  static async getDashboard(): Promise<IAdvertisingDashboardResp> {
+  static async getDashboard(from?: string, to?: string): Promise<IAdvertisingDashboardResp> {
+    const params = new URLSearchParams();
+    if (from) params.set('from', from);
+    if (to) params.set('to', to);
+    const query = params.toString();
     return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.get<IAdvertisingDashboardResp>('/advertising/admin-dashboard'),
+      authenticatedClientHTTP.get<IAdvertisingDashboardResp>(
+        query ? `/advertising/admin-dashboard?${query}` : '/advertising/admin-dashboard',
+      ),
     );
   }
 
