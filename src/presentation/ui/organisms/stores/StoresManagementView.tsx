@@ -326,7 +326,7 @@ const SubscriptionInfo = ({ expiresAt }: { expiresAt: string }) => {
     expired
       ? '¡Hola! Mi suscripción en Hot Commerce expiró. Quisiera renovarla.'
       : hasExpiry
-        ? `¡Hola! Quisiera renovar mi suscripción en Hot Commerce antes de que venza el ${new Date(expiresAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}.`
+        ? `¡Hola! Quisiera renovar mi suscripción en Hot Commerce antes de que venza el ${new Date(expiresAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Bogota' })}.`
         : '¡Hola! Quisiera consultar los planes de suscripción de Hot Commerce.',
   );
 
@@ -343,7 +343,7 @@ const SubscriptionInfo = ({ expiresAt }: { expiresAt: string }) => {
           <div>
             <p className='text-sm font-semibold text-red-700'>Suscripción expirada</p>
             <p className='text-xs text-red-500'>
-              Venció el {new Date(expiresAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}. Tu tienda está oculta en el marketplace.
+              Venció el {new Date(expiresAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Bogota' })}. Tu tienda está oculta en el marketplace.
             </p>
           </div>
         </div>
@@ -353,7 +353,7 @@ const SubscriptionInfo = ({ expiresAt }: { expiresAt: string }) => {
           <div>
             <p className='text-sm font-semibold text-orange-700'>Vence pronto — {daysLeft} día{daysLeft === 1 ? '' : 's'}</p>
             <p className='text-xs text-orange-500'>
-              Tu suscripción expira el {new Date(expiresAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}.
+              Tu suscripción expira el {new Date(expiresAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Bogota' })}.
             </p>
           </div>
         </div>
@@ -361,7 +361,7 @@ const SubscriptionInfo = ({ expiresAt }: { expiresAt: string }) => {
         <div className='flex items-center gap-2 rounded-xl bg-green-50 px-3 py-2'>
           <i className='bx bx-check-circle text-lg text-green-500' aria-hidden='true' />
           <div>
-            <p className='text-sm font-semibold text-green-700'>Activa hasta el {new Date(expiresAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+            <p className='text-sm font-semibold text-green-700'>Activa hasta el {new Date(expiresAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Bogota' })}</p>
             <p className='text-xs text-green-600'>Quedan {daysLeft} días de suscripción.</p>
           </div>
         </div>

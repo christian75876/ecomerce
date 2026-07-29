@@ -94,7 +94,7 @@ export const ReceivablesTable = ({ items }: { items: IDashboardReceivableItem[] 
         </td>
         <td className='px-3 py-3 text-neutral-dark/70'>
           {item.lastPaymentAt
-            ? new Date(item.lastPaymentAt).toLocaleDateString('es-CO')
+            ? new Date(item.lastPaymentAt).toLocaleDateString('es-CO', { timeZone: 'America/Bogota' })
             : 'Sin abonos'}
         </td>
       </tr>
@@ -115,7 +115,7 @@ export const PayablesTable = ({ items }: { items: IDashboardPayableItem[] }) => 
         <td className='px-3 py-3 text-neutral-dark/70'>{item.balance.toLocaleString('es-CO')}</td>
         <td className='px-3 py-3 text-neutral-dark/70'>
           {item.lastPurchaseAt
-            ? new Date(item.lastPurchaseAt).toLocaleDateString('es-CO')
+            ? new Date(item.lastPurchaseAt).toLocaleDateString('es-CO', { timeZone: 'America/Bogota' })
             : 'Sin compras'}
         </td>
         <td className='px-3 py-3 text-neutral-dark/70'>

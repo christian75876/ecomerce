@@ -301,8 +301,25 @@ export const OrdersManagementView = ({
                             </span>
                           ) : null}
                         </div>
-                        <div className='mt-0.5 truncate text-xs text-slate-500'>
-                          {order.customer.firstName} {order.customer.lastName} · {order.customer.email}
+                        <div className='mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-500'>
+                          <span>{order.customer.firstName} {order.customer.lastName}</span>
+                          <span className='text-slate-300'>·</span>
+                          <span className='truncate'>{order.customer.email}</span>
+                          {order.customer.phone ? (
+                            <>
+                              <span className='text-slate-300'>·</span>
+                              <a
+                                href={`https://wa.me/${order.customer.phone.replace(/\D/g, '')}`}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                onClick={(e) => e.stopPropagation()}
+                                className='inline-flex items-center gap-1 font-medium text-green-600 hover:text-green-700 hover:underline'
+                              >
+                                <i className='bx bxl-whatsapp text-sm' />
+                                {order.customer.phone}
+                              </a>
+                            </>
+                          ) : null}
                         </div>
                       </Box>
                       <Box className='flex-shrink-0 text-right'>
@@ -401,7 +418,7 @@ export const OrdersManagementView = ({
                             onChange={(v) => void onStatusChange(order.id, v as (typeof ORDER_STATUSES)[number])}
                           />
                           <span className='text-xs text-slate-400'>
-                            Actualizado: {new Date(order.updatedAt).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' })}
+                            Actualizado: {new Date(order.updatedAt).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Bogota' })}
                           </span>
                         </Box>
                       </Box>

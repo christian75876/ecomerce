@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { useLogin } from '@/application/useCases/auth/useLogin';
 import { useRegisterCustomer } from '@/application/useCases/auth/useRegisterCustomer';
@@ -20,6 +20,8 @@ const FEATURES = [
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const passwordReset = searchParams.get('reset') === '1';
   const [mode, setMode] = useState<'login' | 'register' | 'verify'>('login');
   const { handleLogin, isloading, error } = useLogin();
   const {
@@ -138,6 +140,13 @@ const LoginPage = () => {
                 </div>
               ) : null}
 
+              {passwordReset ? (
+                <div className='mb-4 flex items-center gap-2 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700'>
+                  <i className='bx bx-check-circle flex-shrink-0 text-base' />
+                  ¡Contraseña actualizada! Ya puedes ingresar con tu nueva contraseña.
+                </div>
+              ) : null}
+
               <h1 className='text-2xl font-extrabold tracking-tight text-slate-900'>
                 {mode === 'login' ? 'Bienvenido de nuevo' : mode === 'register' ? 'Crea tu cuenta' : '¡Revisa tu correo!'}
               </h1>
@@ -207,6 +216,15 @@ const LoginPage = () => {
                       {error}
                     </div>
                   ) : null}
+
+                  <div className='text-right'>
+                    <Link
+                      to={ROUTES.PUBLIC.FORGOT_PASSWORD}
+                      className='text-xs font-medium text-primary hover:underline'
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </Link>
+                  </div>
 
                   <Button
                     type='submit'

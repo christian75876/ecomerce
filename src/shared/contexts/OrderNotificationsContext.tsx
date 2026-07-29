@@ -9,6 +9,9 @@ import {
 import type { ReactNode } from 'react';
 import { authSession } from '@/shared/utils/authSession';
 import { canAccessAdminPanel } from '@/shared/utils/checkIsUserAuthenticated.util';
+import { OrdersRepository } from '@/infrastructure/repositories/api/orders/OrdersRepository';
+import type { IOrder } from '@/application/dtos/orders/response/OrderResponse';
+import { playNotificationSound } from '@/shared/utils/notificationSound';
 
 export interface OrderNotification {
   id: string;
@@ -53,6 +56,29 @@ export const OrderNotificationsProvider = ({ children }: { children: ReactNode }
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
   const dismissLatest = () => setLatestNotification(null);
 
+  const loadInitialOrders = useCallback(async () => {
+    if (!canAccessAdminPanel()) return;
+    try {
+      const resp = await OrdersRepository.getOrders({ limit: 20 });
+      const raw = resp.data as unknown as { items?: IOrder[] } | IOrder[];
+      const orders: IOrder[] = Array.isArray(raw) ? raw : (raw as { items?: IOrder[] }).items ?? [];
+      if (orders.length === 0) return;
+      const mapped: OrderNotification[] = orders.map((o) => ({
+        id: crypto.randomUUID(),
+        orderId: o.id,
+        customerName: `${o.customer?.firstName ?? ''} ${o.customer?.lastName ?? ''}`.trim() || 'Cliente',
+        total: Number(o.total),
+        itemCount: o.items?.length ?? 0,
+        deliveryMethod: o.deliveryMethod ?? null,
+        createdAt: o.createdAt,
+        read: true,
+      }));
+      setNotifications(mapped);
+    } catch {
+      // non-critical: SSE will still work for new events
+    }
+  }, []);
+
   const connect = useCallback(() => {
     if (!mountedRef.current || !canAccessAdminPanel()) return;
     const token = authSession.getToken();
@@ -85,15 +111,15 @@ export const OrderNotificationsProvider = ({ children }: { children: ReactNode }
             createdAt: data.createdAt as string,
             read: false,
           };
-          setNotifications((prev) => [n, ...prev].slice(0, 50));
+          setNotifications((prev) => {
+            const alreadyExists = prev.some((p) => p.orderId === n.orderId);
+            if (alreadyExists) {
+              return prev.map((p) => p.orderId === n.orderId ? { ...p, read: false } : p);
+            }
+            return [n, ...prev].slice(0, 50);
+          });
           setLatestNotification(n);
-
-          if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-            new Notification('Nuevo pedido recibido', {
-              body: `${n.customerName} · ${n.itemCount} ${n.itemCount === 1 ? 'artículo' : 'artículos'}`,
-              icon: '/icons/icon-192.png',
-            });
-          }
+          playNotificationSound();
         }
       } catch {
         // ignore parse errors
@@ -115,10 +141,7 @@ export const OrderNotificationsProvider = ({ children }: { children: ReactNode }
     mountedRef.current = true;
     if (!canAccessAdminPanel()) return;
 
-    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
-      void Notification.requestPermission();
-    }
-
+    void loadInitialOrders();
     connect();
 
     return () => {
@@ -127,7 +150,7 @@ export const OrderNotificationsProvider = ({ children }: { children: ReactNode }
       esRef.current = null;
       if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
     };
-  }, [connect]);
+  }, [connect, loadInitialOrders]);
 
   return (
     <OrderNotificationsContext.Provider

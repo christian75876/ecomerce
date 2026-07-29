@@ -13,6 +13,7 @@ function fmtDate(dateStr: string | null | undefined) {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
+    timeZone: 'America/Bogota',
   });
 }
 

@@ -13,8 +13,8 @@ const timeAgo = (iso: string): string => {
   return `Hace ${Math.floor(diff / 86400)} d`;
 };
 
-const NotificationDropdown = () => {
-  const { notifications, unreadCount, markAllRead, markRead } = useOrderNotifications();
+const NotificationDropdown = ({ dark = false, align = 'right' }: { dark?: boolean; align?: 'left' | 'right' }) => {
+  const { notifications, unreadCount, markAllRead, markRead, connectionStatus } = useOrderNotifications();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -32,7 +32,11 @@ const NotificationDropdown = () => {
       <button
         type='button'
         onClick={() => setOpen((o) => !o)}
-        className='relative flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:border-primary/30 hover:text-primary'
+        className={`relative flex h-9 w-9 items-center justify-center rounded-full border transition ${
+          dark
+            ? 'border-white/15 bg-white/10 text-white/70 hover:border-white/30 hover:bg-white/15 hover:text-white'
+            : 'border-slate-200 bg-white text-slate-600 hover:border-primary/30 hover:text-primary'
+        }`}
         aria-label='Notificaciones'
       >
         <i className='bx bx-bell text-lg' aria-hidden='true' />
@@ -40,11 +44,16 @@ const NotificationDropdown = () => {
           <span className='absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white'>
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
-        ) : null}
+        ) : (
+          <span className={`absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 ${dark ? 'border-white/10' : 'border-white'} ${
+            connectionStatus === 'connected' ? 'bg-green-400' :
+            connectionStatus === 'connecting' ? 'bg-yellow-400' : 'bg-slate-400'
+          }`} />
+        )}
       </button>
 
       {open ? (
-        <div className='absolute right-0 top-[calc(100%+0.75rem)] z-50 w-[340px] rounded-2xl border border-slate-200 bg-white shadow-[0_16px_48px_rgba(15,23,42,0.14)]'>
+        <div className={`absolute top-[calc(100%+0.75rem)] z-50 w-[340px] rounded-2xl border border-slate-200 bg-white shadow-[0_16px_48px_rgba(15,23,42,0.14)] ${align === 'left' ? 'left-0' : 'right-0'}`}>
           {/* Header */}
           <div className='flex items-center justify-between border-b border-slate-100 px-4 py-3'>
             <span className='text-sm font-semibold text-slate-800'>Notificaciones</span>

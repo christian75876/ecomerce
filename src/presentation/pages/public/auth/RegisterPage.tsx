@@ -16,7 +16,7 @@ const RegisterPage = () => {
   const [inviteEmail, setInviteEmail] = useState('');
   const [tokenError, setTokenError] = useState<string | null>(null);
 
-  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirm: '' });
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', password: '', confirm: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -37,6 +37,22 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.firstName.trim()) {
+      setError('El nombre es obligatorio');
+      return;
+    }
+    if (!form.lastName.trim()) {
+      setError('El apellido es obligatorio');
+      return;
+    }
+    if (!form.phone.trim()) {
+      setError('El teléfono es obligatorio');
+      return;
+    }
+    if (form.phone.trim().replace(/\D/g, '').length < 7) {
+      setError('El teléfono es demasiado corto');
+      return;
+    }
     if (form.password !== form.confirm) {
       setError('Las contraseñas no coinciden');
       return;
@@ -45,7 +61,8 @@ const RegisterPage = () => {
     setSubmitting(true);
     try {
       const res = await AuthRepository.registerCustomer({
-        name: form.name.trim(),
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
         email: form.email.trim(),
         phone: form.phone.trim(),
         password: form.password,
@@ -236,16 +253,29 @@ const RegisterPage = () => {
         ) : null}
 
         <form onSubmit={(e) => void handleSubmit(e)} className='mt-6 space-y-4'>
-          <div>
-            <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Nombre completo *</label>
-            <input
-              required
-              type='text'
-              placeholder='Christian Pabón'
-              value={form.name}
-              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              className='w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10'
-            />
+          <div className='grid gap-4 sm:grid-cols-2'>
+            <div>
+              <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Nombre *</label>
+              <input
+                required
+                type='text'
+                placeholder='Christian'
+                value={form.firstName}
+                onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
+                className='w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10'
+              />
+            </div>
+            <div>
+              <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Apellido *</label>
+              <input
+                required
+                type='text'
+                placeholder='Pabón'
+                value={form.lastName}
+                onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
+                className='w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10'
+              />
+            </div>
           </div>
 
           <div>
@@ -260,7 +290,7 @@ const RegisterPage = () => {
           </div>
 
           <div>
-            <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Teléfono (opcional)</label>
+            <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Teléfono *</label>
             <PhoneInputCO
               value={form.phone}
               onChange={(v) => setForm((f) => ({ ...f, phone: v }))}

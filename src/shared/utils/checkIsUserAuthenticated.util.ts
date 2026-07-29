@@ -22,3 +22,5 @@ export const canAccessAdminPanel = () => {
 };
 
 export const isBuyerSession = () => getAuthenticatedRole() === 'buyer';
+
+export const isAdminRole = () => getAuthenticatedRole() === 'admin';

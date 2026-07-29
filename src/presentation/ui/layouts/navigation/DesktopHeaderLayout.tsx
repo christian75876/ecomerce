@@ -4,6 +4,7 @@ import { ROUTES } from '@/shared/constants/routes';
 import {
   canAccessAdminPanel,
   getAuthenticatedRole,
+  getAuthenticatedUser,
   isAuthenticated,
 } from '@/shared/utils/checkIsUserAuthenticated.util';
 import { useCart } from '@/shared/hooks/useCart';
@@ -13,10 +14,10 @@ import NavigationMenu from '@molecules/navigation/NavigationMenu';
 import NotificationDropdown from '@organisms/notifications/NotificationDropdown';
 import { Link, useNavigate } from 'react-router-dom';
 
-const roleChip = (role: string | null) => {
-  if (role === 'buyer')  return { label: 'Comprador', icon: 'bx-user',    bg: 'bg-sky-50   text-sky-700   ring-1 ring-sky-200' };
-  if (role === 'admin')  return { label: 'Admin',     icon: 'bxs-crown',  bg: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200' };
-  return                        { label: 'Vendedor',  icon: 'bx-store',   bg: 'bg-blue-50  text-blue-700  ring-1 ring-blue-200' };
+const roleIcon = (role: string | null) => {
+  if (role === 'admin') return { icon: 'bxs-crown', bg: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200' };
+  if (role === 'seller') return { icon: 'bx-store',  bg: 'bg-blue-50  text-blue-700  ring-1 ring-blue-200' };
+  return                        { icon: 'bx-user',   bg: 'bg-sky-50   text-sky-700   ring-1 ring-sky-200' };
 };
 
 const DesktopHeaderLayout = () => {
@@ -26,7 +27,11 @@ const DesktopHeaderLayout = () => {
   const showAdminActions = authenticated && canAccessAdminPanel();
   const isBuyer = getAuthenticatedRole() === 'buyer' || !canAccessAdminPanel();
   const roleLabel = getAuthenticatedRole();
-  const chip = roleChip(roleLabel);
+  const chip = roleIcon(roleLabel);
+  const sessionUser = getAuthenticatedUser();
+  const displayName = sessionUser?.customer
+    ? `${sessionUser.customer.firstName} ${sessionUser.customer.lastName}`.trim()
+    : sessionUser?.email?.split('@')[0] ?? '';
   const { items } = useCart();
   const cartCount = items.reduce((acc, i) => acc + i.quantity, 0);
 
@@ -69,7 +74,7 @@ const DesktopHeaderLayout = () => {
           {authenticated ? (
             <span className={`hidden items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold md:flex ${chip.bg}`}>
               <i className={`bx ${chip.icon} text-sm`} aria-hidden='true' />
-              {chip.label}
+              {displayName}
             </span>
           ) : null}
 

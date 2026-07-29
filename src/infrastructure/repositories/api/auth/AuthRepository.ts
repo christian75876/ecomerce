@@ -27,9 +27,6 @@ export class AuthRepository {
   static async login(credentials: ILoginRequest): Promise<ILoginResp> {
     return ErrorHandler.handleApiErrors(
       () => publicClientHTTP.post<ILoginResp>('/auth/login', credentials),
-      msg => {
-        logError(msg, 'client');
-      }
     );
   }
 
@@ -51,9 +48,6 @@ export class AuthRepository {
           '/auth/register-customer',
           userData,
         ),
-      msg => {
-        logError(msg, 'client');
-      }
     );
   }
 
@@ -106,6 +100,24 @@ export class AuthRepository {
   static async logout() {
     await ErrorHandler.handleApiErrors(() =>
       authenticatedClientHTTP.post('/auth/logout')
+    );
+  }
+
+  static async requestPasswordRecovery(email: string): Promise<{ message: string }> {
+    return ErrorHandler.handleApiErrors(() =>
+      publicClientHTTP.post<{ message: string }>('/auth/recover-passwords', { email })
+    );
+  }
+
+  static async verifyRecoveryOtp(email: string, code: string): Promise<{ message: string }> {
+    return ErrorHandler.handleApiErrors(() =>
+      publicClientHTTP.post<{ message: string }>('/auth/recover-passwords/verify-otp', { email, code })
+    );
+  }
+
+  static async resetPassword(email: string, code: string, newPassword: string): Promise<{ message: string }> {
+    return ErrorHandler.handleApiErrors(() =>
+      publicClientHTTP.post<{ message: string }>('/auth/recover-passwords/reset', { email, code, newPassword })
     );
   }
 }

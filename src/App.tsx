@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTokenRefresh } from '@/shared/hooks/useTokenRefresh';
+import { usePushNotifications } from '@/shared/hooks/usePushNotifications';
+import { useBuyerOrderNotifications } from '@/shared/hooks/useBuyerOrderNotifications';
 import { BrowserRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { SnackbarProvider } from 'notistack';
@@ -17,6 +19,8 @@ import { canAccessAdminPanel } from '@/shared/utils/checkIsUserAuthenticated.uti
 
 function App() {
   useTokenRefresh();
+  usePushNotifications();
+  useBuyerOrderNotifications();
   const [appConfig, setAppConfig] = useState<IAppConfig | null>(null);
 
   useEffect(() => {

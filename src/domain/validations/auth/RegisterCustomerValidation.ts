@@ -1,10 +1,14 @@
 import * as yup from 'yup';
 
 export const registerCustomerSchema = yup.object({
-  name: yup
+  firstName: yup
     .string()
     .required('El nombre es obligatorio')
-    .max(120, 'El nombre es demasiado largo'),
+    .max(60, 'El nombre es demasiado largo'),
+  lastName: yup
+    .string()
+    .required('El apellido es obligatorio')
+    .max(60, 'El apellido es demasiado largo'),
   email: yup
     .string()
     .email('Correo inválido')

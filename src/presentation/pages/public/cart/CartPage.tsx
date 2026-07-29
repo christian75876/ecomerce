@@ -71,12 +71,16 @@ const CartPage = () => {
 
     try {
       await OrdersRepository.createOrder({
-        customer: {
-          firstName: sessionUser.customer?.firstName ?? sessionUser.email.split('@')[0],
-          lastName: sessionUser.customer?.lastName ?? '',
-          email: sessionUser.email,
-          phone: sessionUser.customer?.phone ?? undefined,
-        },
+        ...(sessionUser.customer?.id
+          ? { customerId: sessionUser.customer.id }
+          : {
+              customer: {
+                firstName: sessionUser.customer?.firstName ?? sessionUser.email.split('@')[0],
+                lastName: sessionUser.customer?.lastName ?? '',
+                email: sessionUser.email,
+                phone: sessionUser.customer?.phone ?? undefined,
+              },
+            }),
         items: items.map((item) => ({
           productId: item.productId,
           quantity: item.quantity,

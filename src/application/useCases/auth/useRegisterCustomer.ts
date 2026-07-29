@@ -21,9 +21,12 @@ export const useRegisterCustomer = () => {
       const data = response.data;
 
       if (data.token && data.user) {
-        // Invited seller — auto-login
+        // Invited seller or DEV auto-verify — auto-login
         authSession.setToken(data.token);
-        authSession.setUser(data.user);
+        authSession.setUser({
+          ...data.user,
+          customer: (data as { customer?: { id: string; firstName: string; lastName: string; phone: string | null } }).customer ?? data.user.customer ?? null,
+        });
         SnackbarUtilities.success(data.message, 'top', 'center');
         return { autoLogin: true };
       }

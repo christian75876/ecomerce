@@ -33,6 +33,7 @@ export interface IOrder {
       id: string;
       name: string;
       sku: string;
+      imageUrl: string | null;
     };
   }>;
 }

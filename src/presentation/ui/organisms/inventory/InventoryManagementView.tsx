@@ -705,7 +705,7 @@ export const InventoryManagementView = ({
                         <td className='px-3 py-3'>{item.activeBatchCount}</td>
                         <td className='px-3 py-3'>
                           {item.nextExpiration
-                            ? new Date(item.nextExpiration).toLocaleDateString('es-CO')
+                            ? new Date(item.nextExpiration).toLocaleDateString('es-CO', { timeZone: 'America/Bogota' })
                             : 'Sin vencimiento'}
                         </td>
                         <td className='px-3 py-3'>{formatCurrencyCOP(item.inventoryValue)}</td>
@@ -775,7 +775,7 @@ export const InventoryManagementView = ({
                       Costo: {formatCurrencyCOP(batch.unitCost)}
                     </Typography>
                     <Typography className='mt-1 text-sm text-neutral-dark/65'>
-                      Vence: {batch.expiresAt ? new Date(batch.expiresAt).toLocaleDateString('es-CO') : 'No aplica'} ·
+                      Vence: {batch.expiresAt ? new Date(batch.expiresAt).toLocaleDateString('es-CO', { timeZone: 'America/Bogota' }) : 'No aplica'} ·
                       Proveedor: {batch.supplier?.name ?? 'No definido'}
                     </Typography>
                   </Box>
@@ -794,7 +794,7 @@ export const InventoryManagementView = ({
                       <Typography className='mt-1 text-sm text-neutral-dark/70'>
                         {batch.availableQuantity} unidades · vence el{' '}
                         {batch.expiresAt
-                          ? new Date(batch.expiresAt).toLocaleDateString('es-CO')
+                          ? new Date(batch.expiresAt).toLocaleDateString('es-CO', { timeZone: 'America/Bogota' })
                           : 'sin fecha'}
                       </Typography>
                     </Box>

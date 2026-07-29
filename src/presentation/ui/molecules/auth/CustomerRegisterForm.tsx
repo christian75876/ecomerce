@@ -21,7 +21,8 @@ const CustomerRegisterForm = ({
     handleSubmit,
     formState: { isValid },
   } = useFormValidation(registerCustomerSchema, isLoading, {
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     password_confirm: '',
@@ -30,15 +31,26 @@ const CustomerRegisterForm = ({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className='space-y-5'>
-      <FormField
-        name='name'
-        label='Nombre'
-        control={control}
-        type='text'
-        placeholder='Tu nombre'
-        showLabel
-        boxClassName='w-full'
-      />
+      <div className='grid gap-4 sm:grid-cols-2'>
+        <FormField
+          name='firstName'
+          label='Nombre *'
+          control={control}
+          type='text'
+          placeholder='Tu nombre'
+          showLabel
+          boxClassName='w-full'
+        />
+        <FormField
+          name='lastName'
+          label='Apellido *'
+          control={control}
+          type='text'
+          placeholder='Tu apellido'
+          showLabel
+          boxClassName='w-full'
+        />
+      </div>
       <FormField
         name='email'
         label='Correo'
@@ -50,7 +62,7 @@ const CustomerRegisterForm = ({
       />
       <FormField
         name='phone'
-        label='Teléfono'
+        label='Teléfono *'
         control={control}
         type='text'
         placeholder='300 123 4567'

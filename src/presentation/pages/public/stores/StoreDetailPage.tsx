@@ -295,7 +295,7 @@ const StoreDetailPage = () => {
                 if (!product) return;
                 addItem({ productId: product.id, name: product.name, price: Number(product.price), imageUrl: product.imageUrl });
                 const label = product.name.length > 28 ? `${product.name.slice(0, 28)}…` : product.name;
-                SnackbarUtilities.success(`${label} agregado al carrito`, 'bottom', 'right');
+                SnackbarUtilities.success(`${label} agregado al carrito`, 'top', 'center');
               }}
             />
           ) : (
@@ -371,7 +371,7 @@ const StoreDetailPage = () => {
                   if (!product) return;
                   addItem({ productId: product.id, name: product.name, price: Number(product.price), imageUrl: product.imageUrl });
                   const label = product.name.length > 28 ? `${product.name.slice(0, 28)}…` : product.name;
-                  SnackbarUtilities.success(`${label} agregado al carrito`, 'bottom', 'right');
+                  SnackbarUtilities.success(`${label} agregado al carrito`, 'top', 'center');
                 }}
               />
             </div>

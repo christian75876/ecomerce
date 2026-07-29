@@ -5,6 +5,7 @@ import { getAuthenticatedRole } from '@/shared/utils/checkIsUserAuthenticated.ut
 import { useLogout } from '@/application/useCases/auth/useLogout';
 import { useOrderNotifications } from '@/shared/hooks/useOrderNotifications';
 import StoreSearchSelector from '@/presentation/ui/molecules/navigation/StoreSearchSelector';
+import NotificationDropdown from '@organisms/notifications/NotificationDropdown';
 
 interface NavItem {
   label: string;
@@ -92,11 +93,15 @@ const AdminSidebar = () => {
         >
           <i className='bx bxs-crown text-lg text-white' aria-hidden='true' />
         </div>
-        <div className='min-w-0'>
+        <div className='min-w-0 flex-1'>
           <p className='text-[13px] font-bold leading-tight text-white'>Hot Commerce</p>
           <p className='mt-0.5 text-[10px] font-medium uppercase tracking-widest' style={{ color: '#6366f1' }}>
             {isAdmin ? 'Administrador' : 'Vendedor'}
           </p>
+        </div>
+        {/* Notification bell — always visible in sidebar */}
+        <div className='shrink-0'>
+          <NotificationDropdown dark align='left' />
         </div>
       </div>
 

@@ -4,6 +4,7 @@ import PhoneInputCO from '@/presentation/ui/molecules/common/PhoneInputCO';
 import { AuthRepository } from '@/infrastructure/repositories/api/auth/AuthRepository';
 import type { IAuthenticatedUser, IAuthMeResp } from '@/application/dtos/auth/login/response/LoginResponse';
 import { isAuthenticated } from '@/shared/utils/checkIsUserAuthenticated.util';
+import { authSession } from '@/shared/utils/authSession';
 import { ROUTES } from '@/shared/constants/routes';
 import { SnackbarUtilities } from '@/shared/utils/SnackbarManager';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
@@ -42,6 +43,8 @@ const ProfilePage = () => {
       if (cancelled) return;
       const u = res.data;
       setUser(u);
+      // Sync session so navbar name is always fresh
+      authSession.setUser(u);
       setForm({
         firstName: u.customer?.firstName ?? '',
         lastName: u.customer?.lastName ?? '',
@@ -71,9 +74,12 @@ const ProfilePage = () => {
         lastName: form.lastName.trim() || undefined,
         phone: form.phone.trim() || undefined,
       });
-      setUser((prev) =>
-        prev ? { ...prev, customer: prev.customer ? { ...prev.customer, ...updated } : null } : prev,
-      );
+      setUser((prev) => {
+        if (!prev) return prev;
+        const next = { ...prev, customer: prev.customer ? { ...prev.customer, ...updated } : null };
+        authSession.setUser(next);
+        return next;
+      });
       setDirty(false);
       SnackbarUtilities.success('Perfil actualizado');
     } catch {

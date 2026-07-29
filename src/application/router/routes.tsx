@@ -35,6 +35,9 @@ const MyOrdersPage = lazy(
 const RegisterPage = lazy(
   () => import('@presentation/pages/public/auth/RegisterPage')
 );
+const ForgotPasswordPage = lazy(
+  () => import('@presentation/pages/public/auth/ForgotPasswordPage')
+);
 
 // Private pages
 const AdminDashboard = lazy(
@@ -122,6 +125,7 @@ export const routes: AppRoute[] = [
     publicOnly: false
   },
   { path: ROUTES.PUBLIC.REGISTER, element: <RegisterPage /> },
+  { path: ROUTES.PUBLIC.FORGOT_PASSWORD, element: <ForgotPasswordPage /> },
   { path: ROUTES.PUBLIC.NOT_FOUND, element: <NotFound /> },
   {
     path: ROUTES.PUBLIC.HELP,
