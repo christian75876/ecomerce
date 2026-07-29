@@ -8,6 +8,7 @@ import type {
 import type { IRegisterPaymentDto } from '@/infrastructure/repositories/api/subscriptions/SubscriptionsRepository';
 import { StoresRepository } from '@/infrastructure/repositories/api/stores/StoresRepository';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
+import StorePaymentHistoryPanel from '@/presentation/ui/organisms/payments/StorePaymentHistoryPanel';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -522,6 +523,7 @@ const SubscriptionsPage = () => {
   const [editPlan, setEditPlan] = useState<ISubscriptionPlan | null>(null);
   const [togglingStoreId, setTogglingStoreId] = useState<string | null>(null);
   const [toggleTarget, setToggleTarget] = useState<IStoreWithSubscriptionStatus | null>(null);
+  const [historyTarget, setHistoryTarget] = useState<IStoreWithSubscriptionStatus | null>(null);
 
   const overview = dashboard?.overview;
   const revenue = dashboard?.revenue;
@@ -751,6 +753,14 @@ const SubscriptionsPage = () => {
                           >
                             Registrar pago
                           </button>
+                          <button
+                            type='button'
+                            onClick={() => setHistoryTarget(entry)}
+                            title='Ver historial de pagos'
+                            className='flex h-7 w-7 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-700'
+                          >
+                            <i className='bx bx-history text-base' aria-hidden='true' />
+                          </button>
                           {entry.store.whatsappNumber ? (
                             <a
                               href={buildWhatsappUrl(entry)}
@@ -852,6 +862,15 @@ const SubscriptionsPage = () => {
           </div>
         )}
       </div>
+
+      {/* ── Payment history panel ── */}
+      {historyTarget ? (
+        <StorePaymentHistoryPanel
+          storeId={historyTarget.store.id}
+          storeName={historyTarget.store.name}
+          onClose={() => setHistoryTarget(null)}
+        />
+      ) : null}
 
       {/* ── Modals ── */}
       {registerTarget ? (

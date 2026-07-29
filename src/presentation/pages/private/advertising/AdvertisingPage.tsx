@@ -4,6 +4,7 @@ import { useAdvertisingManagement, AdStatusFilter } from '@/application/useCases
 import type { IStoreWithAdStatus } from '@/application/dtos/advertising/AdvertisingResponse';
 import type { IRegisterAdvertisementDto } from '@/infrastructure/repositories/api/advertising/AdvertisingRepository';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
+import StorePaymentHistoryPanel from '@/presentation/ui/organisms/payments/StorePaymentHistoryPanel';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -315,6 +316,7 @@ const AdvertisingPage = () => {
   } = useAdvertisingManagement();
 
   const [registerTarget, setRegisterTarget] = useState<IStoreWithAdStatus | null>(null);
+  const [historyTarget, setHistoryTarget] = useState<IStoreWithAdStatus | null>(null);
 
   const overview = dashboard?.overview;
   const revenue = dashboard?.revenue;
@@ -519,6 +521,14 @@ const AdvertisingPage = () => {
                           >
                             Registrar pago
                           </button>
+                          <button
+                            type='button'
+                            onClick={() => setHistoryTarget(entry)}
+                            title='Ver historial de pagos'
+                            className='flex h-7 w-7 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-700'
+                          >
+                            <i className='bx bx-history text-base' aria-hidden='true' />
+                          </button>
                           {entry.store.whatsappNumber ? (
                             <a
                               href={buildWhatsappUrl(entry)}
@@ -550,6 +560,15 @@ const AdvertisingPage = () => {
           </div>
         )}
       </div>
+
+      {/* ── Payment history panel ── */}
+      {historyTarget ? (
+        <StorePaymentHistoryPanel
+          storeId={historyTarget.store.id}
+          storeName={historyTarget.store.name}
+          onClose={() => setHistoryTarget(null)}
+        />
+      ) : null}
 
       {/* ── Modal ── */}
       {registerTarget ? (
