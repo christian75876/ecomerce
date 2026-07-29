@@ -12,7 +12,9 @@ export const registerSchema = ({ isAdmin }: { isAdmin: boolean }) =>
     password: yup
       .string()
       .required('La contraseña es obligatoria')
-      .min(6, 'Debe tener al menos 6 caracteres'),
+      .min(6, 'Debe tener al menos 6 caracteres')
+      .matches(/[0-9]/, 'Debe incluir al menos un número')
+      .matches(/[^A-Za-z0-9]/, 'Debe incluir al menos un símbolo especial (ej: @, #, !)'),
     password_confirm: yup
       .string()
       .required('La confirmación de contraseña es obligatoria')
