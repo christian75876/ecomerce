@@ -8,26 +8,55 @@ import {
 } from 'react';
 import type { ReactNode } from 'react';
 import { authSession } from '@/shared/utils/authSession';
-import { canAccessAdminPanel } from '@/shared/utils/checkIsUserAuthenticated.util';
+import { canAccessAdminPanel, isAdminRole } from '@/shared/utils/checkIsUserAuthenticated.util';
 import { OrdersRepository } from '@/infrastructure/repositories/api/orders/OrdersRepository';
 import type { IOrder } from '@/application/dtos/orders/response/OrderResponse';
 import { playNotificationSound } from '@/shared/utils/notificationSound';
 
-export interface OrderNotification {
+interface BaseNotification {
   id: string;
+  read: boolean;
+  createdAt: string;
+}
+
+export interface NewOrderNotification extends BaseNotification {
+  type: 'new_order';
   orderId: string;
   customerName: string;
   total: number;
   itemCount: number;
   deliveryMethod: string | null;
-  createdAt: string;
-  read: boolean;
 }
 
+export interface UserRegisteredNotification extends BaseNotification {
+  type: 'user_registered';
+  userId: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
+export interface InvitationAcceptedNotification extends BaseNotification {
+  type: 'invitation_accepted';
+  userId: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  storeName: string;
+}
+
+export type AdminNotification =
+  | NewOrderNotification
+  | UserRegisteredNotification
+  | InvitationAcceptedNotification;
+
+// Backward-compat alias
+export type OrderNotification = AdminNotification;
+
 interface ContextValue {
-  notifications: OrderNotification[];
+  notifications: AdminNotification[];
   unreadCount: number;
-  latestNotification: OrderNotification | null;
+  latestNotification: AdminNotification | null;
   connectionStatus: 'connecting' | 'connected' | 'disconnected';
   markAllRead: () => void;
   markRead: (id: string) => void;
@@ -41,8 +70,8 @@ const SSE_URL = BASE.replace(/\/$/, '') + '/notifications/stream';
 const MAX_RETRY_DELAY = 30_000;
 
 export const OrderNotificationsProvider = ({ children }: { children: ReactNode }) => {
-  const [notifications, setNotifications] = useState<OrderNotification[]>([]);
-  const [latestNotification, setLatestNotification] = useState<OrderNotification | null>(null);
+  const [notifications, setNotifications] = useState<AdminNotification[]>([]);
+  const [latestNotification, setLatestNotification] = useState<AdminNotification | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
 
   const esRef = useRef<EventSource | null>(null);
@@ -56,15 +85,17 @@ export const OrderNotificationsProvider = ({ children }: { children: ReactNode }
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
   const dismissLatest = () => setLatestNotification(null);
 
+  // Sellers get order history pre-loaded; admins start fresh (their events are real-time only)
   const loadInitialOrders = useCallback(async () => {
-    if (!canAccessAdminPanel()) return;
+    if (!canAccessAdminPanel() || isAdminRole()) return;
     try {
       const resp = await OrdersRepository.getOrders({ limit: 20 });
       const raw = resp.data as unknown as { items?: IOrder[] } | IOrder[];
       const orders: IOrder[] = Array.isArray(raw) ? raw : (raw as { items?: IOrder[] }).items ?? [];
       if (orders.length === 0) return;
-      const mapped: OrderNotification[] = orders.map((o) => ({
+      const mapped: NewOrderNotification[] = orders.map((o) => ({
         id: crypto.randomUUID(),
+        type: 'new_order',
         orderId: o.id,
         customerName: `${o.customer?.firstName ?? ''} ${o.customer?.lastName ?? ''}`.trim() || 'Cliente',
         total: Number(o.total),
@@ -75,7 +106,7 @@ export const OrderNotificationsProvider = ({ children }: { children: ReactNode }
       }));
       setNotifications(mapped);
     } catch {
-      // non-critical: SSE will still work for new events
+      // non-critical
     }
   }, []);
 
@@ -100,26 +131,69 @@ export const OrderNotificationsProvider = ({ children }: { children: ReactNode }
       if (!mountedRef.current) return;
       try {
         const data = JSON.parse(event.data as string) as Record<string, unknown>;
-        if (data.type === 'new_order') {
-          const n: OrderNotification = {
-            id: crypto.randomUUID(),
-            orderId: data.orderId as string,
-            customerName: data.customerName as string,
-            total: data.total as number,
-            itemCount: data.itemCount as number,
-            deliveryMethod: (data.deliveryMethod as string | null) ?? null,
-            createdAt: data.createdAt as string,
-            read: false,
-          };
-          setNotifications((prev) => {
-            const alreadyExists = prev.some((p) => p.orderId === n.orderId);
-            if (alreadyExists) {
-              return prev.map((p) => p.orderId === n.orderId ? { ...p, read: false } : p);
-            }
-            return [n, ...prev].slice(0, 50);
-          });
-          setLatestNotification(n);
-          playNotificationSound();
+
+        if (isAdminRole()) {
+          // Admin: handle site-level events
+          if (data.type === 'user_registered') {
+            const n: UserRegisteredNotification = {
+              id: crypto.randomUUID(),
+              type: 'user_registered',
+              userId: data.userId as number,
+              firstName: data.firstName as string,
+              lastName: data.lastName as string,
+              email: data.email as string,
+              createdAt: data.createdAt as string,
+              read: false,
+            };
+            setNotifications((prev) => [n, ...prev].slice(0, 50));
+            setLatestNotification(n);
+            playNotificationSound();
+          } else if (data.type === 'invitation_accepted') {
+            const n: InvitationAcceptedNotification = {
+              id: crypto.randomUUID(),
+              type: 'invitation_accepted',
+              userId: data.userId as number,
+              firstName: data.firstName as string,
+              lastName: data.lastName as string,
+              email: data.email as string,
+              storeName: data.storeName as string,
+              createdAt: data.createdAt as string,
+              read: false,
+            };
+            setNotifications((prev) => [n, ...prev].slice(0, 50));
+            setLatestNotification(n);
+            playNotificationSound();
+          }
+        } else {
+          // Seller: handle order events
+          if (data.type === 'new_order') {
+            const n: NewOrderNotification = {
+              id: crypto.randomUUID(),
+              type: 'new_order',
+              orderId: data.orderId as string,
+              customerName: data.customerName as string,
+              total: data.total as number,
+              itemCount: data.itemCount as number,
+              deliveryMethod: (data.deliveryMethod as string | null) ?? null,
+              createdAt: data.createdAt as string,
+              read: false,
+            };
+            setNotifications((prev) => {
+              const alreadyExists = prev.some(
+                (p) => p.type === 'new_order' && (p as NewOrderNotification).orderId === n.orderId,
+              );
+              if (alreadyExists) {
+                return prev.map((p) =>
+                  p.type === 'new_order' && (p as NewOrderNotification).orderId === n.orderId
+                    ? { ...p, read: false }
+                    : p,
+                );
+              }
+              return [n, ...prev].slice(0, 50);
+            });
+            setLatestNotification(n);
+            playNotificationSound();
+          }
         }
       } catch {
         // ignore parse errors

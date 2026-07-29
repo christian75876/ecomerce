@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import clsx from 'clsx';
 import { ROUTES } from '@/shared/constants/routes';
@@ -15,17 +16,28 @@ interface NavItem {
 
 interface NavGroup {
   label: string;
-  adminOnly?: boolean;
   items: NavItem[];
 }
 
-const navGroups: NavGroup[] = [
-  {
-    label: 'General',
-    items: [
-      { label: 'Dashboard', path: ROUTES.PRIVATE.DASHBOARD, icon: 'bx-home-alt-2' },
-    ],
-  },
+const dashboardGroup: NavGroup = {
+  label: 'General',
+  items: [
+    { label: 'Dashboard', path: ROUTES.PRIVATE.DASHBOARD, icon: 'bx-home-alt-2' },
+  ],
+};
+
+const controlGroup: NavGroup = {
+  label: 'Control',
+  items: [
+    { label: 'Suscripciones', path: ROUTES.PRIVATE.SUBSCRIPTIONS, icon: 'bx-credit-card-front' },
+    { label: 'Publicidad', path: ROUTES.PRIVATE.ADVERTISING, icon: 'bx-trophy' },
+    { label: 'Invitaciones', path: ROUTES.PRIVATE.INVITATIONS, icon: 'bx-envelope' },
+    { label: 'Auditoría', path: ROUTES.PRIVATE.AUDIT, icon: 'bx-shield-quarter' },
+    { label: 'Ajustes', path: ROUTES.PRIVATE.SETTINGS, icon: 'bx-cog' },
+  ],
+};
+
+const storeGroups: NavGroup[] = [
   {
     label: 'Catálogo',
     items: [
@@ -57,25 +69,72 @@ const navGroups: NavGroup[] = [
       { label: 'Cupones', path: ROUTES.PRIVATE.COUPONS, icon: 'bx-purchase-tag' },
     ],
   },
-  {
-    label: 'Control',
-    adminOnly: true,
-    items: [
-      { label: 'Suscripciones', path: ROUTES.PRIVATE.SUBSCRIPTIONS, icon: 'bx-credit-card-front' },
-      { label: 'Publicidad', path: ROUTES.PRIVATE.ADVERTISING, icon: 'bx-trophy' },
-      { label: 'Invitaciones', path: ROUTES.PRIVATE.INVITATIONS, icon: 'bx-envelope' },
-      { label: 'Auditoría', path: ROUTES.PRIVATE.AUDIT, icon: 'bx-shield-quarter' },
-      { label: 'Ajustes', path: ROUTES.PRIVATE.SETTINGS, icon: 'bx-cog' },
-    ],
-  },
 ];
+
+function NavGroupSection({ group, unreadCount }: { group: NavGroup; unreadCount: number }) {
+  return (
+    <div className='mb-4'>
+      <p
+        className='mb-1.5 px-3 text-[9px] font-bold uppercase tracking-[0.15em]'
+        style={{ color: 'rgba(148, 163, 184, 0.5)' }}
+      >
+        {group.label}
+      </p>
+      {group.items.map((item) => {
+        const badge = item.path === ROUTES.PRIVATE.ORDERS && unreadCount > 0 ? unreadCount : 0;
+        return (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={({ isActive }) =>
+              clsx(
+                'relative flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium transition-all duration-150',
+                isActive ? 'text-white' : 'text-slate-400 hover:text-slate-200',
+              )
+            }
+            style={({ isActive }) =>
+              isActive
+                ? {
+                    background: 'linear-gradient(135deg, rgba(99,102,241,0.25) 0%, rgba(139,92,246,0.15) 100%)',
+                    boxShadow: 'inset 0 0 0 1px rgba(99,102,241,0.3)',
+                  }
+                : undefined
+            }
+          >
+            {({ isActive }) => (
+              <>
+                {isActive ? (
+                  <span
+                    className='absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full'
+                    style={{ background: 'linear-gradient(180deg, #6366f1, #8b5cf6)' }}
+                  />
+                ) : null}
+                <i
+                  className={`bx ${item.icon} text-base shrink-0`}
+                  style={{ color: isActive ? '#818cf8' : undefined }}
+                  aria-hidden='true'
+                />
+                <span className='flex-1 truncate'>{item.label}</span>
+                {badge > 0 ? (
+                  <span className='flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white shadow-sm'>
+                    {badge > 9 ? '9+' : badge}
+                  </span>
+                ) : null}
+              </>
+            )}
+          </NavLink>
+        );
+      })}
+    </div>
+  );
+}
 
 const AdminSidebar = () => {
   const { handleLogout } = useLogout();
   const role = getAuthenticatedRole();
   const isAdmin = role === 'admin';
   const { unreadCount } = useOrderNotifications();
-  const visibleGroups = navGroups.filter((g) => !g.adminOnly || isAdmin);
+  const [storesOpen, setStoresOpen] = useState(false);
 
   return (
     <aside
@@ -99,7 +158,6 @@ const AdminSidebar = () => {
             {isAdmin ? 'Administrador' : 'Vendedor'}
           </p>
         </div>
-        {/* Notification bell — always visible in sidebar */}
         <div className='shrink-0'>
           <NotificationDropdown dark align='left' />
         </div>
@@ -108,68 +166,63 @@ const AdminSidebar = () => {
       {/* Divider */}
       <div className='mx-4 mb-1' style={{ height: '1px', background: 'linear-gradient(90deg, rgba(99,102,241,0.25) 0%, transparent 100%)' }} />
 
-      {/* Store selector — admin only */}
-      {isAdmin ? (
-        <div className='px-3 py-2.5'>
-          <StoreSearchSelector dropdownClassName='left-0' />
-        </div>
-      ) : null}
 
       {/* Navigation */}
       <nav className='flex-1 overflow-y-auto px-2 py-2' style={{ scrollbarWidth: 'none' }}>
-        {visibleGroups.map((group) => (
-          <div key={group.label} className='mb-5'>
-            <p
-              className='mb-1.5 px-3 text-[9px] font-bold uppercase tracking-[0.15em]'
-              style={{ color: 'rgba(148, 163, 184, 0.5)' }}
-            >
-              {group.label}
-            </p>
-            {group.items.map((item) => {
-              const badge = item.path === ROUTES.PRIVATE.ORDERS && unreadCount > 0 ? unreadCount : 0;
-              return (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={({ isActive }) =>
-                    clsx(
-                      'relative flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium transition-all duration-150',
-                      isActive
-                        ? 'text-white'
-                        : 'text-slate-400 hover:text-slate-200',
-                    )
-                  }
-                  style={({ isActive }) => isActive ? {
-                    background: 'linear-gradient(135deg, rgba(99,102,241,0.25) 0%, rgba(139,92,246,0.15) 100%)',
-                    boxShadow: 'inset 0 0 0 1px rgba(99,102,241,0.3)',
-                  } : undefined}
-                >
-                  {({ isActive }) => (
-                    <>
-                      {isActive ? (
-                        <span
-                          className='absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full'
-                          style={{ background: 'linear-gradient(180deg, #6366f1, #8b5cf6)' }}
-                        />
-                      ) : null}
-                      <i
-                        className={`bx ${item.icon} text-base shrink-0`}
-                        style={{ color: isActive ? '#818cf8' : undefined }}
-                        aria-hidden='true'
-                      />
-                      <span className='flex-1 truncate'>{item.label}</span>
-                      {badge > 0 ? (
-                        <span className='flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white shadow-sm'>
-                          {badge > 9 ? '9+' : badge}
-                        </span>
-                      ) : null}
-                    </>
+
+        {isAdmin ? (
+          <>
+            {/* Control — primary section for admin, shown first */}
+            <NavGroupSection group={controlGroup} unreadCount={unreadCount} />
+
+            {/* Tiendas — collapsible secondary section */}
+            <div className='mb-4'>
+              <button
+                type='button'
+                onClick={() => setStoresOpen((v) => !v)}
+                className='flex w-full items-center gap-2 rounded-xl px-3 py-2 text-[13px] font-medium text-slate-400 transition-all duration-150 hover:bg-white/[0.05] hover:text-slate-200'
+              >
+                <i className='bx bx-store text-base shrink-0' aria-hidden='true' />
+                <span className='flex-1 text-left'>Tiendas</span>
+                {unreadCount > 0 && !storesOpen ? (
+                  <span className='flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white shadow-sm'>
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                ) : null}
+                <i
+                  className={clsx(
+                    'bx text-xs shrink-0 transition-transform duration-200',
+                    storesOpen ? 'bx-chevron-up' : 'bx-chevron-down',
                   )}
-                </NavLink>
-              );
-            })}
-          </div>
-        ))}
+                  aria-hidden='true'
+                />
+              </button>
+
+              {storesOpen ? (
+                <div
+                  className='mt-1 overflow-hidden rounded-xl px-1 py-2'
+                  style={{ background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.1)' }}
+                >
+                  <div className='px-2 pb-2 pt-1'>
+                    <StoreSearchSelector dropdownClassName='left-0' />
+                  </div>
+                  <NavGroupSection group={dashboardGroup} unreadCount={unreadCount} />
+                  {storeGroups.map((group) => (
+                    <NavGroupSection key={group.label} group={group} unreadCount={unreadCount} />
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Seller view — flat list of all groups */}
+            <NavGroupSection group={dashboardGroup} unreadCount={unreadCount} />
+            {storeGroups.map((group) => (
+              <NavGroupSection key={group.label} group={group} unreadCount={unreadCount} />
+            ))}
+          </>
+        )}
       </nav>
 
       {/* Footer */}
