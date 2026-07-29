@@ -5,7 +5,7 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-const DISMISSED_KEY = 'pwa_install_dismissed';
+const DISMISSED_KEY = 'pwa_install_dismissed_session';
 
 function isIosDevice(): boolean {
   return (
@@ -146,7 +146,7 @@ const PwaInstallBanner = () => {
   const [showIos, setShowIos] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem(DISMISSED_KEY)) return;
+    if (sessionStorage.getItem(DISMISSED_KEY)) return;
     if (isInStandaloneMode()) return; // already installed
 
     // iOS Safari: no beforeinstallprompt, show manual instructions
@@ -174,7 +174,7 @@ const PwaInstallBanner = () => {
   };
 
   const handleDismiss = () => {
-    localStorage.setItem(DISMISSED_KEY, '1');
+    sessionStorage.setItem(DISMISSED_KEY, '1');
     setShowAndroid(false);
     setShowIos(false);
   };
