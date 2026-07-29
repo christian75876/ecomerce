@@ -128,36 +128,62 @@ const MobileHeaderLayout = () => {
                 <Box className='flex flex-col items-center py-12 text-center'>
                   <i className='bx bx-bell-off mb-3 text-4xl text-slate-200' aria-hidden='true' />
                   <p className='text-sm font-medium text-slate-400'>Sin notificaciones</p>
-                  <p className='mt-1 text-xs text-slate-300'>Los pedidos nuevos aparecerán aquí</p>
+                  <p className='mt-1 text-xs text-slate-300'>
+                    {isAdminRole() ? 'Los registros e invitaciones aceptadas aparecerán aquí' : 'Los pedidos nuevos aparecerán aquí'}
+                  </p>
                 </Box>
               ) : (
-                notifications.map((n) => (
-                  <NavLink
-                    key={n.id}
-                    to={ROUTES.PRIVATE.ORDERS}
-                    onClick={() => { markRead(n.id); closeAll(); }}
-                    className={`flex items-start gap-3 border-b border-slate-50 px-5 py-4 last:border-0 transition-colors hover:bg-slate-50 ${!n.read ? 'bg-primary/[0.04]' : ''}`}
-                  >
-                    <Box className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${!n.read ? 'bg-primary/10' : 'bg-slate-100'}`}>
-                      <i className={`bx bx-receipt text-base ${!n.read ? 'text-primary' : 'text-slate-400'}`} aria-hidden='true' />
-                    </Box>
-                    <Box className='min-w-0 flex-1'>
-                      <p className='text-sm font-semibold text-slate-800'>
-                        Nuevo pedido · {n.itemCount} {n.itemCount === 1 ? 'artículo' : 'artículos'}
-                      </p>
-                      <p className='mt-0.5 truncate text-xs text-slate-500'>
-                        {n.customerName} · {formatCurrencyCOP(n.total)}
-                      </p>
-                      {n.deliveryMethod ? (
-                        <p className='mt-0.5 text-[11px] text-slate-400'>
-                          {n.deliveryMethod === 'DELIVERY' ? '🚗 Domicilio' : '🏪 Recogida en tienda'}
-                        </p>
-                      ) : null}
-                      <p className='mt-1 text-[11px] text-slate-400'>{timeAgo(n.createdAt)}</p>
-                    </Box>
-                    {!n.read ? <span className='mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-primary' /> : null}
-                  </NavLink>
-                ))
+                notifications.map((n) => {
+                  const rowCls = `flex items-start gap-3 border-b border-slate-50 px-5 py-4 last:border-0 transition-colors hover:bg-slate-50 ${!n.read ? 'bg-primary/[0.04]' : ''}`;
+                  const iconBoxCls = `mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${!n.read ? 'bg-primary/10' : 'bg-slate-100'}`;
+                  const iconCls = `text-base ${!n.read ? 'text-primary' : 'text-slate-400'}`;
+
+                  if (n.type === 'new_order') {
+                    return (
+                      <NavLink key={n.id} to={ROUTES.PRIVATE.ORDERS} onClick={() => { markRead(n.id); closeAll(); }} className={rowCls}>
+                        <Box className={iconBoxCls}><i className={`bx bx-receipt ${iconCls}`} aria-hidden='true' /></Box>
+                        <Box className='min-w-0 flex-1'>
+                          <p className='text-sm font-semibold text-slate-800'>Nuevo pedido · {n.itemCount} {n.itemCount === 1 ? 'artículo' : 'artículos'}</p>
+                          <p className='mt-0.5 truncate text-xs text-slate-500'>{n.customerName} · {formatCurrencyCOP(n.total)}</p>
+                          {n.deliveryMethod ? (
+                            <p className='mt-0.5 text-[11px] text-slate-400'>{n.deliveryMethod === 'DELIVERY' ? '🚗 Domicilio' : '🏪 Recogida en tienda'}</p>
+                          ) : null}
+                          <p className='mt-1 text-[11px] text-slate-400'>{timeAgo(n.createdAt)}</p>
+                        </Box>
+                        {!n.read ? <span className='mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-primary' /> : null}
+                      </NavLink>
+                    );
+                  }
+
+                  if (n.type === 'invitation_accepted') {
+                    return (
+                      <NavLink key={n.id} to={ROUTES.PRIVATE.INVITATIONS} onClick={() => { markRead(n.id); closeAll(); }} className={rowCls}>
+                        <Box className={iconBoxCls}><i className={`bx bx-store ${iconCls}`} aria-hidden='true' /></Box>
+                        <Box className='min-w-0 flex-1'>
+                          <p className='text-sm font-semibold text-slate-800'>Invitación aceptada</p>
+                          <p className='mt-0.5 truncate text-xs text-slate-500'>{n.firstName} {n.lastName}</p>
+                          <p className='truncate text-xs text-slate-400'>Tienda: {n.storeName}</p>
+                          <p className='mt-1 text-[11px] text-slate-400'>{timeAgo(n.createdAt)}</p>
+                        </Box>
+                        {!n.read ? <span className='mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-primary' /> : null}
+                      </NavLink>
+                    );
+                  }
+
+                  // user_registered
+                  return (
+                    <NavLink key={n.id} to={ROUTES.PRIVATE.CUSTOMERS} onClick={() => { markRead(n.id); closeAll(); }} className={rowCls}>
+                      <Box className={iconBoxCls}><i className={`bx bx-user-plus ${iconCls}`} aria-hidden='true' /></Box>
+                      <Box className='min-w-0 flex-1'>
+                        <p className='text-sm font-semibold text-slate-800'>Nuevo usuario registrado</p>
+                        <p className='mt-0.5 truncate text-xs text-slate-500'>{n.firstName} {n.lastName}</p>
+                        <p className='truncate text-xs text-slate-400'>{n.email}</p>
+                        <p className='mt-1 text-[11px] text-slate-400'>{timeAgo(n.createdAt)}</p>
+                      </Box>
+                      {!n.read ? <span className='mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-primary' /> : null}
+                    </NavLink>
+                  );
+                })
               )}
             </Box>
           </Box>
