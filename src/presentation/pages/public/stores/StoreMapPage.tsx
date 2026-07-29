@@ -370,6 +370,9 @@ const StoreMapPage = () => {
                           ) : store.storeType === 'RESTAURANT' ? (
                             <p className='text-xs text-amber-600'>🍽️ Restaurante</p>
                           ) : null}
+                          {store.description ? (
+                            <p className='truncate text-xs text-slate-300'>{store.description}</p>
+                          ) : null}
                         </div>
 
                         <div className='flex flex-col items-end gap-1.5'>
@@ -469,6 +472,12 @@ const StoreMapPage = () => {
 
                     {store.addressText ? (
                       <p className='text-xs text-slate-500 leading-snug'>{store.addressText}</p>
+                    ) : null}
+
+                    {store.description ? (
+                      <p className='text-xs text-slate-400 leading-snug line-clamp-2'>
+                        {store.description}
+                      </p>
                     ) : null}
 
                     {userPos ? (
