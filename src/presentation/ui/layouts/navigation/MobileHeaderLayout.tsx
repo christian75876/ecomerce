@@ -14,31 +14,59 @@ import { useOrderNotifications } from '@/shared/hooks/useOrderNotifications';
 import { useCart } from '@/shared/hooks/useCart';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 
-const adminPrimaryNavItems = [
-  { label: 'Inicio',   path: ROUTES.PRIVATE.DASHBOARD, icon: 'bx-home'       },
+// ── Nav item definitions ──────────────────────────────────────────────────────
+
+const adminRolePrimaryNavItems = [
+  { label: 'Suscripciones', path: ROUTES.PRIVATE.SUBSCRIPTIONS, icon: 'bx-badge-check'   },
+  { label: 'Invitaciones',  path: ROUTES.PRIVATE.INVITATIONS,   icon: 'bx-envelope'      },
+  { label: 'Auditoría',     path: ROUTES.PRIVATE.AUDIT,         icon: 'bx-shield-quarter' },
+];
+
+const sellerPrimaryNavItems = [
+  { label: 'Inicio',   path: ROUTES.PRIVATE.DASHBOARD, icon: 'bx-home'        },
   { label: 'POS',      path: ROUTES.PRIVATE.POS,       icon: 'bx-credit-card' },
   { label: 'Pedidos',  path: ROUTES.PRIVATE.ORDERS,    icon: 'bx-receipt'     },
 ];
 
-const adminMoreNavItems = [
-  { label: 'Tiendas',           path: ROUTES.PRIVATE.STORES,     icon: 'bx-store'         },
-  { label: 'Productos',         path: ROUTES.PRIVATE.PRODUCTS,   icon: 'bx-shopping-bag'  },
-  { label: 'Categorías',        path: ROUTES.PRIVATE.CATEGORIES, icon: 'bx-category'      },
-  { label: 'Inventario',        path: ROUTES.PRIVATE.INVENTORY,  icon: 'bx-box'           },
-  { label: 'Clientes y cartera',path: ROUTES.PRIVATE.CUSTOMERS,  icon: 'bx-group'         },
-  { label: 'Compras',           path: ROUTES.PRIVATE.PURCHASES,  icon: 'bx-package'       },
-  { label: 'Proveedores',       path: ROUTES.PRIVATE.SUPPLIERS,  icon: 'bx-briefcase'     },
-  { label: 'Caja',              path: ROUTES.PRIVATE.CASH,       icon: 'bx-wallet'        },
-  { label: 'Auditoría',         path: ROUTES.PRIVATE.AUDIT,      icon: 'bx-history'       },
-  { label: 'Cupones',           path: ROUTES.PRIVATE.COUPONS,    icon: 'bx-purchase-tag'  },
-  { label: 'Ajustes',           path: ROUTES.PRIVATE.SETTINGS,   icon: 'bx-cog'           },
-  { label: 'Ayuda',             path: ROUTES.PUBLIC.HELP,         icon: 'bx-help-circle'   },
+// Admin "Más" — Control section (primary, always visible)
+const adminControlItems = [
+  { label: 'Suscripciones', path: ROUTES.PRIVATE.SUBSCRIPTIONS, icon: 'bx-badge-check'      },
+  { label: 'Publicidad',    path: ROUTES.PRIVATE.ADVERTISING,   icon: 'bx-bulb'             },
+  { label: 'Invitaciones',  path: ROUTES.PRIVATE.INVITATIONS,   icon: 'bx-envelope'         },
+  { label: 'Auditoría',     path: ROUTES.PRIVATE.AUDIT,         icon: 'bx-shield-quarter'   },
+  { label: 'Ajustes',       path: ROUTES.PRIVATE.SETTINGS,      icon: 'bx-cog'              },
 ];
 
-const superAdminMoreNavItems = [
-  { label: 'Invitaciones',  path: ROUTES.PRIVATE.INVITATIONS,  icon: 'bx-envelope'      },
-  { label: 'Suscripciones', path: ROUTES.PRIVATE.SUBSCRIPTIONS,icon: 'bx-badge-check'   },
-  { label: 'Publicidad',    path: ROUTES.PRIVATE.ADVERTISING,  icon: 'bx-bulb'          },
+// Admin "Más" — Tiendas section (collapsible)
+const adminStoreItems = [
+  { label: 'Dashboard',          path: ROUTES.PRIVATE.DASHBOARD,  icon: 'bx-home-alt-2'    },
+  { label: 'Tienda',             path: ROUTES.PRIVATE.STORES,     icon: 'bx-store'         },
+  { label: 'Productos',          path: ROUTES.PRIVATE.PRODUCTS,   icon: 'bx-shopping-bag'  },
+  { label: 'Categorías',         path: ROUTES.PRIVATE.CATEGORIES, icon: 'bx-category'      },
+  { label: 'Inventario',         path: ROUTES.PRIVATE.INVENTORY,  icon: 'bx-box'           },
+  { label: 'POS',                path: ROUTES.PRIVATE.POS,        icon: 'bx-credit-card'   },
+  { label: 'Pedidos',            path: ROUTES.PRIVATE.ORDERS,     icon: 'bx-receipt'       },
+  { label: 'Caja',               path: ROUTES.PRIVATE.CASH,       icon: 'bx-wallet'        },
+  { label: 'Proveedores',        path: ROUTES.PRIVATE.SUPPLIERS,  icon: 'bx-briefcase'     },
+  { label: 'Compras',            path: ROUTES.PRIVATE.PURCHASES,  icon: 'bx-package'       },
+  { label: 'Clientes y cartera', path: ROUTES.PRIVATE.CUSTOMERS,  icon: 'bx-group'         },
+  { label: 'Cupones',            path: ROUTES.PRIVATE.COUPONS,    icon: 'bx-purchase-tag'  },
+];
+
+// Seller "Más" — flat grid (unchanged)
+const sellerMoreNavItems = [
+  { label: 'Tienda',             path: ROUTES.PRIVATE.STORES,     icon: 'bx-store'         },
+  { label: 'Productos',          path: ROUTES.PRIVATE.PRODUCTS,   icon: 'bx-shopping-bag'  },
+  { label: 'Categorías',         path: ROUTES.PRIVATE.CATEGORIES, icon: 'bx-category'      },
+  { label: 'Inventario',         path: ROUTES.PRIVATE.INVENTORY,  icon: 'bx-box'           },
+  { label: 'Clientes y cartera', path: ROUTES.PRIVATE.CUSTOMERS,  icon: 'bx-group'         },
+  { label: 'Compras',            path: ROUTES.PRIVATE.PURCHASES,  icon: 'bx-package'       },
+  { label: 'Proveedores',        path: ROUTES.PRIVATE.SUPPLIERS,  icon: 'bx-briefcase'     },
+  { label: 'Caja',               path: ROUTES.PRIVATE.CASH,       icon: 'bx-wallet'        },
+  { label: 'Cupones',            path: ROUTES.PRIVATE.COUPONS,    icon: 'bx-purchase-tag'  },
+  { label: 'Auditoría',          path: ROUTES.PRIVATE.AUDIT,      icon: 'bx-history'       },
+  { label: 'Ajustes',            path: ROUTES.PRIVATE.SETTINGS,   icon: 'bx-cog'           },
+  { label: 'Ayuda',              path: ROUTES.PUBLIC.HELP,         icon: 'bx-help-circle'   },
 ];
 
 const publicPrimaryNavItems = [
@@ -49,12 +77,14 @@ const publicPrimaryNavItems = [
 ];
 
 const publicMoreNavItems = [
-  { label: 'Mi perfil',   path: ROUTES.PRIVATE.PROFILE,    icon: 'bx-user'    },
-  { label: 'Favoritos',   path: ROUTES.PUBLIC.FAVORITES,   icon: 'bx-heart'   },
-  { label: 'Mis pedidos', path: ROUTES.PUBLIC.MY_ORDERS,   icon: 'bx-receipt' },
-  { label: 'Entrar',      path: ROUTES.PUBLIC.LOGIN,        icon: 'bx-user'    },
+  { label: 'Mi perfil',   path: ROUTES.PRIVATE.PROFILE,    icon: 'bx-user'        },
+  { label: 'Favoritos',   path: ROUTES.PUBLIC.FAVORITES,   icon: 'bx-heart'       },
+  { label: 'Mis pedidos', path: ROUTES.PUBLIC.MY_ORDERS,   icon: 'bx-receipt'     },
+  { label: 'Entrar',      path: ROUTES.PUBLIC.LOGIN,        icon: 'bx-user'        },
   { label: 'Ayuda',       path: ROUTES.PUBLIC.HELP,         icon: 'bx-help-circle' },
 ];
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 const timeAgo = (iso: string) => {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -64,29 +94,52 @@ const timeAgo = (iso: string) => {
   return `Hace ${Math.floor(diff / 86400)} d`;
 };
 
+type NavItem = { label: string; path: string; icon: string };
+
+function NavGrid({ items, onClose }: { items: NavItem[]; onClose: () => void }) {
+  return (
+    <div className='grid grid-cols-2 gap-2'>
+      {items.map(({ label, path, icon }) => (
+        <NavLink
+          key={path}
+          to={path}
+          onClick={onClose}
+          className='flex items-center gap-3 rounded-2xl bg-background px-4 py-3 text-sm font-medium text-neutral-dark/75'
+        >
+          <Icon name={icon} className='text-xl' />
+          {label}
+        </NavLink>
+      ))}
+    </div>
+  );
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
 const MobileHeaderLayout = () => {
   const [showMore, setShowMore] = useState(false);
   const [showNotifPanel, setShowNotifPanel] = useState(false);
+  const [storesOpen, setStoresOpen] = useState(false);
 
   useEffect(() => {
     window.dispatchEvent(new CustomEvent(showMore ? 'mobile-nav-more-open' : 'mobile-nav-more-close'));
   }, [showMore]);
 
+  // Reset stores section when panel closes
+  useEffect(() => {
+    if (!showMore) setStoresOpen(false);
+  }, [showMore]);
+
   const adminView = isAuthenticated() && canAccessAdminPanel();
+  const adminRole = isAdminRole();
   const { unreadCount, notifications, markAllRead, markRead } = useOrderNotifications();
   const { items: cartItems } = useCart();
   const cartCount = cartItems.reduce((acc, i) => acc + i.quantity, 0);
   const buyerView = isBuyerSession();
-  const primaryNavItems = adminView ? adminPrimaryNavItems : publicPrimaryNavItems;
-  const moreNavItems = adminView
-    ? [...adminMoreNavItems, ...(isAdminRole() ? superAdminMoreNavItems : [])]
-    : publicMoreNavItems.filter((item) => {
-        if (!isAuthenticated() && item.path === ROUTES.PRIVATE.PROFILE) return false;
-        if (isAuthenticated() && item.path === ROUTES.PUBLIC.LOGIN) return false;
-        if (!isAuthenticated() && (item.path === ROUTES.PUBLIC.FAVORITES || item.path === ROUTES.PUBLIC.MY_ORDERS)) return false;
-        if (item.path === ROUTES.PUBLIC.MY_ORDERS && !buyerView) return false;
-        return true;
-      });
+
+  const primaryNavItems = adminView
+    ? (adminRole ? adminRolePrimaryNavItems : sellerPrimaryNavItems)
+    : publicPrimaryNavItems;
 
   const closeAll = () => { setShowMore(false); setShowNotifPanel(false); };
 
@@ -99,7 +152,6 @@ const MobileHeaderLayout = () => {
             className='absolute inset-x-3 bottom-24 max-h-[70vh] overflow-hidden rounded-[1.75rem] border border-neutral-gray/20 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.18)]'
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
             <Box className='flex items-center justify-between border-b border-slate-100 px-5 py-4'>
               <Box className='flex items-center gap-2'>
                 <i className='bx bx-bell text-xl text-primary' aria-hidden='true' />
@@ -122,14 +174,13 @@ const MobileHeaderLayout = () => {
               </Box>
             </Box>
 
-            {/* List */}
             <Box className='overflow-y-auto' style={{ maxHeight: 'calc(70vh - 64px)' }}>
               {notifications.length === 0 ? (
                 <Box className='flex flex-col items-center py-12 text-center'>
                   <i className='bx bx-bell-off mb-3 text-4xl text-slate-200' aria-hidden='true' />
                   <p className='text-sm font-medium text-slate-400'>Sin notificaciones</p>
                   <p className='mt-1 text-xs text-slate-300'>
-                    {isAdminRole() ? 'Los registros e invitaciones aceptadas aparecerán aquí' : 'Los pedidos nuevos aparecerán aquí'}
+                    {adminRole ? 'Los registros e invitaciones aceptadas aparecerán aquí' : 'Los pedidos nuevos aparecerán aquí'}
                   </p>
                 </Box>
               ) : (
@@ -170,7 +221,6 @@ const MobileHeaderLayout = () => {
                     );
                   }
 
-                  // user_registered
                   return (
                     <NavLink key={n.id} to={ROUTES.PRIVATE.CUSTOMERS} onClick={() => { markRead(n.id); closeAll(); }} className={rowCls}>
                       <Box className={iconBoxCls}><i className={`bx bx-user-plus ${iconCls}`} aria-hidden='true' /></Box>
@@ -194,23 +244,83 @@ const MobileHeaderLayout = () => {
       {showMore ? (
         <Box className='fixed inset-0 z-50 bg-neutral-dark/35 backdrop-blur-[2px]' onClick={closeAll}>
           <Box
-            className='absolute inset-x-3 bottom-24 rounded-[1.75rem] border border-neutral-gray/20 bg-white p-4 shadow-[0_24px_60px_rgba(15,23,42,0.18)]'
+            className='absolute inset-x-3 bottom-24 max-h-[74vh] overflow-y-auto rounded-[1.75rem] border border-neutral-gray/20 bg-white p-4 shadow-[0_24px_60px_rgba(15,23,42,0.18)]'
             onClick={(e) => e.stopPropagation()}
           >
-            <Typography variant='h3'>Más opciones</Typography>
-            <Box className='mt-4 grid grid-cols-2 gap-2'>
-              {moreNavItems.map(({ label, path, icon }) => (
+            {adminRole ? (
+              /* ── Admin structured view ── */
+              <div className='space-y-4'>
+                {/* Control section */}
+                <div>
+                  <p className='mb-2 px-1 text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400'>
+                    Control
+                  </p>
+                  <NavGrid items={adminControlItems} onClose={closeAll} />
+                </div>
+
+                {/* Tiendas collapsible */}
+                <div>
+                  <button
+                    type='button'
+                    onClick={() => setStoresOpen((v) => !v)}
+                    className='flex w-full items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50'
+                  >
+                    <Icon name='bx-store' className='text-xl text-slate-500' />
+                    <span className='flex-1 text-left'>Tiendas</span>
+                    {unreadCount > 0 && !storesOpen ? (
+                      <span className='flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white'>
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    ) : null}
+                    <i
+                      className={`bx text-base text-slate-400 transition-transform duration-200 ${storesOpen ? 'bx-chevron-up' : 'bx-chevron-down'}`}
+                      aria-hidden='true'
+                    />
+                  </button>
+
+                  {storesOpen ? (
+                    <div className='mt-2 rounded-2xl border border-slate-100 p-2'>
+                      <NavGrid items={adminStoreItems} onClose={closeAll} />
+                    </div>
+                  ) : null}
+                </div>
+
+                {/* Help */}
                 <NavLink
-                  key={path}
-                  to={path}
+                  to={ROUTES.PUBLIC.HELP}
                   onClick={closeAll}
                   className='flex items-center gap-3 rounded-2xl bg-background px-4 py-3 text-sm font-medium text-neutral-dark/75'
                 >
-                  <Icon name={icon} className='text-xl' />
-                  {label}
+                  <Icon name='bx-help-circle' className='text-xl' />
+                  Ayuda
                 </NavLink>
-              ))}
-            </Box>
+              </div>
+            ) : adminView ? (
+              /* ── Seller flat view ── */
+              <>
+                <Typography variant='h3'>Más opciones</Typography>
+                <Box className='mt-4'>
+                  <NavGrid items={sellerMoreNavItems} onClose={closeAll} />
+                </Box>
+              </>
+            ) : (
+              /* ── Public / buyer view ── */
+              <>
+                <Typography variant='h3'>Más opciones</Typography>
+                <Box className='mt-4'>
+                  <NavGrid
+                    items={publicMoreNavItems.filter((item) => {
+                      if (!isAuthenticated() && item.path === ROUTES.PRIVATE.PROFILE) return false;
+                      if (isAuthenticated() && item.path === ROUTES.PUBLIC.LOGIN) return false;
+                      if (!isAuthenticated() && (item.path === ROUTES.PUBLIC.FAVORITES || item.path === ROUTES.PUBLIC.MY_ORDERS)) return false;
+                      if (item.path === ROUTES.PUBLIC.MY_ORDERS && !buyerView) return false;
+                      return true;
+                    })}
+                    onClose={closeAll}
+                  />
+                </Box>
+              </>
+            )}
           </Box>
         </Box>
       ) : null}
@@ -246,7 +356,7 @@ const MobileHeaderLayout = () => {
             );
           })}
 
-          {/* Bell button — admin only, always visible */}
+          {/* Bell — admin/seller only */}
           {adminView ? (
             <button
               type='button'
