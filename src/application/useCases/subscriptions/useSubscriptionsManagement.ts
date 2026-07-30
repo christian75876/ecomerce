@@ -20,7 +20,7 @@ export const useSubscriptionsManagement = () => {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [dateRange, setDateRange] = useState<{ from: string; to: string } | null>(null);
+  const [dateRange, setDateRange] = useState<{ from: string; to: string; label: string } | null>(null);
 
   const loadDashboard = async (from?: string, to?: string) => {
     setError(null);
@@ -53,7 +53,7 @@ export const useSubscriptionsManagement = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const applyDateRange = (range: { from: string; to: string } | null) => {
+  const applyDateRange = (range: { from: string; to: string; label: string } | null) => {
     setDateRange(range);
     void loadDashboard(range?.from, range?.to);
   };

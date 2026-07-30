@@ -146,8 +146,8 @@ const MobileHeaderLayout = () => {
 
   const closeAll = () => { setShowMore(false); setShowNotifPanel(false); };
 
-  const displayName = currentUser?.profile
-    ? `${currentUser.profile.firstName} ${currentUser.profile.lastName}`.trim()
+  const displayName = currentUser?.customer
+    ? `${currentUser.customer.firstName} ${currentUser.customer.lastName}`.trim()
     : currentUser?.email ?? '';
   const initials = displayName
     .split(' ')
