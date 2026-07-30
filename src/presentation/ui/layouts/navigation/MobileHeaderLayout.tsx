@@ -13,6 +13,8 @@ import {
 import { useOrderNotifications } from '@/shared/hooks/useOrderNotifications';
 import { useCart } from '@/shared/hooks/useCart';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
+import { useLogout } from '@/application/useCases/auth/useLogout';
+import { authSession } from '@/shared/utils/authSession';
 
 // ── Nav item definitions ──────────────────────────────────────────────────────
 
@@ -77,7 +79,6 @@ const publicPrimaryNavItems = [
 ];
 
 const publicMoreNavItems = [
-  { label: 'Mi perfil',   path: ROUTES.PRIVATE.PROFILE,    icon: 'bx-user'        },
   { label: 'Favoritos',   path: ROUTES.PUBLIC.FAVORITES,   icon: 'bx-heart'       },
   { label: 'Mis pedidos', path: ROUTES.PUBLIC.MY_ORDERS,   icon: 'bx-receipt'     },
   { label: 'Entrar',      path: ROUTES.PUBLIC.LOGIN,        icon: 'bx-user'        },
@@ -136,12 +137,28 @@ const MobileHeaderLayout = () => {
   const { items: cartItems } = useCart();
   const cartCount = cartItems.reduce((acc, i) => acc + i.quantity, 0);
   const buyerView = isBuyerSession();
+  const { handleLogout, isLoading: loggingOut } = useLogout();
+  const currentUser = authSession.getUser();
 
   const primaryNavItems = adminView
     ? (adminRole ? adminRolePrimaryNavItems : sellerPrimaryNavItems)
     : publicPrimaryNavItems;
 
   const closeAll = () => { setShowMore(false); setShowNotifPanel(false); };
+
+  const displayName = currentUser?.profile
+    ? `${currentUser.profile.firstName} ${currentUser.profile.lastName}`.trim()
+    : currentUser?.email ?? '';
+  const initials = displayName
+    .split(' ')
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? '')
+    .join('');
+
+  const handleLogoutAndClose = async () => {
+    closeAll();
+    await handleLogout();
+  };
 
   return (
     <>
@@ -310,7 +327,6 @@ const MobileHeaderLayout = () => {
                 <Box className='mt-4'>
                   <NavGrid
                     items={publicMoreNavItems.filter((item) => {
-                      if (!isAuthenticated() && item.path === ROUTES.PRIVATE.PROFILE) return false;
                       if (isAuthenticated() && item.path === ROUTES.PUBLIC.LOGIN) return false;
                       if (!isAuthenticated() && (item.path === ROUTES.PUBLIC.FAVORITES || item.path === ROUTES.PUBLIC.MY_ORDERS)) return false;
                       if (item.path === ROUTES.PUBLIC.MY_ORDERS && !buyerView) return false;
@@ -321,6 +337,46 @@ const MobileHeaderLayout = () => {
                 </Box>
               </>
             )}
+
+            {/* ── Profile card + logout (all authenticated users) ── */}
+            {isAuthenticated() ? (
+              <div className='mt-2 border-t border-slate-100 pt-3'>
+                {/* User info */}
+                <div className='flex items-center gap-3 rounded-2xl px-3 py-2.5'>
+                  <div className='flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-sm font-bold text-primary'>
+                    {initials || <i className='bx bx-user text-lg' aria-hidden='true' />}
+                  </div>
+                  <div className='min-w-0 flex-1'>
+                    {displayName ? (
+                      <p className='truncate text-sm font-semibold text-slate-800'>{displayName}</p>
+                    ) : null}
+                    <p className='truncate text-xs text-slate-400'>{currentUser?.email ?? ''}</p>
+                  </div>
+                </div>
+
+                {/* Profile link */}
+                <NavLink
+                  to={ROUTES.PRIVATE.PROFILE}
+                  onClick={closeAll}
+                  className='mt-1 flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50'
+                >
+                  <i className='bx bx-user-circle text-xl text-slate-400' aria-hidden='true' />
+                  Mi perfil
+                  <i className='bx bx-chevron-right ml-auto text-slate-300' aria-hidden='true' />
+                </NavLink>
+
+                {/* Logout */}
+                <button
+                  type='button'
+                  disabled={loggingOut}
+                  onClick={() => void handleLogoutAndClose()}
+                  className='mt-1 flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-red-500 transition hover:bg-red-50 disabled:opacity-50'
+                >
+                  <i className='bx bx-log-out text-xl' aria-hidden='true' />
+                  {loggingOut ? 'Cerrando sesión...' : 'Cerrar sesión'}
+                </button>
+              </div>
+            ) : null}
           </Box>
         </Box>
       ) : null}
