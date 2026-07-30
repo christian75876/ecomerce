@@ -305,10 +305,9 @@ const StoreMapPage = () => {
       </div>
 
       {/* ── Main layout ── */}
-      <div
-        className='flex overflow-hidden rounded-3xl border border-slate-200 shadow-sm'
-        style={{ height: 'max(500px, calc(100svh - 11rem))' }}
-      >
+      {/* Mobile: subtract search strip (~5.5rem) + bottom navbar (~5rem) + header (~4rem) + gaps */}
+      {/* Desktop: no bottom navbar, no search strip above */}
+      <div className='flex overflow-hidden rounded-3xl border border-slate-200 shadow-sm h-[max(400px,calc(100svh-18rem))] sm:h-[max(520px,calc(100svh-9rem))]'>
         {/* Desktop sidebar — search only, no store list */}
         <div className='hidden sm:flex sm:w-60 sm:flex-shrink-0 sm:flex-col sm:border-r sm:border-slate-100 sm:bg-white'>
           <div className='border-b border-slate-100 p-3'>
