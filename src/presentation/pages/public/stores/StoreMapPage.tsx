@@ -196,7 +196,7 @@ const StoreMapPage = () => {
         setFlyTo({ center: [midLat, midLng], zoom: routeZoom(distKm) });
       }
     } catch {
-      // OSRM unavailable — silently ignore, user still has Google Maps
+      // OSRM unavailable — silently ignore
     } finally {
       setLoadingRoute(false);
     }
@@ -238,6 +238,39 @@ const StoreMapPage = () => {
     );
   }, []);
 
+  // ── Search controls (reused in both mobile strip and desktop sidebar) ────
+
+  const SearchControls = () => (
+    <div className='space-y-2'>
+      <div className='relative'>
+        <i className='bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400' aria-hidden='true' />
+        <input
+          type='search'
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder='Buscar tienda...'
+          className='w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10'
+        />
+      </div>
+      <button
+        type='button'
+        onClick={handleMyLocation}
+        disabled={locating}
+        className={`flex w-full items-center justify-center gap-2 rounded-2xl border py-2 text-xs font-semibold transition disabled:opacity-60 ${
+          userPos
+            ? 'border-primary/30 bg-primary/5 text-primary'
+            : 'border-slate-200 text-slate-600 hover:border-primary/30 hover:text-primary'
+        }`}
+      >
+        <i
+          className={`bx text-base ${locating ? 'bx-loader-alt animate-spin' : 'bx-current-location'}`}
+          aria-hidden='true'
+        />
+        {locating ? 'Detectando...' : userPos ? 'Mostrando tiendas cercanas' : 'Tiendas cerca de mí'}
+      </button>
+    </div>
+  );
+
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
@@ -248,7 +281,7 @@ const StoreMapPage = () => {
       </Helmet>
 
       {/* Page header */}
-      <div className='mb-4 flex items-end justify-between'>
+      <div className='mb-3 flex items-end justify-between'>
         <div>
           <h1 className='text-2xl font-bold tracking-tight text-slate-900'>Mapa de tiendas</h1>
           <p className='mt-0.5 text-sm text-slate-400'>
@@ -266,150 +299,30 @@ const StoreMapPage = () => {
         </Link>
       </div>
 
-      {/* Main split layout */}
+      {/* ── Mobile search strip (above map, hidden on sm+) ── */}
+      <div className='mb-2 sm:hidden'>
+        <SearchControls />
+      </div>
+
+      {/* ── Main layout ── */}
       <div
-        className='flex flex-col overflow-hidden rounded-3xl border border-slate-200 shadow-sm sm:flex-row'
-        style={{ height: 'max(520px, calc(100svh - 14rem))' }}
+        className='flex overflow-hidden rounded-3xl border border-slate-200 shadow-sm'
+        style={{ height: 'max(500px, calc(100svh - 11rem))' }}
       >
-        {/* ── Sidebar ── */}
-        <div className='h-[44%] flex flex-col overflow-hidden border-b border-slate-100 bg-white sm:h-auto sm:w-80 sm:flex-shrink-0 sm:border-b-0 sm:border-r'>
-
-          {/* Search + locate */}
-          <div className='flex-shrink-0 space-y-2 border-b border-slate-100 p-3'>
-            <div className='relative'>
-              <i className='bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400' aria-hidden='true' />
-              <input
-                type='search'
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder='Buscar tienda...'
-                className='w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-4 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10'
-              />
-            </div>
-            <button
-              type='button'
-              onClick={handleMyLocation}
-              disabled={locating}
-              className={`flex w-full items-center justify-center gap-2 rounded-2xl border py-2 text-xs font-semibold transition disabled:opacity-60 ${
-                userPos
-                  ? 'border-primary/30 bg-primary/5 text-primary'
-                  : 'border-slate-200 text-slate-600 hover:border-primary/30 hover:text-primary'
-              }`}
-            >
-              <i
-                className={`bx text-base ${locating ? 'bx-loader-alt animate-spin' : 'bx-current-location'}`}
-                aria-hidden='true'
-              />
-              {locating
-                ? 'Detectando...'
-                : userPos
-                  ? 'Mostrando tiendas cercanas'
-                  : 'Tiendas cerca de mí'}
-            </button>
+        {/* Desktop sidebar — search only, no store list */}
+        <div className='hidden sm:flex sm:w-60 sm:flex-shrink-0 sm:flex-col sm:border-r sm:border-slate-100 sm:bg-white'>
+          <div className='border-b border-slate-100 p-3'>
+            <SearchControls />
           </div>
-
-          {/* Store list */}
-          <div className='flex-1 overflow-y-auto'>
+          {/* Store count summary */}
+          <div className='px-4 py-3 text-xs text-slate-400'>
             {loading ? (
-              <div className='space-y-2 p-3'>
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className='h-16 animate-pulse rounded-2xl bg-slate-100' />
-                ))}
-              </div>
-            ) : sorted.length === 0 ? (
-              <div className='flex flex-col items-center justify-center py-10 text-center'>
-                <i className='bx bx-map mb-2 text-3xl text-slate-300' aria-hidden='true' />
-                <p className='text-sm text-slate-400'>
-                  {search ? 'Sin resultados' : 'Ninguna tienda tiene ubicación registrada aún'}
-                </p>
-              </div>
+              <div className='h-4 w-24 animate-pulse rounded bg-slate-100' />
             ) : (
-              <div className='space-y-1 p-3'>
-                {sorted.map((store) => {
-                  const dist = userPos
-                    ? haversineKm(userPos[0], userPos[1], store.lat, store.lng)
-                    : null;
-                  const isSelected = selectedId === store.id;
-                  const hasRoute = routeStoreId === store.id && routeCoords !== null;
-                  const isLoadingRoute = loadingRoute && routeStoreId === store.id;
-
-                  return (
-                    <div
-                      key={store.id}
-                      ref={(el) => { cardRefs.current[store.id] = el; }}
-                      role='button'
-                      tabIndex={0}
-                      onClick={() => selectStore(store)}
-                      onKeyDown={(e) => e.key === 'Enter' && selectStore(store)}
-                      className={`cursor-pointer rounded-2xl border p-3 transition-all ${
-                        isSelected
-                          ? 'border-primary/40 bg-primary/5'
-                          : 'border-slate-100 hover:border-primary/20 hover:bg-slate-50'
-                      }`}
-                    >
-                      <div className='flex items-center gap-3'>
-                        {store.logoUrl ? (
-                          <img
-                            src={store.logoUrl}
-                            alt={store.name}
-                            className='h-10 w-10 flex-shrink-0 rounded-xl object-cover'
-                          />
-                        ) : (
-                          <div
-                            className='flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white'
-                            style={{ background: store.primaryColor || '#6366f1' }}
-                          >
-                            {store.name.charAt(0).toUpperCase()}
-                          </div>
-                        )}
-
-                        <div className='min-w-0 flex-1'>
-                          <p className='truncate text-sm font-semibold text-slate-800'>{store.name}</p>
-                          {store.addressText ? (
-                            <p className='truncate text-xs text-slate-400'>{store.addressText}</p>
-                          ) : store.storeType === 'RESTAURANT' ? (
-                            <p className='text-xs text-amber-600'>🍽️ Restaurante</p>
-                          ) : null}
-                          {store.description ? (
-                            <p className='truncate text-xs text-slate-300'>{store.description}</p>
-                          ) : null}
-                        </div>
-
-                        <div className='flex flex-col items-end gap-1.5'>
-                          {dist !== null ? (
-                            <span className={`text-xs font-bold ${dist < 2 ? 'text-emerald-600' : 'text-primary'}`}>
-                              {formatDist(dist)}
-                            </span>
-                          ) : null}
-                          <div className='flex items-center gap-1'>
-                            {/* Route button */}
-                            <button
-                              type='button'
-                              onClick={(e) => { e.stopPropagation(); requestRoute(store); }}
-                              title='Cómo llegar'
-                              disabled={loadingRoute && !isLoadingRoute}
-                              className={`flex h-6 w-6 items-center justify-center rounded-lg border text-xs transition ${
-                                hasRoute
-                                  ? 'border-primary bg-primary text-white'
-                                  : 'border-slate-200 text-slate-400 hover:border-primary/30 hover:text-primary'
-                              } disabled:opacity-40`}
-                            >
-                              <i className={`bx ${isLoadingRoute ? 'bx-loader-alt animate-spin' : 'bx-navigation'}`} aria-hidden='true' />
-                            </button>
-                            <Link
-                              to={ROUTES.PUBLIC.STORE_DETAILS.replace(':slug', store.slug)}
-                              onClick={(e) => e.stopPropagation()}
-                              className='rounded-lg border border-primary/30 px-2.5 py-0.5 text-[10px] font-semibold text-primary transition hover:bg-primary hover:text-white'
-                            >
-                              Ver
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <span>
+                <span className='font-semibold text-slate-600'>{sorted.length}</span>
+                {' tienda'}{sorted.length !== 1 ? 's' : ''}{' en el mapa'}
+              </span>
             )}
           </div>
         </div>
@@ -428,127 +341,110 @@ const StoreMapPage = () => {
             />
             {flyTo ? <MapFlyer center={flyTo.center} zoom={flyTo.zoom} /> : null}
 
-            {/* User position */}
             {userPos ? <Marker position={userPos} icon={USER_ICON} /> : null}
 
-            {/* Route polyline */}
             {routeCoords ? (
               <Polyline positions={routeCoords} color='#6366f1' weight={5} opacity={0.85} />
             ) : null}
 
-            {/* Store markers */}
-            {sorted.map((store) => (
-              <Marker
-                key={store.id}
-                position={[store.lat, store.lng]}
-                icon={makeStoreIcon(store, selectedId === store.id)}
-                eventHandlers={{ click: () => selectStore(store) }}
-              >
-                <Popup minWidth={210} maxWidth={240}>
-                  <div className='space-y-2.5 pb-1'>
-                    {/* Store header */}
-                    <div className='flex items-center gap-2.5'>
-                      {store.logoUrl ? (
-                        <img
-                          src={store.logoUrl}
-                          alt={store.name}
-                          className='h-9 w-9 flex-shrink-0 rounded-xl object-cover'
-                        />
-                      ) : (
-                        <div
-                          className='flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white'
+            {sorted.map((store) => {
+              const dist = userPos
+                ? haversineKm(userPos[0], userPos[1], store.lat, store.lng)
+                : null;
+              const isLoadingRoute = loadingRoute && routeStoreId === store.id;
+              const hasRoute = routeStoreId === store.id && routeCoords !== null;
+
+              return (
+                <Marker
+                  key={store.id}
+                  position={[store.lat, store.lng]}
+                  icon={makeStoreIcon(store, selectedId === store.id)}
+                  eventHandlers={{ click: () => selectStore(store) }}
+                  ref={(el) => { if (el) cardRefs.current[store.id] = null; }}
+                >
+                  {/* ── Compact popup ── */}
+                  <Popup minWidth={168} maxWidth={200} className='compact-map-popup'>
+                    <div style={{ margin: '-6px -10px', padding: '10px' }}>
+                      {/* Store header */}
+                      <div className='flex items-center gap-2'>
+                        {store.logoUrl ? (
+                          <img
+                            src={store.logoUrl}
+                            alt={store.name}
+                            className='h-8 w-8 flex-shrink-0 rounded-xl object-cover'
+                          />
+                        ) : (
+                          <div
+                            className='flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl text-xs font-bold text-white'
+                            style={{ background: store.primaryColor || '#6366f1' }}
+                          >
+                            {store.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div className='min-w-0'>
+                          <p className='truncate text-xs font-bold leading-tight text-slate-800'>
+                            {store.name}
+                          </p>
+                          <p className='text-[10px] text-slate-400'>
+                            {store.storeType === 'RESTAURANT' ? '🍽️ Restaurante' : '🏪 Tienda'}
+                          </p>
+                        </div>
+                        {dist !== null ? (
+                          <span className='ml-auto flex-shrink-0 text-[10px] font-bold text-primary'>
+                            {formatDist(dist)}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      {/* Actions */}
+                      <div className='mt-2 flex gap-1.5'>
+                        <button
+                          type='button'
+                          onClick={() => requestRoute(store)}
+                          disabled={loadingRoute}
+                          className={`flex flex-1 items-center justify-center gap-1 rounded-lg py-1.5 text-[10px] font-semibold transition disabled:opacity-60 ${
+                            hasRoute
+                              ? 'bg-primary text-white'
+                              : 'border border-primary/30 text-primary hover:bg-primary hover:text-white'
+                          }`}
+                        >
+                          <i
+                            className={`bx text-xs ${isLoadingRoute ? 'bx-loader-alt animate-spin' : 'bx-navigation'}`}
+                            aria-hidden='true'
+                          />
+                          {isLoadingRoute ? 'Calculando...' : hasRoute ? 'Ruta activa' : 'Llegar'}
+                        </button>
+                        <a
+                          href={gmapsDirectionsUrl(store, userPos)}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='flex flex-1 items-center justify-center gap-1 rounded-lg py-1.5 text-[10px] font-bold text-white transition hover:opacity-90'
                           style={{ background: store.primaryColor || '#6366f1' }}
                         >
-                          {store.name.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      <div className='min-w-0'>
-                        <p className='font-bold text-sm text-slate-800 leading-tight'>{store.name}</p>
-                        <p className='text-xs text-slate-500'>
-                          {store.storeType === 'RESTAURANT' ? '🍽️ Restaurante' : '🏪 Tienda'}
-                        </p>
+                          <i className='bx bx-map text-xs' aria-hidden='true' />
+                          Maps
+                        </a>
+                        <Link
+                          to={ROUTES.PUBLIC.STORE_DETAILS.replace(':slug', store.slug)}
+                          className='flex flex-1 items-center justify-center rounded-lg border border-slate-200 py-1.5 text-[10px] font-semibold text-slate-600 transition hover:bg-slate-50'
+                        >
+                          Ver
+                        </Link>
                       </div>
                     </div>
-
-                    {store.addressText ? (
-                      <p className='text-xs text-slate-500 leading-snug'>{store.addressText}</p>
-                    ) : null}
-
-                    {store.description ? (
-                      <p className='text-xs text-slate-400 leading-snug line-clamp-2'>
-                        {store.description}
-                      </p>
-                    ) : null}
-
-                    {userPos ? (
-                      <p className='text-xs font-semibold text-primary'>
-                        📍 {formatDist(haversineKm(userPos[0], userPos[1], store.lat, store.lng))} de tu ubicación
-                      </p>
-                    ) : null}
-
-                    {/* Action buttons */}
-                    <div className='flex flex-col gap-1.5'>
-                      {/* Trace route on map */}
-                      <button
-                        type='button'
-                        onClick={() => requestRoute(store)}
-                        disabled={loadingRoute}
-                        className={`flex w-full items-center justify-center gap-1.5 rounded-xl border py-1.5 text-xs font-semibold transition disabled:opacity-60 ${
-                          routeStoreId === store.id && routeCoords
-                            ? 'border-primary bg-primary text-white'
-                            : 'border-primary/30 text-primary hover:bg-primary hover:text-white'
-                        }`}
-                      >
-                        <i
-                          className={`bx text-sm ${
-                            loadingRoute && routeStoreId === store.id
-                              ? 'bx-loader-alt animate-spin'
-                              : 'bx-navigation'
-                          }`}
-                          aria-hidden='true'
-                        />
-                        {loadingRoute && routeStoreId === store.id
-                          ? 'Calculando ruta...'
-                          : routeStoreId === store.id && routeCoords
-                            ? 'Ruta activa en el mapa'
-                            : 'Cómo llegar (en el mapa)'}
-                      </button>
-
-                      {/* Open Google Maps */}
-                      <a
-                        href={gmapsDirectionsUrl(store, userPos)}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='flex w-full items-center justify-center gap-1.5 rounded-xl py-1.5 text-xs font-bold text-white transition hover:opacity-90'
-                        style={{ background: store.primaryColor || '#6366f1' }}
-                      >
-                        <i className='bx bx-map text-sm' aria-hidden='true' />
-                        Abrir en Google Maps
-                      </a>
-
-                      {/* Go to store */}
-                      <Link
-                        to={ROUTES.PUBLIC.STORE_DETAILS.replace(':slug', store.slug)}
-                        className='block w-full rounded-xl border border-slate-200 py-1.5 text-center text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50'
-                      >
-                        Ver tienda →
-                      </Link>
-                    </div>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
+                  </Popup>
+                </Marker>
+              );
+            })}
           </MapContainer>
 
-          {/* ── Route info banner ── */}
+          {/* Route info banner */}
           {routeInfo ? (
             <div className='pointer-events-auto absolute left-1/2 top-3 z-[500] -translate-x-1/2'>
               <div className='flex items-center gap-3 rounded-2xl border border-white/60 bg-white/95 px-4 py-2.5 shadow-xl backdrop-blur-sm'>
                 <i className='bx bx-car text-xl text-primary' aria-hidden='true' />
                 <div>
-                  <p className='text-sm font-bold text-slate-800'>
-                    {formatDist(routeInfo.distanceM / 1000)}
-                  </p>
+                  <p className='text-sm font-bold text-slate-800'>{formatDist(routeInfo.distanceM / 1000)}</p>
                   <p className='text-xs text-slate-500'>≈ {formatTime(routeInfo.durationS)} en carro</p>
                 </div>
                 <button
@@ -563,13 +459,13 @@ const StoreMapPage = () => {
             </div>
           ) : null}
 
-          {/* ── No-location hint ── */}
+          {/* No-location hint */}
           {!userPos && !locating && storesWithCoords.length > 0 ? (
-            <div className='pointer-events-none absolute bottom-4 left-1/2 z-[500] -translate-x-1/2'>
-              <div className='rounded-2xl border border-white/70 bg-white/90 px-4 py-2 shadow-lg backdrop-blur-sm'>
+            <div className='pointer-events-none absolute bottom-4 left-1/2 z-[500] -translate-x-1/2 w-max max-w-[85vw]'>
+              <div className='rounded-2xl border border-white/70 bg-white/90 px-3 py-2 shadow-lg backdrop-blur-sm'>
                 <p className='text-xs font-medium text-slate-600'>
                   <i className='bx bx-current-location mr-1 text-primary' aria-hidden='true' />
-                  Comparte tu ubicación para ver tiendas cercanas y calcular rutas
+                  Comparte tu ubicación para ver tiendas cercanas
                 </p>
               </div>
             </div>
