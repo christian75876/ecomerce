@@ -135,13 +135,21 @@ const StoreDetailPage = () => {
   return (
     <>
       <Helmet>
-        <title>{store.name} — Marketplace</title>
+        <title>{store.name} — Hot Commerce</title>
         <meta name='description' content={store.description || `Explora los productos de ${store.name} en el marketplace.`} />
-        <meta property='og:title' content={store.name} />
-        <meta property='og:description' content={store.description || `Explora los productos de ${store.name}.`} />
-        {store.bannerUrl ? <meta property='og:image' content={store.bannerUrl} /> : null}
-        {store.logoUrl ? <meta property='og:image' content={store.logoUrl} /> : null}
+        <meta property='og:title' content={`${store.name} — Hot Commerce`} />
+        <meta property='og:description' content={store.description || `Explora los productos de ${store.name} en Hot Commerce.`} />
         <meta property='og:type' content='website' />
+        <meta property='og:site_name' content='Hot Commerce' />
+        {(store.bannerUrl || store.logoUrl) ? (
+          <meta property='og:image' content={(store.bannerUrl || store.logoUrl)!} />
+        ) : null}
+        <meta name='twitter:card' content={store.bannerUrl ? 'summary_large_image' : 'summary'} />
+        <meta name='twitter:title' content={`${store.name} — Hot Commerce`} />
+        <meta name='twitter:description' content={store.description || `Explora los productos de ${store.name} en Hot Commerce.`} />
+        {(store.bannerUrl || store.logoUrl) ? (
+          <meta name='twitter:image' content={(store.bannerUrl || store.logoUrl)!} />
+        ) : null}
       </Helmet>
 
       <div className={`space-y-8 ${font}`} style={themeVars}>

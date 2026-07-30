@@ -120,9 +120,26 @@ const ProductDetails = () => {
               category: product.category?.name,
             }}
             gallery={gallery}
+            footer={
+              <button
+                type='button'
+                onClick={handleAddToCart}
+                disabled={isOutOfStock}
+                className={`flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-3 text-sm font-bold text-white shadow-sm transition active:scale-95 ${
+                  isOutOfStock
+                    ? 'cursor-not-allowed bg-slate-300'
+                    : added
+                      ? 'bg-emerald-500'
+                      : 'bg-primary hover:opacity-90'
+                }`}
+              >
+                <i className={`bx text-base ${added ? 'bx-check' : isOutOfStock ? 'bx-x-circle' : 'bx-cart-add'}`} aria-hidden='true' />
+                {isOutOfStock ? 'Sin stock' : added ? '¡Agregado!' : 'Agregar al carrito'}
+              </button>
+            }
           />
 
-          {/* Store info + share — inline below product info */}
+          {/* Store info + share */}
           <Box className='mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-neutral-gray/20 pt-5'>
             <p className='text-sm text-neutral-dark/55'>
               {product.store?.name
@@ -151,25 +168,6 @@ const ProductDetails = () => {
                 <i className='bx bx-link text-base' aria-hidden='true' />
               </button>
             </Box>
-          </Box>
-
-          {/* Add to cart — inline below share */}
-          <Box className='mt-4'>
-            <button
-              type='button'
-              onClick={handleAddToCart}
-              disabled={isOutOfStock}
-              className={`flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-3 text-sm font-bold text-white shadow-sm transition active:scale-95 ${
-                isOutOfStock
-                  ? 'cursor-not-allowed bg-slate-300'
-                  : added
-                    ? 'bg-emerald-500'
-                    : 'bg-primary hover:opacity-90'
-              }`}
-            >
-              <i className={`bx text-base ${added ? 'bx-check' : isOutOfStock ? 'bx-x-circle' : 'bx-cart-add'}`} aria-hidden='true' />
-              {isOutOfStock ? 'Sin stock' : added ? '¡Agregado!' : 'Agregar al carrito'}
-            </button>
           </Box>
         </Box>
 

@@ -47,11 +47,17 @@ export const HomePage = () => {
   return (
     <Box className='space-y-8'>
       <Helmet>
-        <title>Marketplace</title>
+        <title>Marketplace — Hot Commerce</title>
         <meta name='description' content='Explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.' />
-        <meta property='og:title' content='Marketplace' />
-        <meta property='og:description' content='Explora cientos de productos de tiendas locales.' />
+        <meta property='og:title' content='Marketplace — Hot Commerce' />
+        <meta property='og:description' content='Explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.' />
         <meta property='og:type' content='website' />
+        <meta property='og:site_name' content='Hot Commerce' />
+        <meta property='og:image' content='https://ecomercehot.netlify.app/icons/icon-512x512.png' />
+        <meta name='twitter:card' content='summary' />
+        <meta name='twitter:title' content='Marketplace — Hot Commerce' />
+        <meta name='twitter:description' content='Explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.' />
+        <meta name='twitter:image' content='https://ecomercehot.netlify.app/icons/icon-512x512.png' />
       </Helmet>
       <HomeCatalogSection
         products={products}
