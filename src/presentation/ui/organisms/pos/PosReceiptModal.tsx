@@ -14,7 +14,7 @@ function buildWhatsAppText(sale: ISale, guest?: PosGuestInfo): string {
     ? `${sale.customer.firstName} ${sale.customer.lastName}`
     : guest?.name || '';
 
-  const lines: string[] = [
+  const text = [
     `🧾 *Comprobante de Venta POS*`,
     sale.store?.name ? `📍 Tienda: ${sale.store.name}` : '',
     `📅 Fecha: ${formatDate(sale.createdAt)}`,
@@ -39,10 +39,9 @@ function buildWhatsAppText(sale: ISale, guest?: PosGuestInfo): string {
     .filter(Boolean)
     .join('\n');
 
-  // If guest phone provided, open direct chat; otherwise let user pick recipient
   const phone = guest?.phone ? guest.phone.replace(/\D/g, '') : '';
   const base = phone ? `https://wa.me/${phone}` : 'https://wa.me/';
-  return `${base}?text=${encodeURIComponent(lines)}`;
+  return `${base}?text=${encodeURIComponent(text)}`;
 }
 
 export const PosReceiptModal = ({ sale, guestInfo, onClose }: Props) => {
