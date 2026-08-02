@@ -118,6 +118,14 @@ const ProductDetails = () => {
                 product.imageUrl ||
                 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80',
               category: product.category?.name,
+              brand: product.brand,
+              tags: product.tags,
+              unit: product.unit,
+              weight: product.weight,
+              width: product.width,
+              height: product.height,
+              depth: product.depth,
+              variants: product.variants,
             }}
             gallery={gallery}
             footer={

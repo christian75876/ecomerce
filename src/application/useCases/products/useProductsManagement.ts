@@ -4,7 +4,8 @@ import { ICategory } from '@/application/dtos/categories/response/CategoryRespon
 import {
   ICreateProductRequest,
 } from '@/application/dtos/products/request/ProductRequest';
-import { IProduct, IProductImage, IProductVideo } from '@/application/dtos/products/response/ProductResponse';
+import { IProduct, IProductImage, IProductVariant, IProductVideo } from '@/application/dtos/products/response/ProductResponse';
+import type { ICreateProductVariantRequest } from '@/application/dtos/products/request/ProductRequest';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
 import { IMenuCategory } from '@/application/dtos/menu-categories/response/MenuCategoryResponse';
 import { ISupplier } from '@/application/dtos/suppliers/response/SupplierResponse';
@@ -34,6 +35,15 @@ export type ProductFormState = {
   trackBatches: boolean;
   lowStockThreshold: string;
   initialExpiresAt: string;
+  brand: string;
+  tags: string;
+  unit: string;
+  weight: string;
+  weightUnit: string;
+  width: string;
+  height: string;
+  depth: string;
+  dimensionsUnit: string;
 };
 
 export const initialProductFormState: ProductFormState = {
@@ -54,7 +64,46 @@ export const initialProductFormState: ProductFormState = {
   trackBatches: true,
   lowStockThreshold: '',
   initialExpiresAt: '',
+  brand: '',
+  tags: '',
+  unit: '',
+  weight: '',
+  weightUnit: 'kg',
+  width: '',
+  height: '',
+  depth: '',
+  dimensionsUnit: 'cm',
 };
+
+export type ColorOption = { name: string; hex: string };
+export type VariantCombination = {
+  size: string | null;
+  color: string | null;
+  sku: string;
+  price: string;
+  stock: string;
+  isActive: boolean;
+};
+
+function buildCombinations(
+  sizes: string[],
+  colors: ColorOption[],
+  existing: VariantCombination[],
+): VariantCombination[] {
+  if (sizes.length === 0 && colors.length === 0) return [];
+  const pairs: Array<{ size: string | null; color: string | null }> = [];
+  if (sizes.length > 0 && colors.length > 0) {
+    for (const s of sizes) for (const c of colors) pairs.push({ size: s, color: c.name });
+  } else if (sizes.length > 0) {
+    for (const s of sizes) pairs.push({ size: s, color: null });
+  } else {
+    for (const c of colors) pairs.push({ size: null, color: c.name });
+  }
+  return pairs.map((pair) => {
+    const found = existing.find((e) => e.size === pair.size && e.color === pair.color);
+    return found ?? { ...pair, sku: '', price: '', stock: '0', isActive: true };
+  });
+}
 
 const optionalNonNegative = z
   .string()
@@ -120,6 +169,14 @@ export const useProductsManagement = () => {
 
   // Pending videos for create mode (submitted after product is saved)
   const [pendingVideos, setPendingVideos] = useState<Array<{ videoUrl: string; videoTitle: string }>>([]);
+
+  // Variants state
+  const [variants, setVariants] = useState<IProductVariant[]>([]);
+  const [variantSubmitting, setVariantSubmitting] = useState(false);
+  const [variantError, setVariantError] = useState<string | null>(null);
+  const [variantSizes, setVariantSizes] = useState<string[]>([]);
+  const [variantColors, setVariantColors] = useState<ColorOption[]>([]);
+  const [variantCombinations, setVariantCombinations] = useState<VariantCombination[]>([]);
 
   const loadCategories = useCallback(async () => {
     const response = await CategoriesRepository.getCategories(true);
@@ -195,6 +252,37 @@ export const useProductsManagement = () => {
       setGallery(response.data);
     } catch {
       setGallery([]);
+    }
+  }, []);
+
+  const loadVariants = useCallback(async (productId: string) => {
+    try {
+      const response = await ProductRepository.getVariants(productId);
+      const loaded = response.data;
+      setVariants(loaded);
+      const sizes = [...new Set(loaded.map((v) => v.size).filter(Boolean))] as string[];
+      const colorMap = new Map<string, string>();
+      for (const v of loaded) {
+        if (v.color && !colorMap.has(v.color)) colorMap.set(v.color, v.colorHex ?? '');
+      }
+      const colors: ColorOption[] = [...colorMap.entries()].map(([name, hex]) => ({ name, hex }));
+      setVariantSizes(sizes);
+      setVariantColors(colors);
+      setVariantCombinations(
+        loaded.map((v) => ({
+          size: v.size,
+          color: v.color,
+          sku: v.sku ?? '',
+          price: v.price != null ? String(v.price) : '',
+          stock: String(v.stock),
+          isActive: v.isActive,
+        })),
+      );
+    } catch {
+      setVariants([]);
+      setVariantSizes([]);
+      setVariantColors([]);
+      setVariantCombinations([]);
     }
   }, []);
 
@@ -290,6 +378,11 @@ export const useProductsManagement = () => {
     });
     setPendingGalleryFiles([]);
     setPendingVideos([]);
+    setVariants([]);
+    setVariantSizes([]);
+    setVariantColors([]);
+    setVariantCombinations([]);
+    setVariantError(null);
     setFieldErrors({});
     setError(null);
   };
@@ -339,6 +432,11 @@ export const useProductsManagement = () => {
       return null;
     }
 
+    const parsedTags = currentForm.tags
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean);
+
     return {
       name: currentForm.name.trim(),
       description: currentForm.description.trim(),
@@ -358,6 +456,15 @@ export const useProductsManagement = () => {
       lowStockThreshold: currentForm.lowStockThreshold ? Number(currentForm.lowStockThreshold) : undefined,
       initialExpiresAt: currentForm.initialExpiresAt || undefined,
       isActive: true,
+      brand: currentForm.brand.trim() || undefined,
+      tags: parsedTags.length > 0 ? parsedTags : undefined,
+      unit: currentForm.unit.trim() || undefined,
+      weight: currentForm.weight ? Number(currentForm.weight) : undefined,
+      weightUnit: currentForm.weightUnit || undefined,
+      width: currentForm.width ? Number(currentForm.width) : undefined,
+      height: currentForm.height ? Number(currentForm.height) : undefined,
+      depth: currentForm.depth ? Number(currentForm.depth) : undefined,
+      dimensionsUnit: currentForm.dimensionsUnit || undefined,
     };
   };
 
@@ -400,6 +507,22 @@ export const useProductsManagement = () => {
         }
       }
 
+      // Create variants from combinations (create mode only)
+      if (!editingId && variantCombinations.length > 0) {
+        for (const combo of variantCombinations) {
+          const colorHex = variantColors.find((c) => c.name === combo.color)?.hex;
+          await ProductRepository.createVariant(savedId, {
+            size: combo.size ?? undefined,
+            color: combo.color ?? undefined,
+            colorHex: colorHex || undefined,
+            sku: combo.sku.trim() || undefined,
+            price: combo.price ? Number(combo.price) : undefined,
+            stock: Number(combo.stock) || 0,
+            isActive: combo.isActive,
+          });
+        }
+      }
+
       resetForm();
       await loadProducts();
       return true;
@@ -433,6 +556,15 @@ export const useProductsManagement = () => {
       trackBatches: product.trackBatches,
       lowStockThreshold: product.lowStockThreshold != null ? String(product.lowStockThreshold) : '',
       initialExpiresAt: '',
+      brand: product.brand ?? '',
+      tags: product.tags?.join(', ') ?? '',
+      unit: product.unit ?? '',
+      weight: product.weight != null ? String(product.weight) : '',
+      weightUnit: product.weightUnit ?? 'kg',
+      width: product.width != null ? String(product.width) : '',
+      height: product.height != null ? String(product.height) : '',
+      depth: product.depth != null ? String(product.depth) : '',
+      dimensionsUnit: product.dimensionsUnit ?? 'cm',
     });
     setPendingImageFile(null);
     setImagePreview(product.imageUrl ?? null);
@@ -440,9 +572,14 @@ export const useProductsManagement = () => {
     setVideoUrl('');
     setVideoTitle('');
     setVideoError(null);
+    setVariantError(null);
+    setVariantSizes([]);
+    setVariantColors([]);
+    setVariantCombinations([]);
     setError(null);
     void loadVideos(product.id);
     void loadGallery(product.id);
+    void loadVariants(product.id);
   };
 
   const toggleStatus = async (product: IProduct) => {
@@ -554,6 +691,77 @@ export const useProductsManagement = () => {
     await loadProducts(page);
   };
 
+  const addVariantSize = (size: string) => {
+    const trimmed = size.trim();
+    if (!trimmed || variantSizes.includes(trimmed)) return;
+    const newSizes = [...variantSizes, trimmed];
+    setVariantSizes(newSizes);
+    setVariantCombinations((prev) => buildCombinations(newSizes, variantColors, prev));
+  };
+
+  const removeVariantSize = (size: string) => {
+    const newSizes = variantSizes.filter((s) => s !== size);
+    setVariantSizes(newSizes);
+    setVariantCombinations((prev) => buildCombinations(newSizes, variantColors, prev));
+  };
+
+  const addVariantColor = (color: ColorOption) => {
+    const trimmed = color.name.trim();
+    if (!trimmed || variantColors.some((c) => c.name === trimmed)) return;
+    const newColors = [...variantColors, { name: trimmed, hex: color.hex }];
+    setVariantColors(newColors);
+    setVariantCombinations((prev) => buildCombinations(variantSizes, newColors, prev));
+  };
+
+  const removeVariantColor = (colorName: string) => {
+    const newColors = variantColors.filter((c) => c.name !== colorName);
+    setVariantColors(newColors);
+    setVariantCombinations((prev) => buildCombinations(variantSizes, newColors, prev));
+  };
+
+  const updateCombination = (idx: number, field: keyof VariantCombination, value: string | boolean) => {
+    setVariantCombinations((prev) =>
+      prev.map((c, i) => (i === idx ? { ...c, [field]: value } : c)),
+    );
+  };
+
+  const saveVariants = async () => {
+    if (!editingId) return;
+    setVariantSubmitting(true);
+    setVariantError(null);
+    try {
+      for (const combo of variantCombinations) {
+        const colorHex = variantColors.find((c) => c.name === combo.color)?.hex;
+        const payload: ICreateProductVariantRequest = {
+          size: combo.size ?? undefined,
+          color: combo.color ?? undefined,
+          colorHex: colorHex || undefined,
+          sku: combo.sku.trim() || undefined,
+          price: combo.price ? Number(combo.price) : undefined,
+          stock: Number(combo.stock) || 0,
+          isActive: combo.isActive,
+        };
+        const existing = variants.find((v) => v.size === combo.size && v.color === combo.color);
+        if (existing) {
+          await ProductRepository.updateVariant(editingId, existing.id, payload);
+        } else {
+          await ProductRepository.createVariant(editingId, payload);
+        }
+      }
+      for (const v of variants) {
+        const stillExists = variantCombinations.some(
+          (c) => c.size === v.size && c.color === v.color,
+        );
+        if (!stillExists) await ProductRepository.deleteVariant(editingId, v.id);
+      }
+      await loadVariants(editingId);
+    } catch (err) {
+      setVariantError(err instanceof Error ? err.message : 'No se pudieron guardar las variantes');
+    } finally {
+      setVariantSubmitting(false);
+    }
+  };
+
   return {
     isSeller,
     products,
@@ -584,6 +792,12 @@ export const useProductsManagement = () => {
     videoTitle,
     videoSubmitting,
     videoError,
+    variants,
+    variantSizes,
+    variantColors,
+    variantCombinations,
+    variantSubmitting,
+    variantError,
     setSearch,
     setSelectedCategoryId,
     updateForm,
@@ -596,6 +810,12 @@ export const useProductsManagement = () => {
     addVideo,
     removePendingVideo,
     removeVideo,
+    addVariantSize,
+    removeVariantSize,
+    addVariantColor,
+    removeVariantColor,
+    updateCombination,
+    saveVariants,
     submitForm,
     startEditing,
     toggleStatus,

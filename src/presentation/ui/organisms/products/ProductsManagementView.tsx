@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom';
 import PaginationControls from '@/presentation/ui/molecules/common/PaginationControls';
 import SelectDropdown from '@/presentation/ui/molecules/common/SelectDropdown';
 import { ICategory } from '@/application/dtos/categories/response/CategoryResponse';
-import { IProduct, IProductImage, IProductVideo } from '@/application/dtos/products/response/ProductResponse';
+import { IProduct, IProductImage, IProductVariant, IProductVideo } from '@/application/dtos/products/response/ProductResponse';
+import type { ColorOption, VariantCombination } from '@/application/useCases/products/useProductsManagement';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
 import { IMenuCategory } from '@/application/dtos/menu-categories/response/MenuCategoryResponse';
 import { ISupplier } from '@/application/dtos/suppliers/response/SupplierResponse';
@@ -63,6 +64,18 @@ interface ProductsManagementViewProps {
   onGalleryImageUpload: (files: File[]) => Promise<void>;
   onGalleryImageRemove: (imageId: string) => Promise<void>;
   onGalleryImageReorder: (imageIds: string[]) => Promise<void>;
+  variants: IProductVariant[];
+  variantSizes: string[];
+  variantColors: ColorOption[];
+  variantCombinations: VariantCombination[];
+  variantSubmitting: boolean;
+  variantError: string | null;
+  onAddVariantSize: (size: string) => void;
+  onRemoveVariantSize: (size: string) => void;
+  onAddVariantColor: (color: ColorOption) => void;
+  onRemoveVariantColor: (colorName: string) => void;
+  onUpdateCombination: (idx: number, field: keyof VariantCombination, value: string | boolean) => void;
+  onSaveVariants: () => Promise<void>;
   onVideoUrlChange: (value: string) => void;
   onVideoTitleChange: (value: string) => void;
   onAddVideo: () => Promise<void>;
@@ -224,6 +237,18 @@ export const ProductsManagementView = ({
   pendingGalleryPreviews,
   onPendingGalleryAdd,
   onPendingGalleryRemove,
+  variants,
+  variantSizes,
+  variantColors,
+  variantCombinations,
+  variantSubmitting,
+  variantError,
+  onAddVariantSize,
+  onRemoveVariantSize,
+  onAddVariantColor,
+  onRemoveVariantColor,
+  onUpdateCombination,
+  onSaveVariants,
   videos,
   pendingVideos,
   videoUrl,
@@ -262,6 +287,9 @@ export const ProductsManagementView = ({
   const dragIndexRef = useRef<number | null>(null);
   const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false);
   const [showCreateSupplierModal, setShowCreateSupplierModal] = useState(false);
+  const [sizeInput, setSizeInput] = useState('');
+  const [colorNameInput, setColorNameInput] = useState('');
+  const [colorHexInput, setColorHexInput] = useState('#3b82f6');
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -280,6 +308,14 @@ export const ProductsManagementView = ({
 
   const resolvedImageSrc = imagePreview ?? (form.imageUrl || null);
 
+  const isFormReady =
+    form.name.trim().length > 0 &&
+    form.description.trim().length > 0 &&
+    form.sku.trim().length > 0 &&
+    form.price !== '' && Number(form.price) > 0 &&
+    form.categoryId !== '' &&
+    form.storeId !== '';
+
   return (
     <FeatureScreen>
       <FeatureScreenHeader
@@ -289,9 +325,9 @@ export const ProductsManagementView = ({
 
       <Box className="grid gap-6 xl:grid-cols-[430px_minmax(0,1fr)]">
         <FeaturePanel title={editingId ? 'Editar producto' : 'Nuevo producto'}>
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <form id="product-form" onSubmit={handleSubmit} className="mt-6 space-y-4">
             <Box>
-              <Label htmlFor="product-name">Nombre</Label>
+              <Label htmlFor="product-name">Nombre <span className="text-red-500">*</span></Label>
               <Input
                 id="product-name"
                 value={form.name}
@@ -302,7 +338,7 @@ export const ProductsManagementView = ({
             </Box>
 
             <Box>
-              <Label htmlFor="product-description">Descripción</Label>
+              <Label htmlFor="product-description">Descripción <span className="text-red-500">*</span></Label>
               <textarea
                 id="product-description"
                 value={form.description}
@@ -319,7 +355,7 @@ export const ProductsManagementView = ({
 
             <Box className="grid gap-4 md:grid-cols-2">
               <Box>
-                <Label htmlFor="product-sku">SKU</Label>
+                <Label htmlFor="product-sku">SKU <span className="text-red-500">*</span></Label>
                 <Input
                   id="product-sku"
                   value={form.sku}
@@ -329,7 +365,7 @@ export const ProductsManagementView = ({
                 />
               </Box>
               <Box>
-                <Label htmlFor="product-price">Precio</Label>
+                <Label htmlFor="product-price">Precio <span className="text-red-500">*</span></Label>
                 <div className="relative">
                   <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 select-none text-sm text-slate-400">$</span>
                   <input
@@ -447,7 +483,7 @@ export const ProductsManagementView = ({
 
             <Box className="grid gap-4 md:grid-cols-2">
               <Box>
-                <Label htmlFor="product-category">Categoría</Label>
+                <Label htmlFor="product-category">Categoría <span className="text-red-500">*</span></Label>
                 <SelectDropdown
                   value={form.categoryId}
                   options={categories.map((c) => ({ value: c.id, label: c.name }))}
@@ -462,7 +498,7 @@ export const ProductsManagementView = ({
                 ) : null}
               </Box>
               <Box>
-                <Label htmlFor="product-store">Tienda</Label>
+                <Label htmlFor="product-store">Tienda <span className="text-red-500">*</span></Label>
                 {isSeller ? (
                   <div className='flex h-[50px] items-center rounded-2xl border border-neutral-gray/20 bg-background px-4 text-sm text-neutral-dark'>
                     {stores[0]?.name ?? 'Cargando...'}
@@ -593,31 +629,136 @@ export const ProductsManagementView = ({
               </Box>
             </Box>
 
-            {error ? (
-              <Box className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-                {error}
-              </Box>
-            ) : null}
-
-            <Box className="flex flex-wrap gap-3">
-              <Button type="submit" variant="primary" disabled={submitting}>
-                {submitting
-                  ? 'Guardando...'
-                  : editingId
-                    ? 'Guardar cambios'
-                    : 'Crear producto'}
-              </Button>
-              {editingId ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onReset}
+            {/* ── Extra fields ───────────────────────────── */}
+            <Box className='grid gap-4 md:grid-cols-2'>
+              <Box>
+                <Label htmlFor='product-brand'>Marca</Label>
+                <Input
+                  id='product-brand'
+                  placeholder='Ej. Nike, Samsung, Colgate…'
+                  value={form.brand}
+                  onChange={(e) => onFormChange('brand', e.target.value)}
                   disabled={submitting}
-                >
-                  Cancelar
-                </Button>
-              ) : null}
+                />
+              </Box>
+              <Box>
+                <Label htmlFor='product-unit'>Unidad de medida</Label>
+                <Input
+                  id='product-unit'
+                  placeholder='Ej. kg, litro, par, unidad…'
+                  value={form.unit}
+                  onChange={(e) => onFormChange('unit', e.target.value)}
+                  disabled={submitting}
+                />
+              </Box>
             </Box>
+
+            <Box>
+              <Label htmlFor='product-tags'>Etiquetas</Label>
+              <Input
+                id='product-tags'
+                placeholder='oferta, nuevo, importado  (separa con comas)'
+                value={form.tags}
+                onChange={(e) => onFormChange('tags', e.target.value)}
+                disabled={submitting}
+              />
+              <p className='mt-1 text-xs text-neutral-dark/40'>Separa cada etiqueta con una coma.</p>
+            </Box>
+
+            <Box className='rounded-2xl border border-neutral-gray/20 p-4'>
+              <p className='mb-3 text-sm font-semibold text-neutral-dark'>
+                Peso y dimensiones
+                <span className='ml-1.5 font-normal text-neutral-dark/40'>(opcional)</span>
+              </p>
+              <Box className='space-y-3'>
+                {/* Peso */}
+                <Box>
+                  <Label htmlFor='product-weight' className='text-xs'>Peso</Label>
+                  <Box className='flex items-center gap-2'>
+                    <Input
+                      id='product-weight'
+                      type='number'
+                      min='0'
+                      step='0.001'
+                      placeholder='0.000'
+                      value={form.weight}
+                      onChange={(e) => onFormChange('weight', e.target.value)}
+                      disabled={submitting}
+                      className='max-w-[160px]'
+                    />
+                    <select
+                      value={form.weightUnit}
+                      onChange={(e) => onFormChange('weightUnit', e.target.value)}
+                      disabled={submitting}
+                      className='flex-shrink-0 rounded-xl border border-neutral-gray/20 bg-background px-2 py-2.5 text-sm text-neutral-dark focus:border-primary focus:outline-none'
+                    >
+                      <option value='kg'>kg</option>
+                      <option value='g'>g</option>
+                      <option value='lb'>lb</option>
+                      <option value='oz'>oz</option>
+                    </select>
+                  </Box>
+                </Box>
+
+                {/* Dimensiones */}
+                <Box>
+                  <Label className='text-xs'>Dimensiones</Label>
+                  <Box className='flex items-center gap-1.5'>
+                    <Input
+                      id='product-width'
+                      type='number'
+                      min='0'
+                      step='0.01'
+                      placeholder='Ancho'
+                      value={form.width}
+                      onChange={(e) => onFormChange('width', e.target.value)}
+                      disabled={submitting}
+                      className='flex-1'
+                      aria-label='Ancho (cm)'
+                    />
+                    <span className='flex-shrink-0 text-neutral-dark/30'>×</span>
+                    <Input
+                      id='product-height'
+                      type='number'
+                      min='0'
+                      step='0.01'
+                      placeholder='Alto'
+                      value={form.height}
+                      onChange={(e) => onFormChange('height', e.target.value)}
+                      disabled={submitting}
+                      className='flex-1'
+                      aria-label='Alto (cm)'
+                    />
+                    <span className='flex-shrink-0 text-neutral-dark/30'>×</span>
+                    <Input
+                      id='product-depth'
+                      type='number'
+                      min='0'
+                      step='0.01'
+                      placeholder='Prof.'
+                      value={form.depth}
+                      onChange={(e) => onFormChange('depth', e.target.value)}
+                      disabled={submitting}
+                      className='flex-1'
+                      aria-label='Profundidad (cm)'
+                    />
+                    <select
+                      value={form.dimensionsUnit}
+                      onChange={(e) => onFormChange('dimensionsUnit', e.target.value)}
+                      disabled={submitting}
+                      className='flex-shrink-0 rounded-xl border border-neutral-gray/20 bg-background px-2 py-2.5 text-sm text-neutral-dark focus:border-primary focus:outline-none'
+                    >
+                      <option value='cm'>cm</option>
+                      <option value='m'>m</option>
+                      <option value='mm'>mm</option>
+                      <option value='pulg'>pulg</option>
+                      <option value='ft'>ft</option>
+                    </select>
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+
           </form>
 
           {/* Gallery section */}
@@ -993,6 +1134,263 @@ export const ProductsManagementView = ({
                 <Typography className="text-sm text-neutral-dark/50">Sin videos agregados aún.</Typography>
               )
             )}
+          </Box>
+
+          {/* ── Variants section ───────────────────────────── */}
+          <Box className="mt-6 border-t border-neutral-gray/20 pt-6">
+            <Typography variant="h3" className="mb-1 text-base font-semibold">
+              Variantes
+            </Typography>
+            <p className="mb-4 text-xs text-neutral-dark/50">
+              Agrega las tallas y colores disponibles — las combinaciones se generan automáticamente.
+              {editingId ? ' Haz clic en "Guardar variantes" para aplicar los cambios.' : ' Se guardarán al crear el producto.'}
+            </p>
+
+            {variantError ? (
+              <Box className="mb-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                {variantError}
+              </Box>
+            ) : null}
+
+            <Box className="grid gap-4 sm:grid-cols-2">
+              {/* ── Size chips ── */}
+              <Box className="rounded-2xl border border-neutral-gray/20 p-4">
+                <p className="mb-3 text-sm font-semibold text-neutral-dark">Tallas disponibles</p>
+                {variantSizes.length > 0 ? (
+                  <Box className="mb-3 flex flex-wrap gap-2">
+                    {variantSizes.map((size) => (
+                      <span
+                        key={size}
+                        className="flex items-center gap-1 rounded-full border border-neutral-gray/30 bg-white px-3 py-1 text-sm font-medium text-neutral-dark"
+                      >
+                        {size}
+                        <button
+                          type="button"
+                          onClick={() => onRemoveVariantSize(size)}
+                          className="ml-0.5 text-neutral-dark/40 hover:text-red-500"
+                          aria-label={`Eliminar talla ${size}`}
+                        >
+                          <i className="bx bx-x text-base leading-none" aria-hidden="true" />
+                        </button>
+                      </span>
+                    ))}
+                  </Box>
+                ) : (
+                  <p className="mb-3 text-xs text-neutral-dark/40">Sin tallas aún</p>
+                )}
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    onAddVariantSize(sizeInput);
+                    setSizeInput('');
+                  }}
+                  className="space-y-2"
+                >
+                  <Input
+                    value={sizeInput}
+                    onChange={(e) => setSizeInput(e.target.value)}
+                    placeholder="S, M, L, XL, 38…"
+                    className="w-full"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!sizeInput.trim()}
+                    className="w-full rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
+                  >
+                    + Agregar talla
+                  </button>
+                </form>
+              </Box>
+
+              {/* ── Color chips ── */}
+              <Box className="rounded-2xl border border-neutral-gray/20 p-4">
+                <p className="mb-3 text-sm font-semibold text-neutral-dark">Colores disponibles</p>
+                {variantColors.length > 0 ? (
+                  <Box className="mb-3 flex flex-wrap gap-2">
+                    {variantColors.map((c) => (
+                      <span
+                        key={c.name}
+                        className="flex items-center gap-1.5 rounded-full border border-neutral-gray/30 bg-white py-1 pl-2 pr-2 text-sm font-medium text-neutral-dark"
+                      >
+                        {c.hex ? (
+                          <span
+                            className="h-3.5 w-3.5 flex-shrink-0 rounded-full border border-neutral-gray/30"
+                            style={{ background: c.hex }}
+                          />
+                        ) : null}
+                        {c.name}
+                        <button
+                          type="button"
+                          onClick={() => onRemoveVariantColor(c.name)}
+                          className="ml-0.5 text-neutral-dark/40 hover:text-red-500"
+                          aria-label={`Eliminar color ${c.name}`}
+                        >
+                          <i className="bx bx-x text-base leading-none" aria-hidden="true" />
+                        </button>
+                      </span>
+                    ))}
+                  </Box>
+                ) : (
+                  <p className="mb-3 text-xs text-neutral-dark/40">Sin colores aún</p>
+                )}
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    onAddVariantColor({ name: colorNameInput, hex: colorHexInput });
+                    setColorNameInput('');
+                  }}
+                  className="space-y-2"
+                >
+                  <Box className="flex gap-2">
+                    <input
+                      type="color"
+                      value={colorHexInput}
+                      onChange={(e) => setColorHexInput(e.target.value)}
+                      className="h-[42px] w-10 flex-shrink-0 cursor-pointer rounded-xl border border-neutral-gray/20 bg-white p-0.5"
+                      title="Seleccionar color"
+                    />
+                    <Input
+                      value={colorNameInput}
+                      onChange={(e) => setColorNameInput(e.target.value)}
+                      placeholder="Rojo, Azul marino…"
+                      className="flex-1"
+                    />
+                  </Box>
+                  <button
+                    type="submit"
+                    disabled={!colorNameInput.trim()}
+                    className="w-full rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
+                  >
+                    + Agregar color
+                  </button>
+                </form>
+              </Box>
+            </Box>
+
+            {/* ── Combinations table ── */}
+            {variantCombinations.length > 0 ? (
+              <Box className="mt-4">
+                <p className="mb-2 text-sm font-semibold text-neutral-dark">
+                  Combinaciones generadas
+                  <span className="ml-2 font-normal text-neutral-dark/50">({variantCombinations.length})</span>
+                </p>
+                <div className="overflow-x-auto rounded-2xl border border-neutral-gray/20">
+                  <table className="w-full min-w-[560px] text-sm">
+                    <thead className="bg-neutral-gray/10">
+                      <tr>
+                        <th className="py-2.5 pl-4 pr-2 text-left text-xs font-semibold text-neutral-dark/60">Variante</th>
+                        <th className="px-2 py-2.5 text-left text-xs font-semibold text-neutral-dark/60">SKU</th>
+                        <th className="px-2 py-2.5 text-left text-xs font-semibold text-neutral-dark/60">
+                          Precio
+                          <span className="ml-1 font-normal opacity-60">(vacío = base)</span>
+                        </th>
+                        <th className="px-2 py-2.5 text-left text-xs font-semibold text-neutral-dark/60">Stock</th>
+                        <th className="px-2 py-2.5 pr-4 text-left text-xs font-semibold text-neutral-dark/60">Activa</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-gray/10">
+                      {variantCombinations.map((combo, idx) => {
+                        const colorHex = variantColors.find((c) => c.name === combo.color)?.hex;
+                        const label = [combo.size, combo.color].filter(Boolean).join(' · ') || '—';
+                        return (
+                          <tr key={idx} className="bg-white transition hover:bg-neutral-gray/5">
+                            <td className="py-2 pl-4 pr-2">
+                              <Box className="flex items-center gap-2">
+                                {colorHex ? (
+                                  <span
+                                    className="h-4 w-4 flex-shrink-0 rounded-full border border-neutral-gray/30"
+                                    style={{ background: colorHex }}
+                                  />
+                                ) : null}
+                                <span className="font-medium text-neutral-dark">{label}</span>
+                              </Box>
+                            </td>
+                            <td className="px-2 py-1.5">
+                              <input
+                                type="text"
+                                value={combo.sku}
+                                onChange={(e) => onUpdateCombination(idx, 'sku', e.target.value)}
+                                placeholder="SKU-001"
+                                className="w-full rounded-xl border border-neutral-gray/20 bg-background px-3 py-1.5 text-sm focus:border-primary focus:outline-none"
+                              />
+                            </td>
+                            <td className="px-2 py-1.5">
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={combo.price}
+                                onChange={(e) => onUpdateCombination(idx, 'price', e.target.value)}
+                                placeholder="—"
+                                className="w-28 rounded-xl border border-neutral-gray/20 bg-background px-3 py-1.5 text-sm focus:border-primary focus:outline-none"
+                              />
+                            </td>
+                            <td className="px-2 py-1.5">
+                              <input
+                                type="number"
+                                min="0"
+                                step="1"
+                                value={combo.stock}
+                                onChange={(e) => onUpdateCombination(idx, 'stock', e.target.value)}
+                                className="w-20 rounded-xl border border-neutral-gray/20 bg-background px-3 py-1.5 text-sm focus:border-primary focus:outline-none"
+                              />
+                            </td>
+                            <td className="px-2 py-1.5 pr-4">
+                              <input
+                                type="checkbox"
+                                checked={combo.isActive}
+                                onChange={(e) => onUpdateCombination(idx, 'isActive', e.target.checked)}
+                                className="h-4 w-4 accent-primary"
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {editingId ? (
+                  <Box className="mt-3">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      disabled={variantSubmitting}
+                      onClick={() => void onSaveVariants()}
+                    >
+                      {variantSubmitting ? 'Guardando variantes…' : 'Guardar variantes'}
+                    </Button>
+                  </Box>
+                ) : (
+                  <p className="mt-2 text-xs text-neutral-dark/50">
+                    Las variantes se guardarán al crear el producto.
+                  </p>
+                )}
+              </Box>
+            ) : null}
+          </Box>
+
+          {/* ── Submit — always at the bottom ── */}
+          <Box className="mt-6 border-t border-neutral-gray/20 pt-6">
+            {error ? (
+              <Box className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                {error}
+              </Box>
+            ) : null}
+            <Box className="flex flex-wrap gap-3">
+              <Button type="submit" form="product-form" variant="primary" disabled={submitting || !isFormReady}>
+                {submitting
+                  ? 'Guardando...'
+                  : editingId
+                    ? 'Guardar cambios'
+                    : 'Crear producto'}
+              </Button>
+              {editingId ? (
+                <Button type="button" variant="outline" onClick={onReset} disabled={submitting}>
+                  Cancelar
+                </Button>
+              ) : null}
+            </Box>
           </Box>
         </FeaturePanel>
 

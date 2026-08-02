@@ -3,6 +3,22 @@ import { ICategory } from '@/application/dtos/categories/response/CategoryRespon
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
 import { ISupplier } from '@/application/dtos/suppliers/response/SupplierResponse';
 
+export interface IProductVariant {
+  id: string;
+  productId: string;
+  size: string | null;
+  color: string | null;
+  colorHex: string | null;
+  sku: string | null;
+  price: number | null;
+  stock: number;
+  imageUrl: string | null;
+  isActive: boolean;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface IProduct {
   id: string;
   name: string;
@@ -17,6 +33,16 @@ export interface IProduct {
   isPerishable: boolean;
   trackBatches: boolean;
   lowStockThreshold: number | null;
+  brand: string | null;
+  tags: string[] | null;
+  unit: string | null;
+  weight: number | null;
+  weightUnit: string | null;
+  width: number | null;
+  height: number | null;
+  depth: number | null;
+  dimensionsUnit: string | null;
+  variants: IProductVariant[];
   categoryId: string;
   storeId: string | null;
   supplierId: string | null;
@@ -56,3 +82,5 @@ export type IProductImageResp = IApiResponse<IProductImage>;
 export type IProductResp = IApiResponse<IProduct>;
 export type IProductVideosResp = IApiResponse<IProductVideo[]>;
 export type IProductVideoResp = IApiResponse<IProductVideo>;
+export type IProductVariantResp = IApiResponse<IProductVariant>;
+export type IProductVariantsResp = IApiResponse<IProductVariant[]>;

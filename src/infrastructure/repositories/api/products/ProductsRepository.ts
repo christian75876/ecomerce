@@ -1,7 +1,9 @@
 import {
   ICreateProductRequest,
+  ICreateProductVariantRequest,
   IProductsQuery,
   IUpdateProductRequest,
+  IUpdateProductVariantRequest,
 } from '@/application/dtos/products/request/ProductRequest';
 import {
   IMarketplaceSectionsResp,
@@ -11,6 +13,8 @@ import {
   IProductImagesResp,
   IProductResp,
   IProductsResp,
+  IProductVariantResp,
+  IProductVariantsResp,
   IProductVideoResp,
   IProductVideosResp,
 } from '@/application/dtos/products/response/ProductResponse';
@@ -194,6 +198,42 @@ export class ProductRepository {
         `/products/${productId}/gallery/reorder`,
         { imageIds },
       ),
+    );
+  }
+
+  // ── Variants ───────────────────────────────────────────────────────────────
+
+  static async getVariants(productId: string): Promise<IProductVariantsResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      publicClientHTTP.get<IProductVariantsResp>(`/products/${productId}/variants`),
+    );
+  }
+
+  static async createVariant(
+    productId: string,
+    payload: ICreateProductVariantRequest,
+  ): Promise<IProductVariantResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.post<IProductVariantResp>(`/products/${productId}/variants`, payload),
+    );
+  }
+
+  static async updateVariant(
+    productId: string,
+    variantId: string,
+    payload: IUpdateProductVariantRequest,
+  ): Promise<IProductVariantResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.patch<IProductVariantResp>(
+        `/products/${productId}/variants/${variantId}`,
+        payload,
+      ),
+    );
+  }
+
+  static async deleteVariant(productId: string, variantId: string): Promise<void> {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.delete(`/products/${productId}/variants/${variantId}`),
     );
   }
 }

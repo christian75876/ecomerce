@@ -29,6 +29,29 @@ export interface ICreateProductRequest {
   trackBatches?: boolean;
   lowStockThreshold?: number;
   initialExpiresAt?: string;
+  brand?: string;
+  tags?: string[];
+  unit?: string;
+  weight?: number;
+  weightUnit?: string;
+  width?: number;
+  height?: number;
+  depth?: number;
+  dimensionsUnit?: string;
 }
 
 export type IUpdateProductRequest = Partial<ICreateProductRequest>;
+
+export interface ICreateProductVariantRequest {
+  size?: string;
+  color?: string;
+  colorHex?: string;
+  sku?: string;
+  price?: number;
+  stock?: number;
+  imageUrl?: string;
+  isActive?: boolean;
+  order?: number;
+}
+
+export type IUpdateProductVariantRequest = Partial<ICreateProductVariantRequest>;
