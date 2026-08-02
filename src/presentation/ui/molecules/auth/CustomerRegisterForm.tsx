@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import FormField from '@/presentation/ui/molecules/forms/FormField';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
+import TurnstileWidget from '@/presentation/ui/molecules/common/TurnstileWidget';
 import { registerCustomerSchema } from '@/domain/validations/auth/RegisterCustomerValidation';
 import { useFormValidation } from '@/shared/hooks/useFormValidation';
 import { IRegisterCustomerForm } from '@/application/dtos/auth/register/customer/RegisterCustomerRequest';
@@ -16,6 +18,7 @@ const CustomerRegisterForm = ({
   isLoading = false,
   error,
 }: CustomerRegisterFormProps) => {
+  const [cfToken, setCfToken] = useState('');
   const {
     control,
     handleSubmit,
@@ -30,7 +33,7 @@ const CustomerRegisterForm = ({
   });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className='space-y-5'>
+    <form onSubmit={handleSubmit((data) => onSubmit({ ...data, cfToken }))} className='space-y-5'>
       <div className='grid gap-4 sm:grid-cols-2'>
         <FormField
           name='firstName'
@@ -92,12 +95,13 @@ const CustomerRegisterForm = ({
           {error}
         </Box>
       ) : null}
+      <TurnstileWidget onVerify={setCfToken} className='flex justify-center' />
       <Button
         type='submit'
         variant='primary'
         fullWidth
         size='lg'
-        disabled={!isValid || isLoading}
+        disabled={!isValid || isLoading || !cfToken}
         className='min-h-12'
       >
         {isLoading ? 'Creando cuenta...' : 'Crear cuenta de comprador'}

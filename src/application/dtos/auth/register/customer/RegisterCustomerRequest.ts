@@ -5,6 +5,7 @@ export interface IRegisterCustomerRequest {
   password: string;
   phone: string;
   inviteToken?: string;
+  cfToken?: string;
 }
 
 export interface IRegisterCustomerForm extends IRegisterCustomerRequest {

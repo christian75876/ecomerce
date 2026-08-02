@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import TurnstileWidget from '@/presentation/ui/molecules/common/TurnstileWidget';
 
 import { useLogin } from '@/application/useCases/auth/useLogin';
 import { useRegisterCustomer } from '@/application/useCases/auth/useRegisterCustomer';
@@ -23,6 +24,7 @@ const LoginPage = () => {
   const [searchParams] = useSearchParams();
   const passwordReset = searchParams.get('reset') === '1';
   const [mode, setMode] = useState<'login' | 'register' | 'verify'>('login');
+  const [cfToken, setCfToken] = useState('');
   const { handleLogin, isloading, error } = useLogin();
   const {
     handleRegisterCustomer: _handleRegisterCustomer,
@@ -190,7 +192,7 @@ const LoginPage = () => {
 
               {/* Login form */}
               {mode === 'login' ? (
-                <form onSubmit={handleSubmit(handleLogin)} className='mt-7 space-y-4'>
+                <form onSubmit={handleSubmit((data) => handleLogin({ ...data, cfToken }))} className='mt-7 space-y-4'>
                   <FormField
                     name='email'
                     label='Correo electrónico'
@@ -226,13 +228,14 @@ const LoginPage = () => {
                     </Link>
                   </div>
 
+                  <TurnstileWidget onVerify={setCfToken} className='flex justify-center' />
                   <Button
                     type='submit'
                     variant='primary'
                     fullWidth
                     size='lg'
                     loading={isloading}
-                    disabled={!isValid || isloading}
+                    disabled={!isValid || isloading || !cfToken}
                     className='mt-2'
                   >
                     Ingresar

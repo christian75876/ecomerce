@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.2",
+    "@marsidev/react-turnstile": "^1.5.4",
     "@react-three/drei": "^10.7.4",
     "@react-three/fiber": "^9.3.0",
     "@sentry/react": "^10.69.0",
