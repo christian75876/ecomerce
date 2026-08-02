@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Panel de administración — no indexar
+Disallow: /admin
+Disallow: /admin/
+
+# Reemplaza TU_DOMINIO con el dominio real antes de desplegar
+Sitemap: https://TU_DOMINIO/sitemap.xml

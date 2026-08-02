@@ -78,7 +78,7 @@ const SectionComprador = () => (
   <div className='space-y-3'>
     <Accordion icon='bx-search' title='Explorar el catálogo' defaultOpen>
       <Step number={1} title='Entra al catálogo'>
-        <p>Haz clic en <strong>Productos</strong> en el menú superior. Verás todos los productos disponibles en el marketplace.</p>
+        <p>Haz clic en <strong>Productos</strong> en el menú superior. Verás todos los productos disponibles en Merku.</p>
       </Step>
       <Step number={2} title='Filtra por categoría'>
         <p>Usa los botones de categoría (ej. <em>Repuestos, Electrónica…</em>) para filtrar. Haz clic en <strong>Todo</strong> para quitar el filtro.</p>
@@ -220,7 +220,7 @@ const SectionAdmin = () => (
 
     <Accordion icon='bx-category' title='Categorías, productos e inventario'>
       <Step number={1} title='Categorías'>
-        <p>Ve a <strong>Catálogo → Categorías</strong> para crear las categorías del marketplace. Los productos se asignan a una categoría.</p>
+        <p>Ve a <strong>Catálogo → Categorías</strong> para crear las categorías de Merku. Los productos se asignan a una categoría.</p>
       </Step>
       <Step number={2} title='Productos'>
         <p>Ve a <strong>Catálogo → Productos y fichas</strong> para gestionar el catálogo completo.</p>
@@ -427,7 +427,7 @@ const HelpPage = () => {
         <p className='mt-1 text-sm text-slate-500'>Contáctanos directamente y te ayudamos.</p>
         <div className='mt-4 flex flex-wrap justify-center gap-3'>
           <a
-            href={`mailto:${ADMIN_EMAIL}?subject=${encodeURIComponent('Soporte Hot Commerce')}`}
+            href={`mailto:${ADMIN_EMAIL}?subject=${encodeURIComponent('Soporte Merku')}`}
             className='flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-primary/30 hover:text-primary'
           >
             <i className='bx bx-envelope text-base' aria-hidden='true' />

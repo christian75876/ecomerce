@@ -6,6 +6,8 @@ export interface CartItem {
   price: number;
   imageUrl: string | null;
   quantity: number;
+  storeId?: string;
+  storeAddressText?: string | null;
 }
 
 const CART_KEY = 'public_cart';

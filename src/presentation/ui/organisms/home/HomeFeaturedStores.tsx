@@ -39,7 +39,7 @@ const HomeFeaturedStores = ({ stores }: HomeFeaturedStoresProps) => {
   return (
     <HomeSection
       title='Tiendas destacadas'
-      subtitle='Comercios activos en el marketplace'
+      subtitle='Comercios activos en Merku'
       action={
         <Link
           to={ROUTES.PUBLIC.STORES}

@@ -6,6 +6,10 @@ import { ROUTES } from '@/shared/constants/routes';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import { formatDate } from '@/shared/utils/formatDate';
 import type { IOrder } from '@/application/dtos/orders/response/OrderResponse';
+import { OrderInvoiceModal } from '@/presentation/ui/organisms/orders/OrderInvoiceModal';
+import { OrdersRepository } from '@/infrastructure/repositories/api/orders/OrdersRepository';
+
+const BASE_URL = (import.meta.env.VITE_API_URL as string ?? import.meta.env.VITE_API_BASE_URL as string ?? 'http://127.0.0.1:3000/api/').replace(/\/api\/?$/, '');
 
 const PAGE_SIZE = 5;
 
@@ -59,7 +63,8 @@ const ProductThumb = ({
       title={name}
     >
       {imageUrl ? (
-        <img src={imageUrl} alt={name} className='h-full w-full object-cover' />
+        <img src={imageUrl} alt={name} className='h-full w-full object-cover'
+          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
       ) : (
         <span className={`flex h-full w-full items-center justify-center ${text}`}>🛍️</span>
       )}
@@ -73,6 +78,22 @@ const DeliveryChip = ({ method }: { method: IOrder['deliveryMethod'] }) => {
     <span className='inline-flex items-center gap-1 text-xs text-slate-500'>
       <i className={`bx ${method === 'DELIVERY' ? 'bx-car' : 'bx-store'} text-sm`} />
       {method === 'DELIVERY' ? 'Domicilio' : 'Recoger en tienda'}
+    </span>
+  );
+};
+
+const PaymentBadge = ({ paymentStatus }: { paymentStatus: IOrder['paymentStatus'] }) => {
+  if (paymentStatus === 'CONFIRMED') return null;
+  if (paymentStatus === 'SUBMITTED') {
+    return (
+      <span className='inline-flex shrink-0 items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-[11px] font-semibold text-blue-600'>
+        <i className='bx bx-receipt text-xs' /> En revisión
+      </span>
+    );
+  }
+  return (
+    <span className='inline-flex shrink-0 items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold text-amber-700'>
+      <i className='bx bx-time-five text-xs' /> Sin pago
     </span>
   );
 };
@@ -235,7 +256,10 @@ const OrderCard = ({
             <span className='text-xs text-slate-400'>{formatDate(order.createdAt)}</span>
           </div>
         </div>
-        <Badge status={order.status} />
+        <div className='flex flex-col items-end gap-1'>
+          <Badge status={order.status} />
+          {order.status !== 'CANCELLED' && <PaymentBadge paymentStatus={order.paymentStatus} />}
+        </div>
       </div>
 
       {/* Products preview */}
@@ -273,18 +297,160 @@ const OrderCard = ({
   );
 };
 
+// ── Payment section ───────────────────────────────────────────────────────────
+
+const PaymentUploadSection = ({ order, onSuccess }: { order: IOrder; onSuccess: () => void }) => {
+  const [file, setFile] = useState<File | null>(null);
+  const [method, setMethod] = useState('');
+  const [reference, setReference] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const hasContent = !!(file || method.trim() || reference.trim());
+
+  const handleSubmit = async () => {
+    if (!hasContent) return;
+    setSubmitting(true);
+    setUploadError(null);
+    try {
+      await OrdersRepository.submitPayment(order.id, {
+        paymentMethodType: method.trim() || undefined,
+        paymentReference: reference.trim() || undefined,
+        evidenceImage: file ?? undefined,
+      });
+      onSuccess();
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'No se pudo enviar el comprobante');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (order.paymentStatus === 'CONFIRMED') {
+    return (
+      <div className='rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 space-y-1.5'>
+        <p className='text-xs font-bold uppercase tracking-wide text-emerald-600'>Pago confirmado</p>
+        {(order.paymentMethodType || order.paymentReference) && (
+          <p className='text-sm text-emerald-800'>
+            {order.paymentMethodType && <span className='font-medium'>{order.paymentMethodType}</span>}
+            {order.paymentMethodType && order.paymentReference && ' — '}
+            {order.paymentReference}
+          </p>
+        )}
+        {order.paymentEvidenceImagePath && (
+          <a
+            href={`${BASE_URL}/${order.paymentEvidenceImagePath}`}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='mt-1 block overflow-hidden rounded-xl border border-emerald-200'
+          >
+            <img src={`${BASE_URL}/${order.paymentEvidenceImagePath}`} alt='Comprobante' className='max-h-48 w-full object-contain bg-white' />
+          </a>
+        )}
+        <p className='flex items-center gap-1 text-xs text-emerald-600'>
+          <i className='bx bx-check-circle' />
+          {order.paymentConfirmedAt
+            ? `Confirmado el ${new Date(order.paymentConfirmedAt).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Bogota' })}`
+            : 'Pago confirmado por la tienda'}
+        </p>
+      </div>
+    );
+  }
+
+  if (order.paymentStatus === 'SUBMITTED') {
+    return (
+      <div className='rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 space-y-1.5'>
+        <p className='text-xs font-bold uppercase tracking-wide text-blue-600'>Comprobante enviado</p>
+        <p className='text-xs text-blue-700'>Tu comprobante está siendo revisado por la tienda.</p>
+        {(order.paymentMethodType || order.paymentReference) && (
+          <p className='text-sm text-blue-800'>
+            {order.paymentMethodType && <span className='font-medium'>{order.paymentMethodType}</span>}
+            {order.paymentMethodType && order.paymentReference && ' — '}
+            {order.paymentReference}
+          </p>
+        )}
+        {order.paymentEvidenceImagePath && (
+          <a
+            href={`${BASE_URL}/${order.paymentEvidenceImagePath}`}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='mt-1 block overflow-hidden rounded-xl border border-blue-200'
+          >
+            <img src={`${BASE_URL}/${order.paymentEvidenceImagePath}`} alt='Comprobante' className='max-h-48 w-full object-contain bg-white' />
+          </a>
+        )}
+      </div>
+    );
+  }
+
+  if (order.status === 'CANCELLED') return null;
+
+  return (
+    <div className='rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 space-y-3'>
+      <div>
+        <p className='text-xs font-bold uppercase tracking-wide text-amber-600'>Pago pendiente</p>
+        <p className='mt-1 text-xs text-amber-700'>
+          Envía tu comprobante para que la tienda confirme tu pedido. Sin confirmación en 5 días el pedido se cancelará automáticamente.
+        </p>
+      </div>
+      <div className='space-y-2'>
+        <input
+          type='text'
+          value={method}
+          onChange={(e) => setMethod(e.target.value)}
+          placeholder='Método de pago (ej: Nequi, Bancolombia…)'
+          className='w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm placeholder-slate-400 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-300'
+        />
+        <input
+          type='text'
+          value={reference}
+          onChange={(e) => setReference(e.target.value)}
+          placeholder='Referencia o número de transacción'
+          className='w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm placeholder-slate-400 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-300'
+        />
+        <label className='flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-amber-300 bg-white px-3 py-2.5 text-sm text-amber-700 transition hover:border-amber-400'>
+          <i className='bx bx-image-add text-lg' />
+          {file ? file.name : 'Adjuntar captura de pantalla'}
+          <input type='file' accept='image/*' className='hidden' onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+        </label>
+        {file && (
+          <button type='button' onClick={() => setFile(null)} className='text-xs text-slate-400 hover:text-red-500'>
+            ✕ Quitar imagen
+          </button>
+        )}
+      </div>
+      {uploadError && <p className='text-xs text-red-600'>{uploadError}</p>}
+      <button
+        type='button'
+        onClick={() => void handleSubmit()}
+        disabled={!hasContent || submitting}
+        className='flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-amber-600 disabled:opacity-50'
+      >
+        <i className='bx bx-send text-base' />
+        {submitting ? 'Enviando…' : 'Enviar comprobante'}
+      </button>
+    </div>
+  );
+};
+
 // ── Detail panel ─────────────────────────────────────────────────────────────
+
+const INVOICE_STATUSES: IOrder['status'][] = ['PAID', 'PREPARING', 'SHIPPED', 'DELIVERED'];
 
 const DetailPanel = ({
   order,
   loading,
   error,
   onBack,
+  onShowInvoice,
+  onOrderRefresh,
 }: {
   order: IOrder | null;
   loading: boolean;
   error: string | null;
   onBack?: () => void;
+  onShowInvoice?: (order: IOrder) => void;
+  onOrderRefresh?: () => void;
 }) => {
   const noSelection = !order && !loading && !error;
 
@@ -415,6 +581,21 @@ const DetailPanel = ({
                 </div>
               </div>
             )}
+
+            {/* Payment */}
+            <PaymentUploadSection order={order} onSuccess={() => onOrderRefresh?.()} />
+
+            {/* Invoice button */}
+            {INVOICE_STATUSES.includes(order.status) && onShowInvoice && (
+              <button
+                type='button'
+                onClick={() => onShowInvoice(order)}
+                className='mt-2 flex w-full items-center justify-center gap-2 rounded-2xl border border-primary/30 bg-primary/[0.04] px-4 py-3 text-sm font-semibold text-primary transition hover:bg-primary/10'
+              >
+                <i className='bx bx-receipt text-base' />
+                Ver comprobante / Imprimir
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -427,8 +608,9 @@ const DetailPanel = ({
 const MyOrdersPage = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
-  const { orders, selectedOrder, loadingList, loadingDetail, listError, detailError, lastUpdated, syncing, changedOrderIds } = useMyOrders(orderId);
+  const { orders, selectedOrder, loadingList, loadingDetail, listError, detailError, lastUpdated, syncing, changedOrderIds, refresh } = useMyOrders(orderId);
   const [page, setPage] = useState(1);
+  const [invoiceOrder, setInvoiceOrder] = useState<IOrder | null>(null);
 
   if (!isAuthenticated()) return <Navigate to={ROUTES.PUBLIC.LOGIN} replace />;
 
@@ -537,9 +719,18 @@ const MyOrdersPage = () => {
             loading={loadingDetail}
             error={detailError}
             onBack={clearOrder}
+            onShowInvoice={setInvoiceOrder}
+            onOrderRefresh={refresh}
           />
         </div>
       </div>
+
+      {invoiceOrder && (
+        <OrderInvoiceModal
+          order={invoiceOrder}
+          onClose={() => setInvoiceOrder(null)}
+        />
+      )}
     </div>
   );
 };

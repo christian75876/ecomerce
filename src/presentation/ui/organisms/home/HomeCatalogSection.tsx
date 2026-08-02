@@ -162,7 +162,7 @@ const HomeCatalogSection = ({
         />
 
         <div className='relative z-10 mx-auto max-w-2xl text-center'>
-          <p className='mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/60'>Marketplace</p>
+          <p className='mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/60'>Merku</p>
           <h1 className='mb-3 text-2xl font-extrabold tracking-tight'>
             Encuentra lo que necesitas
           </h1>

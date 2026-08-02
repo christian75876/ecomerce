@@ -29,3 +29,9 @@ export interface IUpdateOrderStatusRequest {
     | 'DELIVERED'
     | 'CANCELLED';
 }
+
+export interface ISubmitPaymentRequest {
+  paymentMethodType?: string;
+  paymentReference?: string;
+  evidenceImage?: File | null;
+}

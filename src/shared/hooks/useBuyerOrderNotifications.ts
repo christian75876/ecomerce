@@ -4,7 +4,7 @@ import { isAuthenticated, canAccessAdminPanel } from '@/shared/utils/checkIsUser
 import { SnackbarUtilities } from '@/shared/utils/SnackbarManager';
 import { playNotificationSound } from '@/shared/utils/notificationSound';
 
-const BASE = (import.meta.env.VITE_API_BASE_URL as string ?? 'http://127.0.0.1:3000/api/').replace(/\/$/, '');
+const BASE = (import.meta.env.VITE_API_URL as string ?? import.meta.env.VITE_API_BASE_URL as string ?? 'http://127.0.0.1:3000/api/').replace(/\/$/, '');
 const SSE_URL = `${BASE}/notifications/stream`;
 const MAX_RETRY_DELAY = 30_000;
 

@@ -11,6 +11,7 @@ const SettingsPage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Record<string, { apiKey: string; phone: string }>>({});
+  const [paymentDrafts, setPaymentDrafts] = useState<Record<string, string>>({});
   const [appConfig, setAppConfig] = useState<IAppConfig | null>(null);
   const [blockMsg, setBlockMsg] = useState('');
   const [savingConfig, setSavingConfig] = useState(false);
@@ -53,10 +54,13 @@ const SettingsPage = () => {
       .then((res) => {
         setStores(res.data);
         const d: Record<string, { apiKey: string; phone: string }> = {};
+        const p: Record<string, string> = {};
         res.data.forEach((s) => {
           d[s.id] = { apiKey: s.wppApiKey ?? '', phone: s.whatsappNumber ?? '' };
+          p[s.id] = s.paymentInstructions ?? '';
         });
         setDrafts(d);
+        setPaymentDrafts(p);
       })
       .catch(() => SnackbarUtilities.error('No se pudieron cargar las tiendas'))
       .finally(() => setLoading(false));
@@ -75,6 +79,21 @@ const SettingsPage = () => {
       );
     } catch {
       SnackbarUtilities.error('No se pudo actualizar');
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  const savePaymentInstructions = async (store: IStore) => {
+    setSaving(store.id + '_pay');
+    try {
+      const updated = await StoresRepository.updateStore(store.id, {
+        paymentInstructions: paymentDrafts[store.id]?.trim() || null,
+      });
+      setStores((prev) => prev.map((s) => (s.id === store.id ? updated.data : s)));
+      SnackbarUtilities.success('Instrucciones de pago guardadas', 'bottom', 'right');
+    } catch {
+      SnackbarUtilities.error('No se pudo guardar');
     } finally {
       setSaving(null);
     }
@@ -265,6 +284,64 @@ const SettingsPage = () => {
                     </button>
                   </div>
                 ) : null}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      {/* Payment instructions panel */}
+      <div className='rounded-3xl border border-slate-200 bg-white p-6 shadow-sm'>
+        <div className='mb-6 flex items-center gap-3'>
+          <div className='flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100'>
+            <i className='bx bx-transfer-alt text-xl text-emerald-600' aria-hidden='true' />
+          </div>
+          <div>
+            <h2 className='text-base font-semibold text-slate-800'>Instrucciones de pago</h2>
+            <p className='text-xs text-slate-500'>
+              El cliente verá este texto luego de crear su pedido para saber cómo transferirte.
+            </p>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className='space-y-4'>
+            {[1, 2].map((i) => <div key={i} className='h-20 skeleton rounded-2xl' />)}
+          </div>
+        ) : stores.length === 0 ? null : (
+          <div className='space-y-4'>
+            {stores.map((store) => (
+              <div key={store.id} className='rounded-2xl border border-slate-200 p-5 space-y-3'>
+                <div className='flex items-center gap-3'>
+                  {store.logoUrl ? (
+                    <img src={store.logoUrl} alt={store.name} className='h-8 w-8 rounded-xl object-cover' />
+                  ) : (
+                    <div className='flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10'>
+                      <i className='bx bx-store text-sm text-primary' aria-hidden='true' />
+                    </div>
+                  )}
+                  <p className='text-sm font-semibold text-slate-800'>{store.name}</p>
+                </div>
+                <div>
+                  <label className='mb-1.5 block text-xs font-medium text-slate-500'>
+                    Datos de transferencia (Nequi, banco, etc.)
+                  </label>
+                  <textarea
+                    rows={3}
+                    placeholder={'Ej:\nNequi: 300 123 4567 · Juan Pérez\nBancolombia cuenta ahorros: 123-456789-00'}
+                    value={paymentDrafts[store.id] ?? ''}
+                    onChange={(e) => setPaymentDrafts((d) => ({ ...d, [store.id]: e.target.value }))}
+                    className='w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-emerald-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100'
+                  />
+                </div>
+                <button
+                  type='button'
+                  onClick={() => void savePaymentInstructions(store)}
+                  disabled={saving === store.id + '_pay'}
+                  className='flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50'
+                >
+                  <i className='bx bx-check text-base' aria-hidden='true' />
+                  {saving === store.id + '_pay' ? 'Guardando...' : 'Guardar instrucciones'}
+                </button>
               </div>
             ))}
           </div>

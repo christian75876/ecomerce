@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
+
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string ?? 'http://127.0.0.1:3000/api/').replace(/\/api\/?$/, '');
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
@@ -101,7 +103,7 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
                     {review.images.map((image) => (
                       <img
                         key={image.id}
-                        src={`http://127.0.0.1:3000${image.url}`}
+                        src={`${BASE_URL}${image.url}`}
                         alt='Reseña'
                         className='h-28 w-full rounded-xl object-cover'
                       />

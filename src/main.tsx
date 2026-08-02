@@ -1,6 +1,10 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from '@/App';
+import { ErrorBoundary } from '@molecules/common/ErrorBoundary';
+import { initSentry } from '@/shared/config/sentry';
+
+initSentry();
 
 //Styled imports
 import '@assets/styles/index.css';
@@ -21,6 +25,8 @@ registerSW({
 });
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </StrictMode>,
 )

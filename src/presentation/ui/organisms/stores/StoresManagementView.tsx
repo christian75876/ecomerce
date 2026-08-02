@@ -150,8 +150,8 @@ const ConfirmToggleModal = ({
         </h2>
         <p className='mt-2 text-sm text-slate-500'>
           {deactivating
-            ? <>La tienda <span className='font-semibold text-slate-700'>"{store.name}"</span> dejará de ser visible en el marketplace inmediatamente.</>
-            : <>La tienda <span className='font-semibold text-slate-700'>"{store.name}"</span> volverá a ser visible en el marketplace.</>}
+            ? <>La tienda <span className='font-semibold text-slate-700'>"{store.name}"</span> dejará de ser visible en Merku inmediatamente.</>
+            : <>La tienda <span className='font-semibold text-slate-700'>"{store.name}"</span> volverá a ser visible en Merku.</>}
         </p>
         <div className='mt-6 flex flex-col gap-2'>
           <button
@@ -324,10 +324,10 @@ const SubscriptionInfo = ({ expiresAt }: { expiresAt: string }) => {
 
   const wppMsg = encodeURIComponent(
     expired
-      ? '¡Hola! Mi suscripción en Hot Commerce expiró. Quisiera renovarla.'
+      ? '¡Hola! Mi suscripción en Merku expiró. Quisiera renovarla.'
       : hasExpiry
-        ? `¡Hola! Quisiera renovar mi suscripción en Hot Commerce antes de que venza el ${new Date(expiresAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Bogota' })}.`
-        : '¡Hola! Quisiera consultar los planes de suscripción de Hot Commerce.',
+        ? `¡Hola! Quisiera renovar mi suscripción en Merku antes de que venza el ${new Date(expiresAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Bogota' })}.`
+        : '¡Hola! Quisiera consultar los planes de suscripción de Merku.',
   );
 
   return (
@@ -343,7 +343,7 @@ const SubscriptionInfo = ({ expiresAt }: { expiresAt: string }) => {
           <div>
             <p className='text-sm font-semibold text-red-700'>Suscripción expirada</p>
             <p className='text-xs text-red-500'>
-              Venció el {new Date(expiresAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Bogota' })}. Tu tienda está oculta en el marketplace.
+              Venció el {new Date(expiresAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Bogota' })}. Tu tienda está oculta en Merku.
             </p>
           </div>
         </div>
@@ -370,7 +370,7 @@ const SubscriptionInfo = ({ expiresAt }: { expiresAt: string }) => {
           <i className='bx bx-infinite text-lg text-blue-500' aria-hidden='true' />
           <div>
             <p className='text-sm font-semibold text-blue-700'>Sin vencimiento</p>
-            <p className='text-xs text-blue-500'>Tu tienda está visible indefinidamente en el marketplace.</p>
+            <p className='text-xs text-blue-500'>Tu tienda está visible indefinidamente en Merku.</p>
           </div>
         </div>
       )}
@@ -763,7 +763,7 @@ export const StoresManagementView = ({
                     onChange={(e) => onFormChange('isActive', e.target.checked)}
                     disabled={submitting}
                   />
-                  Tienda activa y visible en el marketplace
+                  Tienda activa y visible en Merku
                 </label>
 
                 {/* +18 — editable by both admin and seller */}
@@ -844,7 +844,7 @@ export const StoresManagementView = ({
                 ) : (
                   <div className='rounded-2xl border border-blue-200 bg-blue-50/40 p-4 space-y-3'>
                     <p className='text-xs font-semibold uppercase tracking-wide text-blue-600'>Suscripción mensual</p>
-                    <p className='text-xs text-slate-500'>Sin fecha de vencimiento la tienda siempre está activa. Con fecha, se oculta automáticamente del marketplace al expirar.</p>
+                    <p className='text-xs text-slate-500'>Sin fecha de vencimiento la tienda siempre está activa. Con fecha, se oculta automáticamente de Merku al expirar.</p>
                     <div className='flex flex-wrap items-center gap-2'>
                       <input
                         type='date'
@@ -879,7 +879,7 @@ export const StoresManagementView = ({
                     {form.subscriptionExpiresAt ? (
                       <p className={`text-xs font-medium ${new Date(form.subscriptionExpiresAt) < new Date() ? 'text-red-500' : 'text-green-600'}`}>
                         {new Date(form.subscriptionExpiresAt) < new Date()
-                          ? '⚠ Esta fecha ya expiró — la tienda está oculta en el marketplace'
+                          ? '⚠ Esta fecha ya expiró — la tienda está oculta en Merku'
                           : `Visible hasta el ${new Date(form.subscriptionExpiresAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}`}
                       </p>
                     ) : (

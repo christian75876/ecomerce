@@ -16,6 +16,13 @@ export interface IOrder {
   deliveryLng: number | null;
   couponCode: string | null;
   discountAmount: number;
+  paymentMethodType: string | null;
+  paymentReference: string | null;
+  paymentEvidenceImagePath: string | null;
+  paymentStatus: 'NONE' | 'SUBMITTED' | 'CONFIRMED';
+  paymentConfirmedAt: string | null;
+  paymentConfirmedByUserId: number | null;
+  storePaymentInstructions?: string | null;
   customer: {
     id: string;
     firstName: string;

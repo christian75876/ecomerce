@@ -37,4 +37,6 @@ export interface IUpdateStoreNotificationRequest {
   wppApiKey?: string;
 }
 
-export type IUpdateStoreRequest = Partial<ICreateStoreRequest> & IUpdateStoreNotificationRequest;
+export type IUpdateStoreRequest = Partial<ICreateStoreRequest> & IUpdateStoreNotificationRequest & {
+  paymentInstructions?: string | null;
+};

@@ -14,17 +14,14 @@ export const useLogout = () => {
     setError(null);
     try {
       await AuthRepository.logout();
+    } catch {
+      // Token may already be expired — always clear session locally
+    } finally {
       authSession.clear();
       navigation(ROUTES.PUBLIC.HOME);
-      return null;
-    } catch (_err: unknown) {
-      setError(
-        _err instanceof Error ? _err.message : 'No fue posible cerrar sesión'
-      );
-      return null;
-    } finally {
       setIsLoading(false);
     }
+    return null;
   };
 
   return { handleLogout, isLoading, error };

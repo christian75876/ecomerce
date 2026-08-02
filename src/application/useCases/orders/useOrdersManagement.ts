@@ -203,6 +203,21 @@ export const useOrdersManagement = () => {
     await loadOrders(page);
   };
 
+  const confirmPayment = async (orderId: string) => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const resp = await OrdersRepository.confirmPayment(orderId);
+      setOrders((prev) => prev.map((o) => (o.id === orderId ? resp.data : o)));
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo confirmar el pago');
+      return false;
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return {
     customers,
     products,
@@ -224,6 +239,7 @@ export const useOrdersManagement = () => {
     createCustomer,
     createOrder,
     changeOrderStatus,
+    confirmPayment,
     changePage,
   };
 };

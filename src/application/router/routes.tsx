@@ -4,6 +4,10 @@ import { ROUTES } from '@/shared/constants/routes';
 import { lazy } from 'react';
 import { RouteObject } from 'react-router-dom';
 
+const LandingPage = lazy(
+  () => import('@presentation/pages/public/landing/LandingPage')
+);
+
 // Lazy-loaded pages
 const LoginPage = lazy(
   () => import('@presentation/pages/public/auth/LoginPage')
@@ -103,6 +107,9 @@ const SubscriptionsPage = lazy(
 const AdvertisingPage = lazy(
   () => import('@presentation/pages/private/advertising/AdvertisingPage')
 );
+const SalesHistoryPage = lazy(
+  () => import('@presentation/pages/private/sales/SalesHistoryPage')
+);
 
 export type AppRoute = RouteObject & {
   path: string;
@@ -117,6 +124,8 @@ export type AppRoute = RouteObject & {
 };
 
 export const routes: AppRoute[] = [
+  // Landing page — sin layout envolvente, tiene su propio navbar
+  { path: ROUTES.PUBLIC.LANDING, element: <LandingPage />, publicOnly: false },
   // Rutas Públicas
   { path: ROUTES.PUBLIC.LOGIN, element: <LoginPage /> },
   {
@@ -301,6 +310,12 @@ export const routes: AppRoute[] = [
   {
     path: ROUTES.PRIVATE.ADVERTISING,
     element: <AdvertisingPage />,
+    private: true,
+    layout: DashboardLayout
+  },
+  {
+    path: ROUTES.PRIVATE.SALES_HISTORY,
+    element: <SalesHistoryPage />,
     private: true,
     layout: DashboardLayout
   },

@@ -1,39 +1,39 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants/routes';
 
-/**
- * Handles unauthorized access errors (401).
- * - Clears authentication tokens.
- * - Redirects user to the login page using React Router.
- * - Optionally, triggers a global logout event.
- */
+const PUBLIC_PATHS = [
+  ROUTES.PUBLIC.LANDING,
+  ROUTES.PUBLIC.LOGIN,
+  ROUTES.PUBLIC.REGISTER,
+  ROUTES.PUBLIC.FORGOT_PASSWORD,
+  ROUTES.PUBLIC.STORES,
+  ROUTES.PUBLIC.HOME,
+];
+
 export const handleUnauthorized = () => {
   console.warn('[AUTH ERROR]: User session expired. Logging out...');
-
-  // 1️⃣ Clear authentication tokens
   localStorage.removeItem('token');
   sessionStorage.removeItem('token');
   document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-
-  // 2️⃣ Dispatch a logout event for global state managers
   const logoutEvent = new CustomEvent('logout');
   window.dispatchEvent(logoutEvent);
 };
 
-/**
- * Custom hook that listens for unauthorized events and redirects to login.
- */
 export const useHandleUnauthorized = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const handleLogout = () => {
       handleUnauthorized();
-      navigate(ROUTES.PUBLIC.LOGIN);
+      const isPublic = PUBLIC_PATHS.some((p) => location.pathname === p || location.pathname.startsWith('/stores/') || location.pathname.startsWith('/product/'));
+      if (!isPublic) {
+        navigate(ROUTES.PUBLIC.LOGIN);
+      }
     };
 
     window.addEventListener('logout', handleLogout);
     return () => window.removeEventListener('logout', handleLogout);
-  }, [navigate]);
+  }, [navigate, location]);
 };

@@ -27,7 +27,7 @@ const LogoWithText = ({
     <Box className='flex items-center gap-2.5'>
       <Image
         src={logo}
-        alt='Logo Hot Commerce'
+        alt='Logo Merku'
         className={sizeClasses[size].logo}
       />
       <Box>

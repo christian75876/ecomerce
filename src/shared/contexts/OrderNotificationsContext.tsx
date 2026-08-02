@@ -65,7 +65,7 @@ interface ContextValue {
 
 const OrderNotificationsContext = createContext<ContextValue | null>(null);
 
-const BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:3000/api/';
+const BASE = import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:3000/api/';
 const SSE_URL = BASE.replace(/\/$/, '') + '/notifications/stream';
 const MAX_RETRY_DELAY = 30_000;
 
@@ -85,9 +85,9 @@ export const OrderNotificationsProvider = ({ children }: { children: ReactNode }
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
   const dismissLatest = () => setLatestNotification(null);
 
-  // Sellers get order history pre-loaded; admins start fresh (their events are real-time only)
+  // Both sellers and admins get recent order history pre-loaded
   const loadInitialOrders = useCallback(async () => {
-    if (!canAccessAdminPanel() || isAdminRole()) return;
+    if (!canAccessAdminPanel()) return;
     try {
       const resp = await OrdersRepository.getOrders({ limit: 20 });
       const raw = resp.data as unknown as { items?: IOrder[] } | IOrder[];
@@ -132,8 +132,36 @@ export const OrderNotificationsProvider = ({ children }: { children: ReactNode }
       try {
         const data = JSON.parse(event.data as string) as Record<string, unknown>;
 
-        if (isAdminRole()) {
-          // Admin: handle site-level events
+        // new_order: received by both sellers and admins
+        if (data.type === 'new_order') {
+          const n: NewOrderNotification = {
+            id: crypto.randomUUID(),
+            type: 'new_order',
+            orderId: data.orderId as string,
+            customerName: data.customerName as string,
+            total: data.total as number,
+            itemCount: data.itemCount as number,
+            deliveryMethod: (data.deliveryMethod as string | null) ?? null,
+            createdAt: data.createdAt as string,
+            read: false,
+          };
+          setNotifications((prev) => {
+            const alreadyExists = prev.some(
+              (p) => p.type === 'new_order' && (p as NewOrderNotification).orderId === n.orderId,
+            );
+            if (alreadyExists) {
+              return prev.map((p) =>
+                p.type === 'new_order' && (p as NewOrderNotification).orderId === n.orderId
+                  ? { ...p, read: false }
+                  : p,
+              );
+            }
+            return [n, ...prev].slice(0, 50);
+          });
+          setLatestNotification(n);
+          playNotificationSound();
+        } else if (isAdminRole()) {
+          // Admin-only site-level events
           if (data.type === 'user_registered') {
             const n: UserRegisteredNotification = {
               id: crypto.randomUUID(),
@@ -161,36 +189,6 @@ export const OrderNotificationsProvider = ({ children }: { children: ReactNode }
               read: false,
             };
             setNotifications((prev) => [n, ...prev].slice(0, 50));
-            setLatestNotification(n);
-            playNotificationSound();
-          }
-        } else {
-          // Seller: handle order events
-          if (data.type === 'new_order') {
-            const n: NewOrderNotification = {
-              id: crypto.randomUUID(),
-              type: 'new_order',
-              orderId: data.orderId as string,
-              customerName: data.customerName as string,
-              total: data.total as number,
-              itemCount: data.itemCount as number,
-              deliveryMethod: (data.deliveryMethod as string | null) ?? null,
-              createdAt: data.createdAt as string,
-              read: false,
-            };
-            setNotifications((prev) => {
-              const alreadyExists = prev.some(
-                (p) => p.type === 'new_order' && (p as NewOrderNotification).orderId === n.orderId,
-              );
-              if (alreadyExists) {
-                return prev.map((p) =>
-                  p.type === 'new_order' && (p as NewOrderNotification).orderId === n.orderId
-                    ? { ...p, read: false }
-                    : p,
-                );
-              }
-              return [n, ...prev].slice(0, 50);
-            });
             setLatestNotification(n);
             playNotificationSound();
           }

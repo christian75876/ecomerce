@@ -1,5 +1,6 @@
 export const ROUTES = {
   PUBLIC: {
+    LANDING: '/',
     LOGIN: '/auth',
     REGISTER: '/register',
     VERIFY_EMAIL: '/verify-email',
@@ -37,6 +38,7 @@ export const ROUTES = {
     INVITATIONS: '/admin/invitations',
     COUPONS: '/coupons',
     SUBSCRIPTIONS: '/admin/subscriptions',
-    ADVERTISING: '/admin/advertising'
+    ADVERTISING: '/admin/advertising',
+    SALES_HISTORY: '/sales-history'
   }
 } as const;

@@ -13,6 +13,20 @@ export interface ISale {
     firstName: string;
     lastName: string;
   } | null;
+  store?: {
+    id: string;
+    name: string;
+  } | null;
+  // Guest customer
+  guestName?: string | null;
+  guestPhone?: string | null;
+  guestDocType?: string | null;
+  guestDoc?: string | null;
+  // Delivery
+  deliveryType?: 'LOCAL' | 'SHIPPING' | null;
+  deliveryAddress?: string | null;
+  deliveryCity?: string | null;
+  deliveryNotes?: string | null;
   items: Array<{
     id: string;
     productId: string;
@@ -27,5 +41,14 @@ export interface ISale {
   }>;
 }
 
+export interface ISalesHistoryResponse {
+  items: ISale[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export type ISalesResp = IApiResponse<ISale[]>;
 export type ISaleResp = IApiResponse<ISale>;
+export type ISalesHistoryResp = IApiResponse<ISalesHistoryResponse>;

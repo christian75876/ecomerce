@@ -276,17 +276,17 @@ const StoreMapPage = () => {
   return (
     <>
       <Helmet>
-        <title>Mapa de tiendas — Hot Commerce</title>
+        <title>Mapa de tiendas — Merku</title>
         <meta name='description' content='Encuentra tiendas cercanas, obtén indicaciones y explora el catálogo de cada tienda.' />
-        <meta property='og:title' content='Mapa de tiendas — Hot Commerce' />
+        <meta property='og:title' content='Mapa de tiendas — Merku' />
         <meta property='og:description' content='Encuentra tiendas cercanas, obtén indicaciones y explora el catálogo de cada tienda.' />
         <meta property='og:type' content='website' />
-        <meta property='og:site_name' content='Hot Commerce' />
-        <meta property='og:image' content='https://ecomercehot.netlify.app/icons/icon-512x512.png' />
+        <meta property='og:site_name' content='Merku' />
+        <meta property='og:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/icons/icon-512x512.png`} />
         <meta name='twitter:card' content='summary' />
-        <meta name='twitter:title' content='Mapa de tiendas — Hot Commerce' />
+        <meta name='twitter:title' content='Mapa de tiendas — Merku' />
         <meta name='twitter:description' content='Encuentra tiendas cercanas, obtén indicaciones y explora el catálogo de cada tienda.' />
-        <meta name='twitter:image' content='https://ecomercehot.netlify.app/icons/icon-512x512.png' />
+        <meta name='twitter:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/icons/icon-512x512.png`} />
       </Helmet>
 
       {/* Page header */}

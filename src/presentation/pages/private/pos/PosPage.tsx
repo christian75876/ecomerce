@@ -23,6 +23,25 @@ const PosPage = () => {
       onAddToCart={posManagement.addToCart}
       onUpdateQuantity={posManagement.updateQuantity}
       onConfirmSale={posManagement.confirmSale}
+      lastSale={posManagement.lastSale}
+      lastSaleGuestInfo={posManagement.lastSaleGuestInfo}
+      guestName={posManagement.guestName}
+      guestPhone={posManagement.guestPhone}
+      guestDocType={posManagement.guestDocType}
+      guestDoc={posManagement.guestDoc}
+      onGuestNameChange={posManagement.setGuestName}
+      onGuestPhoneChange={posManagement.setGuestPhone}
+      onGuestDocTypeChange={posManagement.setGuestDocType}
+      onGuestDocChange={posManagement.setGuestDoc}
+      deliveryType={posManagement.deliveryType}
+      deliveryAddress={posManagement.deliveryAddress}
+      deliveryCity={posManagement.deliveryCity}
+      deliveryNotes={posManagement.deliveryNotes}
+      onDeliveryTypeChange={posManagement.setDeliveryType}
+      onDeliveryAddressChange={posManagement.setDeliveryAddress}
+      onDeliveryCityChange={posManagement.setDeliveryCity}
+      onDeliveryNotesChange={posManagement.setDeliveryNotes}
+      onCloseSaleReceipt={posManagement.closeSaleReceipt}
     />
   );
 };

@@ -41,7 +41,7 @@ export default async function middleware(request: Request): Promise<Response | u
       ].filter(Boolean).join(' ');
 
       return buildResponse({
-        title: `${p.name} — Hot Commerce`,
+        title: `${p.name} — Merku`,
         description,
         image: p.imageUrl,
         url: `${origin}${pathname}`,
@@ -62,10 +62,10 @@ export default async function middleware(request: Request): Promise<Response | u
       const s = json.data;
 
       return buildResponse({
-        title: `${s.name} — Hot Commerce`,
+        title: `${s.name} — Merku`,
         description:
           s.description?.slice(0, 180) ??
-          `Explora los productos de ${s.name} en Hot Commerce.`,
+          `Explora los productos de ${s.name} en Merku.`,
         image: s.bannerUrl ?? s.logoUrl,
         url: `${origin}${pathname}`,
         type: 'website',
@@ -112,7 +112,7 @@ function renderOgHtml({ title, description, image, url, type }: OgParams): strin
   <meta property="og:description" content="${e(description)}" />
   <meta property="og:url" content="${e(url)}" />
   <meta property="og:type" content="${e(type)}" />
-  <meta property="og:site_name" content="Hot Commerce" />
+  <meta property="og:site_name" content="Merku" />
   <meta property="og:locale" content="es_CO" />${imgMeta}
   <meta name="twitter:card" content="${image ? 'summary_large_image' : 'summary'}" />
   <meta name="twitter:title" content="${e(title)}" />

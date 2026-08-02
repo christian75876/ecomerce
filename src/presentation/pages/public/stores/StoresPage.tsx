@@ -50,7 +50,7 @@ const StoresPage = () => {
         <div className='pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/5' aria-hidden='true' />
         <div className='pointer-events-none absolute -bottom-20 left-8 h-48 w-48 rounded-full bg-white/5' aria-hidden='true' />
         <div className='relative z-10 mx-auto max-w-2xl text-center'>
-          <p className='mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/60'>Marketplace</p>
+          <p className='mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/60'>Merku</p>
           <h1 className='mb-3 text-2xl font-extrabold tracking-tight'>
             {activeTab === 'RESTAURANT' ? 'Restaurantes' : 'Tiendas disponibles'}
           </h1>

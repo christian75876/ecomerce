@@ -10,7 +10,7 @@ const AppBlockedScreen = ({ message }: AppBlockedScreenProps) => (
       </div>
       <h1 className='text-xl font-bold text-white'>App temporalmente cerrada</h1>
       <p className='mt-3 text-sm leading-relaxed text-slate-400'>
-        {message || 'El marketplace está en mantenimiento. Vuelve pronto.'}
+        {message || 'Merku está en mantenimiento. Vuelve pronto.'}
       </p>
       <p className='mt-6 text-xs text-slate-600'>Si eres administrador, inicia sesión para continuar.</p>
     </div>

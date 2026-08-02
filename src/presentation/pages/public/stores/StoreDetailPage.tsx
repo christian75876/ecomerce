@@ -135,18 +135,18 @@ const StoreDetailPage = () => {
   return (
     <>
       <Helmet>
-        <title>{store.name} — Hot Commerce</title>
-        <meta name='description' content={store.description || `Explora los productos de ${store.name} en el marketplace.`} />
-        <meta property='og:title' content={`${store.name} — Hot Commerce`} />
-        <meta property='og:description' content={store.description || `Explora los productos de ${store.name} en Hot Commerce.`} />
+        <title>{store.name} — Merku</title>
+        <meta name='description' content={store.description || `Explora los productos de ${store.name} en Merku.`} />
+        <meta property='og:title' content={`${store.name} — Merku`} />
+        <meta property='og:description' content={store.description || `Explora los productos de ${store.name} en Merku.`} />
         <meta property='og:type' content='website' />
-        <meta property='og:site_name' content='Hot Commerce' />
+        <meta property='og:site_name' content='Merku' />
         {(store.bannerUrl || store.logoUrl) ? (
           <meta property='og:image' content={(store.bannerUrl || store.logoUrl)!} />
         ) : null}
         <meta name='twitter:card' content={store.bannerUrl ? 'summary_large_image' : 'summary'} />
-        <meta name='twitter:title' content={`${store.name} — Hot Commerce`} />
-        <meta name='twitter:description' content={store.description || `Explora los productos de ${store.name} en Hot Commerce.`} />
+        <meta name='twitter:title' content={`${store.name} — Merku`} />
+        <meta name='twitter:description' content={store.description || `Explora los productos de ${store.name} en Merku.`} />
         {(store.bannerUrl || store.logoUrl) ? (
           <meta name='twitter:image' content={(store.bannerUrl || store.logoUrl)!} />
         ) : null}
@@ -301,7 +301,7 @@ const StoreDetailPage = () => {
               onAddToCart={(productId) => {
                 const product = products.find((item) => item.id === productId);
                 if (!product) return;
-                addItem({ productId: product.id, name: product.name, price: Number(product.price), imageUrl: product.imageUrl });
+                addItem({ productId: product.id, name: product.name, price: Number(product.price), imageUrl: product.imageUrl, storeId: store.id, storeAddressText: store.addressText });
                 const label = product.name.length > 28 ? `${product.name.slice(0, 28)}…` : product.name;
                 SnackbarUtilities.success(`${label} agregado al carrito`, 'top', 'center');
               }}
@@ -377,7 +377,7 @@ const StoreDetailPage = () => {
                 onAddToCart={(productId) => {
                   const product = products.find((item) => item.id === productId);
                   if (!product) return;
-                  addItem({ productId: product.id, name: product.name, price: Number(product.price), imageUrl: product.imageUrl });
+                  addItem({ productId: product.id, name: product.name, price: Number(product.price), imageUrl: product.imageUrl, storeId: store.id, storeAddressText: store.addressText });
                   const label = product.name.length > 28 ? `${product.name.slice(0, 28)}…` : product.name;
                   SnackbarUtilities.success(`${label} agregado al carrito`, 'top', 'center');
                 }}
@@ -390,7 +390,7 @@ const StoreDetailPage = () => {
       {(store.whatsappNumber || store.phone || import.meta.env.VITE_WHATSAPP_SUPPORT) ? (
         <WhatsAppFloat
           phoneNumber={(store.whatsappNumber || store.phone || import.meta.env.VITE_WHATSAPP_SUPPORT)!}
-          message={`Hola, te escribo desde el marketplace sobre la tienda ${store.name}`}
+          message={`Hola, te escribo desde Merku sobre la tienda ${store.name}`}
         />
       ) : null}
     </>

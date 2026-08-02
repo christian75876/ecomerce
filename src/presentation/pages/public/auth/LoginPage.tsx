@@ -70,9 +70,9 @@ const LoginPage = () => {
             <div className='relative z-10'>
               {/* Logo */}
               <div className='flex items-center gap-2'>
-                <img src='/icons/icon-96x96.png' alt='Hot Commerce' className='h-9 w-9 rounded-xl' />
+                <img src='/icons/icon-96x96.png' alt='Merku' className='h-9 w-9 rounded-xl' />
                 <span className='text-lg font-extrabold tracking-tight text-white'>
-                  Hot Commerce
+                  Merku
                 </span>
               </div>
 
@@ -103,9 +103,9 @@ const LoginPage = () => {
 
                 {/* Logo — solo mobile (el panel izq. ya lo muestra en desktop) */}
               <div className='mb-1 flex items-center gap-2 lg:hidden'>
-                <img src='/icons/icon-96x96.png' alt='Hot Commerce' className='h-8 w-8 rounded-xl' />
+                <img src='/icons/icon-96x96.png' alt='Merku' className='h-8 w-8 rounded-xl' />
                 <span className='text-base font-extrabold tracking-tight text-slate-900'>
-                  Hot Commerce
+                  Merku
                 </span>
               </div>
 

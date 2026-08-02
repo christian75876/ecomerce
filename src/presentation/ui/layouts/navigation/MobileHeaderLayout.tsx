@@ -41,34 +41,34 @@ const adminControlItems = [
 
 // Admin "Más" — Tiendas section (collapsible)
 const adminStoreItems = [
-  { label: 'Dashboard',          path: ROUTES.PRIVATE.DASHBOARD,  icon: 'bx-home-alt-2'    },
-  { label: 'Tienda',             path: ROUTES.PRIVATE.STORES,     icon: 'bx-store'         },
-  { label: 'Productos',          path: ROUTES.PRIVATE.PRODUCTS,   icon: 'bx-shopping-bag'  },
-  { label: 'Categorías',         path: ROUTES.PRIVATE.CATEGORIES, icon: 'bx-category'      },
-  { label: 'Inventario',         path: ROUTES.PRIVATE.INVENTORY,  icon: 'bx-box'           },
-  { label: 'POS',                path: ROUTES.PRIVATE.POS,        icon: 'bx-credit-card'   },
-  { label: 'Pedidos',            path: ROUTES.PRIVATE.ORDERS,     icon: 'bx-receipt'       },
-  { label: 'Caja',               path: ROUTES.PRIVATE.CASH,       icon: 'bx-wallet'        },
-  { label: 'Proveedores',        path: ROUTES.PRIVATE.SUPPLIERS,  icon: 'bx-briefcase'     },
-  { label: 'Compras',            path: ROUTES.PRIVATE.PURCHASES,  icon: 'bx-package'       },
-  { label: 'Clientes y cartera', path: ROUTES.PRIVATE.CUSTOMERS,  icon: 'bx-group'         },
-  { label: 'Cupones',            path: ROUTES.PRIVATE.COUPONS,    icon: 'bx-purchase-tag'  },
+  { label: 'Dashboard',          path: ROUTES.PRIVATE.DASHBOARD,     icon: 'bx-home-alt-2'    },
+  { label: 'Tienda',             path: ROUTES.PRIVATE.STORES,        icon: 'bx-store'         },
+  { label: 'Productos',          path: ROUTES.PRIVATE.PRODUCTS,      icon: 'bx-shopping-bag'  },
+  { label: 'Categorías',         path: ROUTES.PRIVATE.CATEGORIES,    icon: 'bx-category'      },
+  { label: 'Inventario',         path: ROUTES.PRIVATE.INVENTORY,     icon: 'bx-box'           },
+  { label: 'POS',                path: ROUTES.PRIVATE.POS,           icon: 'bx-credit-card'   },
+  { label: 'Pedidos',            path: ROUTES.PRIVATE.ORDERS,        icon: 'bx-receipt'       },
+  { label: 'Historial ventas',   path: ROUTES.PRIVATE.SALES_HISTORY, icon: 'bx-history'       },
+  { label: 'Proveedores',        path: ROUTES.PRIVATE.SUPPLIERS,     icon: 'bx-briefcase'     },
+  { label: 'Compras',            path: ROUTES.PRIVATE.PURCHASES,     icon: 'bx-package'       },
+  { label: 'Clientes y cartera', path: ROUTES.PRIVATE.CUSTOMERS,     icon: 'bx-group'         },
+  { label: 'Cupones',            path: ROUTES.PRIVATE.COUPONS,       icon: 'bx-purchase-tag'  },
 ];
 
 // Seller "Más" — flat grid (unchanged)
 const sellerMoreNavItems = [
-  { label: 'Tienda',             path: ROUTES.PRIVATE.STORES,     icon: 'bx-store'         },
-  { label: 'Productos',          path: ROUTES.PRIVATE.PRODUCTS,   icon: 'bx-shopping-bag'  },
-  { label: 'Categorías',         path: ROUTES.PRIVATE.CATEGORIES, icon: 'bx-category'      },
-  { label: 'Inventario',         path: ROUTES.PRIVATE.INVENTORY,  icon: 'bx-box'           },
-  { label: 'Clientes y cartera', path: ROUTES.PRIVATE.CUSTOMERS,  icon: 'bx-group'         },
-  { label: 'Compras',            path: ROUTES.PRIVATE.PURCHASES,  icon: 'bx-package'       },
-  { label: 'Proveedores',        path: ROUTES.PRIVATE.SUPPLIERS,  icon: 'bx-briefcase'     },
-  { label: 'Caja',               path: ROUTES.PRIVATE.CASH,       icon: 'bx-wallet'        },
-  { label: 'Cupones',            path: ROUTES.PRIVATE.COUPONS,    icon: 'bx-purchase-tag'  },
-  { label: 'Auditoría',          path: ROUTES.PRIVATE.AUDIT,      icon: 'bx-history'       },
-  { label: 'Ajustes',            path: ROUTES.PRIVATE.SETTINGS,   icon: 'bx-cog'           },
-  { label: 'Ayuda',              path: ROUTES.PUBLIC.HELP,         icon: 'bx-help-circle'   },
+  { label: 'Tienda',             path: ROUTES.PRIVATE.STORES,        icon: 'bx-store'         },
+  { label: 'Productos',          path: ROUTES.PRIVATE.PRODUCTS,      icon: 'bx-shopping-bag'  },
+  { label: 'Categorías',         path: ROUTES.PRIVATE.CATEGORIES,    icon: 'bx-category'      },
+  { label: 'Inventario',         path: ROUTES.PRIVATE.INVENTORY,     icon: 'bx-box'           },
+  { label: 'Historial ventas',   path: ROUTES.PRIVATE.SALES_HISTORY, icon: 'bx-history'       },
+  { label: 'Clientes y cartera', path: ROUTES.PRIVATE.CUSTOMERS,     icon: 'bx-group'         },
+  { label: 'Compras',            path: ROUTES.PRIVATE.PURCHASES,     icon: 'bx-package'       },
+  { label: 'Proveedores',        path: ROUTES.PRIVATE.SUPPLIERS,     icon: 'bx-briefcase'     },
+  { label: 'Cupones',            path: ROUTES.PRIVATE.COUPONS,       icon: 'bx-purchase-tag'  },
+  { label: 'Auditoría',          path: ROUTES.PRIVATE.AUDIT,         icon: 'bx-shield-quarter' },
+  { label: 'Ajustes',            path: ROUTES.PRIVATE.SETTINGS,      icon: 'bx-cog'           },
+  { label: 'Ayuda',              path: ROUTES.PUBLIC.HELP,            icon: 'bx-help-circle'   },
 ];
 
 const publicPrimaryNavItems = [

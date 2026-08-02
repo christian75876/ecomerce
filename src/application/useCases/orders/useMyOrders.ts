@@ -137,5 +137,6 @@ export const useMyOrders = (orderId?: string) => {
     lastUpdated,
     syncing,
     changedOrderIds,
+    refresh: () => void loadOrders(true),
   };
 };

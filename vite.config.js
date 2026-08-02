@@ -16,7 +16,9 @@ export default defineConfig({
       filename: 'sw.ts',
 
       devOptions: {
-        enabled: false,
+        enabled: true,
+        navigateFallback: '/index.html',
+        navigateFallbackAllowlist: [/^(?!\/(api|icons|assets)\/)/],
       },
 
       injectManifest: {
@@ -24,8 +26,8 @@ export default defineConfig({
       },
 
       manifest: {
-        name: 'Hot Commerce',
-        short_name: 'Hot Commerce',
+        name: 'Merku',
+        short_name: 'Merku',
         description: 'Marketplace con tiendas, restaurantes, catálogo, pedidos y más.',
         lang: 'es-ES',
         start_url: '/',

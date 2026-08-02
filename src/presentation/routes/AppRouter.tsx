@@ -39,7 +39,6 @@ const AppRouter = () => {
         <PageTransitionLayout>
           <Routes>
             <>
-              <Route path='/' element={<Navigate to='/home' replace />} />
               {routes.map(
                 ({
                   path,

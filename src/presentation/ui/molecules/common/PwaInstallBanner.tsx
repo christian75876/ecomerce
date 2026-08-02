@@ -40,7 +40,7 @@ const IosBanner = ({ onDismiss }: { onDismiss: () => void }) => (
           <i className='bx bx-mobile text-xl text-primary' aria-hidden='true' />
         </div>
         <div className='min-w-0 flex-1'>
-          <p className='text-sm font-semibold text-slate-800'>Instalar Hot Commerce</p>
+          <p className='text-sm font-semibold text-slate-800'>Instalar Merku</p>
           <p className='text-xs text-slate-500'>Agrégala a tu pantalla de inicio para acceso rápido</p>
         </div>
         <button
@@ -116,7 +116,7 @@ const AndroidBanner = ({
       <i className='bx bx-download text-xl text-primary' aria-hidden='true' />
     </div>
     <div className='min-w-0 flex-1'>
-      <p className='text-sm font-semibold text-slate-800'>Instalar Hot Commerce</p>
+      <p className='text-sm font-semibold text-slate-800'>Instalar Merku</p>
       <p className='text-xs text-slate-500'>Accede rápido desde tu pantalla de inicio</p>
     </div>
     <div className='flex flex-shrink-0 items-center gap-2'>

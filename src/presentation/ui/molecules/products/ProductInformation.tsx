@@ -94,6 +94,7 @@ const ProductInformation = ({ product, gallery = [], footer }: ProductInformatio
               src={allImages[currentIdx]}
               alt={`${product.name} — imagen ${currentIdx + 1}`}
               className='h-full w-full object-contain'
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/icons/icon-192x192.png'; }}
             />
             {hasDiscount ? (
               <span className='absolute left-3 top-3 rounded-full bg-red-500 px-2.5 py-1 text-xs font-bold text-white shadow'>
@@ -153,7 +154,8 @@ const ProductInformation = ({ product, gallery = [], footer }: ProductInformatio
                     : 'border-neutral-gray/20 opacity-60 hover:opacity-100'
                 }`}
               >
-                <img src={src} alt={`Miniatura ${i + 1}`} className='h-full w-full object-cover' />
+                <img src={src} alt={`Miniatura ${i + 1}`} className='h-full w-full object-cover'
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/icons/icon-192x192.png'; }} />
               </button>
             ))}
           </Box>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
@@ -11,19 +11,46 @@ import { CouponsRepository } from '@/infrastructure/repositories/api/coupons/Cou
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import { isAuthenticated, getAuthenticatedUser } from '@/shared/utils/checkIsUserAuthenticated.util';
 import { ROUTES } from '@/shared/constants/routes';
-import MapAddressPicker, { MapAddress } from '@molecules/common/MapAddressPicker';
 import type { ICouponValidation } from '@/application/dtos/coupons/CouponDtos';
+import type { IOrder } from '@/application/dtos/orders/response/OrderResponse';
 
 const CartPage = () => {
   const { items, total, updateQuantity, removeItem, clear } = useCart();
   const authenticated = isAuthenticated();
   const sessionUser = getAuthenticatedUser();
-  const [deliveryMethod, setDeliveryMethod] = useState<'DELIVERY' | 'PICKUP'>('PICKUP');
-  const [mapAddress, setMapAddress] = useState<MapAddress | null>(null);
+
+  // Pickup is available only when ALL cart items are from the same store that has a physical address
+  const cartStoreIds = [...new Set(items.map((i) => i.storeId).filter(Boolean))];
+  const pickupAvailable =
+    cartStoreIds.length === 1 &&
+    Boolean(items.find((i) => i.storeId === cartStoreIds[0])?.storeAddressText);
+  const pickupAddress = pickupAvailable
+    ? (items.find((i) => i.storeAddressText)?.storeAddressText ?? null)
+    : null;
+
+  const [deliveryMethod, setDeliveryMethod] = useState<'DELIVERY' | 'PICKUP'>('DELIVERY');
+
+  // Auto-switch to DELIVERY if pickup becomes unavailable (e.g. items from multiple stores)
+  useEffect(() => {
+    if (!pickupAvailable && deliveryMethod === 'PICKUP') {
+      setDeliveryMethod('DELIVERY');
+    }
+  }, [pickupAvailable, deliveryMethod]);
+  const [deliveryStreet, setDeliveryStreet] = useState('');
+  const [deliveryCity, setDeliveryCity] = useState('');
+  const [deliveryDepartment, setDeliveryDepartment] = useState('');
   const [deliveryNotes, setDeliveryNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [createdOrder, setCreatedOrder] = useState<{ id: string; storePaymentInstructions: string | null } | null>(null);
+  const [paymentMethodType, setPaymentMethodType] = useState('');
+  const [paymentReference, setPaymentReference] = useState('');
+  const [evidenceImage, setEvidenceImage] = useState<File | null>(null);
+  const [paymentSubmitting, setPaymentSubmitting] = useState(false);
+  const [paymentSubmitted, setPaymentSubmitted] = useState(false);
+  const [paymentSkipped, setPaymentSkipped] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
   const [couponInput, setCouponInput] = useState('');
   const [couponValidating, setCouponValidating] = useState(false);
   const [appliedCoupon, setAppliedCoupon] = useState<ICouponValidation | null>(null);
@@ -60,8 +87,8 @@ const CartPage = () => {
       setError('Tu sesión expiró. Vuelve a iniciar sesión.');
       return;
     }
-    if (deliveryMethod === 'DELIVERY' && !mapAddress) {
-      setError('Selecciona el punto de entrega en el mapa');
+    if (deliveryMethod === 'DELIVERY' && !deliveryStreet.trim()) {
+      setError('Ingresa la dirección de entrega');
       return;
     }
 
@@ -70,7 +97,7 @@ const CartPage = () => {
     setSuccess(null);
 
     try {
-      await OrdersRepository.createOrder({
+      const orderResp = await OrdersRepository.createOrder({
         ...(sessionUser.customer?.id
           ? { customerId: sessionUser.customer.id }
           : {
@@ -86,17 +113,23 @@ const CartPage = () => {
           quantity: item.quantity,
         })),
         deliveryMethod,
-        deliveryAddress: deliveryMethod === 'DELIVERY' ? mapAddress?.street : undefined,
-        deliveryCity: deliveryMethod === 'DELIVERY' ? mapAddress?.city || undefined : undefined,
-        deliveryDepartment: deliveryMethod === 'DELIVERY' ? mapAddress?.department || undefined : undefined,
+        deliveryAddress: deliveryMethod === 'DELIVERY' ? deliveryStreet.trim() : undefined,
+        deliveryCity: deliveryMethod === 'DELIVERY' ? deliveryCity.trim() || undefined : undefined,
+        deliveryDepartment: deliveryMethod === 'DELIVERY' ? deliveryDepartment.trim() || undefined : undefined,
         deliveryNotes: deliveryMethod === 'DELIVERY' ? deliveryNotes.trim() || undefined : undefined,
-        deliveryLat: deliveryMethod === 'DELIVERY' ? mapAddress?.lat : undefined,
-        deliveryLng: deliveryMethod === 'DELIVERY' ? mapAddress?.lng : undefined,
         couponCode: appliedCoupon?.coupon?.code,
       });
 
+      const orderData = orderResp.data as IOrder & { storePaymentInstructions?: string | null };
+      setCreatedOrder({
+        id: orderData.id,
+        storePaymentInstructions: orderData.storePaymentInstructions ?? null,
+      });
+
       clear();
-      setMapAddress(null);
+      setDeliveryStreet('');
+      setDeliveryCity('');
+      setDeliveryDepartment('');
       setDeliveryNotes('');
       setCouponInput('');
       setAppliedCoupon(null);
@@ -106,6 +139,26 @@ const CartPage = () => {
       setError(err instanceof Error ? err.message : 'No fue posible crear el pedido');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const hasPaymentEvidence = paymentMethodType.trim() || paymentReference.trim() || evidenceImage;
+
+  const handleSubmitPayment = async () => {
+    if (!createdOrder || !hasPaymentEvidence) return;
+    setPaymentSubmitting(true);
+    setPaymentError(null);
+    try {
+      await OrdersRepository.submitPayment(createdOrder.id, {
+        paymentMethodType: paymentMethodType.trim() || undefined,
+        paymentReference: paymentReference.trim() || undefined,
+        evidenceImage: evidenceImage ?? undefined,
+      });
+      setPaymentSubmitted(true);
+    } catch (err) {
+      setPaymentError(err instanceof Error ? err.message : 'No se pudo enviar el comprobante');
+    } finally {
+      setPaymentSubmitting(false);
     }
   };
 
@@ -261,19 +314,21 @@ const CartPage = () => {
                 Método de entrega
               </Typography>
             </Box>
-            <Box className='grid grid-cols-2 gap-3'>
-              <button
-                type='button'
-                onClick={() => setDeliveryMethod('PICKUP')}
-                className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-semibold transition-all ${
-                  deliveryMethod === 'PICKUP'
-                    ? 'border-primary bg-primary/5 text-primary'
-                    : 'border-neutral-gray/30 text-neutral-dark/60 hover:border-primary/30'
-                }`}
-              >
-                <Icon name='bx-store' className='text-2xl' />
-                Recoger en tienda
-              </button>
+            <Box className={`grid gap-3 ${pickupAvailable ? 'grid-cols-2' : 'grid-cols-1'}`}>
+              {pickupAvailable && (
+                <button
+                  type='button'
+                  onClick={() => setDeliveryMethod('PICKUP')}
+                  className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-semibold transition-all ${
+                    deliveryMethod === 'PICKUP'
+                      ? 'border-primary bg-primary/5 text-primary'
+                      : 'border-neutral-gray/30 text-neutral-dark/60 hover:border-primary/30'
+                  }`}
+                >
+                  <Icon name='bx-store' className='text-2xl' />
+                  Recoger en tienda
+                </button>
+              )}
               <button
                 type='button'
                 onClick={() => setDeliveryMethod('DELIVERY')}
@@ -290,18 +345,40 @@ const CartPage = () => {
 
             {deliveryMethod === 'DELIVERY' ? (
               <Box className='mt-4 space-y-3'>
-                <MapAddressPicker value={mapAddress} onChange={setMapAddress} />
                 <Input
-                  placeholder='Notas para la entrega (piso, apartamento, referencias…)'
+                  placeholder='Dirección completa (Calle, Carrera, número…) *'
+                  value={deliveryStreet}
+                  onChange={(e) => setDeliveryStreet(e.target.value)}
+                />
+                <Box className='grid grid-cols-2 gap-2'>
+                  <Input
+                    placeholder='Ciudad'
+                    value={deliveryCity}
+                    onChange={(e) => setDeliveryCity(e.target.value)}
+                  />
+                  <Input
+                    placeholder='Departamento'
+                    value={deliveryDepartment}
+                    onChange={(e) => setDeliveryDepartment(e.target.value)}
+                  />
+                </Box>
+                <Input
+                  placeholder='Notas de entrega (piso, apartamento, referencias…)'
                   value={deliveryNotes}
                   onChange={(e) => setDeliveryNotes(e.target.value)}
                 />
               </Box>
-            ) : (
-              <Box className='mt-3 rounded-2xl border border-neutral-gray/20 bg-neutral-50 px-4 py-3 text-sm text-neutral-dark/60'>
-                Coordina el punto de recogida directamente con la tienda.
+            ) : pickupAvailable && pickupAddress ? (
+              <Box className='mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3'>
+                <p className='flex items-center gap-2 text-sm font-semibold text-emerald-700'>
+                  <Icon name='bx-map-pin' className='shrink-0 text-base' />
+                  {pickupAddress}
+                </p>
+                <p className='mt-1 text-xs text-emerald-600'>
+                  Recogerás tu pedido en esta dirección. Coordina el horario con la tienda.
+                </p>
               </Box>
-            )}
+            ) : null}
           </Box>
 
           {/* Summary */}
@@ -421,6 +498,146 @@ const CartPage = () => {
           </>) : null}
         </Box>
       </Box>
+
+      {/* Payment panel — shown after successful order creation */}
+      {createdOrder ? (
+        <Box className='surface-elevated rounded-2xl p-4 sm:rounded-[1.75rem] sm:p-6'>
+          {/* Header */}
+          <Box className='mb-4 flex items-center gap-3'>
+            <Box className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100'>
+              <Icon name='bx-check-circle' className='text-lg text-emerald-600' />
+            </Box>
+            <Box>
+              <Typography variant='h2' className='text-base font-semibold'>
+                ¡Pedido creado!
+              </Typography>
+              <Typography className='text-xs text-neutral-dark/55'>
+                #{createdOrder.id.slice(0, 8).toUpperCase()} — Ahora envía tu comprobante de pago
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* 5-day warning */}
+          {!paymentSubmitted && !paymentSkipped && (
+            <Box className='mb-4 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3'>
+              <Icon name='bx-time' className='mt-0.5 shrink-0 text-base text-amber-600' />
+              <p className='text-xs text-amber-800'>
+                <strong>Sin comprobante</strong>, tu pedido quedará archivado y se cancelará automáticamente en <strong>5 días</strong> si la tienda no confirma el pago.
+              </p>
+            </Box>
+          )}
+
+          {/* Store payment instructions */}
+          {createdOrder.storePaymentInstructions && !paymentSubmitted && !paymentSkipped ? (
+            <Box className='mb-4 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3'>
+              <p className='mb-1 text-xs font-bold uppercase tracking-wide text-blue-600'>Instrucciones de pago</p>
+              <p className='whitespace-pre-line text-sm text-blue-900'>{createdOrder.storePaymentInstructions}</p>
+            </Box>
+          ) : null}
+
+          {/* Done states */}
+          {paymentSubmitted ? (
+            <Box className='flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700'>
+              <Icon name='bx-check-circle' className='text-base' />
+              Comprobante enviado. La tienda verificará tu pago pronto.
+            </Box>
+          ) : paymentSkipped ? (
+            <Box className='flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700'>
+              <Icon name='bx-time' className='text-base' />
+              Pedido en espera. Tienes 5 días para enviar tu comprobante desde "Mis pedidos".
+            </Box>
+          ) : (
+            <Box className='space-y-3'>
+              <Box>
+                <label className='mb-1 block text-xs font-medium text-neutral-dark/60'>
+                  Medio de pago <span className='text-neutral-dark/40'>(Nequi, Bancolombia, Daviplata…)</span>
+                </label>
+                <input
+                  type='text'
+                  placeholder='Ej: Nequi 3001234567'
+                  value={paymentMethodType}
+                  onChange={(e) => setPaymentMethodType(e.target.value)}
+                  maxLength={120}
+                  className='w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20'
+                />
+              </Box>
+
+              <Box>
+                <label className='mb-1 block text-xs font-medium text-neutral-dark/60'>
+                  Número de referencia / transacción
+                </label>
+                <input
+                  type='text'
+                  placeholder='Ej: 1234567890'
+                  value={paymentReference}
+                  onChange={(e) => setPaymentReference(e.target.value)}
+                  maxLength={200}
+                  className='w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20'
+                />
+              </Box>
+
+              {/* Image upload */}
+              <Box>
+                <label className='mb-1 block text-xs font-medium text-neutral-dark/60'>
+                  Captura de pantalla del pago <span className='text-neutral-dark/40'>(recomendado)</span>
+                </label>
+                {evidenceImage ? (
+                  <Box className='flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5'>
+                    <Icon name='bx-image' className='shrink-0 text-lg text-emerald-600' />
+                    <span className='min-w-0 flex-1 truncate text-sm font-medium text-emerald-800'>
+                      {evidenceImage.name}
+                    </span>
+                    <button
+                      type='button'
+                      onClick={() => setEvidenceImage(null)}
+                      className='shrink-0 text-xs text-emerald-600 hover:text-red-500'
+                    >
+                      Quitar
+                    </button>
+                  </Box>
+                ) : (
+                  <label className='flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-3 py-3 transition hover:border-primary/50 hover:bg-primary/[0.03]'>
+                    <Icon name='bx-upload' className='shrink-0 text-lg text-slate-400' />
+                    <span className='text-sm text-slate-500'>Seleccionar imagen (jpg, png, webp)</span>
+                    <input
+                      type='file'
+                      accept='image/jpeg,image/png,image/webp'
+                      className='hidden'
+                      onChange={(e) => setEvidenceImage(e.target.files?.[0] ?? null)}
+                    />
+                  </label>
+                )}
+              </Box>
+
+              {paymentError ? (
+                <Box className='flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700'>
+                  <Icon name='bx-error-circle' className='shrink-0 text-sm' />
+                  {paymentError}
+                </Box>
+              ) : null}
+
+              <Button
+                type='button'
+                variant='primary'
+                fullWidth
+                loading={paymentSubmitting}
+                disabled={!hasPaymentEvidence}
+                onClick={() => void handleSubmitPayment()}
+              >
+                Enviar comprobante
+              </Button>
+
+              <button
+                type='button'
+                onClick={() => setPaymentSkipped(true)}
+                className='w-full pt-1 text-center text-xs text-neutral-dark/40 transition hover:text-neutral-dark/60'
+              >
+                Continuar sin enviar comprobante (el pedido quedará en espera)
+              </button>
+            </Box>
+          )}
+        </Box>
+      ) : null}
     </Box>
   );
 };

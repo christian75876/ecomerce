@@ -30,6 +30,7 @@ const OrdersPage = () => {
       onCreateCustomer={ordersManagement.createCustomer}
       onCreateOrder={ordersManagement.createOrder}
       onStatusChange={ordersManagement.changeOrderStatus}
+      onConfirmPayment={ordersManagement.confirmPayment}
       onChangePage={ordersManagement.changePage}
     />
   );

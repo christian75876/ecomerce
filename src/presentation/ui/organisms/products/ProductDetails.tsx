@@ -72,7 +72,7 @@ const ProductDetails = () => {
   return (
     <>
       <Helmet>
-        <title>{product.name} — Marketplace</title>
+        <title>{product.name} — Merku</title>
         <meta name='description' content={product.description.slice(0, 155)} />
         <meta property='og:title' content={product.name} />
         <meta property='og:description' content={product.description.slice(0, 155)} />
@@ -88,7 +88,7 @@ const ProductDetails = () => {
           {/* Breadcrumb */}
           <Box className='mb-8 flex flex-wrap items-center gap-3 text-sm text-neutral-dark/55'>
             <Link to={ROUTES.PUBLIC.HOME} className='font-medium text-neutral-dark/60'>
-              Marketplace
+              Merku
             </Link>
             <span>/</span>
             {product.store?.slug ? (
@@ -152,7 +152,7 @@ const ProductDetails = () => {
             <p className='text-sm text-neutral-dark/55'>
               {product.store?.name
                 ? `Vendido por ${product.store.name}. Entrega y disponibilidad sujetas a inventario.`
-                : 'Producto activo en el marketplace.'}
+                : 'Producto activo en Merku.'}
             </p>
             <Box className='flex items-center gap-2'>
               <span className='text-xs font-medium text-neutral-dark/50'>Compartir:</span>

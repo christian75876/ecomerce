@@ -39,6 +39,8 @@ export const HomePage = () => {
       name: product.name,
       price: Number(product.price),
       imageUrl: product.imageUrl,
+      storeId: product.storeId ?? undefined,
+      storeAddressText: product.store?.addressText ?? null,
     });
     const label = product.name.length > 28 ? `${product.name.slice(0, 28)}…` : product.name;
     SnackbarUtilities.success(`${label} agregado al carrito`, 'top', 'center');
@@ -47,17 +49,17 @@ export const HomePage = () => {
   return (
     <Box className='space-y-8'>
       <Helmet>
-        <title>Marketplace — Hot Commerce</title>
+        <title>Merku — Encuentra lo que buscas</title>
         <meta name='description' content='Explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.' />
-        <meta property='og:title' content='Marketplace — Hot Commerce' />
+        <meta property='og:title' content='Merku — Encuentra lo que buscas' />
         <meta property='og:description' content='Explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.' />
         <meta property='og:type' content='website' />
-        <meta property='og:site_name' content='Hot Commerce' />
-        <meta property='og:image' content='https://ecomercehot.netlify.app/icons/icon-512x512.png' />
+        <meta property='og:site_name' content='Merku' />
+        <meta property='og:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/icons/icon-512x512.png`} />
         <meta name='twitter:card' content='summary' />
-        <meta name='twitter:title' content='Marketplace — Hot Commerce' />
+        <meta name='twitter:title' content='Merku — Encuentra lo que buscas' />
         <meta name='twitter:description' content='Explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.' />
-        <meta name='twitter:image' content='https://ecomercehot.netlify.app/icons/icon-512x512.png' />
+        <meta name='twitter:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/icons/icon-512x512.png`} />
       </Helmet>
       <HomeCatalogSection
         products={products}

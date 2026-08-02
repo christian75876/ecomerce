@@ -1,4 +1,5 @@
-import { PosCartItem } from '@/application/useCases/pos/usePosManagement';
+import { useState } from 'react';
+import { PosCartItem, PosGuestInfo } from '@/application/useCases/pos/usePosManagement';
 import { ICustomer } from '@/application/dtos/customers/response/CustomerResponse';
 import { IProduct } from '@/application/dtos/products/response/ProductResponse';
 import { ISale } from '@/application/dtos/sales/response/SaleResponse';
@@ -7,6 +8,8 @@ import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import SelectDropdown from '@/presentation/ui/molecules/common/SelectDropdown';
+import { PosGuestModal } from './PosGuestModal';
+import { PosReceiptModal } from './PosReceiptModal';
 
 interface PosManagementViewProps {
   products: IProduct[];
@@ -20,12 +23,31 @@ interface PosManagementViewProps {
   submitting: boolean;
   error: string | null;
   total: number;
+  lastSale: ISale | null;
+  lastSaleGuestInfo: PosGuestInfo | null;
+  guestName: string;
+  guestPhone: string;
+  guestDocType: string;
+  guestDoc: string;
+  deliveryType: PosGuestInfo['deliveryType'];
+  deliveryAddress: string;
+  deliveryCity: string;
+  deliveryNotes: string;
   onSearchChange: (value: string) => void;
   onCustomerChange: (value: string) => void;
   onPaymentMethodChange: (value: 'CASH' | 'CREDIT') => void;
+  onGuestNameChange: (v: string) => void;
+  onGuestPhoneChange: (v: string) => void;
+  onGuestDocTypeChange: (v: string) => void;
+  onGuestDocChange: (v: string) => void;
+  onDeliveryTypeChange: (v: PosGuestInfo['deliveryType']) => void;
+  onDeliveryAddressChange: (v: string) => void;
+  onDeliveryCityChange: (v: string) => void;
+  onDeliveryNotesChange: (v: string) => void;
   onAddToCart: (product: IProduct) => void;
   onUpdateQuantity: (productId: string, quantity: number) => void;
   onConfirmSale: () => Promise<boolean>;
+  onCloseSaleReceipt: () => void;
 }
 
 export const PosManagementView = ({
@@ -40,15 +62,69 @@ export const PosManagementView = ({
   submitting,
   error,
   total,
+  lastSale,
+  lastSaleGuestInfo,
+  guestName,
+  guestPhone,
+  guestDocType,
+  guestDoc,
+  deliveryType,
+  deliveryAddress,
+  deliveryCity,
+  deliveryNotes,
   onSearchChange,
   onCustomerChange,
   onPaymentMethodChange,
+  onGuestNameChange,
+  onGuestPhoneChange,
+  onGuestDocTypeChange,
+  onGuestDocChange,
+  onDeliveryTypeChange,
+  onDeliveryAddressChange,
+  onDeliveryCityChange,
+  onDeliveryNotesChange,
   onAddToCart,
   onUpdateQuantity,
   onConfirmSale,
+  onCloseSaleReceipt,
 }: PosManagementViewProps) => {
+  const [showGuestModal, setShowGuestModal] = useState(false);
+
   return (
     <Box className="space-y-8">
+      {lastSale && (
+        <PosReceiptModal
+          sale={lastSale}
+          guestInfo={lastSaleGuestInfo ?? undefined}
+          onClose={onCloseSaleReceipt}
+        />
+      )}
+
+      {showGuestModal && (
+        <PosGuestModal
+          guestName={guestName}
+          guestPhone={guestPhone}
+          guestDocType={guestDocType}
+          guestDoc={guestDoc}
+          deliveryType={deliveryType}
+          deliveryAddress={deliveryAddress}
+          deliveryCity={deliveryCity}
+          deliveryNotes={deliveryNotes}
+          submitting={submitting}
+          error={error}
+          onGuestNameChange={onGuestNameChange}
+          onGuestPhoneChange={onGuestPhoneChange}
+          onGuestDocTypeChange={onGuestDocTypeChange}
+          onGuestDocChange={onGuestDocChange}
+          onDeliveryTypeChange={onDeliveryTypeChange}
+          onDeliveryAddressChange={onDeliveryAddressChange}
+          onDeliveryCityChange={onDeliveryCityChange}
+          onDeliveryNotesChange={onDeliveryNotesChange}
+          onConfirm={onConfirmSale}
+          onClose={() => setShowGuestModal(false)}
+        />
+      )}
+
       <Box>
         <Typography variant="h1" className="text-3xl font-bold">
           POS
@@ -59,6 +135,7 @@ export const PosManagementView = ({
       </Box>
 
       <Box className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+        {/* ── Catalog column ── */}
         <Box className="rounded-[1.75rem] border border-neutral-gray/30 bg-white p-6 shadow-sm">
           <Box className="mb-5 flex items-center justify-between gap-4">
             <Typography variant="h2" className="text-xl font-semibold">
@@ -71,6 +148,7 @@ export const PosManagementView = ({
               className="max-w-72"
             />
           </Box>
+
           <Box className="mb-5 grid gap-3 md:grid-cols-2">
             <SelectDropdown
               value={paymentMethod}
@@ -91,6 +169,7 @@ export const PosManagementView = ({
               onChange={(v) => onCustomerChange(v)}
             />
           </Box>
+
           <Box className="grid gap-3 md:grid-cols-2">
             {loading ? (
               <Typography>Cargando productos...</Typography>
@@ -123,6 +202,7 @@ export const PosManagementView = ({
           </Box>
         </Box>
 
+        {/* ── Cart column ── */}
         <Box className="space-y-6">
           <Box className="rounded-[1.75rem] border border-neutral-gray/30 bg-white p-6 shadow-sm">
             <Typography variant="h2" className="text-xl font-semibold">
@@ -171,20 +251,14 @@ export const PosManagementView = ({
               </Typography>
             </Box>
 
-            {error ? (
-              <Box className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-                {error}
-              </Box>
-            ) : null}
-
             <Button
               type="button"
               variant="primary"
               className="mt-5"
-              disabled={submitting || cart.length === 0}
-              onClick={() => void onConfirmSale()}
+              disabled={cart.length === 0}
+              onClick={() => setShowGuestModal(true)}
             >
-              {submitting ? 'Confirmando...' : 'Confirmar venta'}
+              Confirmar venta
             </Button>
           </Box>
 

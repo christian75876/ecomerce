@@ -943,9 +943,9 @@ const SubscriptionsPage = () => {
                 </h2>
                 <p className='mt-2 text-sm text-slate-500'>
                   {toggleTarget.store.isActive ? (
-                    <>La tienda <span className='font-semibold text-slate-700'>"{toggleTarget.store.name}"</span> dejará de ser visible en el marketplace inmediatamente.</>
+                    <>La tienda <span className='font-semibold text-slate-700'>"{toggleTarget.store.name}"</span> dejará de ser visible en Merku inmediatamente.</>
                   ) : (
-                    <>La tienda <span className='font-semibold text-slate-700'>"{toggleTarget.store.name}"</span> volverá a ser visible en el marketplace.</>
+                    <>La tienda <span className='font-semibold text-slate-700'>"{toggleTarget.store.name}"</span> volverá a ser visible en Merku.</>
                   )}
                 </p>
                 <div className='mt-6 flex flex-col gap-2'>

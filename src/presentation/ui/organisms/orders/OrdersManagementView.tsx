@@ -33,14 +33,21 @@ const STATUS_CONFIG: Record<string, { label: string; dot: string; badge: string 
   CANCELLED: { label: 'Cancelado',  dot: 'bg-red-400',    badge: 'bg-red-100 text-red-700 border-red-200' },
 };
 
-const STATUS_TABS = [
-  { key: '', label: 'Todos' },
-  { key: 'PENDING',   label: 'Pendientes' },
+const PAYMENT_TABS = [
+  { key: 'NONE',      label: 'Sin pago',       icon: 'bx-time-five',     color: 'text-amber-600',  activeBg: 'bg-amber-500' },
+  { key: 'SUBMITTED', label: 'Por verificar',  icon: 'bx-receipt',       color: 'text-blue-600',   activeBg: 'bg-blue-500' },
+  { key: 'CONFIRMED', label: 'Activos',         icon: 'bx-check-circle',  color: 'text-emerald-600',activeBg: 'bg-emerald-500' },
+  { key: 'CANCELLED', label: 'Cancelados',      icon: 'bx-x-circle',      color: 'text-red-500',    activeBg: 'bg-red-400' },
+] as const;
+
+type PaymentTab = typeof PAYMENT_TABS[number]['key'];
+
+const ACTIVE_STATUS_TABS = [
+  { key: '',          label: 'Todos' },
   { key: 'PAID',      label: 'Pagados' },
   { key: 'PREPARING', label: 'Preparando' },
   { key: 'SHIPPED',   label: 'Enviados' },
   { key: 'DELIVERED', label: 'Entregados' },
-  { key: 'CANCELLED', label: 'Cancelados' },
 ];
 
 interface OrdersManagementViewProps {
@@ -65,6 +72,7 @@ interface OrdersManagementViewProps {
   onCreateCustomer: () => Promise<boolean>;
   onCreateOrder: () => Promise<boolean>;
   onStatusChange: (orderId: string, status: (typeof ORDER_STATUSES)[number]) => Promise<boolean>;
+  onConfirmPayment?: (orderId: string) => Promise<boolean>;
   onChangePage: (page: number) => void | Promise<void>;
 }
 
@@ -90,27 +98,40 @@ export const OrdersManagementView = ({
   onCreateCustomer,
   onCreateOrder,
   onStatusChange,
+  onConfirmPayment,
   onChangePage,
 }: OrdersManagementViewProps) => {
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [paymentTab, setPaymentTab] = useState<PaymentTab>('NONE');
+  const [activeStatusFilter, setActiveStatusFilter] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  const BASE_URL = (import.meta.env.VITE_API_URL as string ?? import.meta.env.VITE_API_BASE_URL as string ?? 'http://127.0.0.1:3000/api/').replace(/\/api\/?$/, '');
+
   const filtered = orders.filter((o) => {
-    const matchStatus = !statusFilter || o.status === statusFilter;
     const q = search.toLowerCase();
     const matchSearch =
       !q ||
       o.id.toLowerCase().includes(q) ||
       `${o.customer.firstName} ${o.customer.lastName}`.toLowerCase().includes(q) ||
       o.customer.email.toLowerCase().includes(q);
-    return matchStatus && matchSearch;
+
+    if (paymentTab === 'CANCELLED') return matchSearch && o.status === 'CANCELLED';
+    if (paymentTab === 'NONE')      return matchSearch && o.paymentStatus === 'NONE' && o.status !== 'CANCELLED';
+    if (paymentTab === 'SUBMITTED') return matchSearch && o.paymentStatus === 'SUBMITTED';
+    if (paymentTab === 'CONFIRMED') {
+      const matchActiveStatus = !activeStatusFilter || o.status === activeStatusFilter;
+      return matchSearch && o.paymentStatus === 'CONFIRMED' && matchActiveStatus;
+    }
+    return matchSearch;
   });
 
-  const counts = orders.reduce<Record<string, number>>((acc, o) => {
-    acc[o.status] = (acc[o.status] ?? 0) + 1;
-    return acc;
-  }, {});
+  const payCounts: Record<PaymentTab, number> = {
+    NONE:      orders.filter(o => o.paymentStatus === 'NONE' && o.status !== 'CANCELLED').length,
+    SUBMITTED: orders.filter(o => o.paymentStatus === 'SUBMITTED').length,
+    CONFIRMED: orders.filter(o => o.paymentStatus === 'CONFIRMED').length,
+    CANCELLED: orders.filter(o => o.status === 'CANCELLED').length,
+  };
 
   return (
     <Box className='space-y-8'>
@@ -231,27 +252,53 @@ export const OrdersManagementView = ({
             />
           </Box>
 
-          {/* Status tabs */}
-          <Box className='mt-3 flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide'>
-            {STATUS_TABS.map((tab) => {
-              const count = tab.key ? (counts[tab.key] ?? 0) : orders.length;
+          {/* Payment tabs */}
+          <Box className='mt-3 grid grid-cols-4 gap-1.5'>
+            {PAYMENT_TABS.map((tab) => {
+              const count = payCounts[tab.key];
+              const isActive = paymentTab === tab.key;
               return (
                 <button
                   key={tab.key}
                   type='button'
-                  onClick={() => setStatusFilter(tab.key)}
-                  className={`flex-shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
-                    statusFilter === tab.key
-                      ? 'bg-primary text-white'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  onClick={() => { setPaymentTab(tab.key); setActiveStatusFilter(''); }}
+                  className={`flex flex-col items-center gap-1 rounded-2xl border px-2 py-2.5 text-[11px] font-semibold transition-all ${
+                    isActive
+                      ? `${tab.activeBg} border-transparent text-white shadow-sm`
+                      : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300'
                   }`}
                 >
-                  {tab.label}
-                  {count > 0 ? <span className='ml-1 opacity-75'>({count})</span> : null}
+                  <i className={`bx ${tab.icon} text-base ${isActive ? '' : tab.color}`} />
+                  <span>{tab.label}</span>
+                  {count > 0 ? (
+                    <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${isActive ? 'bg-white/20' : 'bg-slate-200 text-slate-700'}`}>
+                      {count}
+                    </span>
+                  ) : null}
                 </button>
               );
             })}
           </Box>
+
+          {/* Sub-filter for Activos */}
+          {paymentTab === 'CONFIRMED' && (
+            <Box className='mt-2 flex gap-1.5 overflow-x-auto pb-1'>
+              {ACTIVE_STATUS_TABS.map((tab) => (
+                <button
+                  key={tab.key}
+                  type='button'
+                  onClick={() => setActiveStatusFilter(tab.key)}
+                  className={`flex-shrink-0 rounded-full px-3 py-1 text-xs font-semibold transition-all ${
+                    activeStatusFilter === tab.key
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </Box>
+          )}
 
           {/* Orders */}
           <Box className='mt-4 space-y-3'>
@@ -264,7 +311,7 @@ export const OrdersManagementView = ({
               </>
             ) : filtered.length === 0 ? (
               <Typography className='py-8 text-center text-sm text-slate-400'>
-                {search || statusFilter ? 'Sin resultados para ese filtro.' : 'Aún no hay pedidos registrados.'}
+                {search || paymentTab !== 'NONE' ? 'Sin resultados para ese filtro.' : 'Aún no hay pedidos registrados.'}
               </Typography>
             ) : (
               filtered.map((order) => {
@@ -406,6 +453,100 @@ export const OrdersManagementView = ({
                                 </MapContainer>
                               </Box>
                             ) : null}
+                          </Box>
+                        ) : null}
+
+                        {/* Payment evidence */}
+                        {order.paymentStatus === 'CONFIRMED' ? (
+                          <Box className='rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 space-y-1.5'>
+                            <p className='text-xs font-bold uppercase tracking-wide text-emerald-600'>
+                              Pago confirmado
+                            </p>
+                            {(order.paymentMethodType || order.paymentReference) && (
+                              <p className='text-sm text-emerald-800'>
+                                {order.paymentMethodType && <span className='font-medium'>{order.paymentMethodType}</span>}
+                                {order.paymentMethodType && order.paymentReference && ' — '}
+                                {order.paymentReference}
+                              </p>
+                            )}
+                            {order.paymentEvidenceImagePath && (
+                              <a
+                                href={`${BASE_URL}/${order.paymentEvidenceImagePath}`}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                className='mt-1 block overflow-hidden rounded-lg border border-emerald-200'
+                              >
+                                <img
+                                  src={`${BASE_URL}/${order.paymentEvidenceImagePath}`}
+                                  alt='Comprobante'
+                                  className='max-h-48 w-full object-contain bg-white'
+                                />
+                              </a>
+                            )}
+                            <p className='flex items-center gap-1 text-xs text-emerald-600'>
+                              <i className='bx bx-check-circle' />
+                              {order.paymentConfirmedAt
+                                ? `Confirmado el ${new Date(order.paymentConfirmedAt).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Bogota' })}`
+                                : 'Pago confirmado por la tienda'}
+                            </p>
+                          </Box>
+                        ) : order.paymentStatus === 'SUBMITTED' ? (
+                          <Box className='rounded-xl border border-blue-200 bg-blue-50 px-3 py-2.5 space-y-1.5'>
+                            <p className='text-xs font-bold uppercase tracking-wide text-blue-600'>
+                              Comprobante enviado — pendiente de verificación
+                            </p>
+                            {(order.paymentMethodType || order.paymentReference) && (
+                              <p className='text-sm text-blue-800'>
+                                {order.paymentMethodType && <span className='font-medium'>{order.paymentMethodType}</span>}
+                                {order.paymentMethodType && order.paymentReference && ' — '}
+                                {order.paymentReference}
+                              </p>
+                            )}
+                            {order.paymentEvidenceImagePath && (
+                              <a
+                                href={`${BASE_URL}/${order.paymentEvidenceImagePath}`}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                className='mt-1 block overflow-hidden rounded-lg border border-blue-200'
+                              >
+                                <img
+                                  src={`${BASE_URL}/${order.paymentEvidenceImagePath}`}
+                                  alt='Comprobante'
+                                  className='max-h-48 w-full object-contain bg-white'
+                                />
+                              </a>
+                            )}
+                            {onConfirmPayment && (
+                              <button
+                                type='button'
+                                onClick={() => void onConfirmPayment(order.id)}
+                                disabled={submitting}
+                                className='mt-1 flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-blue-700 disabled:opacity-50'
+                              >
+                                <i className='bx bx-check-double text-sm' />
+                                Confirmar pago recibido
+                              </button>
+                            )}
+                          </Box>
+                        ) : order.status !== 'CANCELLED' ? (
+                          <Box className='rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 space-y-1.5'>
+                            <p className='text-xs font-bold uppercase tracking-wide text-amber-600'>
+                              Sin comprobante de pago
+                            </p>
+                            <p className='text-xs text-amber-700'>
+                              El cliente aún no ha enviado comprobante. El pedido se cancelará automáticamente a los 5 días si no hay pago.
+                            </p>
+                            {onConfirmPayment && (
+                              <button
+                                type='button'
+                                onClick={() => void onConfirmPayment(order.id)}
+                                disabled={submitting}
+                                className='mt-1 flex items-center gap-1.5 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-amber-700 disabled:opacity-50'
+                              >
+                                <i className='bx bx-check-double text-sm' />
+                                Confirmar pago directo
+                              </button>
+                            )}
                           </Box>
                         ) : null}
 

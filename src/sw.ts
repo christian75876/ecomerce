@@ -1,6 +1,6 @@
-import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
+import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
 import { clientsClaim } from 'workbox-core';
-import { registerRoute } from 'workbox-routing';
+import { NavigationRoute, registerRoute } from 'workbox-routing';
 import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
@@ -13,6 +13,13 @@ cleanupOutdatedCaches();
 
 // Precache all built assets (injected by vite-plugin-pwa)
 precacheAndRoute(self.__WB_MANIFEST);
+
+// SPA navigation fallback: serve index.html for all client-side routes
+registerRoute(
+  new NavigationRoute(createHandlerBoundToURL('/index.html'), {
+    denylist: [/^\/api\//],
+  }),
+);
 
 // ── Runtime caching ──────────────────────────────────────────────────────────
 
@@ -71,7 +78,7 @@ self.addEventListener('push', (event) => {
   }
 
   event.waitUntil(
-    self.registration.showNotification(data.title ?? 'Hot Commerce', {
+    self.registration.showNotification(data.title ?? 'Merku', {
       body: data.body ?? '',
       icon: '/icons/icon-192x192.png',
       badge: '/icons/icon-96x96.png',

@@ -50,9 +50,9 @@ const storeGroups: NavGroup[] = [
   {
     label: 'Operación',
     items: [
-      { label: 'POS', path: ROUTES.PRIVATE.POS, icon: 'bx-credit-card' },
-      { label: 'Pedidos', path: ROUTES.PRIVATE.ORDERS, icon: 'bx-receipt' },
-      { label: 'Caja', path: ROUTES.PRIVATE.CASH, icon: 'bx-wallet' },
+      { label: 'POS',               path: ROUTES.PRIVATE.POS,           icon: 'bx-credit-card' },
+      { label: 'Pedidos',           path: ROUTES.PRIVATE.ORDERS,        icon: 'bx-receipt'     },
+      { label: 'Historial ventas',  path: ROUTES.PRIVATE.SALES_HISTORY, icon: 'bx-history'     },
     ],
   },
   {
@@ -153,7 +153,7 @@ const AdminSidebar = () => {
           <i className='bx bxs-crown text-lg text-white' aria-hidden='true' />
         </div>
         <div className='min-w-0 flex-1'>
-          <p className='text-[13px] font-bold leading-tight text-white'>Hot Commerce</p>
+          <p className='text-[13px] font-bold leading-tight text-white'>Merku</p>
           <p className='mt-0.5 text-[10px] font-medium uppercase tracking-widest' style={{ color: '#6366f1' }}>
             {isAdmin ? 'Administrador' : 'Vendedor'}
           </p>
