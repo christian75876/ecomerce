@@ -3,6 +3,7 @@ import DashboardLayout from '@/presentation/ui/layouts/navigation/DashboardLayou
 import { ROUTES } from '@/shared/constants/routes';
 import { lazy } from 'react';
 import { RouteObject } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 
 const LandingPage = lazy(
   () => import('@presentation/pages/public/landing/LandingPage')
@@ -124,7 +125,9 @@ export type AppRoute = RouteObject & {
 };
 
 export const routes: AppRoute[] = [
-  // Landing page — sin layout envolvente, tiene su propio navbar
+  // Raíz → marketplace de productos
+  { path: '/', element: <Navigate to={ROUTES.PUBLIC.HOME} replace />, publicOnly: false },
+  // Landing page de marketing — su propio navbar
   { path: ROUTES.PUBLIC.LANDING, element: <LandingPage />, publicOnly: false },
   // Rutas Públicas
   { path: ROUTES.PUBLIC.LOGIN, element: <LoginPage /> },

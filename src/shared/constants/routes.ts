@@ -1,6 +1,6 @@
 export const ROUTES = {
   PUBLIC: {
-    LANDING: '/',
+    LANDING: '/bienvenida',
     LOGIN: '/auth',
     REGISTER: '/register',
     VERIFY_EMAIL: '/verify-email',
