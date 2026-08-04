@@ -249,7 +249,8 @@ const CartPage = () => {
                       type='button'
                       aria-label='Aumentar cantidad'
                       onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                      className='flex h-6 w-6 items-center justify-center rounded-full border border-neutral-gray/40 bg-white text-neutral-dark/70 transition hover:border-primary/30 hover:bg-primary/5 hover:text-primary sm:h-7 sm:w-7'
+                      disabled={item.maxStock !== undefined && item.quantity >= item.maxStock}
+                      className='flex h-6 w-6 items-center justify-center rounded-full border border-neutral-gray/40 bg-white text-neutral-dark/70 transition hover:border-primary/30 hover:bg-primary/5 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 sm:h-7 sm:w-7'
                     >
                       <Icon name='bx-plus' className='text-[10px] sm:text-xs' />
                     </button>

@@ -8,6 +8,7 @@ export interface CartItem {
   quantity: number;
   storeId?: string;
   storeAddressText?: string | null;
+  maxStock?: number;
 }
 
 const CART_KEY = 'public_cart';
@@ -61,30 +62,35 @@ const subscribe = (callback: () => void) => {
 export const useCart = () => {
   const items = useSyncExternalStore(subscribe, readItems, () => EMPTY_ITEMS);
 
-  const addItem = (item: Omit<CartItem, 'quantity'>) => {
+  const addItem = (item: Omit<CartItem, 'quantity'>, qty = 1) => {
     const current = readItems();
     const existing = current.find((entry) => entry.productId === item.productId);
 
     if (existing) {
+      const cap = existing.maxStock ?? Infinity;
+      if (existing.quantity >= cap) return;
       writeItems(
         current.map((entry) =>
           entry.productId === item.productId
-            ? { ...entry, quantity: entry.quantity + 1 }
+            ? { ...entry, quantity: Math.min(entry.quantity + qty, cap) }
             : entry,
         ),
       );
       return;
     }
 
-    writeItems([...current, { ...item, quantity: 1 }]);
+    const cap = item.maxStock ?? Infinity;
+    writeItems([...current, { ...item, quantity: Math.min(qty, cap) }]);
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
     writeItems(
       readItems()
-        .map((item) =>
-          item.productId === productId ? { ...item, quantity } : item,
-        )
+        .map((item) => {
+          if (item.productId !== productId) return item;
+          const capped = item.maxStock !== undefined ? Math.min(quantity, item.maxStock) : quantity;
+          return { ...item, quantity: capped };
+        })
         .filter((item) => item.quantity > 0),
     );
   };

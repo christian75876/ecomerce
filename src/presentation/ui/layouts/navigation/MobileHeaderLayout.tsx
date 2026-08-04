@@ -208,7 +208,7 @@ const MobileHeaderLayout = () => {
 
                   if (n.type === 'new_order') {
                     return (
-                      <NavLink key={n.id} to={ROUTES.PRIVATE.ORDERS} onClick={() => { markRead(n.id); closeAll(); }} className={rowCls}>
+                      <NavLink key={n.id} to={`${ROUTES.PRIVATE.ORDERS}?order=${n.orderId}`} onClick={() => { markRead(n.id); closeAll(); }} className={rowCls}>
                         <Box className={iconBoxCls}><i className={`bx bx-receipt ${iconCls}`} aria-hidden='true' /></Box>
                         <Box className='min-w-0 flex-1'>
                           <p className='text-sm font-semibold text-slate-800'>Nuevo pedido · {n.itemCount} {n.itemCount === 1 ? 'artículo' : 'artículos'}</p>
@@ -218,7 +218,16 @@ const MobileHeaderLayout = () => {
                           ) : null}
                           <p className='mt-1 text-[11px] text-slate-400'>{timeAgo(n.createdAt)}</p>
                         </Box>
-                        {!n.read ? <span className='mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-primary' /> : null}
+                        {!n.read ? (
+                          <button
+                            type='button'
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); markRead(n.id); }}
+                            className='mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-white opacity-70 transition hover:opacity-100'
+                            aria-label='Marcar como leída'
+                          >
+                            <i className='bx bx-check text-xs' aria-hidden='true' />
+                          </button>
+                        ) : null}
                       </NavLink>
                     );
                   }
@@ -233,7 +242,16 @@ const MobileHeaderLayout = () => {
                           <p className='truncate text-xs text-slate-400'>Tienda: {n.storeName}</p>
                           <p className='mt-1 text-[11px] text-slate-400'>{timeAgo(n.createdAt)}</p>
                         </Box>
-                        {!n.read ? <span className='mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-primary' /> : null}
+                        {!n.read ? (
+                          <button
+                            type='button'
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); markRead(n.id); }}
+                            className='mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-white opacity-70 transition hover:opacity-100'
+                            aria-label='Marcar como leída'
+                          >
+                            <i className='bx bx-check text-xs' aria-hidden='true' />
+                          </button>
+                        ) : null}
                       </NavLink>
                     );
                   }
@@ -247,7 +265,16 @@ const MobileHeaderLayout = () => {
                         <p className='truncate text-xs text-slate-400'>{n.email}</p>
                         <p className='mt-1 text-[11px] text-slate-400'>{timeAgo(n.createdAt)}</p>
                       </Box>
-                      {!n.read ? <span className='mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-primary' /> : null}
+                      {!n.read ? (
+                          <button
+                            type='button'
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); markRead(n.id); }}
+                            className='mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-white opacity-70 transition hover:opacity-100'
+                            aria-label='Marcar como leída'
+                          >
+                            <i className='bx bx-check text-xs' aria-hidden='true' />
+                          </button>
+                        ) : null}
                     </NavLink>
                   );
                 })

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ICustomer } from '@/application/dtos/customers/response/CustomerResponse';
 import { IOrder } from '@/application/dtos/orders/response/OrderResponse';
 import { IProduct } from '@/application/dtos/products/response/ProductResponse';
@@ -6,6 +6,7 @@ import { CustomersRepository } from '@/infrastructure/repositories/api/customers
 import { OrdersRepository } from '@/infrastructure/repositories/api/orders/OrdersRepository';
 import { ProductRepository } from '@/infrastructure/repositories/api/products/ProductsRepository';
 import { useAdminStore } from '@/shared/contexts/AdminStoreContext';
+import { useOrderNotifications } from '@/shared/contexts/OrderNotificationsContext';
 
 export const ORDER_STATUSES = [
   'PENDING',
@@ -33,6 +34,7 @@ type OrdersPageRaw = {
 
 export const useOrdersManagement = () => {
   const { selectedStoreId: contextStoreId } = useAdminStore();
+  const { notifications } = useOrderNotifications();
   const [customers, setCustomers] = useState<ICustomer[]>([]);
   const [products, setProducts] = useState<IProduct[]>([]);
   const [orders, setOrders] = useState<IOrder[]>([]);
@@ -107,6 +109,41 @@ export const useOrdersManagement = () => {
   useEffect(() => {
     void loadScreen();
   }, [loadScreen]);
+
+  // Reload orders in the background without showing the loading spinner
+  const silentReloadOrders = useCallback(async (page: number) => {
+    try {
+      const response = await OrdersRepository.getOrders({ storeId: contextStoreId, page, limit: ORDERS_PER_PAGE });
+      const raw = response.data as unknown as OrdersPageRaw;
+      setOrders(raw.items ?? []);
+      setCurrentPage(raw.page ?? 1);
+      setTotalPages(raw.totalPages ?? 1);
+      setTotalItems(raw.total ?? 0);
+    } catch { /* silent — don't surface background refresh errors */ }
+  }, [contextStoreId]);
+
+  // Use a ref so polling closure always has the current page without resetting the interval
+  const currentPageRef = useRef(currentPage);
+  useEffect(() => { currentPageRef.current = currentPage; }, [currentPage]);
+
+  // Immediate reload when SSE pushes a new notification (new order, etc.)
+  const prevNotifCountRef = useRef(-1);
+  useEffect(() => {
+    if (prevNotifCountRef.current === -1) {
+      prevNotifCountRef.current = notifications.length;
+      return;
+    }
+    if (notifications.length > prevNotifCountRef.current) {
+      prevNotifCountRef.current = notifications.length;
+      void silentReloadOrders(currentPageRef.current);
+    }
+  }, [notifications.length, silentReloadOrders]);
+
+  // Poll every 30 s for payment submissions and other changes without an SSE event
+  useEffect(() => {
+    const id = setInterval(() => void silentReloadOrders(currentPageRef.current), 30_000);
+    return () => clearInterval(id);
+  }, [silentReloadOrders]);
 
   const createCustomer = async () => {
     if (

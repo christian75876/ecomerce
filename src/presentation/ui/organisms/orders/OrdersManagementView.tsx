@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import PhoneInputCO from '@/presentation/ui/molecules/common/PhoneInputCO';
 import L from 'leaflet';
@@ -33,6 +34,25 @@ const STATUS_CONFIG: Record<string, { label: string; dot: string; badge: string 
   CANCELLED: { label: 'Cancelado',  dot: 'bg-red-400',    badge: 'bg-red-100 text-red-700 border-red-200' },
 };
 
+const STATUS_SEQUENCE = ['PENDING', 'PAID', 'PREPARING', 'SHIPPED', 'DELIVERED'] as const;
+const ACTIVE_ORDER_STATUSES = ['PAID', 'PREPARING', 'SHIPPED', 'DELIVERED'];
+
+const getNextStatus = (current: string): string | null => {
+  const idx = STATUS_SEQUENCE.indexOf(current as typeof STATUS_SEQUENCE[number]);
+  if (idx === -1 || idx === STATUS_SEQUENCE.length - 1) return null;
+  return STATUS_SEQUENCE[idx + 1];
+};
+
+const getStatusOptions = (current: string) => {
+  const opts = [{ value: current, label: STATUS_CONFIG[current]?.label ?? current }];
+  const next = getNextStatus(current);
+  if (next) opts.push({ value: next, label: STATUS_CONFIG[next]?.label ?? next });
+  if (current !== 'CANCELLED' && current !== 'DELIVERED') {
+    opts.push({ value: 'CANCELLED', label: STATUS_CONFIG['CANCELLED'].label });
+  }
+  return opts;
+};
+
 const PAYMENT_TABS = [
   { key: 'NONE',      label: 'Sin pago',       icon: 'bx-time-five',     color: 'text-amber-600',  activeBg: 'bg-amber-500' },
   { key: 'SUBMITTED', label: 'Por verificar',  icon: 'bx-receipt',       color: 'text-blue-600',   activeBg: 'bg-blue-500' },
@@ -60,7 +80,6 @@ interface OrdersManagementViewProps {
   loading: boolean;
   submitting: boolean;
   error: string | null;
-  statuses: readonly string[];
   currentPage: number;
   totalPages: number;
   totalItems: number;
@@ -86,7 +105,6 @@ export const OrdersManagementView = ({
   loading,
   submitting,
   error,
-  statuses,
   currentPage,
   totalPages,
   totalItems,
@@ -106,6 +124,27 @@ export const OrdersManagementView = ({
   const [activeStatusFilter, setActiveStatusFilter] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  const [searchParams] = useSearchParams();
+
+  // When navigating from a notification, select the right tab and expand the target order
+  useEffect(() => {
+    const targetId = searchParams.get('order');
+    if (!targetId || orders.length === 0) return;
+    const order = orders.find((o) => o.id === targetId);
+    if (!order) return;
+
+    let tab: PaymentTab;
+    if (order.status === 'CANCELLED') tab = 'CANCELLED';
+    else if (order.paymentStatus === 'SUBMITTED') tab = 'SUBMITTED';
+    else if (order.paymentStatus === 'CONFIRMED' || ACTIVE_ORDER_STATUSES.includes(order.status)) tab = 'CONFIRMED';
+    else tab = 'NONE';
+
+    setPaymentTab(tab);
+    setActiveStatusFilter('');
+    setSearch('');
+    setExpandedId(targetId);
+  }, [searchParams, orders]);
+
   const BASE_URL = (import.meta.env.VITE_API_URL as string ?? import.meta.env.VITE_API_BASE_URL as string ?? 'http://127.0.0.1:3000/api/').replace(/\/api\/?$/, '');
 
   const filtered = orders.filter((o) => {
@@ -117,19 +156,20 @@ export const OrdersManagementView = ({
       o.customer.email.toLowerCase().includes(q);
 
     if (paymentTab === 'CANCELLED') return matchSearch && o.status === 'CANCELLED';
-    if (paymentTab === 'NONE')      return matchSearch && o.paymentStatus === 'NONE' && o.status !== 'CANCELLED';
+    if (paymentTab === 'NONE')      return matchSearch && o.paymentStatus === 'NONE' && o.status === 'PENDING';
     if (paymentTab === 'SUBMITTED') return matchSearch && o.paymentStatus === 'SUBMITTED';
     if (paymentTab === 'CONFIRMED') {
       const matchActiveStatus = !activeStatusFilter || o.status === activeStatusFilter;
-      return matchSearch && o.paymentStatus === 'CONFIRMED' && matchActiveStatus;
+      const isActive = o.paymentStatus === 'CONFIRMED' || ACTIVE_ORDER_STATUSES.includes(o.status);
+      return matchSearch && isActive && matchActiveStatus;
     }
     return matchSearch;
   });
 
   const payCounts: Record<PaymentTab, number> = {
-    NONE:      orders.filter(o => o.paymentStatus === 'NONE' && o.status !== 'CANCELLED').length,
+    NONE:      orders.filter(o => o.paymentStatus === 'NONE' && o.status === 'PENDING').length,
     SUBMITTED: orders.filter(o => o.paymentStatus === 'SUBMITTED').length,
-    CONFIRMED: orders.filter(o => o.paymentStatus === 'CONFIRMED').length,
+    CONFIRMED: orders.filter(o => o.paymentStatus === 'CONFIRMED' || ACTIVE_ORDER_STATUSES.includes(o.status)).length,
     CANCELLED: orders.filter(o => o.status === 'CANCELLED').length,
   };
 
@@ -555,8 +595,9 @@ export const OrdersManagementView = ({
                           <p className='text-xs font-bold uppercase tracking-wide text-slate-400'>Estado</p>
                           <SelectDropdown
                             value={order.status}
-                            options={statuses.map((s) => ({ value: s, label: STATUS_CONFIG[s]?.label ?? s }))}
-                            onChange={(v) => void onStatusChange(order.id, v as (typeof ORDER_STATUSES)[number])}
+                            options={getStatusOptions(order.status)}
+                            disabled={order.status === 'DELIVERED' || order.status === 'CANCELLED'}
+                            onChange={(v) => { if (v && v !== order.status) void onStatusChange(order.id, v as (typeof ORDER_STATUSES)[number]); }}
                           />
                           <span className='text-xs text-slate-400'>
                             Actualizado: {new Date(order.updatedAt).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Bogota' })}

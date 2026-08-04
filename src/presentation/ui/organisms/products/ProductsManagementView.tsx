@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PaginationControls from '@/presentation/ui/molecules/common/PaginationControls';
 import SelectDropdown from '@/presentation/ui/molecules/common/SelectDropdown';
@@ -290,10 +290,21 @@ export const ProductsManagementView = ({
   const [sizeInput, setSizeInput] = useState('');
   const [colorNameInput, setColorNameInput] = useState('');
   const [colorHexInput, setColorHexInput] = useState('#3b82f6');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+
+  useEffect(() => {
+    if (editingId) setIsFormOpen(true);
+  }, [editingId]);
+
+  const handleReset = () => {
+    onReset();
+    setIsFormOpen(false);
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    await onSubmit();
+    const success = await onSubmit();
+    if (success) setIsFormOpen(false);
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -323,9 +334,29 @@ export const ProductsManagementView = ({
         description='Gestiona el catálogo comercial con tipo de producto, manejo por lotes, SKU único, proveedor base y stock inicial opcional.'
       />
 
-      <Box className="grid gap-6 xl:grid-cols-[430px_minmax(0,1fr)]">
-        <FeaturePanel title={editingId ? 'Editar producto' : 'Nuevo producto'}>
-          <form id="product-form" onSubmit={handleSubmit} className="mt-6 space-y-4">
+      {isFormOpen ? createPortal(
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" aria-modal="true" role="dialog">
+          <div
+            className="absolute inset-0 bg-neutral-dark/50 backdrop-blur-sm"
+            onClick={!submitting ? handleReset : undefined}
+          />
+          <div className="relative z-10 flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl" style={{ maxHeight: '90vh' }}>
+            <div className="flex shrink-0 items-center justify-between border-b border-neutral-gray/20 px-6 py-4">
+              <h2 className="text-lg font-bold text-neutral-dark">
+                {editingId ? 'Editar producto' : 'Nuevo producto'}
+              </h2>
+              <button
+                type="button"
+                onClick={handleReset}
+                disabled={submitting}
+                className="flex h-8 w-8 items-center justify-center rounded-xl text-neutral-dark/50 transition hover:bg-neutral-gray/10"
+                aria-label="Cerrar"
+              >
+                <i className="bx bx-x text-xl" aria-hidden="true" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+          <form id="product-form" onSubmit={handleSubmit} className="space-y-4">
             <Box>
               <Label htmlFor="product-name">Nombre <span className="text-red-500">*</span></Label>
               <Input
@@ -346,11 +377,19 @@ export const ProductsManagementView = ({
                   onFormChange('description', event.target.value)
                 }
                 disabled={submitting}
+                maxLength={1000}
                 className={`min-h-28 w-full rounded-lg border bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary ${fieldErrors.description ? 'border-red-300 bg-red-50/40' : 'border-gray-300'}`}
               />
-              {fieldErrors.description ? (
-                <p className="mt-1 text-xs text-red-500">{fieldErrors.description}</p>
-              ) : null}
+              <div className="mt-1 flex items-start justify-between">
+                <span>
+                  {fieldErrors.description ? (
+                    <p className="text-xs text-red-500">{fieldErrors.description}</p>
+                  ) : null}
+                </span>
+                <p className={`text-xs tabular-nums ${form.description.length >= 900 ? 'text-orange-500 font-semibold' : 'text-neutral-dark/40'}`}>
+                  {form.description.length}/1000
+                </p>
+              </div>
             </Box>
 
             <Box className="grid gap-4 md:grid-cols-2">
@@ -423,18 +462,24 @@ export const ProductsManagementView = ({
             <Box className="grid gap-4 md:grid-cols-2">
               <Box>
                 <Label htmlFor="product-stock">Stock disponible</Label>
-                <Input
-                  id="product-stock"
-                  type="number"
-                  min="0"
-                  step="1"
-                  placeholder="Unidades en inventario"
-                  value={form.initialStock}
-                  onChange={(event) =>
-                    onFormChange('initialStock', event.target.value)
-                  }
-                  disabled={submitting || Boolean(editingId)}
-                />
+                {(variantCombinations.length > 0 || variants.length > 0) ? (
+                  <div className="flex h-[50px] items-center rounded-2xl border border-neutral-gray/20 bg-neutral-gray/5 px-4 text-sm text-neutral-dark/50">
+                    Se toma de las variantes
+                  </div>
+                ) : (
+                  <Input
+                    id="product-stock"
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="Unidades en inventario"
+                    value={form.initialStock}
+                    onChange={(event) =>
+                      onFormChange('initialStock', event.target.value)
+                    }
+                    disabled={submitting || Boolean(editingId)}
+                  />
+                )}
               </Box>
             </Box>
 
@@ -1370,33 +1415,36 @@ export const ProductsManagementView = ({
             ) : null}
           </Box>
 
-          {/* ── Submit — always at the bottom ── */}
-          <Box className="mt-6 border-t border-neutral-gray/20 pt-6">
-            {error ? (
-              <Box className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-                {error}
-              </Box>
-            ) : null}
-            <Box className="flex flex-wrap gap-3">
-              <Button type="submit" form="product-form" variant="primary" disabled={submitting || !isFormReady}>
-                {submitting
-                  ? 'Guardando...'
-                  : editingId
-                    ? 'Guardar cambios'
-                    : 'Crear producto'}
-              </Button>
-              {editingId ? (
-                <Button type="button" variant="outline" onClick={onReset} disabled={submitting}>
+            </div>
+            <div className="shrink-0 border-t border-neutral-gray/20 bg-white px-6 py-4">
+              {error ? (
+                <Box className="mb-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                  {error}
+                </Box>
+              ) : null}
+              <Box className="flex flex-wrap gap-3">
+                <Button type="submit" form="product-form" variant="primary" disabled={submitting || !isFormReady}>
+                  {submitting ? 'Guardando...' : editingId ? 'Guardar cambios' : 'Crear producto'}
+                </Button>
+                <Button type="button" variant="outline" onClick={handleReset} disabled={submitting}>
                   Cancelar
                 </Button>
-              ) : null}
-            </Box>
-          </Box>
-        </FeaturePanel>
+              </Box>
+            </div>
+          </div>
+        </div>,
+        document.body
+      ) : null}
 
+      <Box>
         <FeaturePanel
           title='Catálogo administrativo'
           subtitle='Filtra por texto o por categoría para encontrar productos rápido.'
+          action={
+            <Button type="button" variant="primary" onClick={() => setIsFormOpen(true)}>
+              + Nuevo producto
+            </Button>
+          }
         >
           <Box className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
             <Box className="grid gap-3 md:grid-cols-[minmax(220px,1fr)_220px]">
@@ -1414,79 +1462,65 @@ export const ProductsManagementView = ({
             </Box>
           </Box>
 
-          <Box className="mt-6 space-y-3">
+          <Box className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {loading ? (
-              <>
-                <div className='h-16 skeleton rounded-2xl' />
-                <div className='h-16 skeleton rounded-2xl' />
-                <div className='h-16 skeleton rounded-2xl' />
-                <div className='h-16 skeleton rounded-2xl' />
-              </>
+              Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="overflow-hidden rounded-2xl border border-neutral-gray/20">
+                  <div className="aspect-square skeleton" />
+                  <div className="space-y-2 p-3">
+                    <div className="skeleton h-4 rounded" />
+                    <div className="skeleton h-3 w-2/3 rounded" />
+                    <div className="skeleton h-4 w-1/2 rounded" />
+                  </div>
+                </div>
+              ))
             ) : products.length === 0 ? (
-              <Box className="rounded-2xl border border-dashed border-neutral-gray/40 bg-background px-6 py-10 text-center">
+              <Box className="col-span-full rounded-2xl border border-dashed border-neutral-gray/40 bg-background px-6 py-10 text-center">
                 <Typography>No hay productos registrados todavía.</Typography>
               </Box>
             ) : (
               products.map((product) => (
-                <Box
+                <div
                   key={product.id}
-                  className="grid gap-4 rounded-2xl border border-neutral-gray/20 px-5 py-4 lg:grid-cols-[minmax(0,1fr)_auto]"
+                  className="flex flex-col overflow-hidden rounded-2xl border border-neutral-gray/20 bg-white shadow-sm transition hover:shadow-md"
                 >
-                  <Box className="flex gap-4">
+                  {/* Image */}
+                  <div className="relative aspect-square bg-slate-100">
                     {product.imageUrl ? (
                       <img
                         src={product.imageUrl}
                         alt={product.name}
-                        className="h-16 w-16 flex-shrink-0 rounded-xl object-cover"
+                        className="h-full w-full object-cover"
                       />
-                    ) : null}
-                    <Box className="space-y-2">
-                      <Box className="flex flex-wrap items-center gap-3">
-                        <Typography variant="h3" className="text-lg font-semibold">
-                          {product.name}
-                        </Typography>
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                            product.isActive
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-red-100 text-red-700'
-                          }`}
-                        >
-                          {product.isActive ? 'Activo' : 'Inactivo'}
-                        </span>
-                      </Box>
-                      <Typography className="text-sm text-neutral-dark/70">
-                        SKU: {product.sku} · Categoría: {product.category?.name ?? 'Sin categoría'} ·
-                        Tienda: {product.store?.name ?? 'Sin tienda'}
-                        {product.menuCategory ? ` · Sección: ${product.menuCategory.name}` : ''}
-                      </Typography>
-                      <Typography className="text-sm text-neutral-dark/70">
-                        {formatCurrencyCOP(product.price)} · Costo:{' '}
-                        {product.cost ? formatCurrencyCOP(product.cost) : 'N/D'} ·
-                        Stock visible:{' '}
-                        {product.showStock ? 'Sí' : 'No'}
-                      </Typography>
-                      <Typography className="text-sm text-neutral-dark/70">
-                        Tipo: {product.isPerishable ? 'Perecedero' : 'No perecedero'} ·
-                        Lotes: {product.trackBatches ? 'Sí' : 'No'}
-                      </Typography>
-                      {product.supplier ? (
-                        <Typography className="text-sm text-neutral-dark/70">
-                          Proveedor: {product.supplier.name}
-                        </Typography>
-                      ) : null}
-                      <Typography className="text-sm text-neutral-dark/75">
-                        {product.description}
-                      </Typography>
-                    </Box>
-                  </Box>
+                    ) : (
+                      <div className="flex h-full items-center justify-center">
+                        <i className="bx bx-image text-4xl text-slate-300" aria-hidden="true" />
+                      </div>
+                    )}
+                    <span className={`absolute right-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-semibold ${product.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {product.isActive ? 'Activo' : 'Inactivo'}
+                    </span>
+                  </div>
 
-                  <Box className="flex flex-wrap gap-3 lg:flex-col">
+                  {/* Info */}
+                  <div className="flex flex-1 flex-col gap-1 p-3">
+                    <p className="line-clamp-2 text-sm font-semibold leading-snug text-slate-800">
+                      {product.name}
+                    </p>
+                    <p className="text-xs text-slate-400">{product.category?.name ?? 'Sin categoría'}</p>
+                    <p className="mt-1 text-sm font-bold text-primary">{formatCurrencyCOP(product.price)}</p>
+                    <p className="text-[11px] text-slate-400">SKU: {product.sku}</p>
+                    {product.store ? <p className="text-[11px] text-slate-400">{product.store.name}</p> : null}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2 border-t border-slate-100 p-3">
                     <Button
                       type="button"
                       variant="outlinePrimary"
                       onClick={() => onEdit(product)}
                       disabled={submitting}
+                      className="flex-1 !py-1.5 text-xs"
                     >
                       Editar
                     </Button>
@@ -1495,11 +1529,12 @@ export const ProductsManagementView = ({
                       variant={product.isActive ? 'danger' : 'secondary'}
                       onClick={() => void onToggleStatus(product)}
                       disabled={submitting}
+                      className="flex-1 !py-1.5 text-xs"
                     >
-                      {product.isActive ? 'Desactivar' : 'Activar'}
+                      {product.isActive ? 'Desact.' : 'Activar'}
                     </Button>
-                  </Box>
-                </Box>
+                  </div>
+                </div>
               ))
             )}
           </Box>

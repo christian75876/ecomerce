@@ -1,7 +1,9 @@
+import { useNavigate } from 'react-router-dom';
 import { IProduct } from '@/application/dtos/products/response/ProductResponse';
 import ProductCard from '../../molecules/products/ProductCard';
 import Box from '../../atoms/box/SimpleBox';
 import Typography from '../../atoms/typography/SimpleTypography';
+import { ROUTES } from '@/shared/constants/routes';
 
 interface ProductBodyProps {
   products: IProduct[];
@@ -29,6 +31,8 @@ const ProductBody = ({
   primaryColor,
   onAddToCart,
 }: ProductBodyProps) => {
+  const navigate = useNavigate();
+
   if (loading) {
     return <Typography>Cargando productos...</Typography>;
   }
@@ -60,7 +64,13 @@ const ProductBody = ({
       layoutStyle={layoutStyle}
       buttonStyle={buttonStyle}
       primaryColor={primaryColor}
-      onAddToCart={() => onAddToCart?.(product.id)}
+      onAddToCart={() => {
+        if (product.hasVariants) {
+          navigate(ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', product.id));
+        } else {
+          onAddToCart?.(product.id);
+        }
+      }}
     />
   ));
 
@@ -109,7 +119,13 @@ const ProductBody = ({
                 layoutStyle={layoutStyle}
                 buttonStyle={buttonStyle}
                 primaryColor={primaryColor}
-                onAddToCart={() => onAddToCart?.(product.id)}
+                onAddToCart={() => {
+                  if (product.hasVariants) {
+                    navigate(ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', product.id));
+                  } else {
+                    onAddToCart?.(product.id);
+                  }
+                }}
               />
             </div>
           ))}

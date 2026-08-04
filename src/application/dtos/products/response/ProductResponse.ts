@@ -43,6 +43,7 @@ export interface IProduct {
   depth: number | null;
   dimensionsUnit: string | null;
   variants: IProductVariant[];
+  hasVariants?: boolean;
   categoryId: string;
   storeId: string | null;
   supplierId: string | null;

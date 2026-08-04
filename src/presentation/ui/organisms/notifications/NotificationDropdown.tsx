@@ -22,6 +22,20 @@ const timeAgo = (iso: string): string => {
   return new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' });
 };
 
+function MarkReadButton({ id, markRead }: { id: string; markRead: (id: string) => void }) {
+  return (
+    <button
+      type='button'
+      onClick={(e) => { e.preventDefault(); e.stopPropagation(); markRead(id); }}
+      className='flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-sm transition hover:scale-110 hover:shadow-md'
+      aria-label='Marcar como leída'
+      title='Marcar como leída'
+    >
+      <i className='bx bx-check text-sm' aria-hidden='true' />
+    </button>
+  );
+}
+
 // ── Order card ──────────────────────────────────────────────────────────────
 function OrderCard({
   n,
@@ -35,49 +49,48 @@ function OrderCard({
   const isNew = !n.read;
   return (
     <Link
-      to={ROUTES.PRIVATE.ORDERS}
+      to={`${ROUTES.PRIVATE.ORDERS}?order=${n.orderId}`}
       onClick={() => { markRead(n.id); onClose(); }}
       className={clsx(
-        'group block border-b border-slate-100 px-4 py-3.5 transition-colors last:border-0 hover:bg-slate-50',
-        isNew && 'bg-primary/[0.03]',
+        'group block border-b border-slate-100 px-4 py-3.5 transition-all last:border-0',
+        isNew
+          ? 'border-l-[3px] border-l-primary bg-primary/[0.05] hover:bg-primary/[0.08]'
+          : 'border-l-[3px] border-l-transparent opacity-50 hover:opacity-75 hover:bg-slate-50',
       )}
     >
       <div className='flex items-start gap-3'>
-        {/* Icon */}
         <div className={clsx(
           'mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl',
-          isNew ? 'bg-primary/10' : 'bg-slate-100',
+          isNew ? 'bg-primary/15' : 'bg-slate-100',
         )}>
           <i className={clsx('bx bx-receipt text-lg', isNew ? 'text-primary' : 'text-slate-400')} />
         </div>
 
-        {/* Content */}
         <div className='min-w-0 flex-1'>
-          {/* Top row: label + time + unread dot */}
           <div className='flex items-center justify-between gap-2'>
-            <span className='text-[11px] font-bold uppercase tracking-wide text-slate-400'>
+            <span className={clsx(
+              'text-[11px] font-bold uppercase tracking-wide',
+              isNew ? 'text-primary' : 'text-slate-400',
+            )}>
               Nuevo pedido
             </span>
-            <div className='flex shrink-0 items-center gap-1.5'>
+            <div className='flex shrink-0 items-center gap-2'>
               <span className='text-[11px] text-slate-400'>{timeAgo(n.createdAt)}</span>
-              {isNew ? <span className='h-2 w-2 rounded-full bg-primary' /> : null}
+              {isNew ? <MarkReadButton id={n.id} markRead={markRead} /> : null}
             </div>
           </div>
 
-          {/* Ref badge */}
           <p className='mt-0.5 font-mono text-[11px] text-slate-400'>
             #{n.orderId.slice(0, 8).toUpperCase()}
           </p>
 
-          {/* Customer + total */}
-          <p className='mt-1 text-sm font-semibold text-slate-800 leading-snug'>
+          <p className={clsx('mt-1 text-sm leading-snug', isNew ? 'font-semibold text-slate-800' : 'font-medium text-slate-500')}>
             {n.customerName}
           </p>
-          <p className='text-sm font-bold text-primary'>
+          <p className={clsx('text-sm font-bold', isNew ? 'text-primary' : 'text-slate-400')}>
             {formatCurrencyCOP(n.total)}
           </p>
 
-          {/* Badges row */}
           <div className='mt-1.5 flex flex-wrap gap-1.5'>
             <span className='inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold text-slate-600'>
               <i className='bx bx-package text-[11px]' />
@@ -117,23 +130,29 @@ function InvitationCard({
       to={ROUTES.PRIVATE.INVITATIONS}
       onClick={() => { markRead(n.id); onClose(); }}
       className={clsx(
-        'group block border-b border-slate-100 px-4 py-3.5 transition-colors last:border-0 hover:bg-slate-50',
-        isNew && 'bg-primary/[0.03]',
+        'group block border-b border-slate-100 px-4 py-3.5 transition-all last:border-0',
+        isNew
+          ? 'border-l-[3px] border-l-primary bg-primary/[0.05] hover:bg-primary/[0.08]'
+          : 'border-l-[3px] border-l-transparent opacity-50 hover:opacity-75 hover:bg-slate-50',
       )}
     >
       <div className='flex items-start gap-3'>
-        <div className={clsx('mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl', isNew ? 'bg-primary/10' : 'bg-slate-100')}>
+        <div className={clsx('mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl', isNew ? 'bg-primary/15' : 'bg-slate-100')}>
           <i className={clsx('bx bx-store text-lg', isNew ? 'text-primary' : 'text-slate-400')} />
         </div>
         <div className='min-w-0 flex-1'>
           <div className='flex items-center justify-between gap-2'>
-            <span className='text-[11px] font-bold uppercase tracking-wide text-slate-400'>Invitación aceptada</span>
-            <div className='flex shrink-0 items-center gap-1.5'>
+            <span className={clsx('text-[11px] font-bold uppercase tracking-wide', isNew ? 'text-primary' : 'text-slate-400')}>
+              Invitación aceptada
+            </span>
+            <div className='flex shrink-0 items-center gap-2'>
               <span className='text-[11px] text-slate-400'>{timeAgo(n.createdAt)}</span>
-              {isNew ? <span className='h-2 w-2 rounded-full bg-primary' /> : null}
+              {isNew ? <MarkReadButton id={n.id} markRead={markRead} /> : null}
             </div>
           </div>
-          <p className='mt-1 text-sm font-semibold text-slate-800'>{n.firstName} {n.lastName}</p>
+          <p className={clsx('mt-1 text-sm', isNew ? 'font-semibold text-slate-800' : 'font-medium text-slate-500')}>
+            {n.firstName} {n.lastName}
+          </p>
           <p className='mt-0.5 text-xs text-slate-500'>{n.email}</p>
           <p className='mt-0.5 text-xs text-slate-400'>Tienda: {n.storeName}</p>
         </div>
@@ -158,23 +177,29 @@ function UserCard({
       to={ROUTES.PRIVATE.CUSTOMERS}
       onClick={() => { markRead(n.id); onClose(); }}
       className={clsx(
-        'group block border-b border-slate-100 px-4 py-3.5 transition-colors last:border-0 hover:bg-slate-50',
-        isNew && 'bg-primary/[0.03]',
+        'group block border-b border-slate-100 px-4 py-3.5 transition-all last:border-0',
+        isNew
+          ? 'border-l-[3px] border-l-primary bg-primary/[0.05] hover:bg-primary/[0.08]'
+          : 'border-l-[3px] border-l-transparent opacity-50 hover:opacity-75 hover:bg-slate-50',
       )}
     >
       <div className='flex items-start gap-3'>
-        <div className={clsx('mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl', isNew ? 'bg-primary/10' : 'bg-slate-100')}>
+        <div className={clsx('mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl', isNew ? 'bg-primary/15' : 'bg-slate-100')}>
           <i className={clsx('bx bx-user-plus text-lg', isNew ? 'text-primary' : 'text-slate-400')} />
         </div>
         <div className='min-w-0 flex-1'>
           <div className='flex items-center justify-between gap-2'>
-            <span className='text-[11px] font-bold uppercase tracking-wide text-slate-400'>Nuevo usuario</span>
-            <div className='flex shrink-0 items-center gap-1.5'>
+            <span className={clsx('text-[11px] font-bold uppercase tracking-wide', isNew ? 'text-primary' : 'text-slate-400')}>
+              Nuevo usuario
+            </span>
+            <div className='flex shrink-0 items-center gap-2'>
               <span className='text-[11px] text-slate-400'>{timeAgo(n.createdAt)}</span>
-              {isNew ? <span className='h-2 w-2 rounded-full bg-primary' /> : null}
+              {isNew ? <MarkReadButton id={n.id} markRead={markRead} /> : null}
             </div>
           </div>
-          <p className='mt-1 text-sm font-semibold text-slate-800'>{n.firstName} {n.lastName}</p>
+          <p className={clsx('mt-1 text-sm', isNew ? 'font-semibold text-slate-800' : 'font-medium text-slate-500')}>
+            {n.firstName} {n.lastName}
+          </p>
           <p className='mt-0.5 text-xs text-slate-500'>{n.email}</p>
         </div>
       </div>
@@ -207,7 +232,6 @@ const NotificationDropdown = ({ dark = false, align = 'right' }: { dark?: boolea
   const safePage = Math.min(page, totalPages);
   const pageItems = notifications.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
-  // Reset to page 1 when new notifications arrive
   useEffect(() => { setPage(1); }, [notifications.length]);
 
   useEffect(() => {
@@ -265,7 +289,6 @@ const NotificationDropdown = ({ dark = false, align = 'right' }: { dark?: boolea
               ) : null}
             </div>
             <div className='flex items-center gap-3'>
-              {/* Connection status */}
               <span className='flex items-center gap-1 text-[11px] text-slate-400'>
                 <span className={`inline-block h-1.5 w-1.5 rounded-full ${statusDot}`} />
                 {statusLabel}

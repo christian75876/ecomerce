@@ -34,21 +34,22 @@ const ProductDetails = () => {
   const { addItem } = useCart();
   const [added, setAdded] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [qty, setQty] = useState(1);
 
+  const isOutOfStock = (product?.availableQuantity ?? 1) === 0;
   const handleAddToCart = () => {
-    if (!product || product.availableQuantity === 0) return;
+    if (!product || isOutOfStock) return;
     addItem({
       productId: product.id,
       name: product.name,
       price: Number(product.price),
       imageUrl: product.imageUrl,
-    });
+      maxStock: product.availableQuantity,
+    }, qty);
+    setQty(1);
     setAdded(true);
     setExpanded(true);
-    setTimeout(() => {
-      setAdded(false);
-      setExpanded(false);
-    }, 2000);
+    setTimeout(() => { setAdded(false); setExpanded(false); }, 2000);
   };
 
   if (loading) {
@@ -67,7 +68,6 @@ const ProductDetails = () => {
     );
   }
 
-  const isOutOfStock = product.availableQuantity === 0;
 
   return (
     <>
@@ -128,23 +128,94 @@ const ProductDetails = () => {
               variants: product.variants,
             }}
             gallery={gallery}
-            footer={
-              <button
-                type='button'
-                onClick={handleAddToCart}
-                disabled={isOutOfStock}
-                className={`flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-3 text-sm font-bold text-white shadow-sm transition active:scale-95 ${
-                  isOutOfStock
-                    ? 'cursor-not-allowed bg-slate-300'
-                    : added
-                      ? 'bg-emerald-500'
-                      : 'bg-primary hover:opacity-90'
-                }`}
-              >
-                <i className={`bx text-base ${added ? 'bx-check' : isOutOfStock ? 'bx-x-circle' : 'bx-cart-add'}`} aria-hidden='true' />
-                {isOutOfStock ? 'Sin stock' : added ? '¡Agregado!' : 'Agregar al carrito'}
-              </button>
-            }
+            footer={(ctx) => {
+              const outOfStock = (ctx.displayedStock ?? 0) === 0;
+              const maxQty = ctx.displayedStock ?? Infinity;
+              const needsSize = ctx.uniqueSizes.length > 0 && ctx.selectedSize === null;
+              const needsColor = ctx.uniqueColors.length > 0 && ctx.selectedColor === null;
+              const variantRequired = needsSize || needsColor;
+              const blocked = outOfStock || variantRequired;
+              return (
+                <div className='space-y-2'>
+                  {variantRequired ? (
+                    <p className='text-center text-xs font-medium text-orange-500'>
+                      <i className='bx bx-info-circle mr-1' aria-hidden='true' />
+                      {needsSize && needsColor
+                        ? 'Elige talla y color para continuar'
+                        : needsSize
+                          ? 'Elige una talla para continuar'
+                          : 'Elige un color para continuar'}
+                    </p>
+                  ) : null}
+                  <div className='flex items-center gap-3'>
+                    {/* Quantity stepper */}
+                    <div className={`flex shrink-0 items-center overflow-hidden rounded-2xl border bg-white shadow-sm transition ${blocked ? 'border-neutral-gray/20 opacity-40' : 'border-neutral-gray/30'}`}>
+                      <button
+                        type='button'
+                        onClick={() => setQty((q) => Math.max(1, q - 1))}
+                        disabled={blocked || qty <= 1}
+                        className='flex h-11 w-11 items-center justify-center text-neutral-dark/60 transition hover:bg-neutral-gray/10 disabled:opacity-30'
+                        aria-label='Reducir cantidad'
+                      >
+                        <i className='bx bx-minus text-sm' aria-hidden='true' />
+                      </button>
+                      <span className='w-8 text-center text-sm font-bold tabular-nums text-neutral-dark'>
+                        {qty}
+                      </span>
+                      <button
+                        type='button'
+                        onClick={() => setQty((q) => Math.min(q + 1, maxQty))}
+                        disabled={blocked || qty >= maxQty}
+                        className='flex h-11 w-11 items-center justify-center text-neutral-dark/60 transition hover:bg-neutral-gray/10 disabled:opacity-30'
+                        aria-label='Aumentar cantidad'
+                      >
+                        <i className='bx bx-plus text-sm' aria-hidden='true' />
+                      </button>
+                    </div>
+
+                    {/* Add to cart button */}
+                    <button
+                      type='button'
+                      onClick={() => {
+                        if (!product || blocked) return;
+                        addItem({
+                          productId: product.id,
+                          name: product.name,
+                          price: Number(ctx.selectedVariant?.price ?? product.price),
+                          imageUrl: product.imageUrl,
+                          maxStock: ctx.displayedStock,
+                        }, qty);
+                        setQty(1);
+                        setAdded(true);
+                        setExpanded(true);
+                        setTimeout(() => { setAdded(false); setExpanded(false); }, 2000);
+                      }}
+                      disabled={blocked}
+                      className={`flex flex-1 items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold text-white shadow-sm transition active:scale-95 ${
+                        outOfStock
+                          ? 'cursor-not-allowed bg-slate-300'
+                          : variantRequired
+                            ? 'cursor-not-allowed bg-slate-300'
+                            : added
+                              ? 'bg-emerald-500'
+                              : 'bg-primary hover:opacity-90'
+                      }`}
+                    >
+                      <i className={`bx text-base ${added ? 'bx-check' : blocked ? 'bx-info-circle' : 'bx-cart-add'}`} aria-hidden='true' />
+                      {outOfStock
+                        ? 'Sin stock'
+                        : variantRequired
+                          ? 'Selecciona una variante'
+                          : added
+                            ? '¡Agregado!'
+                            : qty > 1
+                              ? `Agregar ${qty} al carrito`
+                              : 'Agregar al carrito'}
+                    </button>
+                  </div>
+                </div>
+              );
+            }}
           />
 
           {/* Store info + share */}

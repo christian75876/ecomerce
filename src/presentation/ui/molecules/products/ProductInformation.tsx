@@ -19,6 +19,15 @@ interface ProductVariant {
   isActive: boolean;
 }
 
+export interface ProductAddToCartContext {
+  selectedVariant: ProductVariant | null;
+  displayedStock: number | undefined;
+  selectedSize: string | null;
+  selectedColor: string | null;
+  uniqueSizes: string[];
+  uniqueColors: string[];
+}
+
 interface ProductInformationProps {
   product: {
     name: string;
@@ -39,7 +48,7 @@ interface ProductInformationProps {
     variants?: ProductVariant[];
   };
   gallery?: GalleryImage[];
-  footer?: React.ReactNode;
+  footer?: React.ReactNode | ((ctx: ProductAddToCartContext) => React.ReactNode);
 }
 
 const ProductInformation = ({ product, gallery = [], footer }: ProductInformationProps) => {
@@ -59,11 +68,14 @@ const ProductInformation = ({ product, gallery = [], footer }: ProductInformatio
   const uniqueSizes = [...new Set(activeVariants.map((v) => v.size).filter(Boolean))] as string[];
   const uniqueColors = [...new Set(activeVariants.map((v) => v.color).filter(Boolean))] as string[];
 
-  const selectedVariant = activeVariants.find(
-    (v) =>
-      (selectedSize ? v.size === selectedSize : true) &&
-      (selectedColor ? v.color === selectedColor : true),
-  ) ?? null;
+  const selectedVariant =
+    selectedSize === null && selectedColor === null
+      ? null
+      : activeVariants.find(
+          (v) =>
+            (selectedSize ? v.size === selectedSize : true) &&
+            (selectedColor ? v.color === selectedColor : true),
+        ) ?? null;
 
   const displayedPrice = selectedVariant?.price != null
     ? String(selectedVariant.price)
@@ -313,7 +325,13 @@ const ProductInformation = ({ product, gallery = [], footer }: ProductInformatio
           </Box>
         ) : null}
 
-        {footer ? <Box className='pt-1'>{footer}</Box> : null}
+        {footer ? (
+          <Box className='pt-1'>
+            {typeof footer === 'function'
+              ? footer({ selectedVariant, displayedStock, selectedSize, selectedColor, uniqueSizes, uniqueColors })
+              : footer}
+          </Box>
+        ) : null}
       </Box>
     </Box>
   );

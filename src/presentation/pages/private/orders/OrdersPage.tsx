@@ -18,7 +18,6 @@ const OrdersPage = () => {
       loading={ordersManagement.loading}
       submitting={ordersManagement.submitting}
       error={ordersManagement.error}
-      statuses={ORDER_STATUSES}
       currentPage={ordersManagement.currentPage}
       totalPages={ordersManagement.totalPages}
       totalItems={ordersManagement.totalItems}

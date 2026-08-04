@@ -68,6 +68,31 @@ const OrderNotificationsContext = createContext<ContextValue | null>(null);
 const BASE = import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:3000/api/';
 const SSE_URL = BASE.replace(/\/$/, '') + '/notifications/stream';
 const MAX_RETRY_DELAY = 30_000;
+const STORAGE_KEY = 'bb_read_notification_ids';
+
+// ── localStorage helpers for read state persistence ──────────────────────────
+const getReadIds = (): Set<string> => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? new Set(JSON.parse(raw) as string[]) : new Set();
+  } catch { return new Set(); }
+};
+
+const persistRead = (id: string) => {
+  try {
+    const ids = getReadIds();
+    ids.add(id);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([...ids].slice(-300)));
+  } catch { /* ignore */ }
+};
+
+const persistReadMany = (ids: string[]) => {
+  try {
+    const existing = getReadIds();
+    ids.forEach((id) => existing.add(id));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([...existing].slice(-300)));
+  } catch { /* ignore */ }
+};
 
 export const OrderNotificationsProvider = ({ children }: { children: ReactNode }) => {
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
@@ -80,12 +105,23 @@ export const OrderNotificationsProvider = ({ children }: { children: ReactNode }
   const mountedRef = useRef(true);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
-  const markAllRead = () => setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  const markRead = (id: string) =>
+
+  const markRead = useCallback((id: string) => {
+    persistRead(id);
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+  }, []);
+
+  const markAllRead = useCallback(() => {
+    setNotifications((prev) => {
+      persistReadMany(prev.map((n) => n.id));
+      return prev.map((n) => ({ ...n, read: true }));
+    });
+  }, []);
+
   const dismissLatest = () => setLatestNotification(null);
 
-  // Both sellers and admins get recent order history pre-loaded
+  // Pre-load recent order history. Uses orderId as stable notification ID so
+  // localStorage read state survives page reloads and SSE deduplication works.
   const loadInitialOrders = useCallback(async () => {
     if (!canAccessAdminPanel()) return;
     try {
@@ -93,8 +129,9 @@ export const OrderNotificationsProvider = ({ children }: { children: ReactNode }
       const raw = resp.data as unknown as { items?: IOrder[] } | IOrder[];
       const orders: IOrder[] = Array.isArray(raw) ? raw : (raw as { items?: IOrder[] }).items ?? [];
       if (orders.length === 0) return;
+      const readIds = getReadIds();
       const mapped: NewOrderNotification[] = orders.map((o) => ({
-        id: crypto.randomUUID(),
+        id: o.id,
         type: 'new_order',
         orderId: o.id,
         customerName: `${o.customer?.firstName ?? ''} ${o.customer?.lastName ?? ''}`.trim() || 'Cliente',
@@ -102,9 +139,14 @@ export const OrderNotificationsProvider = ({ children }: { children: ReactNode }
         itemCount: o.items?.length ?? 0,
         deliveryMethod: o.deliveryMethod ?? null,
         createdAt: o.createdAt,
-        read: true,
+        read: readIds.has(o.id),
       }));
-      setNotifications(mapped);
+      // Merge: don't overwrite SSE notifications that arrived before this load
+      setNotifications((prev) => {
+        const existingIds = new Set(prev.map((n) => n.id));
+        const newOnes = mapped.filter((m) => !existingIds.has(m.id));
+        return [...prev, ...newOnes];
+      });
     } catch {
       // non-critical
     }
@@ -132,12 +174,12 @@ export const OrderNotificationsProvider = ({ children }: { children: ReactNode }
       try {
         const data = JSON.parse(event.data as string) as Record<string, unknown>;
 
-        // new_order: received by both sellers and admins
         if (data.type === 'new_order') {
+          const orderId = data.orderId as string;
           const n: NewOrderNotification = {
-            id: crypto.randomUUID(),
+            id: orderId,
             type: 'new_order',
-            orderId: data.orderId as string,
+            orderId,
             customerName: data.customerName as string,
             total: data.total as number,
             itemCount: data.itemCount as number,
@@ -146,39 +188,39 @@ export const OrderNotificationsProvider = ({ children }: { children: ReactNode }
             read: false,
           };
           setNotifications((prev) => {
-            const alreadyExists = prev.some(
-              (p) => p.type === 'new_order' && (p as NewOrderNotification).orderId === n.orderId,
-            );
-            if (alreadyExists) {
-              return prev.map((p) =>
-                p.type === 'new_order' && (p as NewOrderNotification).orderId === n.orderId
-                  ? { ...p, read: false }
-                  : p,
-              );
+            const existing = prev.find((p) => p.id === orderId);
+            if (existing) {
+              return prev.map((p) => (p.id === orderId ? { ...p, read: false } : p));
             }
             return [n, ...prev].slice(0, 50);
           });
           setLatestNotification(n);
           playNotificationSound();
         } else if (isAdminRole()) {
-          // Admin-only site-level events
           if (data.type === 'user_registered') {
+            const id = `user_registered_${data.userId as number}`;
             const n: UserRegisteredNotification = {
-              id: crypto.randomUUID(),
+              id,
               type: 'user_registered',
               userId: data.userId as number,
               firstName: data.firstName as string,
               lastName: data.lastName as string,
               email: data.email as string,
               createdAt: data.createdAt as string,
-              read: false,
+              read: getReadIds().has(id),
             };
-            setNotifications((prev) => [n, ...prev].slice(0, 50));
-            setLatestNotification(n);
-            playNotificationSound();
+            setNotifications((prev) => {
+              if (prev.find((p) => p.id === id)) return prev;
+              return [n, ...prev].slice(0, 50);
+            });
+            if (!n.read) {
+              setLatestNotification(n);
+              playNotificationSound();
+            }
           } else if (data.type === 'invitation_accepted') {
+            const id = `invitation_accepted_${data.userId as number}`;
             const n: InvitationAcceptedNotification = {
-              id: crypto.randomUUID(),
+              id,
               type: 'invitation_accepted',
               userId: data.userId as number,
               firstName: data.firstName as string,
@@ -186,11 +228,16 @@ export const OrderNotificationsProvider = ({ children }: { children: ReactNode }
               email: data.email as string,
               storeName: data.storeName as string,
               createdAt: data.createdAt as string,
-              read: false,
+              read: getReadIds().has(id),
             };
-            setNotifications((prev) => [n, ...prev].slice(0, 50));
-            setLatestNotification(n);
-            playNotificationSound();
+            setNotifications((prev) => {
+              if (prev.find((p) => p.id === id)) return prev;
+              return [n, ...prev].slice(0, 50);
+            });
+            if (!n.read) {
+              setLatestNotification(n);
+              playNotificationSound();
+            }
           }
         }
       } catch {
