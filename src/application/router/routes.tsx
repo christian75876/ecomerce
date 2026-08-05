@@ -216,11 +216,13 @@ export const routes: AppRoute[] = [
   {
     path: ROUTES.PUBLIC.TERMS,
     element: <TermsPage />,
+    layout: DashboardLayout,
     publicOnly: false
   },
   {
     path: ROUTES.PUBLIC.PRIVACY,
     element: <PrivacyPage />,
+    layout: DashboardLayout,
     publicOnly: false
   },
 

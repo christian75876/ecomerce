@@ -17,7 +17,7 @@ const TermsPage = () => (
 
     {/* Header */}
     <div>
-      <Link to={ROUTES.PUBLIC.LANDING} className='mb-6 inline-flex items-center gap-2 text-sm text-slate-500 hover:text-primary'>
+      <Link to={ROUTES.PUBLIC.HOME} className='mb-6 inline-flex items-center gap-2 text-sm text-slate-500 hover:text-primary'>
         <i className='bx bx-arrow-back' /> Volver al inicio
       </Link>
       <h1 className='text-3xl font-extrabold text-slate-900'>Términos y condiciones de uso</h1>
