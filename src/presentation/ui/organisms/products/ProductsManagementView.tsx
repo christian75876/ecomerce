@@ -340,7 +340,7 @@ export const ProductsManagementView = ({
             className="absolute inset-0 bg-neutral-dark/50 backdrop-blur-sm"
             onClick={!submitting ? handleReset : undefined}
           />
-          <div className="relative z-10 flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl" style={{ maxHeight: '90vh' }}>
+          <div className="relative z-10 flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl" style={{ maxHeight: 'min(90vh, calc(100vh - 7rem))', marginBottom: '6rem' }}>
             <div className="flex shrink-0 items-center justify-between border-b border-neutral-gray/20 px-6 py-4">
               <h2 className="text-lg font-bold text-neutral-dark">
                 {editingId ? 'Editar producto' : 'Nuevo producto'}
