@@ -43,9 +43,7 @@ export const usePurchaseCollection = (itemsPerPage = 10) => {
         err instanceof Error ? err.message : 'No fue posible cargar compras',
       );
     } finally {
-      if (!preserveLoadingState) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   };
 

@@ -1,9 +1,14 @@
+import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants/routes';
 
 const NotFoundPage = () => {
   return (
     <div className='flex min-h-[70vh] flex-col items-center justify-center px-6 py-20 text-center'>
+      <Helmet>
+        <title>Página no encontrada — Merku</title>
+        <meta name='robots' content='noindex, nofollow' />
+      </Helmet>
       <div className='mb-6 flex h-32 w-32 items-center justify-center rounded-full bg-primary/8'>
         <span className='text-6xl'>🔍</span>
       </div>

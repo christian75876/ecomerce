@@ -15,7 +15,9 @@ export const ROUTES = {
     MY_ORDERS: '/my-orders',
     MY_ORDER_DETAILS: '/my-orders/:orderId',
     PRODUCT_DETAILS: '/product/:productId',
-    HELP: '/ayuda'
+    HELP: '/ayuda',
+    TERMS: '/terminos',
+    PRIVACY: '/privacidad'
   },
   PRIVATE: {
     DASHBOARD: '/dashboard',

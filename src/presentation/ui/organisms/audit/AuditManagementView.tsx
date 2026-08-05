@@ -1,5 +1,12 @@
 import { IAuditLog } from '@/application/dtos/audit/response/AuditResponse';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
+
+const formatAuditDetail = (detail: string | null): string => {
+  if (!detail) return 'Sin detalle';
+  return detail.replace(/\b(\d{5,})\b/g, (_, n) =>
+    new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(Number(n)),
+  );
+};
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import PaginationControls from '@/presentation/ui/molecules/common/PaginationControls';
@@ -70,10 +77,10 @@ export const AuditManagementView = ({
           <Box key={log.id} className='rounded-2xl border border-neutral-gray/20 px-5 py-4'>
             <Typography variant='h3' className='text-lg font-semibold'>{log.action}</Typography>
             <Typography className='mt-1 text-sm text-neutral-dark/65'>
-              {log.entity} · ref {log.referenceId || '-'} · usuario {log.userId ?? '-'}
+              {log.entity} · ref {log.referenceId || '-'} · usuario {log.userId != null ? `#${log.userId}` : 'sistema'}
             </Typography>
             <Typography className='mt-2 text-sm text-neutral-dark/75'>
-              {log.detail || 'Sin detalle'}
+              {formatAuditDetail(log.detail)}
             </Typography>
           </Box>
         ))}

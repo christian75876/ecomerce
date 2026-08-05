@@ -1143,7 +1143,7 @@ export const StoresManagementView = ({
 
             <Box className='flex items-center gap-3 pt-2'>
               <Button type='submit' variant='primary' loading={submitting} disabled={submitting || !isDirty}>
-                {submitting ? 'Guardando...' : 'Guardar cambios'}
+                {submitting ? 'Guardando...' : editingId ? 'Guardar cambios' : 'Crear tienda'}
               </Button>
               {editingId && !isSeller ? (
                 <Button type='button' variant='outline' onClick={onReset}>

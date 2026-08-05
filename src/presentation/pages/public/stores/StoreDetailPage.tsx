@@ -135,21 +135,19 @@ const StoreDetailPage = () => {
   return (
     <>
       <Helmet>
-        <title>{store.name} — Merku</title>
+        <title>{`${store.name} — Merku`}</title>
         <meta name='description' content={store.description || `Explora los productos de ${store.name} en Merku.`} />
-        <meta property='og:title' content={`${store.name} — Merku`} />
-        <meta property='og:description' content={store.description || `Explora los productos de ${store.name} en Merku.`} />
+        <link rel='canonical' href={`${import.meta.env.VITE_APP_URL ?? ''}/stores/${store.slug}`} />
         <meta property='og:type' content='website' />
         <meta property='og:site_name' content='Merku' />
-        {(store.bannerUrl || store.logoUrl) ? (
-          <meta property='og:image' content={(store.bannerUrl || store.logoUrl)!} />
-        ) : null}
-        <meta name='twitter:card' content={store.bannerUrl ? 'summary_large_image' : 'summary'} />
+        <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/stores/${store.slug}`} />
+        <meta property='og:title' content={`${store.name} — Merku`} />
+        <meta property='og:description' content={store.description || `Explora los productos de ${store.name} en Merku.`} />
+        <meta property='og:image' content={store.bannerUrl || store.logoUrl || `${import.meta.env.VITE_APP_URL ?? ''}/og-image.svg`} />
+        <meta name='twitter:card' content='summary_large_image' />
         <meta name='twitter:title' content={`${store.name} — Merku`} />
         <meta name='twitter:description' content={store.description || `Explora los productos de ${store.name} en Merku.`} />
-        {(store.bannerUrl || store.logoUrl) ? (
-          <meta name='twitter:image' content={(store.bannerUrl || store.logoUrl)!} />
-        ) : null}
+        <meta name='twitter:image' content={store.bannerUrl || store.logoUrl || `${import.meta.env.VITE_APP_URL ?? ''}/og-image.svg`} />
       </Helmet>
 
       <div className={`space-y-8 ${font}`} style={themeVars}>
@@ -228,11 +226,6 @@ const StoreDetailPage = () => {
               {store.phone ? (
                 <span className='rounded-full px-3 py-1.5' style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
                   Tel: {store.phone}
-                </span>
-              ) : null}
-              {store.email ? (
-                <span className='rounded-full px-3 py-1.5' style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
-                  {store.email}
                 </span>
               ) : null}
               {store.deliveryOptions === 'BOTH' || store.deliveryOptions === 'DELIVERY' ? (

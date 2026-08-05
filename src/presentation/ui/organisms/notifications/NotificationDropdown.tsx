@@ -106,7 +106,12 @@ function OrderCard({
                 <i className='bx bx-store text-[11px]' />
                 Recogida en tienda
               </span>
-            ) : null}
+            ) : (
+              <span className='inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold text-slate-500'>
+                <i className='bx bx-map text-[11px]' />
+                Sin entrega especificada
+              </span>
+            )}
           </div>
         </div>
       </div>

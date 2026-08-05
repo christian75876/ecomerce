@@ -51,15 +51,17 @@ export const HomePage = () => {
       <Helmet>
         <title>Merku — Encuentra lo que buscas</title>
         <meta name='description' content='Explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.' />
-        <meta property='og:title' content='Merku — Encuentra lo que buscas' />
-        <meta property='og:description' content='Explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.' />
+        <link rel='canonical' href={`${import.meta.env.VITE_APP_URL ?? ''}/home`} />
         <meta property='og:type' content='website' />
         <meta property='og:site_name' content='Merku' />
-        <meta property='og:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/icons/icon-512x512.png`} />
-        <meta name='twitter:card' content='summary' />
+        <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/home`} />
+        <meta property='og:title' content='Merku — Encuentra lo que buscas' />
+        <meta property='og:description' content='Explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.' />
+        <meta property='og:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.svg`} />
+        <meta name='twitter:card' content='summary_large_image' />
         <meta name='twitter:title' content='Merku — Encuentra lo que buscas' />
         <meta name='twitter:description' content='Explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.' />
-        <meta name='twitter:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/icons/icon-512x512.png`} />
+        <meta name='twitter:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.svg`} />
       </Helmet>
       <HomeCatalogSection
         products={products}
@@ -74,37 +76,41 @@ export const HomePage = () => {
         }}
       />
 
-      {homeError ? (
-        <Box className='rounded-3xl border border-red-200 bg-red-50 px-6 py-4 text-sm text-red-600'>
-          {homeError}
-        </Box>
+      {!search.trim() && !selectedCategoryId ? (
+        <>
+          {homeError ? (
+            <Box className='rounded-3xl border border-red-200 bg-red-50 px-6 py-4 text-sm text-red-600'>
+              {homeError}
+            </Box>
+          ) : null}
+
+          <Box className='grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)] [&>*]:min-w-0'>
+            <HomeProductRail
+              title='Productos más vendidos'
+              subtitle='Lo que más está moviendo ventas en la plataforma.'
+              products={bestSellingProducts.slice(0, 3)}
+              loading={homeLoading}
+              emptyMessage='Aún no hay suficientes ventas para destacar productos.'
+              onAddToCart={(productId) =>
+                addProductToCart(productId, bestSellingProducts)
+              }
+            />
+
+            <HomeFeaturedStores stores={featuredStores} />
+          </Box>
+
+          <HomeProductRail
+            title='Recién llegados'
+            subtitle='Productos nuevos para descubrir antes que nadie.'
+            products={newestProducts.slice(0, 6)}
+            loading={homeLoading}
+            emptyMessage='Todavía no hay productos nuevos para mostrar.'
+            onAddToCart={(productId) =>
+              addProductToCart(productId, newestProducts)
+            }
+          />
+        </>
       ) : null}
-
-      <Box className='grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)] [&>*]:min-w-0'>
-        <HomeProductRail
-          title='Productos más vendidos'
-          subtitle='Lo que más está moviendo ventas en la plataforma.'
-          products={bestSellingProducts.slice(0, 3)}
-          loading={homeLoading}
-          emptyMessage='Aún no hay suficientes ventas para destacar productos.'
-          onAddToCart={(productId) =>
-            addProductToCart(productId, bestSellingProducts)
-          }
-        />
-
-        <HomeFeaturedStores stores={featuredStores} />
-      </Box>
-
-      <HomeProductRail
-        title='Recién llegados'
-        subtitle='Productos nuevos para descubrir antes que nadie.'
-        products={newestProducts.slice(0, 6)}
-        loading={homeLoading}
-        emptyMessage='Todavía no hay productos nuevos para mostrar.'
-        onAddToCart={(productId) =>
-          addProductToCart(productId, newestProducts)
-        }
-      />
     </Box>
   );
 };

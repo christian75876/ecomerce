@@ -1,5 +1,6 @@
 import { ISupplier } from '@/application/dtos/suppliers/response/SupplierResponse';
 import { SupplierFormState } from '@/application/useCases/suppliers/useSuppliersManagement';
+import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
@@ -134,7 +135,7 @@ export const SuppliersManagementView = ({
                     <Typography
                       className={`text-lg font-bold ${(supplier.pendingBalance ?? 0) > 0 ? 'text-red-600' : 'text-green-600'}`}
                     >
-                      ${Number(supplier.pendingBalance ?? 0).toLocaleString('es-CO', { minimumFractionDigits: 2 })}
+                      {formatCurrencyCOP(Number(supplier.pendingBalance ?? 0))}
                     </Typography>
                   </Box>
                 </Box>

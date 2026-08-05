@@ -64,6 +64,7 @@ const ProductBody = ({
       layoutStyle={layoutStyle}
       buttonStyle={buttonStyle}
       primaryColor={primaryColor}
+      addToCartLabel={product.hasVariants ? 'Ver opciones' : 'Agregar'}
       onAddToCart={() => {
         if (product.hasVariants) {
           navigate(ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', product.id));
@@ -119,6 +120,7 @@ const ProductBody = ({
                 layoutStyle={layoutStyle}
                 buttonStyle={buttonStyle}
                 primaryColor={primaryColor}
+                addToCartLabel={product.hasVariants ? 'Ver opciones' : 'Agregar'}
                 onAddToCart={() => {
                   if (product.hasVariants) {
                     navigate(ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', product.id));

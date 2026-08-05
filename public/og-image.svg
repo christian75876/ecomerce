@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <!-- Fondo gradiente naranja → violeta, marca Merku -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f97316"/>
+      <stop offset="60%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <!-- Círculo decorativo 1 -->
+    <radialGradient id="circ1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Círculo decorativo 2 -->
+    <radialGradient id="circ2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Fondo -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Círculos decorativos de fondo -->
+  <circle cx="1050" cy="80"  r="280" fill="url(#circ1)"/>
+  <circle cx="150"  cy="560" r="220" fill="url(#circ2)"/>
+  <circle cx="960"  cy="520" r="160" fill="url(#circ1)"/>
+
+  <!-- Tira inferior blanca suave -->
+  <rect x="0" y="570" width="1200" height="60" fill="#ffffff" fill-opacity="0.07" rx="0"/>
+
+  <!-- ── Logo + Nombre ── -->
+  <!-- Caja del ícono -->
+  <rect x="80" y="80" width="72" height="72" rx="18" fill="#ffffff" fill-opacity="0.22"/>
+  <!-- Ícono tienda (simplificado SVG) -->
+  <rect x="95" y="111" width="42" height="30" rx="3" fill="#ffffff"/>
+  <polygon points="80,111 116,85 152,111" fill="#ffffff"/>
+  <rect x="108" y="122" width="16" height="19" rx="2" fill="#f97316"/>
+
+  <!-- Nombre MERKU -->
+  <text x="168" y="130" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
+        font-size="52" font-weight="900" letter-spacing="-1" fill="#ffffff">MERKU</text>
+
+  <!-- Separador -->
+  <rect x="80" y="184" width="120" height="4" rx="2" fill="#ffffff" fill-opacity="0.5"/>
+
+  <!-- ── Titular principal ── -->
+  <text x="80" y="270" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
+        font-size="62" font-weight="800" fill="#ffffff" letter-spacing="-1.5">Tu mercado local,</text>
+  <text x="80" y="348" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
+        font-size="62" font-weight="800" fill="#ffffff" fill-opacity="0.88" letter-spacing="-1.5">en un solo lugar.</text>
+
+  <!-- ── Subtítulo ── -->
+  <text x="80" y="415" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
+        font-size="26" font-weight="400" fill="#ffffff" fill-opacity="0.75">
+    Catálogo · Inventario · Pedidos · POS · Analítica
+  </text>
+
+  <!-- ── Pills de características ── -->
+  <!-- Pill 1 -->
+  <rect x="80"  y="460" width="195" height="44" rx="22" fill="#ffffff" fill-opacity="0.18"/>
+  <text x="178" y="487" font-family="system-ui, -apple-system, sans-serif"
+        font-size="19" font-weight="600" fill="#ffffff" text-anchor="middle">Marketplace</text>
+
+  <!-- Pill 2 -->
+  <rect x="290" y="460" width="175" height="44" rx="22" fill="#ffffff" fill-opacity="0.18"/>
+  <text x="378" y="487" font-family="system-ui, -apple-system, sans-serif"
+        font-size="19" font-weight="600" fill="#ffffff" text-anchor="middle">POS online</text>
+
+  <!-- Pill 3 -->
+  <rect x="480" y="460" width="210" height="44" rx="22" fill="#ffffff" fill-opacity="0.18"/>
+  <text x="585" y="487" font-family="system-ui, -apple-system, sans-serif"
+        font-size="19" font-weight="600" fill="#ffffff" text-anchor="middle">Inventario real</text>
+
+  <!-- ── URL dominio ── -->
+  <text x="1120" y="590" font-family="system-ui, -apple-system, sans-serif"
+        font-size="20" font-weight="500" fill="#ffffff" fill-opacity="0.55" text-anchor="end">merku.co</text>
+</svg>

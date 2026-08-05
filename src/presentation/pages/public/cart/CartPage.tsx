@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
@@ -42,7 +42,6 @@ const CartPage = () => {
   const [deliveryNotes, setDeliveryNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [createdOrder, setCreatedOrder] = useState<{ id: string; storePaymentInstructions: string | null } | null>(null);
   const [paymentMethodType, setPaymentMethodType] = useState('');
   const [paymentReference, setPaymentReference] = useState('');
@@ -51,6 +50,14 @@ const CartPage = () => {
   const [paymentSubmitted, setPaymentSubmitted] = useState(false);
   const [paymentSkipped, setPaymentSkipped] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const paymentPanelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (createdOrder) {
+      paymentPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [createdOrder]);
+
   const [couponInput, setCouponInput] = useState('');
   const [couponValidating, setCouponValidating] = useState(false);
   const [appliedCoupon, setAppliedCoupon] = useState<ICouponValidation | null>(null);
@@ -94,7 +101,6 @@ const CartPage = () => {
 
     setSubmitting(true);
     setError(null);
-    setSuccess(null);
 
     try {
       const orderResp = await OrdersRepository.createOrder({
@@ -134,7 +140,6 @@ const CartPage = () => {
       setCouponInput('');
       setAppliedCoupon(null);
       setCouponError(null);
-      setSuccess('¡Pedido creado! Pronto recibirás confirmación por correo.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No fue posible crear el pedido');
     } finally {
@@ -319,7 +324,7 @@ const CartPage = () => {
               {pickupAvailable && (
                 <button
                   type='button'
-                  onClick={() => setDeliveryMethod('PICKUP')}
+                  onClick={() => { setDeliveryMethod('PICKUP'); setError(null); }}
                   className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-semibold transition-all ${
                     deliveryMethod === 'PICKUP'
                       ? 'border-primary bg-primary/5 text-primary'
@@ -332,7 +337,7 @@ const CartPage = () => {
               )}
               <button
                 type='button'
-                onClick={() => setDeliveryMethod('DELIVERY')}
+                onClick={() => { setDeliveryMethod('DELIVERY'); setError(null); }}
                 className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-semibold transition-all ${
                   deliveryMethod === 'DELIVERY'
                     ? 'border-primary bg-primary/5 text-primary'
@@ -370,15 +375,40 @@ const CartPage = () => {
                 />
               </Box>
             ) : pickupAvailable && pickupAddress ? (
-              <Box className='mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3'>
-                <p className='flex items-center gap-2 text-sm font-semibold text-emerald-700'>
-                  <Icon name='bx-map-pin' className='shrink-0 text-base' />
-                  {pickupAddress}
-                </p>
-                <p className='mt-1 text-xs text-emerald-600'>
-                  Recogerás tu pedido en esta dirección. Coordina el horario con la tienda.
-                </p>
-              </Box>
+              (() => {
+                const coordMatch = pickupAddress.match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/);
+                if (coordMatch) {
+                  const mapsUrl = `https://maps.google.com/?q=${coordMatch[1]},${coordMatch[2]}`;
+                  return (
+                    <Box className='mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3'>
+                      <a
+                        href={mapsUrl}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='flex items-center gap-2 text-sm font-semibold text-emerald-700 hover:underline'
+                      >
+                        <Icon name='bx-map-pin' className='shrink-0 text-base' />
+                        Ver punto de recogida en mapa
+                        <Icon name='bx-link-external' className='text-xs' />
+                      </a>
+                      <p className='mt-1 text-xs text-emerald-600'>
+                        Coordina el horario de recogida directamente con la tienda.
+                      </p>
+                    </Box>
+                  );
+                }
+                return (
+                  <Box className='mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3'>
+                    <p className='flex items-center gap-2 text-sm font-semibold text-emerald-700'>
+                      <Icon name='bx-map-pin' className='shrink-0 text-base' />
+                      {pickupAddress}
+                    </p>
+                    <p className='mt-1 text-xs text-emerald-600'>
+                      Recogerás tu pedido en esta dirección. Coordina el horario con la tienda.
+                    </p>
+                  </Box>
+                );
+              })()
             ) : null}
           </Box>
 
@@ -466,12 +496,6 @@ const CartPage = () => {
               </Box>
             ) : null}
 
-            {success ? (
-              <Box className='mt-4 flex items-start gap-2 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700'>
-                <Icon name='bx-check-circle' className='mt-0.5 flex-shrink-0 text-base' />
-                {success}
-              </Box>
-            ) : null}
 
             <Button
               type='button'
@@ -502,7 +526,7 @@ const CartPage = () => {
 
       {/* Payment panel — shown after successful order creation */}
       {createdOrder ? (
-        <Box className='surface-elevated rounded-2xl p-4 sm:rounded-[1.75rem] sm:p-6'>
+        <Box ref={paymentPanelRef} className='surface-elevated rounded-2xl p-4 sm:rounded-[1.75rem] sm:p-6'>
           {/* Header */}
           <Box className='mb-4 flex items-center gap-3'>
             <Box className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100'>
@@ -513,7 +537,12 @@ const CartPage = () => {
                 ¡Pedido creado!
               </Typography>
               <Typography className='text-xs text-neutral-dark/55'>
-                #{createdOrder.id.slice(0, 8).toUpperCase()} — Ahora envía tu comprobante de pago
+                #{createdOrder.id.slice(0, 8).toUpperCase()}
+                {paymentSubmitted
+                  ? ' — Comprobante enviado'
+                  : paymentSkipped
+                  ? ' — Pedido en espera'
+                  : ' — Ahora envía tu comprobante de pago'}
               </Typography>
             </Box>
           </Box>
@@ -538,14 +567,32 @@ const CartPage = () => {
 
           {/* Done states */}
           {paymentSubmitted ? (
-            <Box className='flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700'>
-              <Icon name='bx-check-circle' className='text-base' />
-              Comprobante enviado. La tienda verificará tu pago pronto.
+            <Box className='space-y-3'>
+              <Box className='flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700'>
+                <Icon name='bx-check-circle' className='text-base' />
+                Comprobante enviado. La tienda verificará tu pago pronto.
+              </Box>
+              <Link
+                to={ROUTES.PUBLIC.MY_ORDERS}
+                className='flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white transition hover:opacity-90'
+              >
+                <Icon name='bx-list-ul' className='text-base' />
+                Ver mis pedidos
+              </Link>
             </Box>
           ) : paymentSkipped ? (
-            <Box className='flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700'>
-              <Icon name='bx-time' className='text-base' />
-              Pedido en espera. Tienes 5 días para enviar tu comprobante desde "Mis pedidos".
+            <Box className='space-y-3'>
+              <Box className='flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700'>
+                <Icon name='bx-time' className='text-base' />
+                Pedido en espera. Tienes 5 días para enviar tu comprobante desde "Mis pedidos".
+              </Box>
+              <Link
+                to={ROUTES.PUBLIC.MY_ORDERS}
+                className='flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white transition hover:opacity-90'
+              >
+                <Icon name='bx-list-ul' className='text-base' />
+                Ver mis pedidos
+              </Link>
             </Box>
           ) : (
             <Box className='space-y-3'>

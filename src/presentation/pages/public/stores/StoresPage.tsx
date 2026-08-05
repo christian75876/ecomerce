@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { usePublicStores } from '@/application/useCases/stores/usePublicStores';
 import { ROUTES } from '@/shared/constants/routes';
@@ -45,6 +46,20 @@ const StoresPage = () => {
 
   return (
     <div className='space-y-6 animate-fade-up'>
+      <Helmet>
+        <title>Tiendas disponibles — Merku</title>
+        <meta name='description' content='Explora todas las tiendas y restaurantes disponibles en Merku. Encuentra productos locales y realiza tu pedido.' />
+        <link rel='canonical' href={`${import.meta.env.VITE_APP_URL ?? ''}/stores`} />
+        <meta property='og:type' content='website' />
+        <meta property='og:site_name' content='Merku' />
+        <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/stores`} />
+        <meta property='og:title' content='Tiendas disponibles — Merku' />
+        <meta property='og:description' content='Explora todas las tiendas y restaurantes disponibles en Merku.' />
+        <meta property='og:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.svg`} />
+        <meta name='twitter:card' content='summary_large_image' />
+        <meta name='twitter:title' content='Tiendas disponibles — Merku' />
+        <meta name='twitter:description' content='Explora todas las tiendas y restaurantes disponibles en Merku.' />
+      </Helmet>
       {/* Header */}
       <div className='gradient-hero relative overflow-hidden rounded-3xl px-6 py-6 text-white shadow-lg sm:px-10'>
         <div className='pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/5' aria-hidden='true' />

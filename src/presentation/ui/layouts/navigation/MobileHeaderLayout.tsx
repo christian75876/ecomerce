@@ -213,9 +213,9 @@ const MobileHeaderLayout = () => {
                         <Box className='min-w-0 flex-1'>
                           <p className='text-sm font-semibold text-slate-800'>Nuevo pedido · {n.itemCount} {n.itemCount === 1 ? 'artículo' : 'artículos'}</p>
                           <p className='mt-0.5 truncate text-xs text-slate-500'>{n.customerName} · {formatCurrencyCOP(n.total)}</p>
-                          {n.deliveryMethod ? (
-                            <p className='mt-0.5 text-[11px] text-slate-400'>{n.deliveryMethod === 'DELIVERY' ? '🚗 Domicilio' : '🏪 Recogida en tienda'}</p>
-                          ) : null}
+                          <p className='mt-0.5 text-[11px] text-slate-400'>
+                            {n.deliveryMethod === 'DELIVERY' ? '🚗 Domicilio' : n.deliveryMethod === 'PICKUP' ? '🏪 Recogida en tienda' : '📍 Sin entrega especificada'}
+                          </p>
                           <p className='mt-1 text-[11px] text-slate-400'>{timeAgo(n.createdAt)}</p>
                         </Box>
                         {!n.read ? (

@@ -22,8 +22,7 @@ const PaginationControls = ({
   return (
     <Box className='mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
       <Typography className='text-sm text-neutral-dark/65'>
-        {totalItems} registros · página {currentPage} de {totalPages} · {itemsPerPage}{' '}
-        por página
+        {loading ? 'Cargando...' : `${totalItems} ${totalItems === 1 ? 'registro' : 'registros'} · página ${currentPage} de ${totalPages} · ${itemsPerPage} por página`}
       </Typography>
 
       <Box className='flex items-center gap-3'>

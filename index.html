@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Merku — Gestión de tienda, inventario y ventas</title>
     <meta name="description" content="Plataforma integral para gestionar tu tienda online: catálogo, inventario, pedidos, POS, caja y analítica en un solo panel." />
+    <meta name="keywords" content="marketplace Colombia, tiendas online, vender en línea, gestión de inventario, punto de venta, POS, catálogo digital, Merku" />
+    <meta name="author" content="Merku" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="%VITE_APP_URL%/" />
     <meta name="theme-color" content="#f97316" />
 
     <!-- PWA (manifest injected by VitePWA at build time as manifest.webmanifest) -->
@@ -26,17 +30,30 @@
     <meta property="og:url"         content="%VITE_APP_URL%/" />
     <meta property="og:title"       content="Merku — Marketplace y gestión de tienda" />
     <meta property="og:description" content="Encuentra productos de tiendas locales o gestiona tu propio negocio: catálogo, inventario, pedidos, POS y más desde un solo panel." />
-    <meta property="og:image"       content="%VITE_APP_URL%/icons/icon-512x512.png" />
-    <meta property="og:image:width"  content="512" />
-    <meta property="og:image:height" content="512" />
-    <meta property="og:image:alt"   content="Logo de Merku" />
+    <meta property="og:image"       content="%VITE_APP_URL%/og-image.svg" />
+    <meta property="og:image:width"  content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt"   content="Merku — Tu mercado local, en un solo lugar" />
 
     <!-- Twitter / X Card -->
-    <meta name="twitter:card"        content="summary" />
+    <meta name="twitter:card"        content="summary_large_image" />
     <meta name="twitter:title"       content="Merku — Marketplace y gestión de tienda" />
     <meta name="twitter:description" content="Encuentra productos de tiendas locales o gestiona tu propio negocio desde un solo panel." />
-    <meta name="twitter:image"       content="%VITE_APP_URL%/icons/icon-512x512.png" />
-    <meta name="twitter:image:alt"   content="Logo de Merku" />
+    <meta name="twitter:image"       content="%VITE_APP_URL%/og-image.svg" />
+    <meta name="twitter:image:alt"   content="Merku — Tu mercado local, en un solo lugar" />
+
+    <!-- Structured data — Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Merku",
+      "url": "%VITE_APP_URL%",
+      "logo": "%VITE_APP_URL%/icons/icon-512x512.png",
+      "description": "Marketplace y plataforma de gestión de tiendas locales en Colombia.",
+      "sameAs": []
+    }
+    </script>
 
     <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

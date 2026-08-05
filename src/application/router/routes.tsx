@@ -111,6 +111,12 @@ const AdvertisingPage = lazy(
 const SalesHistoryPage = lazy(
   () => import('@presentation/pages/private/sales/SalesHistoryPage')
 );
+const TermsPage = lazy(
+  () => import('@presentation/pages/public/legal/TermsPage')
+);
+const PrivacyPage = lazy(
+  () => import('@presentation/pages/public/legal/PrivacyPage')
+);
 
 export type AppRoute = RouteObject & {
   path: string;
@@ -204,6 +210,17 @@ export const routes: AppRoute[] = [
     path: ROUTES.PUBLIC.PRODUCT_DETAILS,
     element: <ProductDetailPage />,
     layout: DashboardLayout,
+    publicOnly: false
+  },
+
+  {
+    path: ROUTES.PUBLIC.TERMS,
+    element: <TermsPage />,
+    publicOnly: false
+  },
+  {
+    path: ROUTES.PUBLIC.PRIVACY,
+    element: <PrivacyPage />,
     publicOnly: false
   },
 

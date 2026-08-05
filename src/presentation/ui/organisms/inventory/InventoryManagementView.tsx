@@ -763,11 +763,11 @@ export const InventoryManagementView = ({
                       <Box>
                         <Typography variant='h3'>{batch.product.name}</Typography>
                         <Typography className='text-sm text-neutral-dark/65'>
-                          Lote: {batch.batchCode || 'Sin código'} · {batch.product.sku}
+                          Lote: {batch.batchCode || 'Sin código'}
                         </Typography>
                       </Box>
                       <span className='rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary'>
-                        {batch.status}
+                        {{ ACTIVE: 'Activo', DEPLETED: 'Agotado', EXPIRED: 'Vencido' }[batch.status as string] ?? batch.status}
                       </span>
                     </Box>
                     <Typography className='mt-2 text-sm text-neutral-dark/70'>
@@ -822,7 +822,7 @@ export const InventoryManagementView = ({
                         {movement.product.name}
                       </Typography>
                       <span className='rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary'>
-                        {movement.movementType}
+                        {{ IN: 'Ingreso', OUT: 'Salida', ADJUSTMENT: 'Ajuste', SALE: 'Venta', ORDER: 'Pedido', RETURN: 'Devolución' }[movement.movementType as string] ?? movement.movementType}
                       </span>
                     </Box>
                     <Typography className='mt-2 text-sm text-neutral-dark/70'>

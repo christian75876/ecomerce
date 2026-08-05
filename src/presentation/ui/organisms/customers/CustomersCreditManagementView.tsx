@@ -1,4 +1,5 @@
 import { ICustomer, ICustomerLedgerEntry } from '@/application/dtos/customers/response/CustomerResponse';
+import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
@@ -92,7 +93,7 @@ export const CustomersCreditManagementView = ({
             Cartera total
           </Typography>
           <Typography variant='h2' className='mt-2'>
-            ${totalPortfolio.toFixed(2)}
+            {formatCurrencyCOP(totalPortfolio)}
           </Typography>
         </Box>
       </Box>
@@ -145,7 +146,7 @@ export const CustomersCreditManagementView = ({
                       Saldo actual
                     </Typography>
                     <Typography className='mt-1 font-semibold'>
-                      ${Number(customer.creditBalance).toFixed(2)}
+                      {formatCurrencyCOP(Number(customer.creditBalance))}
                     </Typography>
                   </Box>
                   <Box className='rounded-2xl bg-background px-4 py-3'>
@@ -153,7 +154,7 @@ export const CustomersCreditManagementView = ({
                       Límite
                     </Typography>
                     <Typography className='mt-1 font-semibold'>
-                      ${Number(customer.creditLimit ?? 0).toFixed(2)}
+                      {formatCurrencyCOP(Number(customer.creditLimit ?? 0))}
                     </Typography>
                   </Box>
                 </Box>
@@ -193,7 +194,7 @@ export const CustomersCreditManagementView = ({
                   {selectedCustomer.firstName} {selectedCustomer.lastName}
                 </Typography>
                 <Typography className='mt-1 text-sm text-neutral-dark/65'>
-                  Límite ${Number(selectedCustomer.creditLimit ?? 0).toFixed(2)} · Saldo ${Number(selectedCustomer.creditBalance).toFixed(2)}
+                  Límite {formatCurrencyCOP(Number(selectedCustomer.creditLimit ?? 0))} · Saldo {formatCurrencyCOP(Number(selectedCustomer.creditBalance))}
                 </Typography>
               </Box>
               <Box className='mt-5 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]'>
@@ -250,7 +251,7 @@ export const CustomersCreditManagementView = ({
                           ? 'bg-emerald-100 text-emerald-700'
                           : 'bg-amber-100 text-amber-700'
                       }`}>
-                        ${Number(entry.amount).toFixed(2)}
+                        {formatCurrencyCOP(Number(entry.amount))}
                       </span>
                     </Box>
                     <Typography className='mt-2 text-sm text-neutral-dark/65'>

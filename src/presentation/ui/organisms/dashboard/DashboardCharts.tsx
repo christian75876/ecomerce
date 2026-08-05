@@ -16,6 +16,17 @@ import {
 import Card from '@atoms/card/SimpleCard';
 import Box from '@atoms/box/SimpleBox';
 import Typography from '@atoms/typography/SimpleTypography';
+import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
+
+const copAxisTick = (value: number) =>
+  new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+    notation: 'compact',
+  }).format(value);
+
+const copTooltipFormatter = (value: number) => [formatCurrencyCOP(value), undefined];
 import {
   IDashboardChannelComparison,
   IDashboardInventoryFlowPoint,
@@ -57,8 +68,8 @@ export const SalesOverviewChart = ({ data }: { data: IDashboardSalesPoint[] }) =
         </defs>
         <CartesianGrid strokeDasharray='3 3' stroke='#e5e7eb' />
         <XAxis dataKey='label' tick={{ fill: '#475569', fontSize: 12 }} />
-        <YAxis tick={{ fill: '#475569', fontSize: 12 }} />
-        <Tooltip />
+        <YAxis tick={{ fill: '#475569', fontSize: 12 }} tickFormatter={copAxisTick} width={80} />
+        <Tooltip formatter={copTooltipFormatter} />
         <Legend />
         <Area type='monotone' dataKey='total' stroke='#f97316' fill='url(#salesTotalGradient)' strokeWidth={3} name='Total' />
         <Area type='monotone' dataKey='pos' stroke='#0f766e' fillOpacity={0} strokeWidth={2} name='POS' />
@@ -76,14 +87,14 @@ export const TopProductsChart = ({ data }: { data: IDashboardTopProduct[] }) => 
     <ResponsiveContainer width='100%' height='100%'>
       <BarChart data={data} layout='vertical' margin={{ left: 24 }}>
         <CartesianGrid strokeDasharray='3 3' stroke='#e5e7eb' />
-        <XAxis type='number' tick={{ fill: '#475569', fontSize: 12 }} />
+        <XAxis type='number' tick={{ fill: '#475569', fontSize: 12 }} tickFormatter={copAxisTick} width={80} />
         <YAxis
           type='category'
           dataKey='name'
           width={120}
           tick={{ fill: '#475569', fontSize: 12 }}
         />
-        <Tooltip />
+        <Tooltip formatter={copTooltipFormatter} />
         <Bar dataKey='revenue' radius={[0, 8, 8, 0]} fill='#f97316' />
       </BarChart>
     </ResponsiveContainer>
@@ -131,11 +142,16 @@ export const ChannelComparisonChart = ({
       <BarChart data={data}>
         <CartesianGrid strokeDasharray='3 3' stroke='#e5e7eb' />
         <XAxis dataKey='channel' tick={{ fill: '#475569', fontSize: 12 }} />
-        <YAxis tick={{ fill: '#475569', fontSize: 12 }} />
-        <Tooltip />
+        <YAxis yAxisId='left' tick={{ fill: '#475569', fontSize: 12 }} tickFormatter={copAxisTick} width={80} />
+        <YAxis yAxisId='right' orientation='right' tick={{ fill: '#1d4ed8', fontSize: 12 }} width={40} />
+        <Tooltip
+          formatter={(value: number, name: string) =>
+            name === 'Operaciones' ? [value, name] : [formatCurrencyCOP(value), name]
+          }
+        />
         <Legend />
-        <Bar dataKey='revenue' fill='#0f766e' radius={[8, 8, 0, 0]} name='Ingresos' />
-        <Bar dataKey='count' fill='#1d4ed8' radius={[8, 8, 0, 0]} name='Operaciones' />
+        <Bar yAxisId='left' dataKey='revenue' fill='#0f766e' radius={[8, 8, 0, 0]} name='Ingresos' />
+        <Bar yAxisId='right' dataKey='count' fill='#1d4ed8' radius={[8, 8, 0, 0]} name='Operaciones' />
       </BarChart>
     </ResponsiveContainer>
   </ChartCard>

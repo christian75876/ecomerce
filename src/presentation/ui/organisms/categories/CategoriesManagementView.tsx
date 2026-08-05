@@ -276,7 +276,7 @@ export const CategoriesManagementView = ({
                         className='inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary transition hover:bg-primary/20'
                       >
                         <i className='bx bx-package text-sm' aria-hidden='true' />
-                        {category.productCount ?? 0} productos
+                        {category.productCount ?? 0} {(category.productCount ?? 0) === 1 ? 'producto' : 'productos'}
                       </button>
                     </Box>
                   </Box>

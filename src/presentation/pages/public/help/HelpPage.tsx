@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants/routes';
 import { getAuthenticatedRole } from '@/shared/utils/checkIsUserAuthenticated.util';
@@ -380,6 +381,19 @@ const HelpPage = () => {
 
   return (
     <div className='space-y-6 animate-fade-up'>
+      <Helmet>
+        <title>Centro de ayuda — Merku</title>
+        <meta name='description' content='Encuentra respuestas sobre cómo usar Merku: gestión de tienda, pedidos, inventario, POS y más.' />
+        <link rel='canonical' href={`${import.meta.env.VITE_APP_URL ?? ''}/ayuda`} />
+        <meta property='og:type' content='website' />
+        <meta property='og:site_name' content='Merku' />
+        <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/ayuda`} />
+        <meta property='og:title' content='Centro de ayuda — Merku' />
+        <meta property='og:description' content='Encuentra respuestas sobre cómo usar Merku.' />
+        <meta name='twitter:card' content='summary' />
+        <meta name='twitter:title' content='Centro de ayuda — Merku' />
+        <meta name='twitter:description' content='Encuentra respuestas sobre cómo usar Merku.' />
+      </Helmet>
       {/* Hero */}
       <div className='gradient-hero relative overflow-hidden rounded-3xl px-6 py-12 text-white shadow-lg sm:px-10'>
         <div className='pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/5' aria-hidden='true' />

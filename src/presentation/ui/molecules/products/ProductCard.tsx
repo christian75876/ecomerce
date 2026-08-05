@@ -22,6 +22,7 @@ interface ProductCardProps {
   buttonStyle?: 'ROUNDED' | 'SHARP' | 'PILL';
   primaryColor?: string;
   onAddToCart: () => void;
+  addToCartLabel?: string;
 }
 
 const PLACEHOLDER =
@@ -51,6 +52,7 @@ const ProductCard = ({
   buttonStyle,
   primaryColor,
   onAddToCart,
+  addToCartLabel = 'Agregar',
 }: ProductCardProps) => {
   const imgSrc = (image ? buildAssetUrl(image) : null) ?? PLACEHOLDER;
   const numPrice = Number(price);
@@ -155,14 +157,14 @@ const ProductCard = ({
 
           <button
             type='button'
-            aria-label={`Agregar ${name} al carrito`}
+            aria-label={`${addToCartLabel} ${name}`}
             onClick={onAddToCart}
             disabled={isOutOfStock}
             className={`flex h-8 items-center gap-1 px-3 text-xs font-bold text-white shadow-sm transition-all duration-150 hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 ${customBtnStyle ? '' : 'bg-primary hover:bg-primary-dark'} ${btnClass}`}
             style={isOutOfStock ? undefined : customBtnStyle}
           >
             <i className='bx bx-plus' style={{ fontSize: 14 }} aria-hidden='true' />
-            Agregar
+            {addToCartLabel}
           </button>
         </div>
       </div>

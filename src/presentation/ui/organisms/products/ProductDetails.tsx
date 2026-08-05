@@ -45,6 +45,8 @@ const ProductDetails = () => {
       price: Number(product.price),
       imageUrl: product.imageUrl,
       maxStock: product.availableQuantity,
+      storeId: product.storeId ?? undefined,
+      storeAddressText: product.store?.addressText ?? null,
     }, qty);
     setQty(1);
     setAdded(true);
@@ -72,13 +74,37 @@ const ProductDetails = () => {
   return (
     <>
       <Helmet>
-        <title>{product.name} — Merku</title>
+        <title>{`${product.name} — Merku`}</title>
         <meta name='description' content={product.description.slice(0, 155)} />
-        <meta property='og:title' content={product.name} />
-        <meta property='og:description' content={product.description.slice(0, 155)} />
-        {product.imageUrl ? <meta property='og:image' content={product.imageUrl} /> : null}
+        <link rel='canonical' href={`${import.meta.env.VITE_APP_URL ?? ''}/product/${product.id}`} />
         <meta property='og:type' content='product' />
+        <meta property='og:site_name' content='Merku' />
+        <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/product/${product.id}`} />
+        <meta property='og:title' content={`${product.name} — Merku`} />
+        <meta property='og:description' content={product.description.slice(0, 155)} />
+        <meta property='og:image' content={product.imageUrl || `${import.meta.env.VITE_APP_URL ?? ''}/og-image.svg`} />
         <meta name='twitter:card' content='summary_large_image' />
+        <meta name='twitter:title' content={`${product.name} — Merku`} />
+        <meta name='twitter:description' content={product.description.slice(0, 155)} />
+        <meta name='twitter:image' content={product.imageUrl || `${import.meta.env.VITE_APP_URL ?? ''}/og-image.svg`} />
+        <script type='application/ld+json'>{JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: product.name,
+          description: product.description.slice(0, 500),
+          image: product.imageUrl ?? undefined,
+          sku: product.sku ?? undefined,
+          brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
+          offers: {
+            '@type': 'Offer',
+            priceCurrency: 'COP',
+            price: Number(product.price),
+            availability: product.availableQuantity > 0
+              ? 'https://schema.org/InStock'
+              : 'https://schema.org/OutOfStock',
+            url: `${import.meta.env.VITE_APP_URL ?? ''}/product/${product.id}`,
+          },
+        })}</script>
       </Helmet>
 
       <Box className='space-y-8 pb-10'>
@@ -184,6 +210,8 @@ const ProductDetails = () => {
                           price: Number(ctx.selectedVariant?.price ?? product.price),
                           imageUrl: product.imageUrl,
                           maxStock: ctx.displayedStock,
+                          storeId: product.storeId ?? undefined,
+                          storeAddressText: product.store?.addressText ?? null,
                         }, qty);
                         setQty(1);
                         setAdded(true);
@@ -320,6 +348,8 @@ const ProductDetails = () => {
                 name: rel.name,
                 price: Number(rel.price),
                 imageUrl: rel.imageUrl,
+                storeId: rel.storeId ?? undefined,
+                storeAddressText: rel.store?.addressText ?? null,
               });
             }}
           />

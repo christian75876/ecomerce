@@ -8,6 +8,7 @@ import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import SelectDropdown from '@/presentation/ui/molecules/common/SelectDropdown';
+import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import { PosGuestModal } from './PosGuestModal';
 import { PosReceiptModal } from './PosReceiptModal';
 
@@ -162,7 +163,7 @@ export const PosManagementView = ({
               value={selectedCustomerId}
               options={customers.map((c) => ({
                 value: c.id,
-                label: `${c.firstName} ${c.lastName} · saldo $${Number(c.creditBalance).toFixed(2)}`,
+                label: `${c.firstName} ${c.lastName} · saldo ${formatCurrencyCOP(c.creditBalance)}`,
               }))}
               placeholder='Selecciona cliente para crédito'
               disabled={paymentMethod !== 'CREDIT'}
@@ -186,7 +187,7 @@ export const PosManagementView = ({
                     {product.category.name} · SKU {product.sku} · {product.store?.name ?? 'Sin tienda'}
                   </Typography>
                   <Typography className="mt-2 text-lg font-bold">
-                    ${Number(product.price).toFixed(2)}
+                    {formatCurrencyCOP(product.price)}
                   </Typography>
                   <Button
                     type="button"
@@ -234,7 +235,7 @@ export const PosManagementView = ({
                         className="max-w-24"
                       />
                       <Typography className="text-sm text-neutral-dark/70">
-                        ${Number(item.product.price).toFixed(2)} c/u
+                        {formatCurrencyCOP(item.product.price)} c/u
                       </Typography>
                     </Box>
                   </Box>
@@ -247,7 +248,7 @@ export const PosManagementView = ({
                 Total · {paymentMethod === 'CREDIT' ? 'Crédito' : 'Efectivo'}
               </Typography>
               <Typography variant="h3" className="text-2xl font-bold">
-                ${total.toFixed(2)}
+                {formatCurrencyCOP(total)}
               </Typography>
             </Box>
 
@@ -273,7 +274,7 @@ export const PosManagementView = ({
                     Venta {sale.id.slice(0, 8)}
                   </Typography>
                   <Typography className="mt-1 text-sm text-neutral-dark/65">
-                    {sale.items.length} ítems · ${Number(sale.total).toFixed(2)} · {sale.paymentMethod}
+                    {sale.items.length} {sale.items.length === 1 ? 'ítem' : 'ítems'} · {formatCurrencyCOP(sale.total)} · {sale.paymentMethod === 'CREDIT' ? 'Crédito' : 'Efectivo'}
                   </Typography>
                 </Box>
               ))}

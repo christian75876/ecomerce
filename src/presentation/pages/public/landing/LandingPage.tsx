@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants/routes';
 import { ADMIN_WHATSAPP } from '@/shared/config/appContact';
@@ -370,6 +371,8 @@ const Footer = () => (
           <a href={whatsappHref} target='_blank' rel='noopener noreferrer' className='hover:text-primary'>
             Contacto
           </a>
+          <Link to={ROUTES.PUBLIC.TERMS} className='hover:text-primary'>Términos</Link>
+          <Link to={ROUTES.PUBLIC.PRIVACY} className='hover:text-primary'>Privacidad</Link>
         </div>
 
         <p className='text-xs text-slate-400'>© {new Date().getFullYear()} Merku. Hecho en Colombia 🇨🇴</p>
@@ -381,16 +384,33 @@ const Footer = () => (
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 const LandingPage = () => (
-  <div className='min-h-screen bg-white'>
-    <Navbar />
-    <Hero />
-    <Stats />
-    <HowItWorks />
-    <ForSellers />
-    <Trust />
-    <FinalCta />
-    <Footer />
-  </div>
+  <>
+    <Helmet>
+      <title>Merku — Abre tu tienda online y vende más</title>
+      <meta name='description' content='Merku es la plataforma para abrir tu tienda online, gestionar inventario, recibir pedidos y vender más. Gratis para empezar.' />
+      <link rel='canonical' href={`${import.meta.env.VITE_APP_URL ?? ''}/bienvenida`} />
+      <meta property='og:type' content='website' />
+      <meta property='og:site_name' content='Merku' />
+      <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/bienvenida`} />
+      <meta property='og:title' content='Merku — Abre tu tienda online y vende más' />
+      <meta property='og:description' content='Merku es la plataforma para abrir tu tienda online, gestionar inventario, recibir pedidos y vender más.' />
+      <meta property='og:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.svg`} />
+      <meta name='twitter:card' content='summary_large_image' />
+      <meta name='twitter:title' content='Merku — Abre tu tienda online y vende más' />
+      <meta name='twitter:description' content='Abre tu tienda, gestiona inventario y recibe pedidos con Merku.' />
+      <meta name='twitter:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.svg`} />
+    </Helmet>
+    <div className='min-h-screen bg-white'>
+      <Navbar />
+      <Hero />
+      <Stats />
+      <HowItWorks />
+      <ForSellers />
+      <Trust />
+      <FinalCta />
+      <Footer />
+    </div>
+  </>
 );
 
 export default LandingPage;
