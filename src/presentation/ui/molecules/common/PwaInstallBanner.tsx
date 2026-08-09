@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type Ref } from 'react';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -32,8 +32,8 @@ function isInStandaloneMode(): boolean {
 
 // ── iOS instructions banner ───────────────────────────────────────────────────
 
-const IosBanner = ({ onDismiss }: { onDismiss: () => void }) => (
-  <div className='fixed bottom-0 left-0 right-0 z-[9998] bg-white shadow-[0_-4px_32px_rgba(15,23,42,0.14)] sm:bottom-4 sm:left-4 sm:right-auto sm:max-w-sm sm:rounded-2xl'>
+const IosBanner = ({ bannerRef, onDismiss }: { bannerRef: Ref<HTMLDivElement>; onDismiss: () => void }) => (
+  <div ref={bannerRef} className='fixed bottom-0 left-0 right-0 z-[9998] bg-white shadow-[0_-4px_32px_rgba(15,23,42,0.14)] sm:bottom-4 sm:left-4 sm:right-auto sm:max-w-sm sm:rounded-2xl'>
     <div className='border-b border-slate-100 px-4 pb-3 pt-4'>
       <div className='flex items-start gap-3'>
         <div className='flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10'>
@@ -105,13 +105,15 @@ const IosBanner = ({ onDismiss }: { onDismiss: () => void }) => (
 // ── Android / Chrome banner ───────────────────────────────────────────────────
 
 const AndroidBanner = ({
+  bannerRef,
   onInstall,
   onDismiss,
 }: {
+  bannerRef: Ref<HTMLDivElement>;
   onInstall: () => void;
   onDismiss: () => void;
 }) => (
-  <div className='fixed bottom-0 left-0 right-0 z-[9998] flex items-center gap-3 border-t border-slate-200 bg-white px-4 py-3 shadow-xl sm:bottom-4 sm:left-4 sm:right-auto sm:max-w-sm sm:rounded-2xl sm:border'>
+  <div ref={bannerRef} className='fixed bottom-0 left-0 right-0 z-[9998] flex items-center gap-3 border-t border-slate-200 bg-white px-4 py-3 shadow-xl sm:bottom-4 sm:left-4 sm:right-auto sm:max-w-sm sm:rounded-2xl sm:border'>
     <div className='flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10'>
       <i className='bx bx-download text-xl text-primary' aria-hidden='true' />
     </div>
@@ -144,25 +146,58 @@ const PwaInstallBanner = () => {
   const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showAndroid, setShowAndroid] = useState(false);
   const [showIos, setShowIos] = useState(false);
+  const bannerRef = useRef<HTMLDivElement>(null);
+
+  // Reserva espacio al fondo de la página para que el banner (fixed) no tape
+  // contenido interactivo (precios, botones "Agregar") al final del scroll.
+  useEffect(() => {
+    if (!showAndroid && !showIos) {
+      document.body.style.paddingBottom = '';
+      return;
+    }
+    const el = bannerRef.current;
+    if (!el) return;
+    const applyPadding = () => {
+      document.body.style.paddingBottom = `${el.getBoundingClientRect().height + 16}px`;
+    };
+    applyPadding();
+    const observer = new ResizeObserver(applyPadding);
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      document.body.style.paddingBottom = '';
+    };
+  }, [showAndroid, showIos]);
 
   useEffect(() => {
     if (sessionStorage.getItem(DISMISSED_KEY)) return;
     if (isInStandaloneMode()) return; // already installed
 
+    // Pequeño retraso para no tapar de inmediato el primer producto/CTA visible al cargar la página
+    const SHOW_DELAY_MS = 2500;
+
     // iOS Safari: no beforeinstallprompt, show manual instructions
     if (isIosSafari()) {
-      setShowIos(true);
-      return;
+      const timer = setTimeout(() => setShowIos(true), SHOW_DELAY_MS);
+      return () => clearTimeout(timer);
     }
 
     // Android / Chrome / Edge: use native prompt
+    let deferredEvent: BeforeInstallPromptEvent | null = null;
+    let timer: ReturnType<typeof setTimeout> | null = null;
     const handler = (e: Event) => {
       e.preventDefault();
-      setPrompt(e as BeforeInstallPromptEvent);
-      setShowAndroid(true);
+      deferredEvent = e as BeforeInstallPromptEvent;
+      timer = setTimeout(() => {
+        setPrompt(deferredEvent);
+        setShowAndroid(true);
+      }, SHOW_DELAY_MS);
     };
     window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+      if (timer) clearTimeout(timer);
+    };
   }, []);
 
   const handleInstall = async () => {
@@ -179,8 +214,8 @@ const PwaInstallBanner = () => {
     setShowIos(false);
   };
 
-  if (showIos) return <IosBanner onDismiss={handleDismiss} />;
-  if (showAndroid) return <AndroidBanner onInstall={() => void handleInstall()} onDismiss={handleDismiss} />;
+  if (showIos) return <IosBanner bannerRef={bannerRef} onDismiss={handleDismiss} />;
+  if (showAndroid) return <AndroidBanner bannerRef={bannerRef} onInstall={() => void handleInstall()} onDismiss={handleDismiss} />;
   return null;
 };
 

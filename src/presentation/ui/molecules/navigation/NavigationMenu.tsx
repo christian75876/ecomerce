@@ -65,6 +65,7 @@ const adminNavGroups = [
 const publicNavItems = [
   { label: 'Productos', path: ROUTES.PUBLIC.HOME, icon: 'bx-shopping-bag' },
   { label: 'Tiendas', path: ROUTES.PUBLIC.STORES, icon: 'bx-store' },
+  { label: 'Restaurantes', path: `${ROUTES.PUBLIC.STORES}?type=RESTAURANT`, icon: 'bx-restaurant' },
   { label: 'Mapa', path: ROUTES.PUBLIC.STORE_MAP, icon: 'bx-map-alt' },
   { label: 'Mis pedidos', path: ROUTES.PUBLIC.MY_ORDERS, icon: 'bx-receipt' },
 ];

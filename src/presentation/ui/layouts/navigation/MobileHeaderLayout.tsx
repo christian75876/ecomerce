@@ -79,6 +79,7 @@ const publicPrimaryNavItems = [
 ];
 
 const publicMoreNavItems = [
+  { label: 'Restaurantes', path: `${ROUTES.PUBLIC.STORES}?type=RESTAURANT`, icon: 'bx-restaurant' },
   { label: 'Favoritos',   path: ROUTES.PUBLIC.FAVORITES,   icon: 'bx-heart'       },
   { label: 'Mis pedidos', path: ROUTES.PUBLIC.MY_ORDERS,   icon: 'bx-receipt'     },
   { label: 'Entrar',      path: ROUTES.PUBLIC.LOGIN,        icon: 'bx-user'        },

@@ -8,6 +8,7 @@ export interface CartItem {
   quantity: number;
   storeId?: string;
   storeAddressText?: string | null;
+  storeDeliveryOptions?: 'DELIVERY' | 'PICKUP' | 'BOTH';
   maxStock?: number;
 }
 

@@ -3,21 +3,38 @@ import { IProduct } from '@/application/dtos/products/response/ProductResponse';
 import ProductBody from '@/presentation/ui/organisms/products/ProductBody';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import { userPreferences } from '@/shared/utils/userPreferences';
+import { CatalogSortOption } from '@/application/useCases/products/usePublicCatalog';
 
-type SortOption = 'newest' | 'price_asc' | 'price_desc' | 'name_asc';
-
-const SORT_OPTIONS: { value: SortOption; label: string; icon: string }[] = [
+const SORT_OPTIONS: { value: CatalogSortOption; label: string; icon: string }[] = [
   { value: 'newest',     label: 'Más nuevos',              icon: 'bx-time'         },
   { value: 'price_asc',  label: 'Precio: menor a mayor',   icon: 'bx-trending-up'  },
   { value: 'price_desc', label: 'Precio: mayor a menor',   icon: 'bx-trending-down'},
   { value: 'name_asc',   label: 'Nombre A–Z',              icon: 'bx-sort-a-z'     },
 ];
 
+function getSearchAffinityScore(product: IProduct): number {
+  const terms = userPreferences.getRecentSearches();
+  if (terms.length === 0) return 0;
+  const haystack = `${product.name} ${(product.tags ?? []).join(' ')}`.toLowerCase();
+  return terms.reduce((score, term) => (haystack.includes(term) ? score + 1 : score), 0);
+}
+
 interface HomeCatalogSectionProps {
   products: IProduct[];
+  sponsoredProducts?: IProduct[];
   search: string;
   selectedCategoryId: string;
+  sortBy: CatalogSortOption;
+  onSortChange: (value: CatalogSortOption | null) => void;
+  minPrice: number | null;
+  maxPrice: number | null;
+  onPriceRangeChange: (min: number | null, max: number | null) => void;
+  onlyAvailable: boolean;
+  onOnlyAvailableChange: (value: boolean) => void;
   loading: boolean;
+  loadingMore?: boolean;
+  hasMore?: boolean;
+  onLoadMore?: () => void;
   error: string | null;
   onSearchChange: (value: string) => void;
   onCategoryChange: (value: string) => void;
@@ -26,25 +43,62 @@ interface HomeCatalogSectionProps {
 
 const HomeCatalogSection = ({
   products,
+  sponsoredProducts = [],
   search,
   selectedCategoryId,
+  sortBy,
+  onSortChange,
+  minPrice,
+  maxPrice,
+  onPriceRangeChange,
+  onlyAvailable,
+  onOnlyAvailableChange,
   loading,
+  loadingMore = false,
+  hasMore = false,
+  onLoadMore,
   error,
   onSearchChange,
   onCategoryChange,
   onAddToCart,
 }: HomeCatalogSectionProps) => {
-  const [sortBy, setSortBy]             = useState<SortOption>('newest');
   const [sortOpen, setSortOpen]         = useState(false);
   const [filtersOpen, setFiltersOpen]   = useState(false);
-  const [minPriceInput, setMinPriceInput] = useState('');
-  const [maxPriceInput, setMaxPriceInput] = useState('');
-  const [minPrice, setMinPrice]         = useState<number | null>(null);
-  const [maxPrice, setMaxPrice]         = useState<number | null>(null);
-  const [onlyAvailable, setOnlyAvailable] = useState(false);
-
+  const [minPriceInput, setMinPriceInput] = useState(minPrice !== null ? String(minPrice) : '');
+  const [maxPriceInput, setMaxPriceInput] = useState(maxPrice !== null ? String(maxPrice) : '');
+  const [searchSuggestionsOpen, setSearchSuggestionsOpen] = useState(false);
+  const scrollSentinelRef = useRef<HTMLDivElement>(null);
+  const searchBoxRef = useRef<HTMLDivElement>(null);
   const sortRef    = useRef<HTMLDivElement>(null);
   const filtersRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!searchSuggestionsOpen) return;
+    const h = (e: MouseEvent) => { if (!searchBoxRef.current?.contains(e.target as Node)) setSearchSuggestionsOpen(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [searchSuggestionsOpen]);
+
+  const recentSearches = userPreferences.getRecentSearches();
+  const searchSuggestions = search.trim()
+    ? recentSearches.filter((term) => term.includes(search.trim().toLowerCase()) && term !== search.trim().toLowerCase())
+    : recentSearches;
+
+  useEffect(() => {
+    if (!scrollSentinelRef.current || !hasMore || !onLoadMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          onLoadMore();
+        }
+      },
+      { rootMargin: '320px 0px' },
+    );
+
+    observer.observe(scrollSentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, onLoadMore]);
 
   useEffect(() => {
     if (!sortOpen) return;
@@ -71,17 +125,22 @@ const HomeCatalogSection = ({
   // ────────────────────────────────────────────────────────────────────────────
 
   const applyPriceFilter = () => {
-    setMinPrice(minPriceInput !== '' ? Number(minPriceInput) : null);
-    setMaxPrice(maxPriceInput !== '' ? Number(maxPriceInput) : null);
+    onPriceRangeChange(
+      minPriceInput !== '' ? Number(minPriceInput) : null,
+      maxPriceInput !== '' ? Number(maxPriceInput) : null,
+    );
+  };
+
+  const clearPriceFilter = () => {
+    setMinPriceInput('');
+    setMaxPriceInput('');
+    onPriceRangeChange(null, null);
   };
 
   const clearAllFilters = () => {
-    setMinPriceInput('');
-    setMaxPriceInput('');
-    setMinPrice(null);
-    setMaxPrice(null);
-    setOnlyAvailable(false);
-    setSortBy('newest');
+    clearPriceFilter();
+    onOnlyAvailableChange(false);
+    onSortChange(null);
     handleCategoryChange('');
     onSearchChange('');
   };
@@ -94,41 +153,28 @@ const HomeCatalogSection = ({
 
   const AD_INTERVAL = 4; // insert 1 sponsored product after every N organic products
 
+  // Price/availability/search/category filters and the explicit sort
+  // (price_asc, price_desc, name_asc) are all applied server-side now — this
+  // only handles: (a) excluding sponsored picks from the organic list so they
+  // don't render twice, and (b) the affinity boost, which stays client-side
+  // because the preference signal itself lives in localStorage, not the API.
   const { processedProducts, sponsoredIds } = useMemo(() => {
-    let list = [...products];
+    const sponsoredPoolIds = new Set(sponsoredProducts.map((p) => p.id));
+    const organic = products.filter((p) => !sponsoredPoolIds.has(p.id));
+    const sponsored = sponsoredProducts;
 
-    // ── 1. Filters ───────────────────────────────────────────────────────────
-    if (onlyAvailable) list = list.filter((p) => p.availableQuantity > 0);
-    if (minPrice !== null) list = list.filter((p) => Number(p.price) >= minPrice);
-    if (maxPrice !== null) list = list.filter((p) => Number(p.price) <= maxPrice);
+    const affinityScore = (product: IProduct) =>
+      userPreferences.getCategoryScore(product.categoryId) + getSearchAffinityScore(product);
 
-    // ── 2. Separate organic vs sponsored ────────────────────────────────────
-    const organic   = list.filter((p) => !p.store?.isPremiumAdvertiser);
-    const sponsored = list.filter((p) =>  p.store?.isPremiumAdvertiser);
-
-    // ── 3. Sort each pool ───────────────────────────────────────────────────
-    const sortPool = (pool: IProduct[]) => {
-      if (sortBy === 'price_asc')   pool.sort((a, b) => Number(a.price) - Number(b.price));
-      else if (sortBy === 'price_desc') pool.sort((a, b) => Number(b.price) - Number(a.price));
-      else if (sortBy === 'name_asc')   pool.sort((a, b) => a.name.localeCompare(b.name));
-      else if (userPreferences.hasPreferences()) {
-        // Default: affinity boost — preferred categories float up within each pool
-        pool.sort((a, b) =>
-          userPreferences.getCategoryScore(b.categoryId) -
-          userPreferences.getCategoryScore(a.categoryId)
-        );
-      }
-      return pool;
-    };
-
-    const sortedOrganic   = sortPool(organic);
+    const sortedOrganic = [...organic];
+    if (sortBy === 'newest' && (userPreferences.hasPreferences() || userPreferences.hasSearchHistory())) {
+      // Default order + personalization signal → preferred categories/past searches float up
+      sortedOrganic.sort((a, b) => affinityScore(b) - affinityScore(a));
+    }
     // Sponsored pool always sorted by affinity (most relevant ad first, regardless of explicit sort)
-    const sortedSponsored = sponsored.sort((a, b) =>
-      userPreferences.getCategoryScore(b.categoryId) -
-      userPreferences.getCategoryScore(a.categoryId)
-    );
+    const sortedSponsored = [...sponsored].sort((a, b) => affinityScore(b) - affinityScore(a));
 
-    // ── 4. Interleave: 1 sponsored after every AD_INTERVAL organic ──────────
+    // ── Interleave: 1 sponsored after every AD_INTERVAL organic ──────────
     const result: IProduct[] = [];
     let adIdx = 0;
     sortedOrganic.forEach((product, i) => {
@@ -144,7 +190,7 @@ const HomeCatalogSection = ({
 
     const ids = new Set(sortedSponsored.map((p) => p.id));
     return { processedProducts: result, sponsoredIds: [...ids] };
-  }, [products, sortBy, minPrice, maxPrice, onlyAvailable]);
+  }, [products, sponsoredProducts, sortBy]);
 
   const priceFilterActive = minPrice !== null || maxPrice !== null;
 
@@ -166,28 +212,50 @@ const HomeCatalogSection = ({
           <h1 className='mb-3 text-2xl font-extrabold tracking-tight'>
             Encuentra lo que necesitas
           </h1>
-          <div className='flex items-center gap-2 rounded-2xl bg-white/15 px-4 py-2.5 ring-1 ring-white/20 backdrop-blur-sm transition-all focus-within:bg-white/20 focus-within:ring-white/40'>
-            <i
-              className='bx bx-search text-xl text-white/70'
-              aria-hidden='true'
-            />
-            <input
-              type='text'
-              value={search}
-              onChange={e => onSearchChange(e.target.value)}
-              placeholder='Buscar productos...'
-              className='flex-1 bg-transparent text-sm font-medium text-white placeholder:text-white/50 focus:outline-none'
-              aria-label='Buscar productos'
-            />
-            {search ? (
-              <button
-                type='button'
-                onClick={() => onSearchChange('')}
-                className='text-white/60 hover:text-white'
-                aria-label='Limpiar búsqueda'
-              >
-                <i className='bx bx-x text-lg' aria-hidden='true' />
-              </button>
+          <div ref={searchBoxRef} className='relative'>
+            <div className='flex items-center gap-2 rounded-2xl bg-white/15 px-4 py-2.5 ring-1 ring-white/20 backdrop-blur-sm transition-all focus-within:bg-white/20 focus-within:ring-white/40'>
+              <i
+                className='bx bx-search text-xl text-white/70'
+                aria-hidden='true'
+              />
+              <input
+                type='text'
+                value={search}
+                onChange={e => onSearchChange(e.target.value)}
+                onFocus={() => setSearchSuggestionsOpen(true)}
+                placeholder='Buscar productos...'
+                className='flex-1 bg-transparent text-sm font-medium text-white placeholder:text-white/50 focus:outline-none'
+                aria-label='Buscar productos'
+              />
+              {search ? (
+                <button
+                  type='button'
+                  onClick={() => onSearchChange('')}
+                  className='text-white/60 hover:text-white'
+                  aria-label='Limpiar búsqueda'
+                >
+                  <i className='bx bx-x text-lg' aria-hidden='true' />
+                </button>
+              ) : null}
+            </div>
+
+            {searchSuggestionsOpen && searchSuggestions.length > 0 ? (
+              <div className='absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-xl'>
+                <p className='px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400'>
+                  Búsquedas recientes
+                </p>
+                {searchSuggestions.map((term) => (
+                  <button
+                    key={term}
+                    type='button'
+                    onClick={() => { onSearchChange(term); setSearchSuggestionsOpen(false); }}
+                    className='flex w-full items-center gap-3 px-4 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900'
+                  >
+                    <i className='bx bx-history text-base text-slate-400' aria-hidden='true' />
+                    {term}
+                  </button>
+                ))}
+              </div>
             ) : null}
           </div>
         </div>
@@ -247,7 +315,7 @@ const HomeCatalogSection = ({
                       key={opt.value}
                       type='button'
                       onClick={() => {
-                        setSortBy(opt.value);
+                        onSortChange(opt.value === 'newest' ? null : opt.value);
                         setSortOpen(false);
                       }}
                       className={`flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${
@@ -331,12 +399,7 @@ const HomeCatalogSection = ({
                       : `Hasta ${formatCurrencyCOP(maxPrice!)}`}
                   <button
                     type='button'
-                    onClick={() => {
-                      setMinPriceInput('');
-                      setMaxPriceInput('');
-                      setMinPrice(null);
-                      setMaxPrice(null);
-                    }}
+                    onClick={clearPriceFilter}
                     className='ml-0.5 text-primary/70 hover:text-primary'
                     aria-label='Quitar filtro de precio'
                   >
@@ -356,13 +419,13 @@ const HomeCatalogSection = ({
             <label className='flex cursor-pointer items-center gap-2.5'>
               <div
                 className={`relative h-5 w-9 rounded-full transition-colors duration-200 ${onlyAvailable ? 'bg-primary' : 'bg-slate-300'}`}
-                onClick={() => setOnlyAvailable(v => !v)}
+                onClick={() => onOnlyAvailableChange(!onlyAvailable)}
                 role='switch'
                 aria-checked={onlyAvailable}
                 tabIndex={0}
                 onKeyDown={e => {
                   if (e.key === ' ' || e.key === 'Enter')
-                    setOnlyAvailable(v => !v);
+                    onOnlyAvailableChange(!onlyAvailable);
                 }}
               >
                 <span
@@ -401,12 +464,7 @@ const HomeCatalogSection = ({
                     : `Hasta ${formatCurrencyCOP(maxPrice!)}`}
                 <button
                   type='button'
-                  onClick={() => {
-                    setMinPriceInput('');
-                    setMaxPriceInput('');
-                    setMinPrice(null);
-                    setMaxPrice(null);
-                  }}
+                  onClick={clearPriceFilter}
                   aria-label='Quitar filtro precio'
                 >
                   <i className='bx bx-x text-sm' aria-hidden='true' />
@@ -419,7 +477,7 @@ const HomeCatalogSection = ({
                 Solo disponibles
                 <button
                   type='button'
-                  onClick={() => setOnlyAvailable(false)}
+                  onClick={() => onOnlyAvailableChange(false)}
                   aria-label='Quitar filtro disponibilidad'
                 >
                   <i className='bx bx-x text-sm' aria-hidden='true' />
@@ -432,7 +490,7 @@ const HomeCatalogSection = ({
                 {SORT_OPTIONS.find(o => o.value === sortBy)?.label}
                 <button
                   type='button'
-                  onClick={() => setSortBy('newest')}
+                  onClick={() => onSortChange(null)}
                   aria-label='Quitar filtro de orden'
                 >
                   <i className='bx bx-x text-sm' aria-hidden='true' />
@@ -459,6 +517,14 @@ const HomeCatalogSection = ({
         emptyMessage='No encontramos productos para este filtro.'
         onAddToCart={handleAddToCart}
       />
+
+      {hasMore ? <div ref={scrollSentinelRef} className='h-1 w-full' /> : null}
+
+      {loadingMore ? (
+        <p className='py-4 text-center text-sm text-slate-400'>
+          Cargando más productos...
+        </p>
+      ) : null}
     </div>
   );
 };

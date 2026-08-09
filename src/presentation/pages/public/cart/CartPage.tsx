@@ -14,28 +14,45 @@ import { ROUTES } from '@/shared/constants/routes';
 import type { ICouponValidation } from '@/application/dtos/coupons/CouponDtos';
 import type { IOrder } from '@/application/dtos/orders/response/OrderResponse';
 
+const fallbackImage =
+  'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80';
+
 const CartPage = () => {
   const { items, total, updateQuantity, removeItem, clear } = useCart();
   const authenticated = isAuthenticated();
   const sessionUser = getAuthenticatedUser();
 
-  // Pickup is available only when ALL cart items are from the same store that has a physical address
+  // Pickup/delivery availability depends on what the store itself allows
+  // (deliveryOptions: DELIVERY | PICKUP | BOTH) — only checked for single-store
+  // carts, since a multi-store cart's consolidated delivery is a separate,
+  // unhandled case (not something changed here).
   const cartStoreIds = [...new Set(items.map((i) => i.storeId).filter(Boolean))];
+  const singleStoreOptions =
+    cartStoreIds.length === 1
+      ? items.find((i) => i.storeId === cartStoreIds[0])?.storeDeliveryOptions
+      : undefined;
   const pickupAvailable =
     cartStoreIds.length === 1 &&
+    singleStoreOptions !== 'DELIVERY' &&
     Boolean(items.find((i) => i.storeId === cartStoreIds[0])?.storeAddressText);
+  const deliveryAvailable = cartStoreIds.length !== 1 || singleStoreOptions !== 'PICKUP';
   const pickupAddress = pickupAvailable
     ? (items.find((i) => i.storeAddressText)?.storeAddressText ?? null)
     : null;
 
-  const [deliveryMethod, setDeliveryMethod] = useState<'DELIVERY' | 'PICKUP'>('DELIVERY');
+  const [deliveryMethod, setDeliveryMethod] = useState<'DELIVERY' | 'PICKUP'>(() =>
+    !deliveryAvailable && pickupAvailable ? 'PICKUP' : 'DELIVERY',
+  );
 
-  // Auto-switch to DELIVERY if pickup becomes unavailable (e.g. items from multiple stores)
+  // Keep the selected method valid as cart contents change (e.g. switching
+  // to a pickup-only store, or clearing a multi-store cart down to one item).
   useEffect(() => {
     if (!pickupAvailable && deliveryMethod === 'PICKUP') {
       setDeliveryMethod('DELIVERY');
+    } else if (!deliveryAvailable && deliveryMethod === 'DELIVERY') {
+      setDeliveryMethod('PICKUP');
     }
-  }, [pickupAvailable, deliveryMethod]);
+  }, [pickupAvailable, deliveryAvailable, deliveryMethod]);
   const [deliveryStreet, setDeliveryStreet] = useState('');
   const [deliveryCity, setDeliveryCity] = useState('');
   const [deliveryDepartment, setDeliveryDepartment] = useState('');
@@ -213,17 +230,11 @@ const CartPage = () => {
                   className='flex items-center gap-3 rounded-2xl border border-neutral-gray/20 bg-white p-3 transition-all hover:border-primary/20 hover:shadow-soft sm:gap-4 sm:p-4'
                 >
                   {/* Imagen */}
-                  {item.imageUrl ? (
-                    <img
-                      src={item.imageUrl}
-                      alt={item.name}
-                      className='h-12 w-12 flex-shrink-0 rounded-xl object-cover sm:h-16 sm:w-16'
-                    />
-                  ) : (
-                    <Box className='flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-neutral-100 sm:h-16 sm:w-16'>
-                      <Icon name='bx-package' className='text-xl text-neutral-gray sm:text-2xl' />
-                    </Box>
-                  )}
+                  <img
+                    src={item.imageUrl || fallbackImage}
+                    alt={item.name}
+                    className='h-12 w-12 flex-shrink-0 rounded-xl object-cover sm:h-16 sm:w-16'
+                  />
 
                   {/* Nombre + precio */}
                   <Box className='min-w-0 flex-1'>
@@ -320,7 +331,7 @@ const CartPage = () => {
                 Método de entrega
               </Typography>
             </Box>
-            <Box className={`grid gap-3 ${pickupAvailable ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            <Box className={`grid gap-3 ${pickupAvailable && deliveryAvailable ? 'grid-cols-2' : 'grid-cols-1'}`}>
               {pickupAvailable && (
                 <button
                   type='button'
@@ -335,19 +346,26 @@ const CartPage = () => {
                   Recoger en tienda
                 </button>
               )}
-              <button
-                type='button'
-                onClick={() => { setDeliveryMethod('DELIVERY'); setError(null); }}
-                className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-semibold transition-all ${
-                  deliveryMethod === 'DELIVERY'
-                    ? 'border-primary bg-primary/5 text-primary'
-                    : 'border-neutral-gray/30 text-neutral-dark/60 hover:border-primary/30'
-                }`}
-              >
-                <Icon name='bx-car' className='text-2xl' />
-                Envío a domicilio
-              </button>
+              {deliveryAvailable && (
+                <button
+                  type='button'
+                  onClick={() => { setDeliveryMethod('DELIVERY'); setError(null); }}
+                  className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 text-sm font-semibold transition-all ${
+                    deliveryMethod === 'DELIVERY'
+                      ? 'border-primary bg-primary/5 text-primary'
+                      : 'border-neutral-gray/30 text-neutral-dark/60 hover:border-primary/30'
+                  }`}
+                >
+                  <Icon name='bx-car' className='text-2xl' />
+                  Envío a domicilio
+                </button>
+              )}
             </Box>
+            {!deliveryAvailable ? (
+              <p className='mt-2 text-xs text-neutral-dark/50'>
+                Esta tienda solo ofrece recogida en tienda, no hace envíos a domicilio.
+              </p>
+            ) : null}
 
             {deliveryMethod === 'DELIVERY' ? (
               <Box className='mt-4 space-y-3'>

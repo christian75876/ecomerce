@@ -1,8 +1,11 @@
-import { ICreateReviewRequest } from '@/application/dtos/reviews/request/ReviewRequest';
+import { ICreateReviewRequest, ICreateStoreReviewRequest } from '@/application/dtos/reviews/request/ReviewRequest';
 import {
   IProductReviewsResp,
   IReviewEligibilityResp,
   IReviewResp,
+  IStoreReviewEligibilityResp,
+  IStoreReviewResp,
+  IStoreReviewsResp,
 } from '@/application/dtos/reviews/response/ReviewResponse';
 import {
   authenticatedClientHTTP,
@@ -26,7 +29,9 @@ export class ReviewsRepository {
   ): Promise<IReviewResp> {
     const formData = new FormData();
     formData.append('rating', String(payload.rating));
-    formData.append('comment', payload.comment);
+    if (payload.comment) {
+      formData.append('comment', payload.comment);
+    }
 
     payload.images?.forEach((file) => {
       formData.append('images', file);
@@ -46,6 +51,36 @@ export class ReviewsRepository {
     return ErrorHandler.handleApiErrors(() =>
       authenticatedClientHTTP.get<IReviewEligibilityResp>(
         `/products/${productId}/reviews/me`,
+      ),
+    );
+  }
+
+  // ── Store reviews ────────────────────────────────────────────────────────────
+
+  static async getStoreReviews(storeId: string): Promise<IStoreReviewsResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      publicClientHTTP.get<IStoreReviewsResp>(`/stores/${storeId}/reviews`),
+    );
+  }
+
+  static async createStoreReview(
+    storeId: string,
+    payload: ICreateStoreReviewRequest,
+  ): Promise<IStoreReviewResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.post<IStoreReviewResp>(
+        `/stores/${storeId}/reviews`,
+        payload,
+      ),
+    );
+  }
+
+  static async getMyStoreReviewEligibility(
+    storeId: string,
+  ): Promise<IStoreReviewEligibilityResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.get<IStoreReviewEligibilityResp>(
+        `/stores/${storeId}/reviews/me`,
       ),
     );
   }

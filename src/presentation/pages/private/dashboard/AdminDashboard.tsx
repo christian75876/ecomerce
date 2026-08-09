@@ -77,8 +77,11 @@ const AdminDashboard = () => {
     );
   }
 
-  const selectedStore = filters.storeId
-    ? summary.availableStores.find((s) => s.id === filters.storeId)
+  // Prefer the server's resolved storeId (it's authoritative for sellers,
+  // who are always scoped to their own store regardless of local filters).
+  const effectiveStoreId = summary.filters.storeId ?? filters.storeId;
+  const selectedStore = effectiveStoreId
+    ? summary.availableStores.find((s) => s.id === effectiveStoreId)
     : null;
 
   return (

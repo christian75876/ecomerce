@@ -36,9 +36,8 @@ const LogoWithText = ({
           className={`font-extrabold leading-tight tracking-tight text-neutral-dark ${sizeClasses[size].title}`}
         >
           {title}
-          <span className='text-primary'> Commerce</span>
         </Typography>
-        {subtitle && subtitle !== 'Commerce' ? (
+        {subtitle ? (
           <Typography
             variant='p'
             className={`text-neutral-muted ${sizeClasses[size].subtitle}`}

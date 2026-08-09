@@ -50,12 +50,24 @@ export class ProductRepository {
       params.set('sortBy', query.sortBy);
     }
 
+    if (query.seed) {
+      params.set('seed', query.seed);
+    }
+
+    if (query.sponsoredOnly) {
+      params.set('sponsoredOnly', String(query.sponsoredOnly));
+    }
+
     if (query.minPrice !== undefined) {
       params.set('minPrice', String(query.minPrice));
     }
 
     if (query.maxPrice !== undefined) {
       params.set('maxPrice', String(query.maxPrice));
+    }
+
+    if (query.onlyAvailable) {
+      params.set('onlyAvailable', String(query.onlyAvailable));
     }
 
     if (query.limit !== undefined) {

@@ -1,25 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
-
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string ?? 'http://127.0.0.1:3000/api/').replace(/\/api\/?$/, '');
+import { useEffect, useState } from 'react';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
-import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
-import { useProductReviews } from '@/application/useCases/reviews/useProductReviews';
+import { useStoreReviews } from '@/application/useCases/reviews/useStoreReviews';
 import { authSession } from '@/shared/utils/authSession';
 
-interface ProductReviewsProps {
-  productId: string;
+interface StoreReviewsProps {
+  storeId: string;
 }
 
-const ProductReviews = ({ productId }: ProductReviewsProps) => {
+const StoreReviews = ({ storeId }: StoreReviewsProps) => {
   const { reviewsData, eligibility, loading, submitting, error, createReview } =
-    useProductReviews(productId);
-  const [form, setForm] = useState({
-    rating: '5',
-    comment: '',
-    images: [] as File[],
-  });
+    useStoreReviews(storeId);
+  const [form, setForm] = useState({ rating: '5', comment: '' });
 
   const reviews = reviewsData.reviews;
   const averageRating = reviewsData.summary.averageRating;
@@ -27,21 +20,12 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
   const canSubmitReview = Boolean(authenticatedUser && eligibility?.canReview);
   const hasExistingReview = Boolean(eligibility?.review);
 
-  const imagePreviewNames = useMemo(
-    () => form.images.map((file) => file.name).join(', '),
-    [form.images],
-  );
-
   useEffect(() => {
-    if (!eligibility?.review) {
-      return;
-    }
-
-    setForm((current) => ({
-      ...current,
-      rating: String(eligibility.review?.rating ?? 5),
-      comment: eligibility.review?.comment ?? '',
-    }));
+    if (!eligibility?.review) return;
+    setForm({
+      rating: String(eligibility.review.rating),
+      comment: eligibility.review.comment ?? '',
+    });
   }, [eligibility?.review]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -50,15 +34,10 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
     const wasCreated = await createReview({
       rating: Number(form.rating),
       comment: form.comment.trim() || undefined,
-      images: form.images,
     });
 
-    if (wasCreated) {
-      setForm({
-        rating: '5',
-        comment: '',
-        images: [],
-      });
+    if (wasCreated && !hasExistingReview) {
+      setForm({ rating: '5', comment: '' });
     }
   };
 
@@ -68,10 +47,11 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
         <Box className='flex flex-wrap items-end justify-between gap-4'>
           <Box>
             <Typography variant='h2' className='text-2xl font-semibold'>
-              Reseñas
+              Reseñas de la tienda
             </Typography>
             <Typography className='mt-2 text-neutral-dark/65'>
-              Promedio {averageRating}/5 · {reviewsData.summary.totalReviews} reseñas
+              Promedio {averageRating}/5 · {reviewsData.summary.totalReviews} reseña
+              {reviewsData.summary.totalReviews === 1 ? '' : 's'}
             </Typography>
           </Box>
         </Box>
@@ -80,7 +60,7 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
           {loading ? (
             <Typography>Cargando reseñas...</Typography>
           ) : reviews.length === 0 ? (
-            <Typography>Aún no hay reseñas para este producto.</Typography>
+            <Typography>Aún no hay reseñas para esta tienda.</Typography>
           ) : (
             reviews.map((review) => (
               <Box
@@ -100,18 +80,6 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
                     {review.comment}
                   </Typography>
                 ) : null}
-                {review.images.length > 0 ? (
-                  <Box className='mt-4 grid grid-cols-2 gap-3 md:grid-cols-3'>
-                    {review.images.map((image) => (
-                      <img
-                        key={image.id}
-                        src={`${BASE_URL}${image.url}`}
-                        alt='Reseña'
-                        className='h-28 w-full rounded-xl object-cover'
-                      />
-                    ))}
-                  </Box>
-                ) : null}
               </Box>
             ))
           )}
@@ -123,7 +91,7 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
           {hasExistingReview ? 'Edita tu reseña' : 'Deja tu reseña'}
         </Typography>
         <Typography className='mt-2 text-sm text-neutral-dark/65'>
-          Solo se aceptan clientes con una compra válida del producto.
+          Solo clientes con un pedido entregado de esta tienda pueden calificarla.
         </Typography>
 
         <form onSubmit={handleSubmit} className='mt-6 space-y-4'>
@@ -133,9 +101,9 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
             </Box>
           ) : null}
 
-          {authenticatedUser && !eligibility?.hasPurchased ? (
+          {authenticatedUser && !eligibility?.hasDelivered ? (
             <Box className='rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700'>
-              Solo puedes reseñar productos que hayas comprado previamente.
+              Solo puedes reseñar tiendas de las que hayas recibido un pedido entregado.
             </Box>
           ) : null}
 
@@ -159,26 +127,8 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
               setForm((current) => ({ ...current, comment: event.target.value }))
             }
             className='min-h-28 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary'
-            placeholder='Comparte tu experiencia con este producto (opcional)'
+            placeholder='Comparte tu experiencia con esta tienda (opcional)'
           />
-
-          <Input
-            type='file'
-            accept='.jpg,.jpeg,.png,.webp'
-            multiple
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                images: Array.from(event.target.files ?? []).slice(0, 3),
-              }))
-            }
-          />
-
-          {imagePreviewNames ? (
-            <Typography className='text-sm text-neutral-dark/65'>
-              Archivos: {imagePreviewNames}
-            </Typography>
-          ) : null}
 
           {error ? (
             <Box className='rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600'>
@@ -203,4 +153,4 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
   );
 };
 
-export default ProductReviews;
+export default StoreReviews;

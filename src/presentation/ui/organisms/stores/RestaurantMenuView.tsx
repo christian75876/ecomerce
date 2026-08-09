@@ -12,6 +12,9 @@ interface RestaurantMenuViewProps {
   buttonStyle: 'ROUNDED' | 'SHARP' | 'PILL';
   primaryColor?: string;
   onAddToCart: (productId: string) => void;
+  search: string;
+  onSearchChange: (value: string) => void;
+  storeName: string;
 }
 
 const RestaurantMenuView = ({
@@ -22,6 +25,9 @@ const RestaurantMenuView = ({
   buttonStyle,
   primaryColor,
   onAddToCart,
+  search,
+  onSearchChange,
+  storeName,
 }: RestaurantMenuViewProps) => {
   const [activeCategory, setActiveCategory] = useState<string | null>(
     menuCategories.length > 0 ? menuCategories[0].id : null,
@@ -48,6 +54,25 @@ const RestaurantMenuView = ({
 
   return (
     <div className='space-y-4'>
+      {/* Search bar */}
+      {products.length > 3 || search ? (
+        <div className='flex flex-1 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm transition focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10'>
+          <i className='bx bx-search shrink-0 text-lg text-slate-400' aria-hidden='true' />
+          <input
+            type='search'
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder={`Buscar platos en ${storeName}...`}
+            className='flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none'
+          />
+          {search ? (
+            <button type='button' onClick={() => onSearchChange('')} className='shrink-0 text-slate-400 hover:text-slate-600'>
+              <i className='bx bx-x text-lg' aria-hidden='true' />
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
       {/* PDF button */}
       {menuPdfUrl ? (
         <>

@@ -3,9 +3,12 @@ export interface IProductsQuery {
   categoryId?: string;
   storeId?: string;
   active?: boolean;
-  sortBy?: 'newest' | 'price_asc' | 'price_desc' | 'name_asc';
+  sortBy?: 'newest' | 'price_asc' | 'price_desc' | 'name_asc' | 'random';
+  seed?: string;
+  sponsoredOnly?: boolean;
   minPrice?: number;
   maxPrice?: number;
+  onlyAvailable?: boolean;
   limit?: number;
   page?: number;
 }

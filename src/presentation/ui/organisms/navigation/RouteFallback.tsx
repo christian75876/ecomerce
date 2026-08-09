@@ -4,7 +4,11 @@ import Box from '@atoms/box/SimpleBox';
 import Typography from '@atoms/typography/SimpleTypography';
 import LogoWithText from '@/presentation/ui/molecules/common/LogoWithText';
 
-const RouteFallback = () => {
+interface RouteFallbackProps {
+  message?: string;
+}
+
+const RouteFallback = ({ message = 'Cargando, por favor espera' }: RouteFallbackProps) => {
   const [dotCount, setDotCount] = useState(0);
 
   // Evita la recreación innecesaria del intervalo
@@ -31,13 +35,13 @@ const RouteFallback = () => {
           ease: 'easeInOut',
         }}
       >
-        <LogoWithText title="Hot" subtitle="Ecomerce" />
+        <LogoWithText title="Merku" subtitle="" />
       </motion.div>
 
       {/* Texto optimizado */}
       <Box className="relative mt-4 w-100 text-center">
         <Typography variant="p" className="text-lg font-semibold">
-          Cargando, por favor espera {' '}
+          {message} {' '}
           <span className="inline-block w-6 text-left">{dots}</span>
         </Typography>
       </Box>

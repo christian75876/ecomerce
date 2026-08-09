@@ -61,11 +61,11 @@ const AuthContainer = () => {
             ${isRegister ? 'rotate-y-360' : 'rotate-x-0'}
           `}
         >
-          <LogoWithText title="Hot" subtitle="Ecomerce" />
+          <LogoWithText title="Merku" subtitle="" />
           <AuthHeading
             title={isRegister ? 'Crear cuenta' : 'Iniciar sesión'}
             subtitle="Bienvenido a"
-            highlight="Hot-Ecommerce!"
+            highlight="Merku!"
           />
           <CardAuth
             isRegister={isRegister}

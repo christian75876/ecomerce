@@ -11,11 +11,22 @@ import HomeProductRail from '@/presentation/ui/organisms/home/HomeProductRail';
 export const HomePage = () => {
   const {
     products,
+    sponsoredProducts,
     search,
     selectedCategoryId,
     setSearch,
     setSelectedCategoryId,
+    sortBy,
+    changeSort,
+    minPrice,
+    maxPrice,
+    setPriceRange,
+    onlyAvailable,
+    setOnlyAvailable,
     loading,
+    loadingMore,
+    hasMore,
+    loadMore,
     error,
   } = usePublicCatalog();
   const {
@@ -41,6 +52,7 @@ export const HomePage = () => {
       imageUrl: product.imageUrl,
       storeId: product.storeId ?? undefined,
       storeAddressText: product.store?.addressText ?? null,
+      storeDeliveryOptions: product.store?.deliveryOptions,
     });
     const label = product.name.length > 28 ? `${product.name.slice(0, 28)}…` : product.name;
     SnackbarUtilities.success(`${label} agregado al carrito`, 'top', 'center');
@@ -65,9 +77,20 @@ export const HomePage = () => {
       </Helmet>
       <HomeCatalogSection
         products={products}
+        sponsoredProducts={sponsoredProducts}
         search={search}
         selectedCategoryId={selectedCategoryId}
+        sortBy={sortBy}
+        onSortChange={changeSort}
+        minPrice={minPrice}
+        maxPrice={maxPrice}
+        onPriceRangeChange={setPriceRange}
+        onlyAvailable={onlyAvailable}
+        onOnlyAvailableChange={setOnlyAvailable}
         loading={loading}
+        loadingMore={loadingMore}
+        hasMore={hasMore}
+        onLoadMore={loadMore}
         error={error}
         onSearchChange={setSearch}
         onCategoryChange={setSelectedCategoryId}

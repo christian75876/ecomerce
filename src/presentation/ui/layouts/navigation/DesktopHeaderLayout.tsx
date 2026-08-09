@@ -41,7 +41,7 @@ const DesktopHeaderLayout = () => {
         {/* Logo */}
         <Box className='flex-shrink-0'>
           <Link to={authenticated && !isBuyer ? ROUTES.PRIVATE.DASHBOARD : ROUTES.PUBLIC.HOME}>
-            <LogoWithText title='Hot' subtitle='' size='sm' />
+            <LogoWithText title='Merku' subtitle='' size='sm' />
           </Link>
         </Box>
 

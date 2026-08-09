@@ -59,6 +59,7 @@ const FavoritesPage = () => {
             imageUrl: product.imageUrl,
             storeId: product.storeId ?? undefined,
             storeAddressText: product.store?.addressText ?? null,
+            storeDeliveryOptions: product.store?.deliveryOptions,
           });
           const label = product.name.length > 28 ? `${product.name.slice(0, 28)}…` : product.name;
           SnackbarUtilities.success(`${label} agregado al carrito`, 'bottom', 'right');

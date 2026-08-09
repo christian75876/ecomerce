@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { usePublicStores } from '@/application/useCases/stores/usePublicStores';
 import { ROUTES } from '@/shared/constants/routes';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
@@ -33,8 +33,14 @@ const TABS: { value: StoreTab; label: string; icon: string }[] = [
 
 const StoresPage = () => {
   const { stores, loading, error } = usePublicStores();
-  const [activeTab, setActiveTab] = useState<StoreTab>('all');
+  const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState('');
+
+  const typeParam = searchParams.get('type');
+  const activeTab: StoreTab = typeParam === 'STORE' || typeParam === 'RESTAURANT' ? typeParam : 'all';
+  const setActiveTab = (tab: StoreTab) => {
+    setSearchParams(tab === 'all' ? {} : { type: tab });
+  };
 
   const hasRestaurants = stores.some((s) => s.storeType === 'RESTAURANT');
   const hasRegularStores = stores.some((s) => s.storeType === 'STORE');
@@ -209,6 +215,13 @@ const StoresPage = () => {
                     <p className='truncate text-xs text-slate-400'>
                       {store.description || 'Ver productos disponibles'}
                     </p>
+                    {store.averageRating ? (
+                      <div className='mt-0.5 flex items-center gap-1 text-xs'>
+                        <i className='bx bxs-star text-amber-400' style={{ fontSize: 11 }} aria-hidden='true' />
+                        <span className='font-semibold text-slate-700'>{store.averageRating.toFixed(1)}</span>
+                        <span className='text-slate-400'>({store.reviewCount})</span>
+                      </div>
+                    ) : null}
                   </div>
                   <i className='bx bx-chevron-right flex-shrink-0 text-xl text-slate-300' aria-hidden='true' />
                 </div>

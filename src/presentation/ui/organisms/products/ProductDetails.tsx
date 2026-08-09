@@ -47,6 +47,7 @@ const ProductDetails = () => {
       maxStock: product.availableQuantity,
       storeId: product.storeId ?? undefined,
       storeAddressText: product.store?.addressText ?? null,
+      storeDeliveryOptions: product.store?.deliveryOptions,
     }, qty);
     setQty(1);
     setAdded(true);
@@ -212,6 +213,7 @@ const ProductDetails = () => {
                           maxStock: ctx.displayedStock,
                           storeId: product.storeId ?? undefined,
                           storeAddressText: product.store?.addressText ?? null,
+                          storeDeliveryOptions: product.store?.deliveryOptions,
                         }, qty);
                         setQty(1);
                         setAdded(true);
@@ -339,6 +341,7 @@ const ProductDetails = () => {
           </Typography>
           <ProductBody
             products={relatedProducts}
+            sponsoredIds={relatedProducts.filter((p) => p.store?.isPremiumAdvertiser).map((p) => p.id)}
             emptyMessage='No encontramos relacionados directos. Vuelve al catálogo para seguir explorando.'
             onAddToCart={(relatedProductId) => {
               const rel = relatedProducts.find((item) => item.id === relatedProductId);
@@ -350,6 +353,7 @@ const ProductDetails = () => {
                 imageUrl: rel.imageUrl,
                 storeId: rel.storeId ?? undefined,
                 storeAddressText: rel.store?.addressText ?? null,
+                storeDeliveryOptions: rel.store?.deliveryOptions,
               });
             }}
           />
