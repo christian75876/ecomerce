@@ -294,7 +294,7 @@ const StoreDetailPage = () => {
                 <span className='hidden sm:inline'>Ver en Google Maps</span>
               </a>
             </div>
-            <div style={{ height: 240 }}>
+            <div className='isolate' style={{ height: 240 }}>
               <MapContainer
                 center={[store.lat, store.lng]}
                 zoom={16}

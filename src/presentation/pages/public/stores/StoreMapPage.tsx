@@ -338,7 +338,10 @@ const StoreMapPage = () => {
         </div>
 
         {/* ── Map ── */}
-        <div className='relative min-h-0 flex-1'>
+        {/* isolate: Leaflet's internal controls use z-index:1000 by default,
+            which would otherwise bleed above the fixed mobile bottom navbar
+            (z-50). Isolating creates a local stacking context they can't escape. */}
+        <div className='relative isolate min-h-0 flex-1'>
           <MapContainer
             center={COLOMBIA}
             zoom={6}
