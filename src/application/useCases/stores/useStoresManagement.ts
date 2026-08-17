@@ -227,6 +227,22 @@ export const useStoresManagement = () => {
     }
   };
 
+  const deleteStore = async (store: IStore) => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      await StoresRepository.deleteStore(store.id);
+      if (editingId === store.id) resetForm();
+      await loadStores();
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No fue posible eliminar la tienda');
+      return false;
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return {
     isSeller,
     isDirty,
@@ -241,6 +257,7 @@ export const useStoresManagement = () => {
     startEditing,
     resetForm,
     toggleActive,
+    deleteStore,
     reload: loadStores,
   };
 };

@@ -28,6 +28,7 @@ interface StoresManagementViewProps {
   onEdit: (store: IStore) => void;
   onReset: () => void;
   onToggleActive?: (store: IStore) => void;
+  onDelete?: (store: IStore) => Promise<boolean>;
 }
 
 type BrandingTab = 'info' | 'colors' | 'style' | 'delivery' | 'location';
@@ -160,6 +161,93 @@ const ConfirmToggleModal = ({
             className={`w-full rounded-2xl py-2.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-95 ${deactivating ? 'bg-red-500' : 'bg-emerald-500'}`}
           >
             {deactivating ? 'Sí, desactivar' : 'Sí, activar'}
+          </button>
+          <button
+            type='button'
+            onClick={onCancel}
+            className='w-full rounded-2xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50'
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+};
+
+const ConfirmDeleteModal = ({
+  store,
+  error,
+  submitting,
+  onConfirm,
+  onCancel,
+}: {
+  store: IStore;
+  error: string | null;
+  submitting: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) => {
+  const [understood, setUnderstood] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
+  const canDelete = understood && confirmText.trim() === store.name.trim();
+
+  return createPortal(
+    <div
+      className='fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm'
+      onClick={onCancel}
+    >
+      <div
+        className='w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl'
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className='mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-red-100'>
+          <i className='bx bx-trash text-2xl text-red-500' aria-hidden='true' />
+        </div>
+        <h2 className='text-lg font-bold text-slate-800'>Eliminar tienda definitivamente</h2>
+        <p className='mt-2 text-sm text-slate-500'>
+          Esto borra <span className='font-semibold text-slate-700'>"{store.name}"</span>, sus productos,
+          categorías de menú, reseñas e historial de inventario. No se puede deshacer.
+          {' '}Si la tienda ya tiene pedidos, no se podrá eliminar — desactívala en su lugar.
+        </p>
+
+        <label className='mt-4 flex items-start gap-2 text-sm text-slate-600'>
+          <input
+            type='checkbox'
+            checked={understood}
+            onChange={(e) => setUnderstood(e.target.checked)}
+            className='mt-0.5 h-4 w-4 flex-shrink-0'
+          />
+          Entiendo que esta acción es permanente y no se puede deshacer.
+        </label>
+
+        <div className='mt-3'>
+          <Label htmlFor='confirm-delete-store-name'>
+            Escribe <span className='font-semibold'>{store.name}</span> para confirmar
+          </Label>
+          <input
+            id='confirm-delete-store-name'
+            autoFocus
+            value={confirmText}
+            onChange={(e) => setConfirmText(e.target.value)}
+            placeholder={store.name}
+            className='mt-1 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400'
+          />
+        </div>
+
+        {error ? (
+          <p className='mt-3 rounded-xl bg-red-50 px-3 py-2 text-xs text-red-600'>{error}</p>
+        ) : null}
+
+        <div className='mt-6 flex flex-col gap-2'>
+          <button
+            type='button'
+            onClick={onConfirm}
+            disabled={!canDelete || submitting}
+            className='w-full rounded-2xl bg-red-500 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40'
+          >
+            {submitting ? 'Eliminando…' : 'Eliminar definitivamente'}
           </button>
           <button
             type='button'
@@ -530,9 +618,11 @@ export const StoresManagementView = ({
   onEdit,
   onReset,
   onToggleActive,
+  onDelete,
 }: StoresManagementViewProps) => {
   const [activeTab, setActiveTab] = useState<BrandingTab>('info');
   const [confirmStore, setConfirmStore] = useState<IStore | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<IStore | null>(null);
   const menuCats = useMenuCategories(
     editingId && form.storeType === 'RESTAURANT' ? editingId : null,
   );
@@ -1268,6 +1358,16 @@ export const StoresManagementView = ({
                     >
                       Editar
                     </button>
+                    {onDelete ? (
+                      <button
+                        type='button'
+                        onClick={() => setDeleteTarget(store)}
+                        disabled={submitting}
+                        className='rounded-xl border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-50'
+                      >
+                        Eliminar
+                      </button>
+                    ) : null}
                   </div>
                 </Box>
               ))}
@@ -1309,6 +1409,20 @@ export const StoresManagementView = ({
             setConfirmStore(null);
           }}
           onCancel={() => setConfirmStore(null)}
+        />
+      ) : null}
+
+      {deleteTarget ? (
+        <ConfirmDeleteModal
+          store={deleteTarget}
+          error={error}
+          submitting={submitting}
+          onConfirm={async () => {
+            if (!onDelete) return;
+            const ok = await onDelete(deleteTarget);
+            if (ok) setDeleteTarget(null);
+          }}
+          onCancel={() => setDeleteTarget(null)}
         />
       ) : null}
     </Box>

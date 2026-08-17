@@ -123,6 +123,7 @@ const StoresPage = () => {
         onEdit={storesManagement.startEditing}
         onReset={storesManagement.resetForm}
         onToggleActive={storesManagement.isSeller ? undefined : storesManagement.toggleActive}
+        onDelete={storesManagement.isSeller ? undefined : storesManagement.deleteStore}
       />
 
       {pendingPath !== null ? (

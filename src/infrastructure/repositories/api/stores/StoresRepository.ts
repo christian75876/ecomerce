@@ -71,6 +71,12 @@ export class StoresRepository {
     );
   }
 
+  static async deleteStore(id: string): Promise<void> {
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.delete<void>(`/stores/${id}`),
+    );
+  }
+
   static async uploadLogo(id: string, file: File): Promise<IStoreResp> {
     const formData = new FormData();
     formData.append('image', file);
