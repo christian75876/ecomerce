@@ -11,6 +11,7 @@ import {
   isBuyerSession,
 } from '@/shared/utils/checkIsUserAuthenticated.util';
 import { ROUTES } from '@/shared/constants/routes';
+import { usePublicStores } from '@/application/useCases/stores/usePublicStores';
 
 const adminNavGroups = [
   {
@@ -77,10 +78,13 @@ const NavigationMenu = () => {
   const isAdminNavigation = isAuthenticated() && canAccessAdminPanel();
   const buyerSession = isBuyerSession();
   const isAdmin = getAuthenticatedRole() === 'admin';
+  const { stores: publicStores } = usePublicStores();
+  const hasRestaurants = publicStores.some((s) => s.storeType === 'RESTAURANT');
   const visibleAdminGroups = adminNavGroups.filter((group) => !group.adminOnly || isAdmin);
   const visiblePublicItems = publicNavItems.filter((item) => {
     if (!isAuthenticated() && item.path === ROUTES.PUBLIC.MY_ORDERS) return false;
     if (isAuthenticated() && !buyerSession && item.path === ROUTES.PUBLIC.MY_ORDERS) return false;
+    if (item.label === 'Restaurantes' && !hasRestaurants) return false;
     return true;
   });
 

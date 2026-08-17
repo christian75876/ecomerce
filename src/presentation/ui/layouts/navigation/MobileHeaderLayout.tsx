@@ -15,6 +15,7 @@ import { useCart } from '@/shared/hooks/useCart';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import { useLogout } from '@/application/useCases/auth/useLogout';
 import { authSession } from '@/shared/utils/authSession';
+import { usePublicStores } from '@/application/useCases/stores/usePublicStores';
 
 // ── Nav item definitions ──────────────────────────────────────────────────────
 
@@ -140,6 +141,8 @@ const MobileHeaderLayout = () => {
   const buyerView = isBuyerSession();
   const { handleLogout, isLoading: loggingOut } = useLogout();
   const currentUser = authSession.getUser();
+  const { stores: publicStores } = usePublicStores();
+  const hasRestaurants = publicStores.some((s) => s.storeType === 'RESTAURANT');
 
   const primaryNavItems = adminView
     ? (adminRole ? adminRolePrimaryNavItems : sellerPrimaryNavItems)
@@ -358,6 +361,7 @@ const MobileHeaderLayout = () => {
                       if (isAuthenticated() && item.path === ROUTES.PUBLIC.LOGIN) return false;
                       if (!isAuthenticated() && (item.path === ROUTES.PUBLIC.FAVORITES || item.path === ROUTES.PUBLIC.MY_ORDERS)) return false;
                       if (item.path === ROUTES.PUBLIC.MY_ORDERS && !buyerView) return false;
+                      if (item.label === 'Restaurantes' && !hasRestaurants) return false;
                       return true;
                     })}
                     onClose={closeAll}
