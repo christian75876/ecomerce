@@ -19,4 +19,4 @@ Disallow: /my-orders
 Disallow: /profile
 Disallow: /verify-email
 
-Sitemap: https://merku.co/sitemap.xml
+Sitemap: https://api.merku.co/sitemap.xml

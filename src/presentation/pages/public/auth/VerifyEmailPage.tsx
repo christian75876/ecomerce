@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useVerifyEmail } from '@/application/useCases/auth/useVerifyEmail';
 import { ROUTES } from '@/shared/constants/routes';
@@ -64,6 +65,11 @@ const VerifyEmailPage = () => {
 
   return (
     <div className='min-h-screen bg-neutral-black text-neutral-white flex items-center justify-center px-6'>
+      <Helmet>
+        <title>Verificación de correo — Merku</title>
+        <meta name='robots' content='noindex, nofollow' />
+        <link rel='canonical' href={`${import.meta.env.VITE_APP_URL ?? ''}/verify-email`} />
+      </Helmet>
       <div className='w-full max-w-xl rounded-2xl border border-neutral-gray/30 bg-neutral-black/70 p-8 text-center'>
         {status === 'loading' && (
           <>

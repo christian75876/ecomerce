@@ -394,11 +394,11 @@ const LandingPage = () => (
       <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/bienvenida`} />
       <meta property='og:title' content='Merku — Abre tu tienda online y vende más' />
       <meta property='og:description' content='Merku es la plataforma para abrir tu tienda online, gestionar inventario, recibir pedidos y vender más.' />
-      <meta property='og:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.svg`} />
+      <meta property='og:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
       <meta name='twitter:card' content='summary_large_image' />
       <meta name='twitter:title' content='Merku — Abre tu tienda online y vende más' />
       <meta name='twitter:description' content='Abre tu tienda, gestiona inventario y recibe pedidos con Merku.' />
-      <meta name='twitter:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.svg`} />
+      <meta name='twitter:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
     </Helmet>
     <div className='min-h-screen bg-white'>
       <Navbar />

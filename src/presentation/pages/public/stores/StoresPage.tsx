@@ -61,7 +61,7 @@ const StoresPage = () => {
         <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/stores`} />
         <meta property='og:title' content='Tiendas disponibles — Merku' />
         <meta property='og:description' content='Explora todas las tiendas y restaurantes disponibles en Merku.' />
-        <meta property='og:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.svg`} />
+        <meta property='og:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
         <meta name='twitter:card' content='summary_large_image' />
         <meta name='twitter:title' content='Tiendas disponibles — Merku' />
         <meta name='twitter:description' content='Explora todas las tiendas y restaurantes disponibles en Merku.' />
@@ -161,7 +161,7 @@ const StoresPage = () => {
               <Link
                 key={store.id}
                 to={ROUTES.PUBLIC.STORE_DETAILS.replace(':slug', store.slug)}
-                className='group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md'
+                className='group flex flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card transition-all duration-250 hover:-translate-y-1 hover:border-primary/25 hover:shadow-panel'
               >
                 {/* Banner */}
                 <div

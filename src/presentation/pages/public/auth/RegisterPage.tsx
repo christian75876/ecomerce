@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import PhoneInputCO from '@/presentation/ui/molecules/common/PhoneInputCO';
 import { InvitationsRepository } from '@/infrastructure/repositories/api/invitations/InvitationsRepository';
@@ -81,6 +82,20 @@ const RegisterPage = () => {
   if (!token) {
     return (
       <div className='min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,69,0,0.14),_transparent_32%),linear-gradient(135deg,_#fff7f2_0%,_#ffffff_45%,_#eef6ff_100%)] px-4 py-4 sm:py-10'>
+        <Helmet>
+          <title>Crea tu cuenta — Merku</title>
+          <meta name='description' content='Regístrate gratis en Merku para comprar en tiendas y restaurantes locales.' />
+          <link rel='canonical' href={`${import.meta.env.VITE_APP_URL ?? ''}/register`} />
+          <meta property='og:type' content='website' />
+          <meta property='og:site_name' content='Merku' />
+          <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/register`} />
+          <meta property='og:title' content='Crea tu cuenta — Merku' />
+          <meta property='og:description' content='Regístrate gratis en Merku para comprar en tiendas y restaurantes locales.' />
+          <meta property='og:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
+          <meta name='twitter:card' content='summary_large_image' />
+          <meta name='twitter:title' content='Crea tu cuenta — Merku' />
+          <meta name='twitter:description' content='Regístrate gratis en Merku para comprar en tiendas y restaurantes locales.' />
+        </Helmet>
         <div className='mx-auto w-full max-w-md rounded-[2rem] border border-white/70 bg-white/85 p-8 shadow-[0_30px_80px_rgba(34,34,34,0.12)] backdrop-blur'>
           <div className='mb-5 flex items-center justify-between'>
             <Link

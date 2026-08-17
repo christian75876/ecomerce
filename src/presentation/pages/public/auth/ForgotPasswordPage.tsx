@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthRepository } from '@/infrastructure/repositories/api/auth/AuthRepository';
 import { ROUTES } from '@/shared/constants/routes';
@@ -147,6 +148,11 @@ const ForgotPasswordPage = () => {
   if (step === 'email') {
     return (
       <div className={BG}>
+        <Helmet>
+          <title>Recuperar contraseña — Merku</title>
+          <meta name='description' content='Recupera el acceso a tu cuenta de Merku en unos pocos pasos.' />
+          <link rel='canonical' href={`${import.meta.env.VITE_APP_URL ?? ''}/forgot-password`} />
+        </Helmet>
         <div className={CARD}>
           <Link
             to={ROUTES.PUBLIC.LOGIN}

@@ -284,11 +284,11 @@ const StoreMapPage = () => {
         <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/stores/map`} />
         <meta property='og:title' content='Mapa de tiendas — Merku' />
         <meta property='og:description' content='Encuentra tiendas cercanas, obtén indicaciones y explora el catálogo de cada tienda.' />
-        <meta property='og:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.svg`} />
+        <meta property='og:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
         <meta name='twitter:card' content='summary_large_image' />
         <meta name='twitter:title' content='Mapa de tiendas — Merku' />
         <meta name='twitter:description' content='Encuentra tiendas cercanas, obtén indicaciones y explora el catálogo de cada tienda.' />
-        <meta name='twitter:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.svg`} />
+        <meta name='twitter:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
       </Helmet>
 
       {/* Page header */}

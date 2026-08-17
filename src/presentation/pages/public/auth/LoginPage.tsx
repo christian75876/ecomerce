@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import TurnstileWidget from '@/presentation/ui/molecules/common/TurnstileWidget';
 
@@ -50,6 +51,20 @@ const LoginPage = () => {
 
   return (
     <div className='relative flex min-h-screen items-start justify-center overflow-hidden bg-slate-50 px-4 py-4 sm:items-center sm:py-10'>
+      <Helmet>
+        <title>Iniciar sesión — Merku</title>
+        <meta name='description' content='Ingresa a tu cuenta de Merku para comprar en tiendas locales o gestionar tu negocio: catálogo, inventario, POS y más.' />
+        <link rel='canonical' href={`${import.meta.env.VITE_APP_URL ?? ''}/auth`} />
+        <meta property='og:type' content='website' />
+        <meta property='og:site_name' content='Merku' />
+        <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/auth`} />
+        <meta property='og:title' content='Iniciar sesión — Merku' />
+        <meta property='og:description' content='Ingresa a tu cuenta de Merku para comprar en tiendas locales o gestionar tu negocio.' />
+        <meta property='og:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
+        <meta name='twitter:card' content='summary_large_image' />
+        <meta name='twitter:title' content='Iniciar sesión — Merku' />
+        <meta name='twitter:description' content='Ingresa a tu cuenta de Merku para comprar en tiendas locales o gestionar tu negocio.' />
+      </Helmet>
       {/* BG blobs */}
       <div className='pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-primary/8 blur-3xl' aria-hidden='true' />
       <div className='pointer-events-none absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-accent/8 blur-3xl' aria-hidden='true' />
