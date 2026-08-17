@@ -88,6 +88,18 @@ const MenuCategoriesManager = ({
 
   const sorted = [...categories].sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name));
 
+  const move = async (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= sorted.length) return;
+    const a = sorted[index];
+    const b = sorted[target];
+    // Intercambia el sortOrder entre las dos categorías adyacentes
+    await Promise.all([
+      onUpdate(a.id, a.name, b.sortOrder),
+      onUpdate(b.id, b.name, a.sortOrder),
+    ]);
+  };
+
   return (
     <div className='space-y-4'>
       <p className='text-xs text-slate-500'>
@@ -107,12 +119,31 @@ const MenuCategoriesManager = ({
             Sin categorías — agrega la primera abajo
           </div>
         ) : null}
-        {sorted.map((cat) => (
+        {sorted.map((cat, index) => (
           <div
             key={cat.id}
             className='flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2'
           >
-            <i className='bx bx-menu text-slate-300' aria-hidden='true' />
+            <div className='flex flex-shrink-0 flex-col'>
+              <button
+                type='button'
+                onClick={() => void move(index, -1)}
+                disabled={submitting || index === 0}
+                aria-label={`Subir ${cat.name}`}
+                className='flex h-4 w-5 items-center justify-center text-slate-400 transition hover:text-primary disabled:cursor-not-allowed disabled:opacity-25'
+              >
+                <i className='bx bx-chevron-up text-sm' aria-hidden='true' />
+              </button>
+              <button
+                type='button'
+                onClick={() => void move(index, 1)}
+                disabled={submitting || index === sorted.length - 1}
+                aria-label={`Bajar ${cat.name}`}
+                className='flex h-4 w-5 items-center justify-center text-slate-400 transition hover:text-primary disabled:cursor-not-allowed disabled:opacity-25'
+              >
+                <i className='bx bx-chevron-down text-sm' aria-hidden='true' />
+              </button>
+            </div>
             {editingId === cat.id ? (
               <>
                 <input

@@ -1,15 +1,16 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '@/shared/constants/routes';
 import { IProduct } from '@/application/dtos/products/response/ProductResponse';
 import { IMenuCategory } from '@/application/dtos/menu-categories/response/MenuCategoryResponse';
-import ProductBody from '@/presentation/ui/organisms/products/ProductBody';
+import MenuItemRow from '@/presentation/ui/molecules/products/MenuItemRow';
+import ProductQuickViewModal from '@/presentation/ui/molecules/products/ProductQuickViewModal';
 import PdfViewerModal from '@molecules/common/PdfViewerModal';
 
 interface RestaurantMenuViewProps {
   products: IProduct[];
   menuCategories: IMenuCategory[];
   menuPdfUrl: string | null;
-  layoutStyle: 'GRID' | 'LIST';
-  buttonStyle: 'ROUNDED' | 'SHARP' | 'PILL';
   primaryColor?: string;
   onAddToCart: (productId: string) => void;
   search: string;
@@ -21,18 +22,18 @@ const RestaurantMenuView = ({
   products,
   menuCategories,
   menuPdfUrl,
-  layoutStyle,
-  buttonStyle,
   primaryColor,
   onAddToCart,
   search,
   onSearchChange,
   storeName,
 }: RestaurantMenuViewProps) => {
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState<string | null>(
     menuCategories.length > 0 ? menuCategories[0].id : null,
   );
   const [pdfOpen, setPdfOpen] = useState(false);
+  const [quickViewProduct, setQuickViewProduct] = useState<IProduct | null>(null);
 
   const sorted = [...menuCategories].sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name));
 
@@ -131,15 +132,55 @@ const RestaurantMenuView = ({
         </div>
       ) : null}
 
-      {/* Products */}
-      <ProductBody
-        products={filteredProducts}
-        layoutStyle={layoutStyle}
-        buttonStyle={buttonStyle}
-        primaryColor={primaryColor}
-        emptyMessage='Esta sección no tiene platos disponibles aún.'
-        onAddToCart={onAddToCart}
-      />
+      {/* Carta — filas de menú, no grilla de e-commerce */}
+      {filteredProducts.length === 0 ? (
+        <div className='rounded-3xl border border-dashed border-slate-200 bg-white px-6 py-14 text-center'>
+          <p className='text-sm text-slate-500'>Esta sección no tiene platos disponibles aún.</p>
+        </div>
+      ) : (
+        <div className='rounded-3xl border border-slate-100 bg-white px-5 py-2 shadow-card sm:px-7'>
+          {filteredProducts.map((product) => (
+            <MenuItemRow
+              key={product.id}
+              id={product.id}
+              image={product.imageUrl}
+              name={product.name}
+              description={product.description}
+              price={Number(product.price).toFixed(2)}
+              compareAtPrice={product.compareAtPrice}
+              availableQuantity={product.availableQuantity}
+              showStock={product.showStock}
+              hasVariants={product.hasVariants}
+              primaryColor={primaryColor}
+              onAddToCart={() => onAddToCart(product.id)}
+              onQuickView={() => setQuickViewProduct(product)}
+            />
+          ))}
+        </div>
+      )}
+
+      {quickViewProduct ? (
+        <ProductQuickViewModal
+          id={quickViewProduct.id}
+          image={quickViewProduct.imageUrl}
+          name={quickViewProduct.name}
+          description={quickViewProduct.description}
+          price={Number(quickViewProduct.price).toFixed(2)}
+          compareAtPrice={quickViewProduct.compareAtPrice}
+          availableQuantity={quickViewProduct.availableQuantity}
+          showStock={quickViewProduct.showStock}
+          primaryColor={primaryColor}
+          onClose={() => setQuickViewProduct(null)}
+          onAddToCart={() => {
+            if (quickViewProduct.hasVariants) {
+              navigate(ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', quickViewProduct.id));
+            } else {
+              onAddToCart(quickViewProduct.id);
+            }
+            setQuickViewProduct(null);
+          }}
+        />
+      ) : null}
     </div>
   );
 };

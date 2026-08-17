@@ -318,6 +318,7 @@ export const ProductsManagementView = ({
   };
 
   const resolvedImageSrc = imagePreview ?? (form.imageUrl || null);
+  const isRestaurantStore = stores.find((s) => s.id === form.storeId)?.storeType === 'RESTAURANT';
 
   const isFormReady =
     form.name.trim().length > 0 &&
@@ -458,6 +459,16 @@ export const ProductsManagementView = ({
                 </div>
               </Box>
             </Box>
+
+            {isRestaurantStore ? (
+              <Box className='flex items-start gap-2.5 rounded-2xl border border-amber-200 bg-amber-50/60 px-4 py-3'>
+                <i className='bx bx-bulb mt-0.5 flex-shrink-0 text-lg text-amber-500' aria-hidden='true' />
+                <Typography className='text-xs leading-relaxed text-amber-800'>
+                  <strong>¿Este plato se prepara al pedido?</strong> Déjalo sin stock — no hay forma real de "tener 10 ceviches guardados".
+                  Usa el inventario solo para lo que compras ya hecho y cuentas por unidad: bebidas, postres empacados, cervezas, etc.
+                </Typography>
+              </Box>
+            ) : null}
 
             <Box className="grid gap-4 md:grid-cols-2">
               <Box>

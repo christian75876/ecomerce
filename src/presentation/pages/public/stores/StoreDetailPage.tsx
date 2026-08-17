@@ -167,11 +167,11 @@ const StoreDetailPage = () => {
         <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/stores/${store.slug}`} />
         <meta property='og:title' content={`${store.name} — Merku`} />
         <meta property='og:description' content={store.description || `Explora los productos de ${store.name} en Merku.`} />
-        <meta property='og:image' content={store.bannerUrl || store.logoUrl || `${import.meta.env.VITE_APP_URL ?? ''}/og-image.svg`} />
+        <meta property='og:image' content={store.bannerUrl || store.logoUrl || `${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
         <meta name='twitter:card' content='summary_large_image' />
         <meta name='twitter:title' content={`${store.name} — Merku`} />
         <meta name='twitter:description' content={store.description || `Explora los productos de ${store.name} en Merku.`} />
-        <meta name='twitter:image' content={store.bannerUrl || store.logoUrl || `${import.meta.env.VITE_APP_URL ?? ''}/og-image.svg`} />
+        <meta name='twitter:image' content={store.bannerUrl || store.logoUrl || `${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
       </Helmet>
 
       <div className={`space-y-8 ${font}`} style={themeVars}>
@@ -319,8 +319,6 @@ const StoreDetailPage = () => {
               products={products}
               menuCategories={menuCategories}
               menuPdfUrl={store.menuPdfUrl}
-              layoutStyle={store.layoutStyle}
-              buttonStyle={store.buttonStyle}
               primaryColor={store.primaryColor || undefined}
               search={storeSearch}
               onSearchChange={setStoreSearch}
