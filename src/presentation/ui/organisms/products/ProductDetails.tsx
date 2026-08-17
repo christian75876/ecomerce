@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Typography from '../../atoms/typography/SimpleTypography';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import ProductInformation from '../../molecules/products/ProductInformation';
 import { usePublicProductDetail } from '@/application/useCases/products/usePublicProductDetail';
 import Box from '../../atoms/box/SimpleBox';
@@ -13,6 +13,7 @@ import { ROUTES } from '@/shared/constants/routes';
 import WhatsAppFloat from '../../atoms/whatsapp/WhatsAppFloat';
 import InstagramEmbed from '../../atoms/video/InstagramEmbed';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
+import AgeGate, { isStoreVerified, markStoreVerified } from '@/presentation/ui/molecules/common/AgeGate';
 
 function getYouTubeEmbedUrl(url: string): string | null {
   const match = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]+)/);
@@ -30,11 +31,18 @@ function getFacebookEmbedUrl(url: string): string {
 
 const ProductDetails = () => {
   const { productId } = useParams<{ productId: string }>();
+  const navigate = useNavigate();
   const { product, relatedProducts, gallery, videos, loading, error } = usePublicProductDetail(productId);
   const { addItem } = useCart();
   const [added, setAdded] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [qty, setQty] = useState(1);
+  const [ageVerified, setAgeVerified] = useState(false);
+
+  useEffect(() => {
+    if (!product?.store) return;
+    setAgeVerified(!product.store.isAdultContent || isStoreVerified(product.store.id));
+  }, [product?.store]);
 
   const isOutOfStock = (product?.availableQuantity ?? 1) === 0;
   const handleAddToCart = () => {
@@ -71,6 +79,19 @@ const ProductDetails = () => {
     );
   }
 
+  if (product.store?.isAdultContent && !ageVerified) {
+    return (
+      <AgeGate
+        storeName={product.store.name}
+        onVerified={() => {
+          markStoreVerified(product.store!.id);
+          setAgeVerified(true);
+        }}
+        onDenied={() => navigate(ROUTES.PUBLIC.HOME)}
+      />
+    );
+  }
+
 
   return (
     <>
@@ -83,11 +104,11 @@ const ProductDetails = () => {
         <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/product/${product.id}`} />
         <meta property='og:title' content={`${product.name} — Merku`} />
         <meta property='og:description' content={product.description.slice(0, 155)} />
-        <meta property='og:image' content={product.imageUrl || `${import.meta.env.VITE_APP_URL ?? ''}/og-image.svg`} />
+        <meta property='og:image' content={product.imageUrl || `${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
         <meta name='twitter:card' content='summary_large_image' />
         <meta name='twitter:title' content={`${product.name} — Merku`} />
         <meta name='twitter:description' content={product.description.slice(0, 155)} />
-        <meta name='twitter:image' content={product.imageUrl || `${import.meta.env.VITE_APP_URL ?? ''}/og-image.svg`} />
+        <meta name='twitter:image' content={product.imageUrl || `${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
         <script type='application/ld+json'>{JSON.stringify({
           '@context': 'https://schema.org',
           '@type': 'Product',

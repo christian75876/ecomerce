@@ -18,6 +18,7 @@ interface ProductCardProps {
   averageRating?: number | null;
   reviewCount?: number;
   isSponsored?: boolean;
+  isAdultContent?: boolean;
   layoutStyle?: 'GRID' | 'LIST';
   buttonStyle?: 'ROUNDED' | 'SHARP' | 'PILL';
   primaryColor?: string;
@@ -48,6 +49,7 @@ const ProductCard = ({
   averageRating,
   reviewCount,
   isSponsored = false,
+  isAdultContent = false,
   layoutStyle = 'GRID',
   buttonStyle,
   primaryColor,
@@ -66,7 +68,7 @@ const ProductCard = ({
   const customBtnStyle = primaryColor ? { backgroundColor: primaryColor } : undefined;
 
   return (
-    <article className={`group relative flex overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/8 ${layoutStyle === 'LIST' ? 'flex-row' : 'flex-col'}`}>
+    <article className={`group relative flex overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card transition-all duration-250 hover:-translate-y-1 hover:border-primary/25 hover:shadow-panel ${layoutStyle === 'LIST' ? 'flex-row' : 'flex-col'}`}>
       {/* ── Image ── */}
       <Link
         to={ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', id)}
@@ -78,7 +80,7 @@ const ProductCard = ({
           <img
             src={imgSrc}
             alt={name}
-            className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
+            className={`h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 ${isAdultContent ? 'blur-md scale-110' : ''}`}
             loading='lazy'
             onError={(e) => {
               (e.target as HTMLImageElement).src = PLACEHOLDER;
@@ -93,6 +95,13 @@ const ProductCard = ({
           ) : badge ? (
             <span className='absolute left-2 top-2 rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-white shadow'>
               {badge}
+            </span>
+          ) : null}
+
+          {/* +18 badge */}
+          {isAdultContent ? (
+            <span className='absolute right-2 top-2 rounded-full bg-slate-900/90 px-2 py-0.5 text-[10px] font-bold tracking-wide text-white shadow'>
+              +18
             </span>
           ) : null}
 
@@ -150,7 +159,7 @@ const ProductCard = ({
                 {formatCurrencyCOP(compareAtPrice!)}
               </span>
             ) : null}
-            <span className={`text-base font-extrabold leading-none ${isOutOfStock ? 'text-slate-400' : 'text-accent'}`}>
+            <span className={`text-lg font-extrabold leading-none tracking-tight ${isOutOfStock ? 'text-slate-400' : 'text-accent'}`}>
               {formatCurrencyCOP(price)}
             </span>
           </div>
@@ -160,7 +169,7 @@ const ProductCard = ({
             aria-label={`${addToCartLabel} ${name}`}
             onClick={onAddToCart}
             disabled={isOutOfStock}
-            className={`flex h-8 items-center gap-1 px-3 text-xs font-bold text-white shadow-sm transition-all duration-150 hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 ${customBtnStyle ? '' : 'bg-primary hover:bg-primary-dark'} ${btnClass}`}
+            className={`flex h-8 items-center gap-1 px-3 text-xs font-bold text-white shadow-sm transition-all duration-150 hover:opacity-90 hover:shadow-md hover:shadow-primary/25 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 ${customBtnStyle ? '' : 'bg-primary hover:bg-primary-dark'} ${btnClass}`}
             style={isOutOfStock ? undefined : customBtnStyle}
           >
             <i className='bx bx-plus' style={{ fontSize: 14 }} aria-hidden='true' />
