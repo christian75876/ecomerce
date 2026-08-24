@@ -36,6 +36,7 @@ const adminControlItems = [
   { label: 'Suscripciones', path: ROUTES.PRIVATE.SUBSCRIPTIONS, icon: 'bx-badge-check'      },
   { label: 'Publicidad',    path: ROUTES.PRIVATE.ADVERTISING,   icon: 'bx-bulb'             },
   { label: 'Invitaciones',  path: ROUTES.PRIVATE.INVITATIONS,   icon: 'bx-envelope'         },
+  { label: 'Usuarios',      path: ROUTES.PRIVATE.USERS,         icon: 'bx-group'            },
   { label: 'Auditoría',     path: ROUTES.PRIVATE.AUDIT,         icon: 'bx-shield-quarter'   },
 ];
 

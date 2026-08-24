@@ -250,10 +250,18 @@ const SectionAdmin = () => (
 
 const SectionWhatsApp = () => (
   <div className='space-y-3'>
-    <Accordion icon='bxl-whatsapp' title='Activar notificaciones de pedidos por WhatsApp' defaultOpen>
+    <Accordion
+      icon='bxl-whatsapp'
+      title='Activar notificaciones de pedidos por WhatsApp'
+      defaultOpen
+    >
       <div className='rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 mb-4'>
         <p className='font-semibold'>¿Qué hace esta función?</p>
-        <p className='mt-1'>Cuando un cliente confirme un pedido en tu tienda, recibirás automáticamente un mensaje de WhatsApp con el detalle del pedido — sin necesidad de estar mirando la app.</p>
+        <p className='mt-1'>
+          Cuando un cliente confirme un pedido en tu tienda, recibirás
+          automáticamente un mensaje de WhatsApp con el detalle del pedido — sin
+          necesidad de estar mirando la app.
+        </p>
       </div>
 
       <Step number={1} title='Abre WhatsApp en tu teléfono'>
@@ -261,7 +269,9 @@ const SectionWhatsApp = () => (
       </Step>
 
       <Step number={2} title='Busca el número de CallMeBot'>
-        <p>Agrega a tus contactos el número: <Code>+34 644 59 72 87</Code></p>
+        <p>
+          Agrega a tus contactos el número: <Code>+34 623 91 22 04</Code>
+        </p>
         <p className='mt-1'>O escanea este enlace para abrirlo directo:</p>
         <a
           href='https://wa.me/34644597287'
@@ -275,36 +285,61 @@ const SectionWhatsApp = () => (
       </Step>
 
       <Step number={3} title='Envía el mensaje de activación'>
-        <p>En el chat, escribe y envía <strong>exactamente</strong> este mensaje (cópialo tal cual):</p>
+        <p>
+          En el chat, escribe y envía <strong>exactamente</strong> este mensaje
+          (cópialo tal cual):
+        </p>
         <div className='mt-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-sm text-slate-700 select-all'>
           I allow callmebot to send me messages
         </div>
-        <Warn>El mensaje debe estar en inglés exactamente como está escrito. Cualquier cambio y no funcionará.</Warn>
+        <Warn>
+          El mensaje debe estar en inglés exactamente como está escrito.
+          Cualquier cambio y no funcionará.
+        </Warn>
       </Step>
 
       <Step number={4} title='Recibe tu API Key'>
         <p>En pocos segundos CallMeBot te responderá con un mensaje así:</p>
         <div className='mt-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 font-mono'>
-          API Granted for +57 300 xxx xxxx - Your APIKEY is <strong className='text-primary'>1234567</strong>
+          API Granted for +57 300 xxx xxxx - Your APIKEY is{' '}
+          <strong className='text-primary'>1234567</strong>
         </div>
-        <p className='mt-1'>Guarda ese número — es tu <strong>API Key</strong>.</p>
+        <p className='mt-1'>
+          Guarda ese número — es tu <strong>API Key</strong>.
+        </p>
       </Step>
 
       <Step number={5} title='Configura en la plataforma'>
-        <p>Entra al panel de administración y ve a <strong>Mi perfil</strong> (en el menú, junto a tu cuenta).</p>
+        <p>
+          Entra al panel de administración y ve a <strong>Mi perfil</strong> (en
+          el menú, junto a tu cuenta).
+        </p>
         <ol className='mt-1 list-decimal pl-4 space-y-1'>
           <li>Encuentra tu tienda en la lista.</li>
-          <li>Activa el interruptor verde de <strong>Notificaciones WA</strong>.</li>
-          <li>En el campo <strong>Número de WhatsApp</strong> ingresa tu número completo con código de país, sin espacios ni el signo +.<br />
+          <li>
+            Activa el interruptor verde de <strong>Notificaciones WA</strong>.
+          </li>
+          <li>
+            En el campo <strong>Número de WhatsApp</strong> ingresa tu número
+            completo con código de país, sin espacios ni el signo +.
+            <br />
             <Code>{ADMIN_WHATSAPP}</Code> (ejemplo Colombia)
           </li>
-          <li>En el campo <strong>API Key de CallMeBot</strong> pega la key que recibiste.</li>
-          <li>Haz clic en <strong>Guardar configuración</strong>.</li>
+          <li>
+            En el campo <strong>API Key de CallMeBot</strong> pega la key que
+            recibiste.
+          </li>
+          <li>
+            Haz clic en <strong>Guardar configuración</strong>.
+          </li>
         </ol>
       </Step>
 
       <Step number={6} title='Prueba el sistema'>
-        <p>Haz un pedido de prueba en tu tienda desde otra cuenta. Deberías recibir en tu WhatsApp un mensaje como este:</p>
+        <p>
+          Haz un pedido de prueba en tu tienda desde otra cuenta. Deberías
+          recibir en tu WhatsApp un mensaje como este:
+        </p>
         <div className='mt-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 font-mono whitespace-pre-line'>{`🛍️ Nuevo pedido
 Cliente: Juan Pérez
 Total: $150.000
@@ -313,40 +348,77 @@ Entrega: Envío a domicilio
 Tienda: Mi Tienda`}</div>
       </Step>
 
-      <Tip>Si no recibes el mensaje, verifica que el número esté en formato internacional sin + ni espacios, y que la API Key sea correcta.</Tip>
+      <Tip>
+        Si no recibes el mensaje, verifica que el número esté en formato
+        internacional sin + ni espacios, y que la API Key sea correcta.
+      </Tip>
     </Accordion>
 
     <Accordion icon='bx-bell-off' title='Desactivar las notificaciones'>
       <Step number={1} title='Ir a Mi perfil'>
-        <p>Ve a <strong>Mi perfil</strong> en el menú del panel.</p>
+        <p>
+          Ve a <strong>Mi perfil</strong> en el menú del panel.
+        </p>
       </Step>
       <Step number={2} title='Desactivar el interruptor'>
-        <p>Haz clic en el interruptor verde junto a tu tienda. Cambiará a gris y las notificaciones se detendrán de inmediato.</p>
+        <p>
+          Haz clic en el interruptor verde junto a tu tienda. Cambiará a gris y
+          las notificaciones se detendrán de inmediato.
+        </p>
       </Step>
-      <Tip>Tus datos (número y API Key) se conservan aunque desactives. Puedes reactivar cuando quieras sin volver a configurar.</Tip>
+      <Tip>
+        Tus datos (número y API Key) se conservan aunque desactives. Puedes
+        reactivar cuando quieras sin volver a configurar.
+      </Tip>
     </Accordion>
 
     <Accordion icon='bx-question-mark' title='Preguntas frecuentes'>
       <div className='space-y-4 text-sm text-slate-600'>
         <div>
-          <p className='font-semibold text-slate-800'>¿CallMeBot tiene costo?</p>
-          <p>No. CallMeBot es completamente gratuito para uso personal y pequeño volumen.</p>
+          <p className='font-semibold text-slate-800'>
+            ¿CallMeBot tiene costo?
+          </p>
+          <p>
+            No. CallMeBot es completamente gratuito para uso personal y pequeño
+            volumen.
+          </p>
         </div>
         <div>
-          <p className='font-semibold text-slate-800'>¿Cada tienda necesita su propio registro?</p>
-          <p>Sí. Cada número de WhatsApp debe registrarse por separado con CallMeBot y tiene su propia API Key.</p>
+          <p className='font-semibold text-slate-800'>
+            ¿Cada tienda necesita su propio registro?
+          </p>
+          <p>
+            Sí. Cada número de WhatsApp debe registrarse por separado con
+            CallMeBot y tiene su propia API Key.
+          </p>
         </div>
         <div>
-          <p className='font-semibold text-slate-800'>¿Puedo usar el mismo número en varias tiendas?</p>
-          <p>Sí, mientras sea el mismo número de WhatsApp registrado. La API Key será la misma para ese número.</p>
+          <p className='font-semibold text-slate-800'>
+            ¿Puedo usar el mismo número en varias tiendas?
+          </p>
+          <p>
+            Sí, mientras sea el mismo número de WhatsApp registrado. La API Key
+            será la misma para ese número.
+          </p>
         </div>
         <div>
-          <p className='font-semibold text-slate-800'>¿Qué pasa si el número ya estaba registrado?</p>
-          <p>Puedes volver a enviar el mensaje de activación. CallMeBot te confirmará tu API Key existente.</p>
+          <p className='font-semibold text-slate-800'>
+            ¿Qué pasa si el número ya estaba registrado?
+          </p>
+          <p>
+            Puedes volver a enviar el mensaje de activación. CallMeBot te
+            confirmará tu API Key existente.
+          </p>
         </div>
         <div>
-          <p className='font-semibold text-slate-800'>El mensaje de activación no funciona</p>
-          <p>Asegúrate de enviarlo en un chat directo con el número de CallMeBot (no en un grupo). El mensaje debe ser exactamente: <Code>I allow callmebot to send me messages</Code></p>
+          <p className='font-semibold text-slate-800'>
+            El mensaje de activación no funciona
+          </p>
+          <p>
+            Asegúrate de enviarlo en un chat directo con el número de CallMeBot
+            (no en un grupo). El mensaje debe ser exactamente:{' '}
+            <Code>I allow callmebot to send me messages</Code>
+          </p>
         </div>
       </div>
     </Accordion>
