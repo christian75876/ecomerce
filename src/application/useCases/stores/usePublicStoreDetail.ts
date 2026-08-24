@@ -27,6 +27,11 @@ export const usePublicStoreDetail = (slug?: string) => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  // Tamaño real del catálogo de la tienda, capturado una sola vez en la carga
+  // inicial (sin búsqueda). No se vuelve a tocar al buscar/ordenar, así la UI
+  // puede decidir si mostrar la barra de búsqueda sin que una búsqueda con
+  // pocos resultados la termine ocultando a sí misma.
+  const [catalogSize, setCatalogSize] = useState(0);
   const [sortBy, setSortBy] = useState<StoreSortOption>('newest');
   const [search, setSearchState] = useState('');
   const storeIdRef = useRef<string | null>(null);
@@ -84,6 +89,7 @@ export const usePublicStoreDetail = (slug?: string) => {
         setPage(productData.pagination?.currentPage ?? 1);
         setTotalPages(productData.pagination?.totalPages ?? 1);
         setTotalItems(productData.pagination?.totalItems ?? 0);
+        setCatalogSize(productData.pagination?.totalItems ?? 0);
         setSortBy('newest');
         setSearchState('');
         setMenuCategories(categoriesResponse?.data ?? []);
@@ -207,6 +213,7 @@ export const usePublicStoreDetail = (slug?: string) => {
     search,
     setSearch,
     totalItems,
+    catalogSize,
     error,
   };
 };
