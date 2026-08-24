@@ -25,7 +25,13 @@
 html,
 body {
   font-family: 'Urbanist', sans-serif;
-  overflow-x: hidden;
+  /* "clip" en vez de "hidden": evita el scroll horizontal sin que el
+     navegador termine forzando overflow-y a "auto" en html/body (regla del
+     spec: si un eje no es "visible" y el otro sí, el "visible" pasa a
+     "auto"). Ese efecto convertía a html/body en su propio contenedor de
+     scroll y rompía TODO "position: sticky" de la app — el header pegajoso
+     de los paneles se desanclaba al hacer scroll. */
+  overflow-x: clip;
   max-width: 100vw;
 }
 

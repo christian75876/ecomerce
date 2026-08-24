@@ -213,7 +213,7 @@ const AsyncSearchSelect = ({
         ref={triggerRef}
         type='button'
         disabled={disabled}
-        className='flex w-full items-center justify-between rounded-2xl border border-neutral-gray/80 bg-white/90 px-4 py-3.5 text-left shadow-sm transition-all focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60'
+        className='flex w-full items-center justify-between rounded-xl border border-neutral-gray/80 bg-white/90 px-4 py-2.5 text-left shadow-sm transition-all focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60'
         onClick={handleOpen}
       >
         <span className={selectedText ? 'text-neutral-dark' : 'text-neutral-dark/35'}>

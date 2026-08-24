@@ -1,4 +1,6 @@
-interface TypographyProps {
+import { twMerge } from 'tailwind-merge';
+
+interface TypographyProps extends Omit<React.HTMLAttributes<HTMLElement>, 'className' | 'style' | 'children'> {
   variant?: 'h1' | 'h2' | 'h3' | 'p' | 'span';
   className?: string;
   style?: React.CSSProperties;
@@ -9,7 +11,8 @@ const Typography = ({
   variant = 'p',
   className,
   style,
-  children
+  children,
+  ...rest
 }: TypographyProps) => {
   const Tag: React.ElementType = variant || 'p';
 
@@ -25,7 +28,7 @@ const Typography = ({
             : 'text-base leading-7';
 
   return (
-    <Tag className={`text-neutral-dark ${baseClassName} ${className || ''}`} style={style}>
+    <Tag className={twMerge('text-neutral-dark', baseClassName, className)} style={style} {...rest}>
       {children}
     </Tag>
   );

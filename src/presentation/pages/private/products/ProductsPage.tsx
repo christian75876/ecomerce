@@ -14,6 +14,7 @@ const ProductsPage = () => {
       menuCategories={pm.menuCategories}
       form={pm.form}
       editingId={pm.editingId}
+      isDirty={pm.isDirty}
       search={pm.search}
       selectedCategoryId={pm.selectedCategoryId}
       loading={pm.loading}
@@ -60,6 +61,12 @@ const ProductsPage = () => {
       onSubmit={pm.submitForm}
       onEdit={pm.startEditing}
       onToggleStatus={pm.toggleStatus}
+      restockingProduct={pm.restockingProduct}
+      restockSubmitting={pm.restockSubmitting}
+      restockError={pm.restockError}
+      onOpenRestock={pm.openRestock}
+      onCloseRestock={pm.closeRestock}
+      onRestock={pm.restockProduct}
       onReset={pm.resetForm}
       onQuickCreateCategory={pm.quickCreateCategory}
       onQuickCreateSupplier={pm.quickCreateSupplier}

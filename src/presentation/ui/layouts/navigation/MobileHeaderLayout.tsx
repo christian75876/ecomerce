@@ -37,7 +37,6 @@ const adminControlItems = [
   { label: 'Publicidad',    path: ROUTES.PRIVATE.ADVERTISING,   icon: 'bx-bulb'             },
   { label: 'Invitaciones',  path: ROUTES.PRIVATE.INVITATIONS,   icon: 'bx-envelope'         },
   { label: 'Auditoría',     path: ROUTES.PRIVATE.AUDIT,         icon: 'bx-shield-quarter'   },
-  { label: 'Ajustes',       path: ROUTES.PRIVATE.SETTINGS,      icon: 'bx-cog'              },
 ];
 
 // Admin "Más" — Tiendas section (collapsible)
@@ -67,8 +66,6 @@ const sellerMoreNavItems = [
   { label: 'Compras',            path: ROUTES.PRIVATE.PURCHASES,     icon: 'bx-package'       },
   { label: 'Proveedores',        path: ROUTES.PRIVATE.SUPPLIERS,     icon: 'bx-briefcase'     },
   { label: 'Cupones',            path: ROUTES.PRIVATE.COUPONS,       icon: 'bx-purchase-tag'  },
-  { label: 'Auditoría',          path: ROUTES.PRIVATE.AUDIT,         icon: 'bx-shield-quarter' },
-  { label: 'Ajustes',            path: ROUTES.PRIVATE.SETTINGS,      icon: 'bx-cog'           },
   { label: 'Ayuda',              path: ROUTES.PUBLIC.HELP,            icon: 'bx-help-circle'   },
 ];
 

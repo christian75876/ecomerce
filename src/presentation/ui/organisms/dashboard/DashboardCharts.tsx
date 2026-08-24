@@ -46,10 +46,10 @@ const ChartCard = ({
   subtitle: string;
   children: React.ReactNode;
 }) => (
-  <Card className='h-full p-6'>
+  <Card className='h-full overflow-hidden p-4 sm:p-6'>
     <Typography variant='h3'>{title}</Typography>
     <Typography className='mt-1 text-sm text-neutral-dark/60'>{subtitle}</Typography>
-    <Box className='mt-6 h-80 w-full'>{children}</Box>
+    <Box className='mt-6 h-72 w-full sm:h-80'>{children}</Box>
   </Card>
 );
 
@@ -59,7 +59,7 @@ export const SalesOverviewChart = ({ data }: { data: IDashboardSalesPoint[] }) =
     subtitle='Compara la evolución diaria del canal POS y online en el rango filtrado.'
   >
     <ResponsiveContainer width='100%' height='100%'>
-      <AreaChart data={data}>
+      <AreaChart data={data} margin={{ left: 0, right: 8, top: 4, bottom: 0 }}>
         <defs>
           <linearGradient id='salesTotalGradient' x1='0' y1='0' x2='0' y2='1'>
             <stop offset='5%' stopColor='#f97316' stopOpacity={0.35} />
@@ -68,7 +68,7 @@ export const SalesOverviewChart = ({ data }: { data: IDashboardSalesPoint[] }) =
         </defs>
         <CartesianGrid strokeDasharray='3 3' stroke='#e5e7eb' />
         <XAxis dataKey='label' tick={{ fill: '#475569', fontSize: 12 }} />
-        <YAxis tick={{ fill: '#475569', fontSize: 12 }} tickFormatter={copAxisTick} width={80} />
+        <YAxis tick={{ fill: '#475569', fontSize: 12 }} tickFormatter={copAxisTick} width={48} />
         <Tooltip formatter={copTooltipFormatter} />
         <Legend />
         <Area type='monotone' dataKey='total' stroke='#f97316' fill='url(#salesTotalGradient)' strokeWidth={3} name='Total' />
@@ -139,11 +139,11 @@ export const ChannelComparisonChart = ({
     subtitle='Contrasta volumen y facturación entre operación presencial y online.'
   >
     <ResponsiveContainer width='100%' height='100%'>
-      <BarChart data={data}>
+      <BarChart data={data} margin={{ left: 0, right: 0, top: 4, bottom: 0 }}>
         <CartesianGrid strokeDasharray='3 3' stroke='#e5e7eb' />
         <XAxis dataKey='channel' tick={{ fill: '#475569', fontSize: 12 }} />
-        <YAxis yAxisId='left' tick={{ fill: '#475569', fontSize: 12 }} tickFormatter={copAxisTick} width={80} />
-        <YAxis yAxisId='right' orientation='right' tick={{ fill: '#1d4ed8', fontSize: 12 }} width={40} />
+        <YAxis yAxisId='left' tick={{ fill: '#475569', fontSize: 12 }} tickFormatter={copAxisTick} width={48} />
+        <YAxis yAxisId='right' orientation='right' tick={{ fill: '#1d4ed8', fontSize: 12 }} width={28} />
         <Tooltip
           formatter={(value: number, name: string) =>
             name === 'Operaciones' ? [value, name] : [formatCurrencyCOP(value), name]

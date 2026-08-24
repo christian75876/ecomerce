@@ -51,9 +51,6 @@ const AdminDashboard = lazy(
 // const TrackingPage = lazy(
 //   () => import('@presentation/pages/private/tracking/TrackingPage')
 // );
-const SettingsPage = lazy(
-  () => import('@presentation/pages/private/settings/SettingsPage')
-);
 const ProductsPage = lazy(
   () => import('@presentation/pages/private/products/ProductsPage')
 );
@@ -92,6 +89,9 @@ const AuditPage = lazy(
 );
 const InvitationsPage = lazy(
   () => import('@presentation/pages/private/invitations/InvitationsPage')
+);
+const UsersPage = lazy(
+  () => import('@presentation/pages/private/users/UsersPage')
 );
 const HelpPage = lazy(
   () => import('@presentation/pages/public/help/HelpPage')
@@ -240,12 +240,6 @@ export const routes: AppRoute[] = [
   //   layout: DashboardLayout
   // },
   {
-    path: ROUTES.PRIVATE.SETTINGS,
-    element: <SettingsPage />,
-    private: true,
-    layout: DashboardLayout
-  },
-  {
     path: ROUTES.PRIVATE.CATEGORIES,
     element: <CategoriesPage />,
     private: true,
@@ -314,6 +308,12 @@ export const routes: AppRoute[] = [
   {
     path: ROUTES.PRIVATE.INVITATIONS,
     element: <InvitationsPage />,
+    private: true,
+    layout: DashboardLayout
+  },
+  {
+    path: ROUTES.PRIVATE.USERS,
+    element: <UsersPage />,
     private: true,
     layout: DashboardLayout
   },

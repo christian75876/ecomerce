@@ -22,6 +22,8 @@ import FeaturePanel from '@/presentation/ui/templates/feature/FeaturePanel';
 import FeatureScreen from '@/presentation/ui/templates/feature/FeatureScreen';
 import FeatureScreenHeader from '@/presentation/ui/templates/feature/FeatureScreenHeader';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
+import { truncateText } from '@/shared/utils/truncateText';
+import { formatThousands } from '@/shared/utils/formatThousands';
 import SelectDropdown from '@/presentation/ui/molecules/common/SelectDropdown';
 
 const QuickCreateProductModal = ({
@@ -131,7 +133,7 @@ const QuickCreateProductModal = ({
                 />
               </div>
 
-              <div className='grid gap-4 md:grid-cols-2'>
+              <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                 <div>
                   <label className='mb-1 block text-sm font-medium text-neutral-dark'>
                     Precio <span className='text-red-500'>*</span>
@@ -409,7 +411,7 @@ export const InventoryManagementView = ({
         description='El inventario ahora se calcula por lotes. Cada ingreso crea una capa con costo, proveedor y vencimiento opcional, y el stock total del producto sale de sus existencias disponibles.'
       />
 
-      <Box className='grid gap-6 xl:grid-cols-[430px_minmax(0,1fr)]'>
+      <Box className='grid grid-cols-1 gap-6 xl:grid-cols-[430px_minmax(0,1fr)]'>
         <FeaturePanel
           title={movementType === 'IN' ? 'Nuevo ingreso por lote' : 'Ajuste de inventario'}
         >
@@ -430,7 +432,7 @@ export const InventoryManagementView = ({
               />
             </Box>
 
-            <Box className='grid gap-4 md:grid-cols-2'>
+            <Box className='grid grid-cols-1 gap-4 md:grid-cols-2'>
               <Box>
                 <Label htmlFor='movement-type'>Operación</Label>
                 <SelectDropdown
@@ -460,18 +462,22 @@ export const InventoryManagementView = ({
 
             {movementType === 'IN' ? (
               <>
-                <Box className='grid gap-4 md:grid-cols-2'>
+                <Box className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                   <Box>
                     <Label htmlFor='entry-unit-cost'>Costo unitario</Label>
-                    <Input
-                      id='entry-unit-cost'
-                      type='number'
-                      min='0'
-                      step='0.01'
-                      value={unitCost}
-                      onChange={(event) => onUnitCostChange(event.target.value)}
-                      disabled={submitting}
-                    />
+                    <div className='relative'>
+                      <span className='pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 select-none text-sm text-slate-400'>$</span>
+                      <input
+                        id='entry-unit-cost'
+                        type='text'
+                        inputMode='numeric'
+                        value={formatThousands(unitCost)}
+                        onChange={(event) => onUnitCostChange(event.target.value.replace(/\D/g, ''))}
+                        disabled={submitting}
+                        placeholder='0'
+                        className='w-full rounded-xl border border-neutral-gray/30 py-2.5 pl-7 pr-4 text-sm text-neutral-dark placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-60'
+                      />
+                    </div>
                   </Box>
                   <Box>
                     <Label htmlFor='entry-batch-code'>Lote</Label>
@@ -485,7 +491,7 @@ export const InventoryManagementView = ({
                   </Box>
                 </Box>
 
-                <Box className='grid gap-4 md:grid-cols-2'>
+                <Box className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                   <Box>
                     <Label htmlFor='entry-supplier'>Proveedor</Label>
                     <SelectDropdown
@@ -527,12 +533,25 @@ export const InventoryManagementView = ({
             </Box>
 
             {selectedProduct ? (
-              <Box className='rounded-2xl border border-neutral-gray/30 bg-background px-4 py-4 text-sm text-neutral-dark/75'>
-                <strong>{selectedProduct.name}</strong>
-                <div>SKU: {selectedProduct.sku}</div>
-                <div>
-                  Tipo: {selectedProduct.isPerishable ? 'Perecedero' : 'No perecedero'} ·
-                  Lotes: {selectedProduct.trackBatches ? ' Sí' : ' No'}
+              <Box className='flex items-center gap-3 rounded-2xl border border-neutral-gray/30 bg-background px-4 py-4 text-sm text-neutral-dark/75'>
+                {selectedProduct.imageUrl ? (
+                  <img
+                    src={selectedProduct.imageUrl}
+                    alt={selectedProduct.name}
+                    className='h-14 w-14 flex-shrink-0 rounded-xl object-cover'
+                  />
+                ) : (
+                  <div className='flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-neutral-gray/15'>
+                    <i className='bx bx-image text-2xl text-neutral-dark/30' aria-hidden='true' />
+                  </div>
+                )}
+                <div className='min-w-0'>
+                  <strong className='block truncate'>{selectedProduct.name}</strong>
+                  <div>SKU: {selectedProduct.sku}</div>
+                  <div>
+                    Tipo: {selectedProduct.isPerishable ? 'Perecedero' : 'No perecedero'} ·
+                    Lotes: {selectedProduct.trackBatches ? ' Sí' : ' No'}
+                  </div>
                 </div>
               </Box>
             ) : null}
@@ -549,8 +568,8 @@ export const InventoryManagementView = ({
           </form>
         </FeaturePanel>
 
-        <Box className='space-y-6'>
-          <Box className='grid gap-4 lg:grid-cols-4'>
+        <Box className='min-w-0 space-y-6'>
+          <Box className='grid min-w-0 grid-cols-2 gap-4 lg:grid-cols-4'>
             <FeatureMetricCard
               label='Productos con stock'
               value={inventory.filter((item) => item.stock > 0).length}
@@ -647,7 +666,7 @@ export const InventoryManagementView = ({
               </div>
             </div>
 
-            <Box className='mt-4 overflow-x-auto'>
+            <Box className='mt-4'>
               {loading ? (
                 <div className='space-y-3'>
                   <div className='h-12 skeleton rounded-2xl' />
@@ -665,55 +684,127 @@ export const InventoryManagementView = ({
                   </p>
                 </div>
               ) : (
-                <table className='min-w-full text-left text-sm'>
-                  <thead>
-                    <tr className='border-b border-neutral-gray/50 text-neutral-dark/55'>
-                      <th className='px-3 py-3'>Producto</th>
-                      <th className='px-3 py-3'>Categoría</th>
-                      <th className='px-3 py-3'>Stock</th>
-                      <th className='px-3 py-3'>Lotes</th>
-                      <th className='px-3 py-3'>Próximo vencimiento</th>
-                      <th className='px-3 py-3'>Valor inventario</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                <>
+                  {/* Mobile — tarjetas apiladas */}
+                  <div className='space-y-2.5 md:hidden'>
                     {filteredInventory.map((item) => {
                       const isLow = item.lowStockThreshold != null && item.stock <= item.lowStockThreshold;
                       return (
-                      <tr key={item.productId} className={`border-b border-neutral-gray/30 last:border-b-0 ${isLow ? 'bg-red-50/60' : ''}`}>
-                        <td className='px-3 py-3'>
-                          <div className='flex items-center gap-2 font-semibold'>
-                            {item.productName}
-                            {isLow ? (
-                              <span className='inline-flex items-center gap-0.5 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600'>
-                                <i className='bx bx-error-circle' />
-                                Stock bajo
+                        <Box
+                          key={item.productId}
+                          className={`flex items-start gap-3 rounded-2xl border px-4 py-3.5 ${isLow ? 'border-red-200 bg-red-50/60' : 'border-neutral-gray/20'}`}
+                        >
+                          <div
+                            className={`mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl ${
+                              isLow ? 'bg-red-100 text-red-600' : 'bg-neutral-gray/10 text-neutral-dark/50'
+                            }`}
+                          >
+                            <i className='bx bx-package text-lg' aria-hidden='true' />
+                          </div>
+
+                          <div className='min-w-0 flex-1'>
+                            <div className='flex items-start justify-between gap-2'>
+                              <p
+                                className='min-w-0 flex-1 truncate font-semibold text-neutral-dark'
+                                title={item.productName}
+                              >
+                                {truncateText(item.productName, 35)}
+                              </p>
+                              {isLow ? (
+                                <span className='flex-shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600'>
+                                  Stock bajo
+                                </span>
+                              ) : null}
+                            </div>
+                            <p className='mt-0.5 truncate text-xs text-neutral-dark/50'>
+                              {item.sku} · {item.category ?? 'Sin categoría'}
+                            </p>
+
+                            <div className='mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-dark/60'>
+                              <span>
+                                Stock:{' '}
+                                <strong className={isLow ? 'font-bold text-red-600' : 'font-semibold text-neutral-dark'}>
+                                  {item.stock}
+                                </strong>
+                                {item.lowStockThreshold != null ? (
+                                  <span className='text-neutral-dark/40'> /mín {item.lowStockThreshold}</span>
+                                ) : null}
                               </span>
-                            ) : null}
+                              <span>
+                                Lotes: <strong className='font-semibold text-neutral-dark'>{item.activeBatchCount}</strong>
+                              </span>
+                              <span>
+                                Vence:{' '}
+                                <strong className='font-semibold text-neutral-dark'>
+                                  {item.nextExpiration
+                                    ? new Date(item.nextExpiration).toLocaleDateString('es-CO', { timeZone: 'America/Bogota' })
+                                    : '—'}
+                                </strong>
+                              </span>
+                            </div>
+
+                            <p className='mt-1.5 text-sm font-bold text-primary'>
+                              {formatCurrencyCOP(item.inventoryValue)}
+                            </p>
                           </div>
-                          <div className='text-neutral-dark/60'>
-                            {item.sku} · {item.isPerishable ? 'Perecedero' : 'No perecedero'}
-                          </div>
-                        </td>
-                        <td className='px-3 py-3 text-neutral-dark/65'>{item.category ?? '—'}</td>
-                        <td className={`px-3 py-3 font-semibold tabular-nums ${isLow ? 'text-red-600' : ''}`}>
-                          {item.stock}
-                          {item.lowStockThreshold != null ? (
-                            <span className='ml-1 text-xs font-normal text-slate-400'>/ mín {item.lowStockThreshold}</span>
-                          ) : null}
-                        </td>
-                        <td className='px-3 py-3'>{item.activeBatchCount}</td>
-                        <td className='px-3 py-3'>
-                          {item.nextExpiration
-                            ? new Date(item.nextExpiration).toLocaleDateString('es-CO', { timeZone: 'America/Bogota' })
-                            : 'Sin vencimiento'}
-                        </td>
-                        <td className='px-3 py-3'>{formatCurrencyCOP(item.inventoryValue)}</td>
-                      </tr>
+                        </Box>
                       );
                     })}
-                  </tbody>
-                </table>
+                  </div>
+
+                  {/* Desktop/tablet — tabla */}
+                  <div className='hidden overflow-x-auto md:block'>
+                    <table className='min-w-full text-left text-sm'>
+                      <thead>
+                        <tr className='border-b border-neutral-gray/50 text-neutral-dark/55'>
+                          <th className='px-3 py-3'>Producto</th>
+                          <th className='px-3 py-3'>Categoría</th>
+                          <th className='px-3 py-3'>Stock</th>
+                          <th className='px-3 py-3'>Lotes</th>
+                          <th className='px-3 py-3'>Próximo vencimiento</th>
+                          <th className='px-3 py-3'>Valor inventario</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredInventory.map((item) => {
+                          const isLow = item.lowStockThreshold != null && item.stock <= item.lowStockThreshold;
+                          return (
+                          <tr key={item.productId} className={`border-b border-neutral-gray/30 last:border-b-0 ${isLow ? 'bg-red-50/60' : ''}`}>
+                            <td className='px-3 py-3'>
+                              <div className='flex items-center gap-2 font-semibold'>
+                                {item.productName}
+                                {isLow ? (
+                                  <span className='inline-flex items-center gap-0.5 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600'>
+                                    <i className='bx bx-error-circle' />
+                                    Stock bajo
+                                  </span>
+                                ) : null}
+                              </div>
+                              <div className='text-neutral-dark/60'>
+                                {item.sku} · {item.isPerishable ? 'Perecedero' : 'No perecedero'}
+                              </div>
+                            </td>
+                            <td className='px-3 py-3 text-neutral-dark/65'>{item.category ?? '—'}</td>
+                            <td className={`px-3 py-3 font-semibold tabular-nums ${isLow ? 'text-red-600' : ''}`}>
+                              {item.stock}
+                              {item.lowStockThreshold != null ? (
+                                <span className='ml-1 text-xs font-normal text-slate-400'>/ mín {item.lowStockThreshold}</span>
+                              ) : null}
+                            </td>
+                            <td className='px-3 py-3'>{item.activeBatchCount}</td>
+                            <td className='px-3 py-3'>
+                              {item.nextExpiration
+                                ? new Date(item.nextExpiration).toLocaleDateString('es-CO', { timeZone: 'America/Bogota' })
+                                : 'Sin vencimiento'}
+                            </td>
+                            <td className='px-3 py-3'>{formatCurrencyCOP(item.inventoryValue)}</td>
+                          </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               )}
             </Box>
             {!loading && filteredInventory.length > 0 ? (
@@ -734,7 +825,9 @@ export const InventoryManagementView = ({
                   >
                     <i className='bx bx-error-circle flex-shrink-0 text-xl text-red-500' aria-hidden='true' />
                     <Box className='min-w-0 flex-1'>
-                      <Typography className='truncate font-semibold text-red-700'>{item.productName}</Typography>
+                      <Typography className='truncate font-semibold text-red-700' title={item.productName}>
+                        {truncateText(item.productName, 35)}
+                      </Typography>
                       <Typography className='text-xs text-red-500'>
                         SKU: {item.sku} · Stock actual: <strong>{item.stock}</strong> · Mínimo: {item.lowStockThreshold}
                       </Typography>
@@ -748,7 +841,7 @@ export const InventoryManagementView = ({
             </FeaturePanel>
           ) : null}
 
-          <Box className='grid gap-6 xl:grid-cols-2'>
+          <Box className='grid grid-cols-1 gap-6 xl:grid-cols-2'>
             <FeaturePanel title='Lotes y vencimientos'>
               <Box className='mt-5 space-y-3'>
                 {batches.length === 0 && !loading ? (
@@ -760,8 +853,10 @@ export const InventoryManagementView = ({
                 ) : batches.slice(0, 10).map((batch) => (
                   <Box key={batch.id} className='rounded-2xl border border-neutral-gray/20 px-4 py-4'>
                     <Box className='flex items-start justify-between gap-4'>
-                      <Box>
-                        <Typography variant='h3'>{batch.product.name}</Typography>
+                      <Box className='min-w-0 flex-1'>
+                        <Typography variant='h3' className='truncate' title={batch.product.name}>
+                          {truncateText(batch.product.name, 35)}
+                        </Typography>
                         <Typography className='text-sm text-neutral-dark/65'>
                           Lote: {batch.batchCode || 'Sin código'}
                         </Typography>
@@ -790,7 +885,9 @@ export const InventoryManagementView = ({
                 ) : (
                   expiringBatches.slice(0, 8).map((batch) => (
                     <Box key={batch.id} className='rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4'>
-                      <Typography variant='h3'>{batch.product.name}</Typography>
+                      <Typography variant='h3' className='truncate' title={batch.product.name}>
+                        {truncateText(batch.product.name, 35)}
+                      </Typography>
                       <Typography className='mt-1 text-sm text-neutral-dark/70'>
                         {batch.availableQuantity} unidades · vence el{' '}
                         {batch.expiresAt
@@ -817,11 +914,15 @@ export const InventoryManagementView = ({
               ) : (
                 movements.slice(0, 12).map((movement) => (
                   <Box key={movement.id} className='rounded-2xl border border-neutral-gray/20 px-5 py-4'>
-                    <Box className='flex flex-wrap items-center justify-between gap-3'>
-                      <Typography variant='h3' className='text-lg font-semibold'>
-                        {movement.product.name}
+                    <Box className='flex items-center justify-between gap-3'>
+                      <Typography
+                        variant='h3'
+                        className='min-w-0 flex-1 truncate text-lg font-semibold'
+                        title={movement.product.name}
+                      >
+                        {truncateText(movement.product.name, 35)}
                       </Typography>
-                      <span className='rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary'>
+                      <span className='flex-shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary'>
                         {{ IN: 'Ingreso', OUT: 'Salida', ADJUSTMENT: 'Ajuste', SALE: 'Venta', ORDER: 'Pedido', RETURN: 'Devolución' }[movement.movementType as string] ?? movement.movementType}
                       </span>
                     </Box>

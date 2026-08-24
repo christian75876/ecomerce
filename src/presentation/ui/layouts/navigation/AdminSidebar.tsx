@@ -32,8 +32,8 @@ const controlGroup: NavGroup = {
     { label: 'Suscripciones', path: ROUTES.PRIVATE.SUBSCRIPTIONS, icon: 'bx-credit-card-front' },
     { label: 'Publicidad', path: ROUTES.PRIVATE.ADVERTISING, icon: 'bx-trophy' },
     { label: 'Invitaciones', path: ROUTES.PRIVATE.INVITATIONS, icon: 'bx-envelope' },
+    { label: 'Usuarios', path: ROUTES.PRIVATE.USERS, icon: 'bx-group' },
     { label: 'Auditoría', path: ROUTES.PRIVATE.AUDIT, icon: 'bx-shield-quarter' },
-    { label: 'Ajustes', path: ROUTES.PRIVATE.SETTINGS, icon: 'bx-cog' },
   ],
 };
 
@@ -240,6 +240,18 @@ const AdminSidebar = () => {
             <i className='bx bx-user text-sm text-indigo-300' aria-hidden='true' />
           </div>
           <span className='flex-1 truncate'>Mi perfil</span>
+        </Link>
+        <Link
+          to={ROUTES.PUBLIC.HELP}
+          className='flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-slate-400 transition hover:bg-white/[0.06] hover:text-slate-200'
+        >
+          <div
+            className='flex h-7 w-7 shrink-0 items-center justify-center rounded-lg'
+            style={{ background: 'rgba(99,102,241,0.18)', border: '1px solid rgba(99,102,241,0.25)' }}
+          >
+            <i className='bx bx-help-circle text-sm text-indigo-300' aria-hidden='true' />
+          </div>
+          <span className='flex-1 truncate'>Ayuda</span>
         </Link>
         <button
           type='button'

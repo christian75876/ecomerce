@@ -65,19 +65,18 @@ export class InventoryRepository {
   static async createEntry(
     payload: ICreateInventoryEntryRequest,
   ): Promise<IInventoryBatchResp> {
-    return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.post<IInventoryBatchResp>('/inventory/entries', payload),
+    return ErrorHandler.handleApiErrors(
+      () => authenticatedClientHTTP.post<IInventoryBatchResp>('/inventory/entries', payload),
+      () => {},
     );
   }
 
   static async createMovement(
     payload: ICreateInventoryMovementRequest,
   ): Promise<IInventoryMovementResp> {
-    return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.post<IInventoryMovementResp>(
-        '/inventory/movements',
-        payload,
-      ),
+    return ErrorHandler.handleApiErrors(
+      () => authenticatedClientHTTP.post<IInventoryMovementResp>('/inventory/movements', payload),
+      () => {},
     );
   }
 }

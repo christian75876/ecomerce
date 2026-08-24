@@ -215,7 +215,7 @@ const SectionAdmin = () => (
         <p>Ve a <strong>Catálogo → Tiendas</strong> y haz clic en <strong>Nueva tienda</strong>. Completa nombre, slug, colores y datos de contacto.</p>
       </Step>
       <Step number={2} title='Asignar al vendedor'>
-        <p>Al crear o editar la tienda, asigna el <strong>ID del usuario vendedor</strong> en el campo <em>userId</em>. Esto le permite al vendedor ver y configurar su tienda desde Ajustes.</p>
+        <p>Al crear o editar la tienda, asigna el <strong>ID del usuario vendedor</strong> en el campo <em>userId</em>. Esto le permite al vendedor ver y configurar su tienda desde Mi perfil.</p>
       </Step>
     </Accordion>
 
@@ -291,7 +291,7 @@ const SectionWhatsApp = () => (
       </Step>
 
       <Step number={5} title='Configura en la plataforma'>
-        <p>Entra al panel de administración y ve a <strong>Ajustes</strong> (ícono de engranaje en el menú).</p>
+        <p>Entra al panel de administración y ve a <strong>Mi perfil</strong> (en el menú, junto a tu cuenta).</p>
         <ol className='mt-1 list-decimal pl-4 space-y-1'>
           <li>Encuentra tu tienda en la lista.</li>
           <li>Activa el interruptor verde de <strong>Notificaciones WA</strong>.</li>
@@ -317,8 +317,8 @@ Tienda: Mi Tienda`}</div>
     </Accordion>
 
     <Accordion icon='bx-bell-off' title='Desactivar las notificaciones'>
-      <Step number={1} title='Ir a Ajustes'>
-        <p>Ve a <strong>Control → Ajustes</strong> en el menú del panel.</p>
+      <Step number={1} title='Ir a Mi perfil'>
+        <p>Ve a <strong>Mi perfil</strong> en el menú del panel.</p>
       </Step>
       <Step number={2} title='Desactivar el interruptor'>
         <p>Haz clic en el interruptor verde junto a tu tienda. Cambiará a gris y las notificaciones se detendrán de inmediato.</p>

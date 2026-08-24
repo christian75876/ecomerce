@@ -10,7 +10,6 @@ import {
   IAuthMeResp,
   ILoginResp
 } from '@/application/dtos/auth/login/response/LoginResponse';
-import { logError } from '../errors/ErrorLogger';
 import { IRegisterRequest } from '@/application/dtos/auth/register/register/RegisterRequest';
 import { IRegisterResp } from '@/application/dtos/auth/register/response/RegisterResponse';
 import { IRegisterCustomerRequest } from '@/application/dtos/auth/register/customer/RegisterCustomerRequest';
@@ -27,15 +26,15 @@ export class AuthRepository {
   static async login(credentials: ILoginRequest): Promise<ILoginResp> {
     return ErrorHandler.handleApiErrors(
       () => publicClientHTTP.post<ILoginResp>('/auth/login', credentials),
+      // Sin toast global: el formulario ya muestra el error inline.
+      () => {},
     );
   }
 
   static async register(userData: IRegisterRequest): Promise<IRegisterResp> {
     return ErrorHandler.handleApiErrors(
       () => publicClientHTTP.post<IRegisterResp>('/auth/register', userData),
-      msg => {
-        logError(msg, 'client');
-      }
+      () => {},
     );
   }
 
@@ -48,6 +47,8 @@ export class AuthRepository {
           '/auth/register-customer',
           userData,
         ),
+      // Sin toast global: el formulario ya muestra el error inline.
+      () => {},
     );
   }
 
@@ -56,9 +57,7 @@ export class AuthRepository {
   ): Promise<IVerifyEmailResp> {
     return ErrorHandler.handleApiErrors(
       () => publicClientHTTP.post<IVerifyEmailResp>('/auth/verify-email', payload),
-      msg => {
-        logError(msg, 'client');
-      }
+      () => {},
     );
   }
 
@@ -98,26 +97,31 @@ export class AuthRepository {
    * Logs out the user by invalidating the token.
    */
   static async logout() {
-    await ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.post('/auth/logout')
+    await ErrorHandler.handleApiErrors(
+      () => authenticatedClientHTTP.post('/auth/logout'),
+      // Un 401 aquí solo significa "ya no había sesión" — no debe mostrar toast.
+      () => {},
     );
   }
 
   static async requestPasswordRecovery(email: string): Promise<{ message: string }> {
-    return ErrorHandler.handleApiErrors(() =>
-      publicClientHTTP.post<{ message: string }>('/auth/recover-passwords', { email })
+    return ErrorHandler.handleApiErrors(
+      () => publicClientHTTP.post<{ message: string }>('/auth/recover-passwords', { email }),
+      () => {},
     );
   }
 
   static async verifyRecoveryOtp(email: string, code: string): Promise<{ message: string }> {
-    return ErrorHandler.handleApiErrors(() =>
-      publicClientHTTP.post<{ message: string }>('/auth/recover-passwords/verify-otp', { email, code })
+    return ErrorHandler.handleApiErrors(
+      () => publicClientHTTP.post<{ message: string }>('/auth/recover-passwords/verify-otp', { email, code }),
+      () => {},
     );
   }
 
   static async resetPassword(email: string, code: string, newPassword: string): Promise<{ message: string }> {
-    return ErrorHandler.handleApiErrors(() =>
-      publicClientHTTP.post<{ message: string }>('/auth/recover-passwords/reset', { email, code, newPassword })
+    return ErrorHandler.handleApiErrors(
+      () => publicClientHTTP.post<{ message: string }>('/auth/recover-passwords/reset', { email, code, newPassword }),
+      () => {},
     );
   }
 }

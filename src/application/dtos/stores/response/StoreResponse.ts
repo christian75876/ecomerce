@@ -33,6 +33,7 @@ export interface IStore {
   lat: number | null;
   lng: number | null;
   addressText: string | null;
+  hideLocation: boolean;
   paymentInstructions: string | null;
   averageRating: number | null;
   reviewCount: number;

@@ -10,6 +10,7 @@ import { InventoryRepository } from '@/infrastructure/repositories/api/inventory
 import { ProductRepository } from '@/infrastructure/repositories/api/products/ProductsRepository';
 import { SuppliersRepository } from '@/infrastructure/repositories/api/suppliers/SuppliersRepository';
 import { useAdminStore } from '@/shared/contexts/AdminStoreContext';
+import { SnackbarUtilities } from '@/shared/utils/SnackbarManager';
 
 export const useInventoryManagement = () => {
   const { selectedStoreId: contextStoreId } = useAdminStore();
@@ -125,6 +126,9 @@ export const useInventoryManagement = () => {
 
       resetForm();
       await loadScreen();
+      SnackbarUtilities.success(
+        movementType === 'IN' ? 'Ingreso registrado correctamente' : 'Ajuste registrado correctamente',
+      );
       return true;
     } catch (err) {
       setError(

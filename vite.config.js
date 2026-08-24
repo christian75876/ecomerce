@@ -16,7 +16,11 @@ export default defineConfig({
       filename: 'sw.ts',
 
       devOptions: {
-        enabled: true,
+        // Desactivado temporalmente durante esta sesión de pruebas locales —
+        // el service worker en modo dev se queda en mal estado después de
+        // varios reinicios del servidor y causa que la página no cargue.
+        // Reactivar cuando se necesite probar el comportamiento PWA/offline.
+        enabled: false,
         type: 'module',
         navigateFallback: '/index.html',
         navigateFallbackAllowlist: [/^(?!\/(api|icons|assets)\/)/],
@@ -81,6 +85,30 @@ export default defineConfig({
       },
     }),
   ],
+
+  server: {
+    proxy: {
+      // Reenvía las llamadas del frontend local a la API de producción
+      // desde el propio servidor de Vite (server-to-server), para que el
+      // navegador nunca haga la petición cross-origin y no choque con CORS
+      // (ALLOWED_ORIGINS en producción no incluye localhost). Se quita el
+      // header Origin real del navegador (localhost:5173) antes de reenviar,
+      // porque si el backend lo ve tal cual, lo rechaza — y lo hace lanzando
+      // un Error sin capturar dentro del callback de cors(), lo que crashea
+      // la request con un 500 en vez de responder un 403 normal.
+      '/api': {
+        target: 'https://api.merku.co',
+        changeOrigin: true,
+        secure: true,
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.removeHeader('origin');
+            proxyReq.removeHeader('referer');
+          });
+        },
+      },
+    },
+  },
 
   resolve: {
     alias: {

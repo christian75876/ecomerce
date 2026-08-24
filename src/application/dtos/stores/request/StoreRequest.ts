@@ -30,6 +30,7 @@ export interface ICreateStoreRequest {
   lat?: number | null;
   lng?: number | null;
   addressText?: string;
+  hideLocation?: boolean;
 }
 
 export interface IUpdateStoreNotificationRequest {

@@ -136,7 +136,8 @@ const StoreMapPage = () => {
   // ── Derived store lists ──────────────────────────────────────────────────
 
   const storesWithCoords = stores.filter(
-    (s): s is StoreWithCoords => s.lat !== null && s.lng !== null,
+    (s): s is StoreWithCoords =>
+      s.lat !== null && s.lng !== null && !s.hideLocation && s.deliveryOptions !== 'DELIVERY',
   );
 
   const filtered = storesWithCoords.filter(

@@ -88,8 +88,9 @@ export class ProductRepository {
   static async createProduct(
     payload: ICreateProductRequest,
   ): Promise<IProductResp> {
-    return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.post<IProductResp>('/products', payload),
+    return ErrorHandler.handleApiErrors(
+      () => authenticatedClientHTTP.post<IProductResp>('/products', payload),
+      () => {},
     );
   }
 
@@ -97,8 +98,9 @@ export class ProductRepository {
     id: string,
     payload: IUpdateProductRequest,
   ): Promise<IProductResp> {
-    return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.patch<IProductResp>(`/products/${id}`, payload),
+    return ErrorHandler.handleApiErrors(
+      () => authenticatedClientHTTP.patch<IProductResp>(`/products/${id}`, payload),
+      () => {},
     );
   }
 
@@ -148,10 +150,12 @@ export class ProductRepository {
   static async uploadProductImage(productId: string, file: File): Promise<IProductResp> {
     const formData = new FormData();
     formData.append('image', file);
-    return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.post<IProductResp>(`/products/${productId}/image`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      }),
+    return ErrorHandler.handleApiErrors(
+      () =>
+        authenticatedClientHTTP.post<IProductResp>(`/products/${productId}/image`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }),
+      () => {},
     );
   }
 
@@ -166,11 +170,13 @@ export class ProductRepository {
     videoUrl: string,
     title?: string,
   ): Promise<IProductVideoResp> {
-    return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.post<IProductVideoResp>(`/products/${productId}/videos`, {
-        videoUrl,
-        title,
-      }),
+    return ErrorHandler.handleApiErrors(
+      () =>
+        authenticatedClientHTTP.post<IProductVideoResp>(`/products/${productId}/videos`, {
+          videoUrl,
+          title,
+        }),
+      () => {},
     );
   }
 
@@ -189,12 +195,14 @@ export class ProductRepository {
   static async uploadGalleryImage(productId: string, file: File): Promise<IProductImageResp> {
     const formData = new FormData();
     formData.append('image', file);
-    return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.post<IProductImageResp>(
-        `/products/${productId}/gallery`,
-        formData,
-        { headers: { 'Content-Type': 'multipart/form-data' } },
-      ),
+    return ErrorHandler.handleApiErrors(
+      () =>
+        authenticatedClientHTTP.post<IProductImageResp>(
+          `/products/${productId}/gallery`,
+          formData,
+          { headers: { 'Content-Type': 'multipart/form-data' } },
+        ),
+      () => {},
     );
   }
 
@@ -225,8 +233,9 @@ export class ProductRepository {
     productId: string,
     payload: ICreateProductVariantRequest,
   ): Promise<IProductVariantResp> {
-    return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.post<IProductVariantResp>(`/products/${productId}/variants`, payload),
+    return ErrorHandler.handleApiErrors(
+      () => authenticatedClientHTTP.post<IProductVariantResp>(`/products/${productId}/variants`, payload),
+      () => {},
     );
   }
 

@@ -18,13 +18,11 @@ import FeaturePanel from '@/presentation/ui/templates/feature/FeaturePanel';
 import FeatureScreen from '@/presentation/ui/templates/feature/FeatureScreen';
 import FeatureScreenHeader from '@/presentation/ui/templates/feature/FeatureScreenHeader';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
+import { truncateText } from '@/shared/utils/truncateText';
 import InstagramEmbed from '@/presentation/ui/atoms/video/InstagramEmbed';
-
-function formatThousands(raw: string): string {
-  const n = raw.replace(/\D/g, '');
-  if (!n) return '';
-  return Number(n).toLocaleString('es-CO');
-}
+import ProductPreviewModal from '@/presentation/ui/organisms/products/ProductPreviewModal';
+import ProductRestockModal from '@/presentation/ui/organisms/products/ProductRestockModal';
+import { formatThousands } from '@/shared/utils/formatThousands';
 
 interface ProductsManagementViewProps {
   isSeller: boolean;
@@ -35,6 +33,7 @@ interface ProductsManagementViewProps {
   menuCategories: IMenuCategory[];
   form: ProductFormState;
   editingId: string | null;
+  isDirty: boolean;
   search: string;
   selectedCategoryId: string;
   loading: boolean;
@@ -84,6 +83,12 @@ interface ProductsManagementViewProps {
   onSubmit: () => Promise<boolean>;
   onEdit: (product: IProduct) => void;
   onToggleStatus: (product: IProduct) => Promise<void>;
+  restockingProduct: IProduct | null;
+  restockSubmitting: boolean;
+  restockError: string | null;
+  onOpenRestock: (product: IProduct) => void;
+  onCloseRestock: () => void;
+  onRestock: (payload: { quantity: number; unitCost?: number; batchCode?: string; expiresAt?: string }) => Promise<boolean>;
   onReset: () => void;
   onQuickCreateCategory: (name: string) => Promise<ICategory | null>;
   onQuickCreateSupplier: (name: string) => Promise<ISupplier | null>;
@@ -224,6 +229,7 @@ export const ProductsManagementView = ({
   menuCategories,
   form,
   editingId,
+  isDirty,
   search,
   selectedCategoryId,
   loading,
@@ -270,6 +276,12 @@ export const ProductsManagementView = ({
   onSubmit,
   onEdit,
   onToggleStatus,
+  restockingProduct,
+  restockSubmitting,
+  restockError,
+  onOpenRestock,
+  onCloseRestock,
+  onRestock,
   onReset,
   onQuickCreateCategory,
   onQuickCreateSupplier,
@@ -319,11 +331,11 @@ export const ProductsManagementView = ({
 
   const resolvedImageSrc = imagePreview ?? (form.imageUrl || null);
   const isRestaurantStore = stores.find((s) => s.id === form.storeId)?.storeType === 'RESTAURANT';
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const isFormReady =
     form.name.trim().length > 0 &&
     form.description.trim().length > 0 &&
-    form.sku.trim().length > 0 &&
     form.price !== '' && Number(form.price) > 0 &&
     form.categoryId !== '' &&
     form.storeId !== '';
@@ -395,12 +407,13 @@ export const ProductsManagementView = ({
 
             <Box className="grid gap-4 md:grid-cols-2">
               <Box>
-                <Label htmlFor="product-sku">SKU <span className="text-red-500">*</span></Label>
+                <Label htmlFor="product-sku">SKU</Label>
                 <Input
                   id="product-sku"
                   value={form.sku}
                   onChange={(event) => onFormChange('sku', event.target.value)}
                   disabled={submitting}
+                  placeholder="Se genera automático si lo dejas vacío"
                   error={fieldErrors.sku}
                 />
               </Box>
@@ -1434,8 +1447,16 @@ export const ProductsManagementView = ({
                 </Box>
               ) : null}
               <Box className="flex flex-wrap gap-3">
-                <Button type="submit" form="product-form" variant="primary" disabled={submitting || !isFormReady}>
+                <Button type="submit" form="product-form" variant="primary" disabled={submitting || !isFormReady || !isDirty}>
                   {submitting ? 'Guardando...' : editingId ? 'Guardar cambios' : 'Crear producto'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outlinePrimary"
+                  onClick={() => setPreviewOpen(true)}
+                  disabled={submitting || !form.name.trim()}
+                >
+                  Vista previa
                 </Button>
                 <Button type="button" variant="outline" onClick={handleReset} disabled={submitting}>
                   Cancelar
@@ -1447,6 +1468,20 @@ export const ProductsManagementView = ({
         document.body
       ) : null}
 
+      {previewOpen ? (
+        <ProductPreviewModal
+          name={form.name}
+          description={form.description}
+          price={form.price}
+          compareAtPrice={form.compareAtPrice}
+          categoryName={categories.find((c) => c.id === form.categoryId)?.name}
+          imageSrc={resolvedImageSrc}
+          galleryPreviews={pendingGalleryPreviews}
+          videoCount={videos.length + pendingVideos.length + (videoUrl.trim() ? 1 : 0)}
+          onClose={() => setPreviewOpen(false)}
+        />
+      ) : null}
+
       <Box>
         <FeaturePanel
           title='Catálogo administrativo'
@@ -1456,28 +1491,30 @@ export const ProductsManagementView = ({
               + Nuevo producto
             </Button>
           }
-        >
-          <Box className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-            <Box className="grid gap-3 md:grid-cols-[minmax(220px,1fr)_220px]">
-              <Input
-                value={search}
-                onChange={(event) => onSearchChange(event.target.value)}
-                placeholder="Buscar por nombre"
-              />
-              <SelectDropdown
-                value={selectedCategoryId}
-                options={categories.map((c) => ({ value: c.id, label: c.name }))}
-                placeholder='Todas las categorías'
-                onChange={(v) => onCategoryFilterChange(v)}
-              />
+          sticky
+          toolbar={
+            <Box className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+              <Box className="grid gap-3 md:grid-cols-[minmax(220px,1fr)_220px]">
+                <Input
+                  value={search}
+                  onChange={(event) => onSearchChange(event.target.value)}
+                  placeholder="Buscar por nombre"
+                />
+                <SelectDropdown
+                  value={selectedCategoryId}
+                  options={categories.map((c) => ({ value: c.id, label: c.name }))}
+                  placeholder='Todas las categorías'
+                  onChange={(v) => onCategoryFilterChange(v)}
+                />
+              </Box>
             </Box>
-          </Box>
-
-          <Box className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          }
+        >
+          <Box className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {loading ? (
               Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="overflow-hidden rounded-2xl border border-neutral-gray/20">
-                  <div className="aspect-square skeleton" />
+                  <div className="h-40 skeleton" />
                   <div className="space-y-2 p-3">
                     <div className="skeleton h-4 rounded" />
                     <div className="skeleton h-3 w-2/3 rounded" />
@@ -1495,13 +1532,15 @@ export const ProductsManagementView = ({
                   key={product.id}
                   className="flex flex-col overflow-hidden rounded-2xl border border-neutral-gray/20 bg-white shadow-sm transition hover:shadow-md"
                 >
-                  {/* Image */}
-                  <div className="relative aspect-square bg-slate-100">
+                  {/* Image — altura fija (no aspect-ratio) para que ninguna
+                      foto, sin importar su proporción original, pueda estirar
+                      la tarjeta. */}
+                  <div className="relative h-40 w-full flex-shrink-0 overflow-hidden bg-slate-100">
                     {product.imageUrl ? (
                       <img
                         src={product.imageUrl}
                         alt={product.name}
-                        className="h-full w-full object-cover"
+                        className="absolute inset-0 h-full w-full object-cover"
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center">
@@ -1515,40 +1554,72 @@ export const ProductsManagementView = ({
 
                   {/* Info */}
                   <div className="flex flex-1 flex-col gap-1 p-3">
-                    <p className="line-clamp-2 text-sm font-semibold leading-snug text-slate-800">
-                      {product.name}
+                    <p
+                      className="truncate text-sm font-semibold leading-snug text-slate-800"
+                      title={product.name}
+                    >
+                      {truncateText(product.name, 35)}
                     </p>
-                    <p className="text-xs text-slate-400">{product.category?.name ?? 'Sin categoría'}</p>
+                    <p className="truncate text-xs text-slate-400" title={product.category?.name}>
+                      {product.category?.name ?? 'Sin categoría'}
+                    </p>
                     <p className="mt-1 text-sm font-bold text-primary">{formatCurrencyCOP(product.price)}</p>
-                    <p className="text-[11px] text-slate-400">SKU: {product.sku}</p>
-                    {product.store ? <p className="text-[11px] text-slate-400">{product.store.name}</p> : null}
+                    <p className="truncate text-[11px] text-slate-400">SKU: {product.sku}</p>
+                    {product.store ? (
+                      <p className="truncate text-[11px] text-slate-400" title={product.store.name}>
+                        {product.store.name}
+                      </p>
+                    ) : null}
                   </div>
 
                   {/* Actions */}
-                  <div className="flex gap-2 border-t border-slate-100 p-3">
+                  <div className="flex gap-1.5 border-t border-slate-100 p-2.5">
                     <Button
                       type="button"
                       variant="outlinePrimary"
+                      size="sm"
                       onClick={() => onEdit(product)}
                       disabled={submitting}
-                      className="flex-1 !py-1.5 text-xs"
+                      className="min-w-0 flex-1 !px-1.5"
                     >
                       Editar
                     </Button>
                     <Button
                       type="button"
                       variant={product.isActive ? 'danger' : 'secondary'}
+                      size="sm"
                       onClick={() => void onToggleStatus(product)}
                       disabled={submitting}
-                      className="flex-1 !py-1.5 text-xs"
+                      className="min-w-0 flex-1 !px-1.5"
                     >
                       {product.isActive ? 'Desact.' : 'Activar'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      title="Reabastecer stock"
+                      onClick={() => onOpenRestock(product)}
+                      disabled={submitting}
+                      className="!px-2 flex-shrink-0"
+                    >
+                      <i className="bx bx-package text-sm" aria-hidden="true" />
                     </Button>
                   </div>
                 </div>
               ))
             )}
           </Box>
+
+          {restockingProduct ? (
+            <ProductRestockModal
+              product={restockingProduct}
+              submitting={restockSubmitting}
+              error={restockError}
+              onConfirm={async (payload) => { await onRestock(payload); }}
+              onClose={onCloseRestock}
+            />
+          ) : null}
 
           <PaginationControls
             currentPage={currentPage}

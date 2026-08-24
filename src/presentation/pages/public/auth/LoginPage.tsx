@@ -263,7 +263,14 @@ const LoginPage = () => {
                     isLoading={isCustomerRegisterLoading}
                     error={customerRegisterError}
                   />
-                  <p className='mt-5 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-500'>
+                  <button
+                    type='button'
+                    onClick={() => setMode('login')}
+                    className='mt-5 w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-primary/30 hover:text-primary'
+                  >
+                    ¿Ya tienes cuenta? Iniciar sesión
+                  </button>
+                  <p className='mt-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-500'>
                     ¿Quieres vender?{' '}
                     <Link to={ROUTES.PUBLIC.REGISTER} className='font-semibold text-primary hover:underline'>
                       Registro de vendedor →

@@ -32,6 +32,10 @@ const FormField = <T extends FieldValues>({
   const isPassword = type === 'password';
   const inputType = isPassword && showPassword ? 'text' : type;
 
+  const trimmedLabel = label.trim();
+  const isRequired = trimmedLabel.endsWith('*');
+  const labelText = isRequired ? trimmedLabel.slice(0, -1).trimEnd() : trimmedLabel;
+
   return (
     <Box className={boxClassName}>
       {showLabel && (
@@ -39,7 +43,8 @@ const FormField = <T extends FieldValues>({
           htmlFor={name}
           className='block text-md font-medium text-gray-700'
         >
-          {label}
+          {labelText}
+          {isRequired && <span className='ml-0.5 text-red-500'>*</span>}
         </Label>
       )}
 

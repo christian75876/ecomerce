@@ -11,11 +11,13 @@ import { IMenuCategory } from '@/application/dtos/menu-categories/response/MenuC
 import { ISupplier } from '@/application/dtos/suppliers/response/SupplierResponse';
 import { CategoriesRepository } from '@/infrastructure/repositories/api/categories/CategoriesRepository';
 import { ProductRepository } from '@/infrastructure/repositories/api/products/ProductsRepository';
+import { InventoryRepository } from '@/infrastructure/repositories/api/inventory/InventoryRepository';
 import { StoresRepository } from '@/infrastructure/repositories/api/stores/StoresRepository';
 import { SuppliersRepository } from '@/infrastructure/repositories/api/suppliers/SuppliersRepository';
 import { MenuCategoriesRepository } from '@/infrastructure/repositories/api/menu-categories/MenuCategoriesRepository';
 import { getAuthenticatedRole } from '@/shared/utils/checkIsUserAuthenticated.util';
 import { useAdminStore } from '@/shared/contexts/AdminStoreContext';
+import { SnackbarUtilities } from '@/shared/utils/SnackbarManager';
 
 export type ProductFormState = {
   name: string;
@@ -109,10 +111,20 @@ const optionalNonNegative = z
   .string()
   .refine((v) => v === '' || (Number(v) >= 0 && !isNaN(Number(v))), 'Debe ser un número válido');
 
+// El backend ya devuelve sus mensajes en español; esto solo cubre el mensaje
+// genérico que arma Axios cuando la respuesta no trae "message" (ej. timeouts).
+function translateProductErrorMessage(message: string): string {
+  if (!message) return 'No fue posible completar la operación. Verifica los datos.';
+  if (/request failed with status code/i.test(message)) {
+    return 'No fue posible completar la operación. Verifica los datos e intenta de nuevo.';
+  }
+  return message;
+}
+
 const productSchema = z.object({
   name: z.string().min(1, 'El nombre es obligatorio'),
   description: z.string().min(1, 'La descripción es obligatoria'),
-  sku: z.string().min(1, 'El SKU es obligatorio'),
+  sku: z.string(),
   price: z
     .string()
     .refine((v) => v !== '' && Number(v) > 0, 'Ingresa un precio mayor a cero'),
@@ -136,6 +148,9 @@ export const useProductsManagement = () => {
   const [menuCategories, setMenuCategories] = useState<IMenuCategory[]>([]);
   const [form, setForm] = useState<ProductFormState>(initialProductFormState);
   const [editingId, setEditingId] = useState<string | null>(null);
+  // Snapshot del formulario al entrar a edición — permite deshabilitar
+  // "Guardar cambios" cuando el usuario no modificó nada.
+  const [editSnapshot, setEditSnapshot] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
   const [loading, setLoading] = useState(true);
@@ -364,6 +379,7 @@ export const useProductsManagement = () => {
       storeId: isSeller ? prev.storeId : '',
     }));
     setEditingId(null);
+    setEditSnapshot(null);
     setPendingImageFile(null);
     setImagePreview(null);
     setGallery([]);
@@ -474,12 +490,13 @@ export const useProductsManagement = () => {
       return false;
     }
 
+    const wasEditing = Boolean(editingId);
     setSubmitting(true);
     setError(null);
 
-    try {
-      let savedId: string;
+    let savedId: string | null = null;
 
+    try {
       if (editingId) {
         const response = await ProductRepository.updateProduct(editingId, payload);
         savedId = response.data.id;
@@ -500,9 +517,15 @@ export const useProductsManagement = () => {
         }
       }
 
-      // Upload pending videos (create mode only)
-      if (!editingId && pendingVideos.length > 0) {
-        for (const pv of pendingVideos) {
+      // Upload pending videos (create mode only) — incluye también el que esté
+      // escrito en el input aunque el usuario no haya dado clic en "Agregar video".
+      if (!editingId) {
+        const videosToUpload = [...pendingVideos];
+        const typedUrl = videoUrl.trim();
+        if (typedUrl && !videosToUpload.some((pv) => pv.videoUrl === typedUrl)) {
+          videosToUpload.push({ videoUrl: typedUrl, videoTitle: videoTitle.trim() });
+        }
+        for (const pv of videosToUpload) {
           await ProductRepository.addProductVideo(savedId, pv.videoUrl, pv.videoTitle || undefined);
         }
       }
@@ -525,11 +548,21 @@ export const useProductsManagement = () => {
 
       resetForm();
       await loadProducts();
+      SnackbarUtilities.success(wasEditing ? 'Producto actualizado correctamente' : 'Producto creado correctamente');
       return true;
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'No fue posible guardar el producto',
-      );
+      const friendlyMessage = translateProductErrorMessage(err instanceof Error ? err.message : '');
+
+      if (savedId) {
+        // El producto (o su actualización) ya se guardó — solo falló un paso
+        // posterior (imagen, video o variante). No lo dejamos como si nada
+        // se hubiera guardado: refrescamos la lista y avisamos qué faltó.
+        resetForm();
+        await loadProducts();
+        setError(`El producto se guardó, pero hubo un problema: ${friendlyMessage}`);
+      } else {
+        setError(friendlyMessage);
+      }
       return false;
     } finally {
       setSubmitting(false);
@@ -538,7 +571,7 @@ export const useProductsManagement = () => {
 
   const startEditing = (product: IProduct) => {
     setEditingId(product.id);
-    setForm({
+    const nextForm: ProductFormState = {
       name: product.name,
       description: product.description,
       sku: product.sku,
@@ -565,7 +598,9 @@ export const useProductsManagement = () => {
       height: product.height != null ? String(product.height) : '',
       depth: product.depth != null ? String(product.depth) : '',
       dimensionsUnit: product.dimensionsUnit ?? 'cm',
-    });
+    };
+    setForm(nextForm);
+    setEditSnapshot(JSON.stringify(nextForm));
     setPendingImageFile(null);
     setImagePreview(product.imageUrl ?? null);
     setGalleryError(null);
@@ -580,6 +615,49 @@ export const useProductsManagement = () => {
     void loadVideos(product.id);
     void loadGallery(product.id);
     void loadVariants(product.id);
+  };
+
+  const [restockingProduct, setRestockingProduct] = useState<IProduct | null>(null);
+  const [restockSubmitting, setRestockSubmitting] = useState(false);
+  const [restockError, setRestockError] = useState<string | null>(null);
+
+  const openRestock = (product: IProduct) => {
+    setRestockError(null);
+    setRestockingProduct(product);
+  };
+
+  const closeRestock = () => {
+    setRestockingProduct(null);
+    setRestockError(null);
+  };
+
+  const restockProduct = async (payload: {
+    quantity: number;
+    unitCost?: number;
+    batchCode?: string;
+    expiresAt?: string;
+  }): Promise<boolean> => {
+    if (!restockingProduct) return false;
+    setRestockSubmitting(true);
+    setRestockError(null);
+    try {
+      await InventoryRepository.createEntry({
+        productId: restockingProduct.id,
+        quantity: payload.quantity,
+        unitCost: payload.unitCost ?? restockingProduct.cost ?? 0,
+        batchCode: payload.batchCode || undefined,
+        expiresAt: payload.expiresAt || undefined,
+      });
+      SnackbarUtilities.success(`Se agregaron ${payload.quantity} unidades a "${restockingProduct.name}"`);
+      closeRestock();
+      await loadProducts();
+      return true;
+    } catch (err) {
+      setRestockError(err instanceof Error ? err.message : 'No fue posible registrar el ingreso');
+      return false;
+    } finally {
+      setRestockSubmitting(false);
+    }
   };
 
   const toggleStatus = async (product: IProduct) => {
@@ -762,6 +840,12 @@ export const useProductsManagement = () => {
     }
   };
 
+  // En edición: solo habilita "Guardar cambios" si algo realmente cambió
+  // (campos del formulario o la imagen principal). En creación no aplica.
+  const isDirty = !editingId
+    ? true
+    : JSON.stringify(form) !== editSnapshot || pendingImageFile !== null;
+
   return {
     isSeller,
     products,
@@ -771,6 +855,7 @@ export const useProductsManagement = () => {
     menuCategories,
     form,
     editingId,
+    isDirty,
     search,
     selectedCategoryId,
     loading,
@@ -817,6 +902,12 @@ export const useProductsManagement = () => {
     updateCombination,
     saveVariants,
     submitForm,
+    restockingProduct,
+    restockSubmitting,
+    restockError,
+    openRestock,
+    closeRestock,
+    restockProduct,
     startEditing,
     toggleStatus,
     resetForm,

@@ -165,19 +165,25 @@ const StoresPage = () => {
               >
                 {/* Banner */}
                 <div
-                  className={`relative h-24 ${hasBrandColors ? '' : `bg-gradient-to-br ${fallback}`}`}
-                  style={hasBrandColors ? bannerStyle : undefined}
+                  className={`relative overflow-hidden ${
+                    store.bannerUrl ? '' : hasBrandColors ? '' : `bg-gradient-to-br ${fallback}`
+                  }`}
+                  style={{
+                    aspectRatio: '3 / 1',
+                    ...(!store.bannerUrl && hasBrandColors ? bannerStyle : {}),
+                  }}
                 >
                   {store.bannerUrl ? (
                     <img
                       src={store.bannerUrl}
                       alt=''
-                      className='h-full w-full object-cover opacity-30 mix-blend-overlay'
+                      className='h-full w-full object-cover'
                     />
-                  ) : null}
-                  <div className='absolute inset-0 flex items-center justify-center opacity-10'>
-                    <span className='text-8xl font-black text-white'>{initial}</span>
-                  </div>
+                  ) : (
+                    <div className='absolute inset-0 flex items-center justify-center opacity-20'>
+                      <span className='text-8xl font-black text-white'>{initial}</span>
+                    </div>
+                  )}
                   <div className='absolute right-3 top-3 flex gap-1'>
                     {store.storeType === 'RESTAURANT' ? (
                       <span className='rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white'>

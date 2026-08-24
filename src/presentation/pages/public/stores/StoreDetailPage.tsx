@@ -182,11 +182,17 @@ const StoreDetailPage = () => {
         >
           {/* Banner image overlay */}
           {store.bannerUrl ? (
-            <div
-              className='absolute inset-0 bg-cover bg-center opacity-20'
-              style={{ backgroundImage: `url(${store.bannerUrl})` }}
-              aria-hidden='true'
-            />
+            <>
+              <div
+                className='absolute inset-0 bg-cover bg-center opacity-45'
+                style={{ backgroundImage: `url(${store.bannerUrl})` }}
+                aria-hidden='true'
+              />
+              <div
+                className='absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent'
+                aria-hidden='true'
+              />
+            </>
           ) : null}
 
           <div className='relative z-10'>
@@ -274,7 +280,7 @@ const StoreDetailPage = () => {
         </div>
 
         {/* ── Store location map ── */}
-        {store.lat && store.lng ? (
+        {store.lat && store.lng && !store.hideLocation && store.deliveryOptions !== 'DELIVERY' ? (
           <div className='rounded-[2rem] overflow-hidden border border-slate-200 shadow-sm'>
             <div className='flex items-center justify-between px-5 py-3 bg-white border-b border-slate-100'>
               <div className='flex items-center gap-2'>

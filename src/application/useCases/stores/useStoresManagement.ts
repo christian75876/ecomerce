@@ -31,6 +31,7 @@ export type StoreFormState = {
   lat: number | null;
   lng: number | null;
   addressText: string;
+  hideLocation: boolean;
 };
 
 const initialStoreForm: StoreFormState = {
@@ -61,6 +62,7 @@ const initialStoreForm: StoreFormState = {
   lat: null,
   lng: null,
   addressText: '',
+  hideLocation: false,
 };
 
 function storeToForm(store: IStore): StoreFormState {
@@ -94,6 +96,7 @@ function storeToForm(store: IStore): StoreFormState {
     lat: store.lat ?? null,
     lng: store.lng ?? null,
     addressText: store.addressText ?? '',
+    hideLocation: store.hideLocation ?? false,
   };
 }
 
@@ -187,6 +190,7 @@ export const useStoresManagement = () => {
         lat: form.lat ?? undefined,
         lng: form.lng ?? undefined,
         addressText: form.addressText.trim() || undefined,
+        hideLocation: form.hideLocation,
       };
 
       if (editingId) {

@@ -332,9 +332,14 @@ const ImagePickerInput = ({
 
   const preview = localPreview || (value && !imgError ? value : null);
 
+  const sizeHint = variant === 'logo'
+    ? 'Recomendado: imagen cuadrada, 400×400px (se recorta automático).'
+    : 'Recomendado: 1200×400px, proporción 3:1 (se recorta automático).';
+
   return (
     <div className='space-y-2'>
       <label htmlFor={id} className='block text-sm font-medium text-neutral-dark/70'>{label}</label>
+      <p className='text-xs text-neutral-dark/45'>{sizeHint}</p>
 
       <div className='flex gap-2'>
         <input
@@ -524,7 +529,7 @@ const StorePreview = ({ form, wide = false }: { form: StoreFormState; wide?: boo
       style={{ backgroundColor: bg, color: text }}
     >
       {/* Cover */}
-      <div className='relative overflow-hidden' style={{ minHeight: coverMinHeight }}>
+      <div className='relative overflow-hidden' style={{ minHeight: coverMinHeight, aspectRatio: '3 / 1' }}>
         {hasBanner ? (
           <>
             <img
@@ -1212,15 +1217,31 @@ export const StoresManagementView = ({
                   }}
                 />
                 {form.lat && form.lng ? (
-                  <a
-                    href={`https://www.google.com/maps?q=${form.lat},${form.lng}`}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline'
-                  >
-                    <i className='bx bx-link-external text-sm' aria-hidden='true' />
-                    Ver en Google Maps
-                  </a>
+                  <>
+                    <a
+                      href={`https://www.google.com/maps?q=${form.lat},${form.lng}`}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline'
+                    >
+                      <i className='bx bx-link-external text-sm' aria-hidden='true' />
+                      Ver en Google Maps
+                    </a>
+                    <label className='flex items-start gap-2 text-sm text-neutral-dark/70'>
+                      <input
+                        type='checkbox'
+                        checked={form.hideLocation}
+                        onChange={(e) => onFormChange('hideLocation', e.target.checked)}
+                        className='mt-0.5 h-4 w-4 rounded border-neutral-gray/40 text-primary focus:ring-primary/30'
+                      />
+                      <span>
+                        Ocultar mi ubicación en el mapa
+                        <span className='block text-xs text-neutral-dark/50'>
+                          Los clientes no verán el pin de tu tienda en el mapa, aunque hayas marcado la dirección.
+                        </span>
+                      </span>
+                    </label>
+                  </>
                 ) : null}
               </Box>
             ) : null}

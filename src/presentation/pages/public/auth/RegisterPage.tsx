@@ -6,6 +6,7 @@ import { InvitationsRepository } from '@/infrastructure/repositories/api/invitat
 import { AuthRepository } from '@/infrastructure/repositories/api/auth/AuthRepository';
 import { ROUTES } from '@/shared/constants/routes';
 import { SnackbarUtilities } from '@/shared/utils/SnackbarManager';
+import { authSession } from '@/shared/utils/authSession';
 import { ADMIN_WHATSAPP } from '@/shared/config/appContact';
 
 const RegisterPage = () => {
@@ -70,6 +71,20 @@ const RegisterPage = () => {
         inviteToken: token ?? undefined,
       });
       SnackbarUtilities.success(res.data.message, 'top', 'center');
+
+      // Invitación aceptada: el backend ya devuelve token+user (cuenta auto-verificada) —
+      // entrar directo en vez de mandar a login a repetir credenciales que apenas escribió.
+      if (res.data.token && res.data.user) {
+        authSession.setToken(res.data.token);
+        const customer = res.data.customer ?? res.data.user.customer ?? null;
+        authSession.setUser({
+          ...res.data.user,
+          customer: customer ? { ...customer, phone: customer.phone ?? null } : null,
+        });
+        navigate(ROUTES.PUBLIC.HOME);
+        return;
+      }
+
       navigate(ROUTES.PUBLIC.LOGIN);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No fue posible registrarse');
@@ -120,13 +135,13 @@ const RegisterPage = () => {
           <form onSubmit={(e) => void handleSubmit(e)} className='mt-6 space-y-4'>
             <div className='grid gap-4 sm:grid-cols-2'>
               <div>
-                <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Nombre *</label>
+                <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Nombre <span className='text-red-500'>*</span></label>
                 <input required type='text' placeholder='Christian' value={form.firstName}
                   onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
                   className='w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10' />
               </div>
               <div>
-                <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Apellido *</label>
+                <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Apellido <span className='text-red-500'>*</span></label>
                 <input required type='text' placeholder='Pabón' value={form.lastName}
                   onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
                   className='w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10' />
@@ -134,19 +149,19 @@ const RegisterPage = () => {
             </div>
 
             <div>
-              <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Correo electrónico *</label>
+              <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Correo electrónico <span className='text-red-500'>*</span></label>
               <input required type='email' placeholder='tu@correo.com' value={form.email}
                 onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                 className='w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10' />
             </div>
 
             <div>
-              <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Teléfono *</label>
+              <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Teléfono <span className='text-red-500'>*</span></label>
               <PhoneInputCO value={form.phone} onChange={(v) => setForm((f) => ({ ...f, phone: v }))} />
             </div>
 
             <div>
-              <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Contraseña *</label>
+              <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Contraseña <span className='text-red-500'>*</span></label>
               <div className='relative'>
                 <input required type={showPassword ? 'text' : 'password'} minLength={6} placeholder='Mínimo 6 caracteres'
                   value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
@@ -159,7 +174,7 @@ const RegisterPage = () => {
             </div>
 
             <div>
-              <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Confirmar contraseña *</label>
+              <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Confirmar contraseña <span className='text-red-500'>*</span></label>
               <div className='relative'>
                 <input required type={showConfirm ? 'text' : 'password'} placeholder='Repite tu contraseña'
                   value={form.confirm} onChange={(e) => setForm((f) => ({ ...f, confirm: e.target.value }))}
@@ -263,7 +278,7 @@ const RegisterPage = () => {
         <form onSubmit={(e) => void handleSubmit(e)} className='mt-6 space-y-4'>
           <div className='grid gap-4 sm:grid-cols-2'>
             <div>
-              <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Nombre *</label>
+              <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Nombre <span className='text-red-500'>*</span></label>
               <input
                 required
                 type='text'
@@ -274,7 +289,7 @@ const RegisterPage = () => {
               />
             </div>
             <div>
-              <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Apellido *</label>
+              <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Apellido <span className='text-red-500'>*</span></label>
               <input
                 required
                 type='text'
@@ -298,7 +313,7 @@ const RegisterPage = () => {
           </div>
 
           <div>
-            <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Teléfono *</label>
+            <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Teléfono <span className='text-red-500'>*</span></label>
             <PhoneInputCO
               value={form.phone}
               onChange={(v) => setForm((f) => ({ ...f, phone: v }))}
@@ -306,7 +321,7 @@ const RegisterPage = () => {
           </div>
 
           <div>
-            <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Contraseña *</label>
+            <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Contraseña <span className='text-red-500'>*</span></label>
             <div className='relative'>
               <input
                 required
@@ -329,7 +344,7 @@ const RegisterPage = () => {
           </div>
 
           <div>
-            <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Confirmar contraseña *</label>
+            <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Confirmar contraseña <span className='text-red-500'>*</span></label>
             <div className='relative'>
               <input
                 required
