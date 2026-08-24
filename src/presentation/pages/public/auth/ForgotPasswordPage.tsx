@@ -215,6 +215,9 @@ const ForgotPasswordPage = () => {
             <span className='font-semibold text-slate-700'>{email}</span>.
             Válido por 10 minutos.
           </p>
+          <p className='mt-1 text-xs text-slate-400'>
+            Si no lo ves, revisa la carpeta de Spam o Correo no deseado.
+          </p>
 
           <ErrorBox />
 
