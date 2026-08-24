@@ -27,7 +27,7 @@ export const usePublicCatalog = () => {
   const [explicitSort, setExplicitSort] = useState<CatalogSortOption | null>(null);
   const [minPrice, setMinPrice] = useState<number | null>(null);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
-  const [onlyAvailable, setOnlyAvailable] = useState(false);
+  const [onlyAvailable, setOnlyAvailable] = useState(true);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);

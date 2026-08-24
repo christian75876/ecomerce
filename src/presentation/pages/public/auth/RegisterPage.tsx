@@ -21,6 +21,7 @@ const RegisterPage = () => {
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', password: '', confirm: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,6 +58,10 @@ const RegisterPage = () => {
     }
     if (form.password !== form.confirm) {
       setError('Las contraseñas no coinciden');
+      return;
+    }
+    if (!acceptedTerms) {
+      setError('Debes aceptar los términos y condiciones para continuar');
       return;
     }
     setError(null);
@@ -186,7 +191,26 @@ const RegisterPage = () => {
               </div>
             </div>
 
-            <button type='submit' disabled={submitting}
+            <label className='flex items-start gap-2 text-xs text-slate-500'>
+              <input
+                type='checkbox'
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className='mt-0.5 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary/30'
+              />
+              <span>
+                Acepto los{' '}
+                <Link to={ROUTES.PUBLIC.TERMS} target='_blank' className='font-semibold text-primary hover:underline'>
+                  términos y condiciones
+                </Link>{' '}
+                y la{' '}
+                <Link to={ROUTES.PUBLIC.PRIVACY} target='_blank' className='font-semibold text-primary hover:underline'>
+                  política de privacidad
+                </Link>
+              </span>
+            </label>
+
+            <button type='submit' disabled={submitting || !acceptedTerms}
               className='mt-2 w-full rounded-2xl bg-primary py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50'>
               {submitting ? 'Creando cuenta…' : 'Crear cuenta'}
             </button>
@@ -365,9 +389,28 @@ const RegisterPage = () => {
             </div>
           </div>
 
+          <label className='flex items-start gap-2 text-xs text-slate-500'>
+            <input
+              type='checkbox'
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              className='mt-0.5 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary/30'
+            />
+            <span>
+              Acepto los{' '}
+              <Link to={ROUTES.PUBLIC.TERMS} target='_blank' className='font-semibold text-primary hover:underline'>
+                términos y condiciones
+              </Link>{' '}
+              y la{' '}
+              <Link to={ROUTES.PUBLIC.PRIVACY} target='_blank' className='font-semibold text-primary hover:underline'>
+                política de privacidad
+              </Link>
+            </span>
+          </label>
+
           <button
             type='submit'
-            disabled={submitting}
+            disabled={submitting || !acceptedTerms}
             className='mt-2 w-full rounded-2xl bg-primary py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50'
           >
             {submitting ? 'Creando cuenta...' : 'Crear cuenta y entrar'}

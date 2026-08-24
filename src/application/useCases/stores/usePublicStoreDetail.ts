@@ -41,6 +41,7 @@ export const usePublicStoreDetail = (slug?: string) => {
     async (storeId: string, pageNum: number, sort: StoreSortOption, searchTerm: string) => {
       const response = await ProductRepository.getProducts({
         active: true,
+        onlyAvailable: true,
         storeId,
         page: pageNum,
         limit: PAGE_SIZE,

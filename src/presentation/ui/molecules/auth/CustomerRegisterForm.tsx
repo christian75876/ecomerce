@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import FormField from '@/presentation/ui/molecules/forms/FormField';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
@@ -6,6 +7,7 @@ import TurnstileWidget from '@/presentation/ui/molecules/common/TurnstileWidget'
 import { registerCustomerSchema } from '@/domain/validations/auth/RegisterCustomerValidation';
 import { useFormValidation } from '@/shared/hooks/useFormValidation';
 import { IRegisterCustomerForm } from '@/application/dtos/auth/register/customer/RegisterCustomerRequest';
+import { ROUTES } from '@/shared/constants/routes';
 
 interface CustomerRegisterFormProps {
   onSubmit: (data: IRegisterCustomerForm) => void;
@@ -19,6 +21,7 @@ const CustomerRegisterForm = ({
   error,
 }: CustomerRegisterFormProps) => {
   const [cfToken, setCfToken] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const {
     control,
     handleSubmit,
@@ -95,13 +98,31 @@ const CustomerRegisterForm = ({
           {error}
         </Box>
       ) : null}
+      <label className='flex items-start gap-2 text-xs text-neutral-dark/60'>
+        <input
+          type='checkbox'
+          checked={acceptedTerms}
+          onChange={(e) => setAcceptedTerms(e.target.checked)}
+          className='mt-0.5 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary/30'
+        />
+        <span>
+          Acepto los{' '}
+          <Link to={ROUTES.PUBLIC.TERMS} target='_blank' className='font-semibold text-primary hover:underline'>
+            términos y condiciones
+          </Link>{' '}
+          y la{' '}
+          <Link to={ROUTES.PUBLIC.PRIVACY} target='_blank' className='font-semibold text-primary hover:underline'>
+            política de privacidad
+          </Link>
+        </span>
+      </label>
       <TurnstileWidget onVerify={setCfToken} className='flex justify-center' />
       <Button
         type='submit'
         variant='primary'
         fullWidth
         size='lg'
-        disabled={!isValid || isLoading || !cfToken}
+        disabled={!isValid || isLoading || !cfToken || !acceptedTerms}
         className='min-h-12'
       >
         {isLoading ? 'Creando cuenta...' : 'Crear cuenta de comprador'}
