@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import TurnstileWidget from '@/presentation/ui/molecules/common/TurnstileWidget';
@@ -43,6 +43,15 @@ const LoginPage = () => {
       setMode('verify');
     }
   };
+
+  // Tras mostrar "Correo enviado", regresa sola al formulario de login —
+  // igual que VerifyEmailPage redirige sola tras confirmar el correo, en vez
+  // de dejar al usuario varado en el panel sin ninguna acción automática.
+  useEffect(() => {
+    if (mode !== 'verify') return;
+    const timeoutId = window.setTimeout(() => setMode('login'), 6000);
+    return () => window.clearTimeout(timeoutId);
+  }, [mode]);
   const {
     control,
     handleSubmit,

@@ -62,17 +62,17 @@ export const HomePage = () => {
     <Box className='space-y-8'>
       <Helmet>
         <title>Merku — Encuentra lo que buscas</title>
-        <meta name='description' content='Explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.' />
+        <meta name='description' content='Merku: explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.' />
         <link rel='canonical' href={`${import.meta.env.VITE_APP_URL ?? ''}/home`} />
         <meta property='og:type' content='website' />
         <meta property='og:site_name' content='Merku' />
         <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/home`} />
         <meta property='og:title' content='Merku — Encuentra lo que buscas' />
-        <meta property='og:description' content='Explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.' />
+        <meta property='og:description' content='Merku: explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.' />
         <meta property='og:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
         <meta name='twitter:card' content='summary_large_image' />
         <meta name='twitter:title' content='Merku — Encuentra lo que buscas' />
-        <meta name='twitter:description' content='Explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.' />
+        <meta name='twitter:description' content='Merku: explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.' />
         <meta name='twitter:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
       </Helmet>
       <HomeCatalogSection
