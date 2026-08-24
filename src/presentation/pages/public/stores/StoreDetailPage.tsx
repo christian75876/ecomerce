@@ -349,7 +349,7 @@ const StoreDetailPage = () => {
                   <div className='flex flex-1 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm transition focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10'>
                     <i className='bx bx-search shrink-0 text-lg text-slate-400' aria-hidden='true' />
                     <input
-                      type='search'
+                      type='text'
                       value={storeSearch}
                       onChange={(e) => setStoreSearch(e.target.value)}
                       placeholder={`Buscar en ${store.name}...`}
