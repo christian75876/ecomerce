@@ -3,7 +3,15 @@ import { IProduct } from '@/application/dtos/products/response/ProductResponse';
 import ProductCard from '../../molecules/products/ProductCard';
 import Box from '../../atoms/box/SimpleBox';
 import Typography from '../../atoms/typography/SimpleTypography';
+import { Reveal } from '../../molecules/common/Reveal';
 import { ROUTES } from '@/shared/constants/routes';
+
+/** Stagger delay per grid position, capped so a long grid doesn't leave the
+ * last rows waiting seconds to reveal — only the first "page" staggers,
+ * everything past it reveals together. */
+const STAGGER_STEP = 0.05;
+const STAGGER_CAP = 10;
+const staggerDelay = (index: number) => Math.min(index, STAGGER_CAP) * STAGGER_STEP;
 
 interface ProductBodyProps {
   products: IProduct[];
@@ -45,35 +53,36 @@ const ProductBody = ({
     );
   }
 
-  const cards = products.map((product) => (
-    <ProductCard
-      key={product.id}
-      id={product.id}
-      image={product.imageUrl || fallbackImage}
-      name={product.name}
-      description={product.description}
-      price={Number(product.price).toFixed(2)}
-      compareAtPrice={product.compareAtPrice}
-      availableQuantity={product.availableQuantity}
-      showStock={product.showStock}
-      averageRating={product.averageRating}
-      reviewCount={product.reviewCount}
-      storeName={product.store?.name}
-      storeSlug={product.store?.slug}
-      isAdultContent={product.store?.isAdultContent}
-      isSponsored={sponsoredIds.includes(product.id)}
-      layoutStyle={layoutStyle}
-      buttonStyle={buttonStyle}
-      primaryColor={primaryColor}
-      addToCartLabel={product.hasVariants ? 'Ver opciones' : 'Agregar'}
-      onAddToCart={() => {
-        if (product.hasVariants) {
-          navigate(ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', product.id));
-        } else {
-          onAddToCart?.(product.id);
-        }
-      }}
-    />
+  const cards = products.map((product, index) => (
+    <Reveal key={product.id} effect='fade-up' delay={staggerDelay(index)} className='h-full'>
+      <ProductCard
+        id={product.id}
+        image={product.imageUrl || fallbackImage}
+        name={product.name}
+        description={product.description}
+        price={Number(product.price).toFixed(2)}
+        compareAtPrice={product.compareAtPrice}
+        availableQuantity={product.availableQuantity}
+        showStock={product.showStock}
+        averageRating={product.averageRating}
+        reviewCount={product.reviewCount}
+        storeName={product.store?.name}
+        storeSlug={product.store?.slug}
+        isAdultContent={product.store?.isAdultContent}
+        isSponsored={sponsoredIds.includes(product.id)}
+        layoutStyle={layoutStyle}
+        buttonStyle={buttonStyle}
+        primaryColor={primaryColor}
+        addToCartLabel={product.hasVariants ? 'Ver opciones' : 'Agregar'}
+        onAddToCart={() => {
+          if (product.hasVariants) {
+            navigate(ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', product.id));
+          } else {
+            onAddToCart?.(product.id);
+          }
+        }}
+      />
+    </Reveal>
   ));
 
   if (layoutStyle === 'LIST') {

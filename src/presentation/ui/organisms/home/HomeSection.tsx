@@ -1,4 +1,5 @@
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
+import { Reveal } from '@/presentation/ui/molecules/common/Reveal';
 
 interface HomeSectionProps {
   title: string;
@@ -17,15 +18,17 @@ const HomeSection = ({
 }: HomeSectionProps) => {
   return (
     <Box className={`${className}`.trim()}>
-      <Box className='mb-4 flex items-end justify-between gap-4'>
-        <Box>
-          <h2 className='text-xl font-bold tracking-tight text-slate-900'>{title}</h2>
-          {subtitle ? (
-            <p className='mt-0.5 text-sm text-slate-500'>{subtitle}</p>
-          ) : null}
+      <Reveal effect='fade-up'>
+        <Box className='mb-5 flex items-end justify-between gap-4'>
+          <Box>
+            <h2 className='font-display text-2xl font-extrabold tracking-tight text-neutral-dark'>{title}</h2>
+            {subtitle ? (
+              <p className='mt-0.5 text-sm text-neutral-muted'>{subtitle}</p>
+            ) : null}
+          </Box>
+          {action ? <Box className='flex-shrink-0'>{action}</Box> : null}
         </Box>
-        {action ? <Box className='flex-shrink-0'>{action}</Box> : null}
-      </Box>
+      </Reveal>
       {children}
     </Box>
   );

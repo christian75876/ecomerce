@@ -122,16 +122,18 @@ export const HomePage = () => {
             <HomeFeaturedStores stores={featuredStores} />
           </Box>
 
-          <HomeProductRail
-            title='Recién llegados'
-            subtitle='Productos nuevos para descubrir antes que nadie.'
-            products={newestProducts.slice(0, 6)}
-            loading={homeLoading}
-            emptyMessage='Todavía no hay productos nuevos para mostrar.'
-            onAddToCart={(productId) =>
-              addProductToCart(productId, newestProducts)
-            }
-          />
+          <Box className='-mx-4 border-y border-secondary-100 bg-secondary-50/60 px-4 py-8 sm:-mx-6 sm:px-6 lg:-mx-8 lg:rounded-[2rem] lg:border-x lg:px-8'>
+            <HomeProductRail
+              title='Recién llegados'
+              subtitle='Productos nuevos para descubrir antes que nadie.'
+              products={newestProducts.slice(0, 6)}
+              loading={homeLoading}
+              emptyMessage='Todavía no hay productos nuevos para mostrar.'
+              onAddToCart={(productId) =>
+                addProductToCart(productId, newestProducts)
+              }
+            />
+          </Box>
         </>
       ) : null}
     </Box>

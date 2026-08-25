@@ -1,6 +1,8 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { IProduct } from '@/application/dtos/products/response/ProductResponse';
 import ProductBody from '@/presentation/ui/organisms/products/ProductBody';
+import Marquee from '@/presentation/ui/molecules/common/Marquee';
+import { Reveal } from '@/presentation/ui/molecules/common/Reveal';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import { userPreferences } from '@/shared/utils/userPreferences';
 import { CatalogSortOption } from '@/application/useCases/products/usePublicCatalog';
@@ -10,6 +12,15 @@ const SORT_OPTIONS: { value: CatalogSortOption; label: string; icon: string }[] 
   { value: 'price_asc',  label: 'Precio: menor a mayor',   icon: 'bx-trending-up'  },
   { value: 'price_desc', label: 'Precio: mayor a menor',   icon: 'bx-trending-down'},
   { value: 'name_asc',   label: 'Nombre A–Z',              icon: 'bx-sort-a-z'     },
+];
+
+const MARQUEE_ITEMS = [
+  'Tiendas de barrio',
+  'Restaurantes locales',
+  'Entrega el mismo día',
+  'Apoya el comercio local',
+  'Miles de productos',
+  'Paga como quieras',
 ];
 
 function getSearchAffinityScore(product: IProduct): number {
@@ -195,70 +206,90 @@ const HomeCatalogSection = ({
   const priceFilterActive = minPrice !== null || maxPrice !== null;
 
   return (
-    <div className='space-y-5'>
-      {/* ── Hero search banner ── */}
-      <div className='gradient-hero relative overflow-hidden rounded-3xl px-6 py-6 text-white shadow-lg sm:px-10'>
-        <div
-          className='pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/5'
-          aria-hidden='true'
-        />
-        <div
-          className='pointer-events-none absolute -bottom-20 left-8 h-48 w-48 rounded-full bg-white/5'
-          aria-hidden='true'
-        />
+    <div className='space-y-6'>
+      {/* ── Hero search banner — full-bleed, escapes the page's px padding
+          via negative margins matched to DashboardLayout's own px-4/6/8. ── */}
+      <div className='-mx-4 sm:-mx-6 lg:-mx-8'>
+        <div className='gradient-hero relative overflow-hidden px-6 pb-10 pt-12 text-neutral-dark sm:px-10 sm:pb-14 sm:pt-16 lg:rounded-b-[2.5rem]'>
+          <div
+            className='pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full bg-white/10 blur-2xl'
+            aria-hidden='true'
+          />
+          <div
+            className='pointer-events-none absolute -bottom-24 left-4 h-64 w-64 rounded-full bg-highlight/20 blur-2xl'
+            aria-hidden='true'
+          />
+          <div
+            className='pointer-events-none absolute right-1/3 top-1/2 h-40 w-40 -translate-y-1/2 rounded-full bg-secondary/20 blur-2xl'
+            aria-hidden='true'
+          />
 
-        <div className='relative z-10 mx-auto max-w-2xl text-center'>
-          <p className='mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/60'>Merku</p>
-          <h1 className='mb-3 text-2xl font-extrabold tracking-tight'>
-            Encuentra lo que necesitas en Merku
-          </h1>
-          <div ref={searchBoxRef} className='relative'>
-            <div className='flex items-center gap-2 rounded-2xl bg-white/15 px-4 py-2.5 ring-1 ring-white/20 backdrop-blur-sm transition-all focus-within:bg-white/20 focus-within:ring-white/40'>
-              <i
-                className='bx bx-search text-xl text-white/70'
-                aria-hidden='true'
-              />
-              <input
-                type='text'
-                value={search}
-                onChange={e => onSearchChange(e.target.value)}
-                onFocus={() => setSearchSuggestionsOpen(true)}
-                placeholder='Buscar productos...'
-                className='flex-1 bg-transparent text-sm font-medium text-white placeholder:text-white/50 focus:outline-none'
-                aria-label='Buscar productos'
-              />
-              {search ? (
-                <button
-                  type='button'
-                  onClick={() => onSearchChange('')}
-                  className='text-white/60 hover:text-white'
-                  aria-label='Limpiar búsqueda'
-                >
-                  <i className='bx bx-x text-lg' aria-hidden='true' />
-                </button>
-              ) : null}
-            </div>
+          <Reveal effect='fade-up' slow>
+            <div className='relative z-10 mx-auto max-w-2xl text-center'>
+              <p className='mb-2 text-xs font-bold uppercase tracking-[0.3em] text-neutral-dark/60'>
+                Mercado Merku
+              </p>
+              <h1 className='mb-4 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-balance sm:text-5xl'>
+                Todo tu barrio, a un clic de distancia
+              </h1>
+              <p className='mx-auto mb-6 max-w-md text-sm font-medium text-neutral-dark/70 sm:text-base'>
+                Miles de productos de tiendas y restaurantes cerca de ti.
+              </p>
 
-            {searchSuggestionsOpen && searchSuggestions.length > 0 ? (
-              <div className='absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-xl'>
-                <p className='px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400'>
-                  Búsquedas recientes
-                </p>
-                {searchSuggestions.map((term) => (
-                  <button
-                    key={term}
-                    type='button'
-                    onClick={() => { onSearchChange(term); setSearchSuggestionsOpen(false); }}
-                    className='flex w-full items-center gap-3 px-4 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900'
-                  >
-                    <i className='bx bx-history text-base text-slate-400' aria-hidden='true' />
-                    {term}
-                  </button>
-                ))}
+              <div ref={searchBoxRef} className='relative'>
+                <div className='flex items-center gap-2 rounded-2xl bg-white/70 px-4 py-3 shadow-panel ring-1 ring-white/60 backdrop-blur-sm transition-all focus-within:ring-2 focus-within:ring-neutral-dark/20'>
+                  <i
+                    className='bx bx-search text-xl text-neutral-dark/50'
+                    aria-hidden='true'
+                  />
+                  <input
+                    type='text'
+                    value={search}
+                    onChange={e => onSearchChange(e.target.value)}
+                    onFocus={() => setSearchSuggestionsOpen(true)}
+                    placeholder='Buscar productos...'
+                    className='flex-1 bg-transparent text-sm font-medium text-neutral-dark placeholder:text-neutral-dark/40 focus:outline-none'
+                    aria-label='Buscar productos'
+                  />
+                  {search ? (
+                    <button
+                      type='button'
+                      onClick={() => onSearchChange('')}
+                      className='text-neutral-dark/50 hover:text-neutral-dark'
+                      aria-label='Limpiar búsqueda'
+                    >
+                      <i className='bx bx-x text-lg' aria-hidden='true' />
+                    </button>
+                  ) : null}
+                </div>
+
+                {searchSuggestionsOpen && searchSuggestions.length > 0 ? (
+                  <div className='absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-xl'>
+                    <p className='px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400'>
+                      Búsquedas recientes
+                    </p>
+                    {searchSuggestions.map((term) => (
+                      <button
+                        key={term}
+                        type='button'
+                        onClick={() => { onSearchChange(term); setSearchSuggestionsOpen(false); }}
+                        className='flex w-full items-center gap-3 px-4 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900'
+                      >
+                        <i className='bx bx-history text-base text-slate-400' aria-hidden='true' />
+                        {term}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
               </div>
-            ) : null}
-          </div>
+            </div>
+          </Reveal>
         </div>
+
+        <Marquee
+          items={MARQUEE_ITEMS}
+          className='border-y border-black/10 bg-neutral-dark py-2.5 text-neutral-50'
+        />
       </div>
 
       {/* ── Controls ── */}
@@ -268,7 +299,7 @@ const HomeCatalogSection = ({
             <button
               type='button'
               onClick={() => setFiltersOpen(o => !o)}
-              className={`relative flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${
+              className={`relative flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold shadow-sm transition ${
                 filtersOpen || activeFilterCount > 0
                   ? 'border-primary bg-primary/5 text-primary'
                   : 'border-slate-200 bg-white text-slate-700 hover:border-primary/40 hover:text-primary'
@@ -293,7 +324,7 @@ const HomeCatalogSection = ({
               <button
                 type='button'
                 onClick={() => setSortOpen(o => !o)}
-                className='flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-primary/40 hover:text-primary'
+                className='flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-primary/40 hover:text-primary'
               >
                 <i
                   className={`bx ${SORT_OPTIONS.find(o => o.value === sortBy)?.icon} text-base`}

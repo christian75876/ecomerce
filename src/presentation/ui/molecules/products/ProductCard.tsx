@@ -73,7 +73,7 @@ const ProductCard = ({
   const customBtnStyle = primaryColor ? { backgroundColor: primaryColor } : undefined;
 
   return (
-    <article className={`group relative flex overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card transition-all duration-250 hover:-translate-y-1 hover:border-primary/25 hover:shadow-panel ${layoutStyle === 'LIST' ? 'flex-row' : 'flex-col'}`}>
+    <article className={`group relative flex h-full overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card transition-all duration-250 ease-spring hover:-translate-y-1.5 hover:-rotate-1 hover:border-primary/25 hover:shadow-panel ${layoutStyle === 'LIST' ? 'flex-row hover:rotate-0' : 'flex-col'}`}>
       {/* ── Image ── */}
       <Link
         to={ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', id)}
@@ -96,7 +96,7 @@ const ProductCard = ({
 
           {/* Discount badge */}
           {hasDiscount ? (
-            <span className='absolute left-2 top-2 rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white shadow'>
+            <span className='absolute left-2 top-2 rounded-full bg-error px-2 py-0.5 text-xs font-bold text-white shadow'>
               -{discountPct}%
             </span>
           ) : badge ? (
@@ -118,7 +118,7 @@ const ProductCard = ({
               Agotado
             </span>
           ) : showStock && isLowStock ? (
-            <span className='absolute bottom-2 left-2 rounded-full bg-orange-500/90 px-2 py-0.5 text-xs font-semibold text-white'>
+            <span className='absolute bottom-2 left-2 rounded-full bg-warning/90 px-2 py-0.5 text-xs font-semibold text-white'>
               ¡Solo {availableQuantity} en stock!
             </span>
           ) : null}
@@ -137,7 +137,7 @@ const ProductCard = ({
               {storeName}
             </Link>
             {isSponsored ? (
-              <span className='flex-shrink-0 rounded-full border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-amber-600'>
+              <span className='flex-shrink-0 rounded-full border border-highlight/40 bg-highlight-50 px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-neutral-dark'>
                 Patrocinado
               </span>
             ) : null}
