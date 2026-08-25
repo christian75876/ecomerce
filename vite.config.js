@@ -86,6 +86,23 @@ export default defineConfig({
     }),
   ],
 
+  build: {
+    rollupOptions: {
+      output: {
+        // Split heavy, infrequently-needed third-party deps into their own
+        // vendor chunks so a change to app code doesn't invalidate the cache
+        // for these, and pages that don't use maps/charts don't pay for them
+        // in the main bundle.
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-leaflet': ['leaflet', 'react-leaflet'],
+          'vendor-recharts': ['recharts'],
+          'vendor-motion': ['framer-motion'],
+        },
+      },
+    },
+  },
+
   server: {
     proxy: {
       // Reenvía las llamadas del frontend local a la API de producción

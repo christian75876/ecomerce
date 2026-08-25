@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import html2canvas from 'html2canvas';
 import Box from '@atoms/box/SimpleBox';
 import Button from '@atoms/button/SimpleButton';
 import Typography from '@atoms/typography/SimpleTypography';
@@ -28,6 +27,9 @@ const AdminDashboard = () => {
     if (!dashboardRef.current) return;
     setExporting(true);
     try {
+      // Loaded on demand — most admin visits never export the dashboard,
+      // and html2canvas is a sizable dependency to ship on every visit.
+      const { default: html2canvas } = await import('html2canvas');
       const canvas = await html2canvas(dashboardRef.current, {
         scale: 2,
         useCORS: true,
