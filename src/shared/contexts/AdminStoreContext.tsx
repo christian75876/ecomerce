@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useState } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
 import { StoresRepository } from '@/infrastructure/repositories/api/stores/StoresRepository';
@@ -43,8 +43,13 @@ export const AdminStoreProvider = ({ children }: { children: ReactNode }) => {
 
   const selectedStore = stores.find((s) => s.id === selectedStoreId);
 
+  const value = useMemo(
+    () => ({ selectedStoreId, selectedStore, stores, setSelectedStoreId, loadStores }),
+    [selectedStoreId, selectedStore, stores, loadStores],
+  );
+
   return (
-    <AdminStoreContext.Provider value={{ selectedStoreId, selectedStore, stores, setSelectedStoreId, loadStores }}>
+    <AdminStoreContext.Provider value={value}>
       {children}
     </AdminStoreContext.Provider>
   );

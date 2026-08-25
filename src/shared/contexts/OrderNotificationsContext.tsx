@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -117,7 +118,7 @@ export const OrderNotificationsProvider = ({ children }: { children: ReactNode }
     });
   }, []);
 
-  const dismissLatest = () => setLatestNotification(null);
+  const dismissLatest = useCallback(() => setLatestNotification(null), []);
 
   // Pre-load recent order history. Uses orderId as stable notification ID so
   // localStorage read state survives page reloads and SSE deduplication works.
@@ -269,10 +270,13 @@ export const OrderNotificationsProvider = ({ children }: { children: ReactNode }
     };
   }, [connect, loadInitialOrders]);
 
+  const value = useMemo(
+    () => ({ notifications, unreadCount, latestNotification, connectionStatus, markAllRead, markRead, dismissLatest }),
+    [notifications, unreadCount, latestNotification, connectionStatus, markAllRead, markRead, dismissLatest],
+  );
+
   return (
-    <OrderNotificationsContext.Provider
-      value={{ notifications, unreadCount, latestNotification, connectionStatus, markAllRead, markRead, dismissLatest }}
-    >
+    <OrderNotificationsContext.Provider value={value}>
       {children}
     </OrderNotificationsContext.Provider>
   );
