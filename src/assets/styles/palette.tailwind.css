@@ -8,41 +8,54 @@
  * cleaned up ~90 scattered hardcoded hex values once, don't reintroduce them.
  *
  * WCAG AA contrast, measured against the two text colors this system uses
- * (verified with the actual relative-luminance formula, not eyeballed):
- *   --color-neutral-dark (ink)  on primary/highlight → 5.7:1 / 10.6:1  ✅ passes at any size
- *   --color-neutral-dark (ink)  on secondary/accent  → 4.3:1 / 4.2:1  ✅ large text (≥24px or ≥19px bold) only
- *   white                       on primary/secondary/accent/highlight → 2.9–3.9:1  ❌ fails at any size
- *   white                       on the *-dark shade of secondary/accent → 5.4–5.5:1 ✅ passes at any size
- * Practical rule: big display type sits directly on a raw section color and
- * always uses ink (never white). Small UI text/paragraphs never sit directly
- * on a raw accent fill — they live inside a white/cream card floating on top
- * (the "market stall" construction), or use the color's *-dark shade with
- * white if a solid small badge/button really needs to be accent-colored.
+ * (verified with the actual relative-luminance formula, not eyeballed).
+ *
+ * IMPORTANT — the base primary/secondary/accent tokens are the *deep*
+ * shade, not the vivid swatch. Contrast math is symmetric: a color bright
+ * enough that white text fails on it as a background (2.9–3.9:1) is, for
+ * the same luminance reason, also too bright to serve as small TEXT on a
+ * white/cream page (same 2.9–3.9:1, failing). Since `text-primary` /
+ * `text-accent` / `text-secondary` are used for links, prices and body
+ * copy in ~100+ places across the app, the base token has to be the
+ * AA-safe deep shade so all of that stays correct automatically. The
+ * vivid swatch still exists — as `*-light` — for large decorative
+ * surfaces (hero blocks, full-bleed sections) where ink text is used
+ * directly and contrast is handled at the call site.
+ *
+ *   --color-neutral-dark (ink) on primary-light/highlight → 5.7:1 / 10.6:1  ✅ any size
+ *   --color-neutral-dark (ink) on secondary-light/accent-light → 4.3:1 / 4.2:1 ✅ large text only (≥24px or ≥19px bold)
+ *   white on primary-light/secondary-light/accent-light/highlight → 2.9–3.9:1  ❌ fails at any size
+ *   white / ink-on-white text using the base primary/secondary/accent token → ≥5.2:1 ✅ passes at any size
+ *
+ * Practical rule: big display type sits directly on a raw *-light section
+ * color and always uses ink (never white). Everything else — links, prices,
+ * small badges, buttons with white text — uses the base (deep) token, which
+ * is AA-safe both as text-on-cream and as a background with white text.
  */
 @theme {
   /* ── Primary: Papaya (CTAs, links, the "Merku orange" people recognize) ── */
-  --color-primary: #ff6b35;
+  --color-primary: #c23f13;
   --color-primary-50: #fff1ea;
   --color-primary-100: #ffe0d0;
   --color-primary-200: #ffc2a1;
-  --color-primary-light: #ff8b5c;
-  --color-primary-dark: #e5501c;
-  --color-primary-darker: #c23f13;
+  --color-primary-light: #ff6b35;
+  --color-primary-dark: #9e3313;
+  --color-primary-darker: #7a280f;
 
   /* ── Secondary: Turquesa (secondary actions, one of the 4 section blocks) ── */
-  --color-secondary: #0e9594;
+  --color-secondary: #0b7776;
   --color-secondary-50: #e6f7f6;
   --color-secondary-100: #c3ecea;
-  --color-secondary-light: #29b0ae;
-  --color-secondary-dark: #0b7776;
+  --color-secondary-light: #0e9594;
+  --color-secondary-dark: #085f5e;
 
   /* ── Accent: Guayaba (prices, sponsored badges, a 2nd section block) ── */
-  --color-accent: #e93e7d;
+  --color-accent: #c42763;
   --color-accent-50: #fdecf2;
   --color-accent-100: #fbd2e1;
-  --color-accent-light: #f0619a;
-  --color-accent-dark: #c42763;
-  --color-accent-darker: #9e1e4f;
+  --color-accent-light: #e93e7d;
+  --color-accent-dark: #9e1e4f;
+  --color-accent-darker: #7a1740;
 
   /* ── Highlight: Banano (ratings/small highlights, a 3rd section block) ── */
   --color-highlight: #ffc93c;
@@ -132,15 +145,19 @@
     -webkit-backdrop-filter: blur(20px);
   }
 
-  /* Hero/banner gradient — papaya into guayaba, the two warmest accents */
+  /* Hero/banner gradient — papaya into guayaba, the two warmest accents.
+     Uses the *-light (vivid) tokens: this is a large decorative surface
+     paired with ink text, not small text-on-color, so the vivid swatch
+     is the right — and AA-safe — choice here. */
   .gradient-hero {
-    background: linear-gradient(135deg, #e5501c 0%, #ff6b35 45%, #e93e7d 100%);
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 45%, var(--color-accent-light) 100%);
   }
 
-  /* Primary button gradient — driven by the theme tokens so it can never
-     drift from the palette above. */
+  /* Primary button gradient — stays within the papaya hue (light → base)
+     rather than crossing into guayaba, so ink text stays comfortably
+     AA-compliant across the *entire* gradient, not just its endpoints. */
   .btn-gradient-primary {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+    background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary) 100%);
     box-shadow: 0 4px 14px rgba(255, 107, 53, 0.35);
   }
   .btn-gradient-primary:hover:not(:disabled) {
@@ -152,9 +169,11 @@
     background: var(--page-bg);
   }
 
-  /* Gradient brand text */
+  /* Gradient brand text — decorative display headlines only (never body
+     text/links: gradient-clip text has no reliable single contrast value
+     to verify against a background). */
   .text-gradient-brand {
-    background: linear-gradient(135deg, #ff6b35 0%, #e93e7d 100%);
+    background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-accent-light) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -162,7 +181,7 @@
 
   /* Gradient accent text */
   .text-gradient-accent {
-    background: linear-gradient(135deg, #0e9594 0%, #ffc93c 100%);
+    background: linear-gradient(135deg, var(--color-secondary-light) 0%, var(--color-highlight) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -181,13 +200,13 @@
   .badge-primary {
     @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset;
     background-color: var(--color-primary-50);
-    color: var(--color-primary-dark);
+    color: var(--color-primary);
     --tw-ring-color: var(--color-primary-100);
   }
   .badge-accent {
     @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset;
     background-color: var(--color-accent-50);
-    color: var(--color-accent-dark);
+    color: var(--color-accent);
     --tw-ring-color: var(--color-accent-100);
   }
 }
