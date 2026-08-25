@@ -11,14 +11,10 @@ const Card = ({ children, className }: CardProps) => {
   return (
     <Box
       className={clsx(
-        'rounded-2xl bg-white p-4 transition-all duration-200',
+        'rounded-2xl border border-slate-900/[0.07] bg-white p-4 shadow-card transition-all duration-200',
         'hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/8',
         className
       )}
-      style={{
-        border: '1px solid rgba(15,23,42,0.07)',
-        boxShadow: '0 1px 4px rgba(15,23,42,0.05), 0 4px 16px rgba(99,102,241,0.05)',
-      }}
     >
       {children}
     </Box>

@@ -21,10 +21,6 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
 }
 
-const GRADIENT_PRIMARY = 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)';
-const SHADOW_PRIMARY = '0 4px 14px rgba(99, 102, 241, 0.35)';
-const SHADOW_PRIMARY_HOVER = '0 6px 20px rgba(99, 102, 241, 0.45)';
-
 const Button: React.FC<ButtonProps> = ({
   children,
   variant = 'primary',
@@ -36,26 +32,9 @@ const Button: React.FC<ButtonProps> = ({
   disabled,
   className,
   style,
-  onMouseEnter,
-  onMouseLeave,
   ...props
 }) => {
   const isDisabled = disabled || loading;
-  const isPrimary = variant === 'primary' && !isDisabled;
-
-  const computedStyle: React.CSSProperties = isPrimary
-    ? { background: GRADIENT_PRIMARY, boxShadow: SHADOW_PRIMARY, ...style }
-    : style ?? {};
-
-  const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (isPrimary) e.currentTarget.style.boxShadow = SHADOW_PRIMARY_HOVER;
-    onMouseEnter?.(e);
-  };
-
-  const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (isPrimary) e.currentTarget.style.boxShadow = SHADOW_PRIMARY;
-    onMouseLeave?.(e);
-  };
 
   return (
     <button
@@ -76,7 +55,7 @@ const Button: React.FC<ButtonProps> = ({
           'w-auto': !fullWidth,
 
           /* Variants */
-          'text-white hover:opacity-90 focus-visible:ring-indigo-400/50':
+          'btn-gradient-primary text-white hover:opacity-90 focus-visible:ring-indigo-400/50 transition-shadow':
             variant === 'primary' && !isDisabled,
           'bg-violet-600 text-white shadow-sm hover:bg-violet-700 focus-visible:ring-violet-400/50':
             variant === 'secondary' && !isDisabled,
@@ -97,11 +76,9 @@ const Button: React.FC<ButtonProps> = ({
         },
         className
       )}
-      style={computedStyle}
+      style={style}
       disabled={isDisabled}
       aria-busy={loading}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
       {...props}
     >
       {loading ? (

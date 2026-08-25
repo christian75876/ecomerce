@@ -105,6 +105,16 @@
     background: linear-gradient(135deg, #4338ca 0%, #6366f1 45%, #8b5cf6 100%);
   }
 
+  /* Primary button gradient — same stops as .text-gradient-brand, driven by
+     the theme tokens so both stay in sync if the brand colors ever change. */
+  .btn-gradient-primary {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+  }
+  .btn-gradient-primary:hover:not(:disabled) {
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+  }
+
   /* Admin page background */
   .gradient-dashboard {
     background: var(--page-bg);
