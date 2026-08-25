@@ -34,6 +34,9 @@
   --color-neutral-gray: #cbd5e1;
   --color-neutral-muted: #64748b;
 
+  /* ── Brand-external: WhatsApp (contact links, floating button) ── */
+  --color-whatsapp: #25d366;
+
   /* ── Semantic ── */
   --color-background: #f7f7fb;
   --color-surface: #ffffff;

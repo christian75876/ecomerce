@@ -95,7 +95,7 @@ const Hero = () => (
             rel='noopener noreferrer'
             className='flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-bold text-slate-700 shadow-sm transition hover:border-primary/30 hover:text-primary hover:-translate-y-0.5'
           >
-            <i className='bx bxl-whatsapp text-base text-[#25D366]' />
+            <i className='bx bxl-whatsapp text-base text-whatsapp' />
             Quiero vender aquí
           </a>
         </div>
@@ -282,7 +282,7 @@ const ForSellers = () => (
           rel='noopener noreferrer'
           className='mt-6 inline-flex items-center gap-2 rounded-2xl bg-white px-6 py-3 text-sm font-bold text-primary shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl'
         >
-          <i className='bx bxl-whatsapp text-lg text-[#25D366]' />
+          <i className='bx bxl-whatsapp text-lg text-whatsapp' />
           Solicitar acceso por WhatsApp
         </a>
       </div>

@@ -285,7 +285,7 @@ const ProductDetails = () => {
                   const msg = encodeURIComponent(`¡Mira este producto: ${product.name}! ${window.location.href}`);
                   window.open(`https://wa.me/?text=${msg}`, '_blank');
                 }}
-                className='flex h-8 w-8 items-center justify-center rounded-full bg-[#25D366] text-white shadow-sm transition hover:opacity-90'
+                className='flex h-8 w-8 items-center justify-center rounded-full bg-whatsapp text-white shadow-sm transition hover:opacity-90'
               >
                 <i className='bx bxl-whatsapp text-base' aria-hidden='true' />
               </button>

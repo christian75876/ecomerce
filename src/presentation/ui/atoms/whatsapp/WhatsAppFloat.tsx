@@ -35,9 +35,9 @@ const WhatsAppFloat = ({ phoneNumber, message, raised = false }: WhatsAppFloatPr
       target='_blank'
       rel='noopener noreferrer'
       aria-label='Chatear por WhatsApp'
-      className={`fixed right-4 z-[90] flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] shadow-lg transition-transform hover:scale-110 active:scale-95 ${raised ? 'bottom-40 lg:bottom-28' : 'bottom-24 sm:bottom-6'}`}
+      className={`fixed right-4 z-[90] flex h-14 w-14 items-center justify-center rounded-full bg-whatsapp shadow-lg transition-transform hover:scale-110 active:scale-95 ${raised ? 'bottom-40 lg:bottom-28' : 'bottom-24 sm:bottom-6'}`}
     >
-      <span className='absolute inset-0 animate-ping rounded-full bg-[#25D366] opacity-30' />
+      <span className='absolute inset-0 animate-ping rounded-full bg-whatsapp opacity-30' />
       <svg
         xmlns='http://www.w3.org/2000/svg'
         viewBox='0 0 24 24'

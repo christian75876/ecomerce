@@ -455,9 +455,9 @@ const ProfilePage = () => {
               {/* WhatsApp panel */}
               <div className='rounded-[1.75rem] border border-neutral-gray/20 bg-white p-6 shadow-sm'>
                 <div className='mb-6 flex items-center gap-3'>
-                  <div className='flex h-10 w-10 items-center justify-center rounded-2xl bg-[#25D366]/10'>
+                  <div className='flex h-10 w-10 items-center justify-center rounded-2xl bg-whatsapp/10'>
                     <i
-                      className='bx bxl-whatsapp text-xl text-[#25D366]'
+                      className='bx bxl-whatsapp text-xl text-whatsapp'
                       aria-hidden='true'
                     />
                   </div>
@@ -552,7 +552,7 @@ const ProfilePage = () => {
                             disabled={storeSaving === store.id}
                             className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none disabled:opacity-50 ${
                               store.wppNotificationsEnabled
-                                ? 'bg-[#25D366]'
+                                ? 'bg-whatsapp'
                                 : 'bg-slate-200'
                             }`}
                             aria-label={
@@ -592,7 +592,7 @@ const ProfilePage = () => {
                                       }
                                     }))
                                   }
-                                  className='w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-[#25D366]/40 focus:ring-2 focus:ring-[#25D366]/10'
+                                  className='w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-whatsapp/40 focus:ring-2 focus:ring-whatsapp/10'
                                 />
                               </div>
                               <div>
@@ -612,7 +612,7 @@ const ProfilePage = () => {
                                       }
                                     }))
                                   }
-                                  className='w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-[#25D366]/40 focus:ring-2 focus:ring-[#25D366]/10'
+                                  className='w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-whatsapp/40 focus:ring-2 focus:ring-whatsapp/10'
                                 />
                               </div>
                             </div>
@@ -620,7 +620,7 @@ const ProfilePage = () => {
                               type='button'
                               onClick={() => void saveContact(store)}
                               disabled={storeSaving === store.id + '_save'}
-                              className='flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50'
+                              className='flex items-center gap-2 rounded-xl bg-whatsapp px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50'
                             >
                               <i
                                 className='bx bx-check text-base'

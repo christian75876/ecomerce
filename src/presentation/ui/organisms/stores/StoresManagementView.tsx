@@ -475,7 +475,7 @@ const SubscriptionInfo = ({ expiresAt }: { expiresAt: string }) => {
           href={`https://wa.me/${ADMIN_WHATSAPP}?text=${wppMsg}`}
           target='_blank'
           rel='noopener noreferrer'
-          className='inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95'
+          className='inline-flex items-center gap-2 rounded-xl bg-whatsapp px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95'
         >
           <i className='bx bxl-whatsapp text-base' aria-hidden='true' />
           Renovar / contratar plan
@@ -909,7 +909,7 @@ export const StoresManagementView = ({
                           href={`https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent('Hola, estoy interesado en el plan Patrocinado para destacar mis productos en el catálogo.')}`}
                           target='_blank'
                           rel='noopener noreferrer'
-                          className='mt-3 inline-flex items-center gap-1.5 rounded-xl bg-[#25D366] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95'
+                          className='mt-3 inline-flex items-center gap-1.5 rounded-xl bg-whatsapp px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95'
                         >
                           <i className='bx bxl-whatsapp text-sm' aria-hidden='true' />
                           Contratar plan patrocinado

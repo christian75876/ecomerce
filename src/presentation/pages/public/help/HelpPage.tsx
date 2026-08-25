@@ -277,7 +277,7 @@ const SectionWhatsApp = () => (
           href='https://wa.me/34644597287'
           target='_blank'
           rel='noopener noreferrer'
-          className='mt-2 inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2 text-sm font-semibold text-white hover:opacity-90'
+          className='mt-2 inline-flex items-center gap-2 rounded-xl bg-whatsapp px-4 py-2 text-sm font-semibold text-white hover:opacity-90'
         >
           <i className='bx bxl-whatsapp text-base' aria-hidden='true' />
           Abrir chat con CallMeBot
@@ -523,7 +523,7 @@ const HelpPage = () => {
             href={`https://wa.me/${ADMIN_WHATSAPP}`}
             target='_blank'
             rel='noopener noreferrer'
-            className='flex items-center gap-2 rounded-2xl bg-[#25D366] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90'
+            className='flex items-center gap-2 rounded-2xl bg-whatsapp px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90'
           >
             <i className='bx bxl-whatsapp text-base' aria-hidden='true' />
             WhatsApp
