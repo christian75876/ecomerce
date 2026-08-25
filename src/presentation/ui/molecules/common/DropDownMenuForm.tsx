@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import Box from '../../atoms/box/SimpleBox';
 import { Control, Controller, FieldValues, Path } from 'react-hook-form';
 import Label from '../../atoms/label/SimpleLabel';

@@ -1,5 +1,3 @@
-import Box from '@atoms/box/SimpleBox';
-
 const ProductSkeleton = () => {
   return (
     <div className='overflow-hidden rounded-2xl border border-slate-200 bg-white'>

@@ -16,7 +16,7 @@ const FALLBACK_GRADIENTS = [
   'from-sky-500 to-cyan-700',
 ];
 
-function storeBannerStyle(store: IStore, idx: number): React.CSSProperties {
+function storeBannerStyle(store: IStore): React.CSSProperties {
   if (store.primaryColor) {
     const secondary = store.secondaryColor || store.primaryColor;
     if (store.coverStyle === 'SOLID') return { backgroundColor: store.primaryColor };
@@ -154,7 +154,7 @@ const StoresPage = () => {
           {visibleStores.map((store, idx) => {
             const fallback = FALLBACK_GRADIENTS[idx % FALLBACK_GRADIENTS.length];
             const initial = store.name.charAt(0).toUpperCase();
-            const bannerStyle = storeBannerStyle(store, idx);
+            const bannerStyle = storeBannerStyle(store);
             const hasBrandColors = Boolean(store.primaryColor);
 
             return (

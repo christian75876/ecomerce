@@ -8,10 +8,7 @@ import {
   IOrderResp,
   IOrdersResp,
 } from '@/application/dtos/orders/response/OrderResponse';
-import {
-  authenticatedClientHTTP,
-  publicClientHTTP,
-} from '@/infrastructure/repositories/api/ClientHTTP';
+import { authenticatedClientHTTP } from '@/infrastructure/repositories/api/ClientHTTP';
 import { ErrorHandler } from '@/infrastructure/repositories/api/errors/ErrorHandler';
 
 interface GetOrdersQuery {

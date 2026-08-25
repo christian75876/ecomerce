@@ -1,4 +1,3 @@
-import React from 'react';
 import Box from '../../atoms/box/SimpleBox';
 import Button from '../../atoms/button/SimpleButton';
 import AuthFormLogin from './AuthFormLogin';

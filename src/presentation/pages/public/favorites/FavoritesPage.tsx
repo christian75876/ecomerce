@@ -10,13 +10,11 @@ import { SnackbarUtilities } from '@/shared/utils/SnackbarManager';
 
 const FavoritesPage = () => {
   const {
-    favoriteIds,
     favoriteProducts,
     loading,
     error,
     isAuthenticated,
     loadFavoriteProducts,
-    toggleFavorite,
   } = useFavorites();
   const { addItem } = useCart();
 

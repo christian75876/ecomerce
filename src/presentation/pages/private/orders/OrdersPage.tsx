@@ -1,7 +1,4 @@
-import {
-  ORDER_STATUSES,
-  useOrdersManagement,
-} from '@/application/useCases/orders/useOrdersManagement';
+import { useOrdersManagement } from '@/application/useCases/orders/useOrdersManagement';
 import { OrdersManagementView } from '@/presentation/ui/organisms/orders/OrdersManagementView';
 
 const OrdersPage = () => {
