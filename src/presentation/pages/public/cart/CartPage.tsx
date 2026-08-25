@@ -193,7 +193,7 @@ const CartPage = () => {
             <Icon name='bx-cart' className='text-xl text-primary sm:text-2xl' />
           </Box>
           <Box>
-            <Typography variant='h1' className='text-xl font-bold sm:text-2xl md:text-3xl'>
+            <Typography variant='h1' className='font-display text-xl font-extrabold sm:text-2xl md:text-3xl'>
               Mi carrito
             </Typography>
             <Typography className='text-sm text-neutral-dark/60'>
@@ -283,7 +283,7 @@ const CartPage = () => {
                       type='button'
                       aria-label='Eliminar producto'
                       onClick={() => removeItem(item.productId)}
-                      className='flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-neutral-dark/30 transition hover:bg-red-50 hover:text-red-500'
+                      className='flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-neutral-dark/30 transition hover:bg-error-light hover:text-error'
                     >
                       <Icon name='bx-trash' className='text-sm' />
                     </button>
@@ -398,30 +398,30 @@ const CartPage = () => {
                 if (coordMatch) {
                   const mapsUrl = `https://maps.google.com/?q=${coordMatch[1]},${coordMatch[2]}`;
                   return (
-                    <Box className='mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3'>
+                    <Box className='mt-3 rounded-2xl border border-success/25 bg-success-light px-4 py-3'>
                       <a
                         href={mapsUrl}
                         target='_blank'
                         rel='noopener noreferrer'
-                        className='flex items-center gap-2 text-sm font-semibold text-emerald-700 hover:underline'
+                        className='flex items-center gap-2 text-sm font-semibold text-success hover:underline'
                       >
                         <Icon name='bx-map-pin' className='shrink-0 text-base' />
                         Ver punto de recogida en mapa
                         <Icon name='bx-link-external' className='text-xs' />
                       </a>
-                      <p className='mt-1 text-xs text-emerald-600'>
+                      <p className='mt-1 text-xs text-success'>
                         Coordina el horario de recogida directamente con la tienda.
                       </p>
                     </Box>
                   );
                 }
                 return (
-                  <Box className='mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3'>
-                    <p className='flex items-center gap-2 text-sm font-semibold text-emerald-700'>
+                  <Box className='mt-3 rounded-2xl border border-success/25 bg-success-light px-4 py-3'>
+                    <p className='flex items-center gap-2 text-sm font-semibold text-success'>
                       <Icon name='bx-map-pin' className='shrink-0 text-base' />
                       {pickupAddress}
                     </p>
-                    <p className='mt-1 text-xs text-emerald-600'>
+                    <p className='mt-1 text-xs text-success'>
                       Recogerás tu pedido en esta dirección. Coordina el horario con la tienda.
                     </p>
                   </Box>
@@ -475,13 +475,13 @@ const CartPage = () => {
                 </button>
               </div>
               {couponError ? (
-                <p className='flex items-center gap-1.5 text-xs text-red-600'>
+                <p className='flex items-center gap-1.5 text-xs text-error'>
                   <i className='bx bx-error-circle text-sm' />
                   {couponError}
                 </p>
               ) : null}
               {appliedCoupon?.valid ? (
-                <p className='flex items-center gap-1.5 text-xs font-semibold text-green-700'>
+                <p className='flex items-center gap-1.5 text-xs font-semibold text-success'>
                   <i className='bx bx-check-circle text-sm' />
                   Cupón <strong>{appliedCoupon.coupon?.code}</strong> aplicado — descuento {formatCurrencyCOP(discountAmount)}
                 </p>
@@ -494,7 +494,7 @@ const CartPage = () => {
                 <span>{formatCurrencyCOP(total)}</span>
               </div>
               {discountAmount > 0 ? (
-                <div className='flex items-center justify-between text-sm font-semibold text-green-700'>
+                <div className='flex items-center justify-between text-sm font-semibold text-success'>
                   <span>Descuento ({appliedCoupon?.coupon?.code})</span>
                   <span>-{formatCurrencyCOP(discountAmount)}</span>
                 </div>
@@ -508,7 +508,7 @@ const CartPage = () => {
             </Box>
 
             {error ? (
-              <Box className='mt-4 flex items-start gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700'>
+              <Box className='mt-4 flex items-start gap-2 rounded-2xl border border-error/25 bg-error-light px-4 py-3 text-sm text-error'>
                 <Icon name='bx-error-circle' className='mt-0.5 flex-shrink-0 text-base' />
                 {error}
               </Box>
@@ -532,7 +532,7 @@ const CartPage = () => {
               <button
                 type='button'
                 onClick={clear}
-                className='mt-3 w-full rounded-2xl py-2 text-center text-xs font-medium text-neutral-dark/40 transition hover:text-red-500'
+                className='mt-3 w-full rounded-2xl py-2 text-center text-xs font-medium text-neutral-dark/40 transition hover:text-error'
               >
                 Vaciar carrito
               </button>
@@ -547,8 +547,8 @@ const CartPage = () => {
         <Box ref={paymentPanelRef} className='surface-elevated rounded-2xl p-4 sm:rounded-[1.75rem] sm:p-6'>
           {/* Header */}
           <Box className='mb-4 flex items-center gap-3'>
-            <Box className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100'>
-              <Icon name='bx-check-circle' className='text-lg text-emerald-600' />
+            <Box className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-success-light'>
+              <Icon name='bx-check-circle' className='text-lg text-success' />
             </Box>
             <Box>
               <Typography variant='h2' className='text-base font-semibold'>
@@ -567,9 +567,9 @@ const CartPage = () => {
 
           {/* 5-day warning */}
           {!paymentSubmitted && !paymentSkipped && (
-            <Box className='mb-4 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3'>
-              <Icon name='bx-time' className='mt-0.5 shrink-0 text-base text-amber-600' />
-              <p className='text-xs text-amber-800'>
+            <Box className='mb-4 flex items-start gap-2.5 rounded-xl border border-warning/25 bg-warning-light px-4 py-3'>
+              <Icon name='bx-time' className='mt-0.5 shrink-0 text-base text-warning' />
+              <p className='text-xs text-warning'>
                 <strong>Sin comprobante</strong>, tu pedido quedará archivado y se cancelará automáticamente en <strong>5 días</strong> si la tienda no confirma el pago.
               </p>
             </Box>
@@ -577,16 +577,16 @@ const CartPage = () => {
 
           {/* Store payment instructions */}
           {createdOrder.storePaymentInstructions && !paymentSubmitted && !paymentSkipped ? (
-            <Box className='mb-4 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3'>
-              <p className='mb-1 text-xs font-bold uppercase tracking-wide text-blue-600'>Instrucciones de pago</p>
-              <p className='whitespace-pre-line text-sm text-blue-900'>{createdOrder.storePaymentInstructions}</p>
+            <Box className='mb-4 rounded-xl border border-info/25 bg-info-light px-4 py-3'>
+              <p className='mb-1 text-xs font-bold uppercase tracking-wide text-info'>Instrucciones de pago</p>
+              <p className='whitespace-pre-line text-sm text-info'>{createdOrder.storePaymentInstructions}</p>
             </Box>
           ) : null}
 
           {/* Done states */}
           {paymentSubmitted ? (
             <Box className='space-y-3'>
-              <Box className='flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700'>
+              <Box className='flex items-center gap-2 rounded-xl border border-success/25 bg-success-light px-4 py-3 text-sm font-semibold text-success'>
                 <Icon name='bx-check-circle' className='text-base' />
                 Comprobante enviado. La tienda verificará tu pago pronto.
               </Box>
@@ -600,7 +600,7 @@ const CartPage = () => {
             </Box>
           ) : paymentSkipped ? (
             <Box className='space-y-3'>
-              <Box className='flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700'>
+              <Box className='flex items-center gap-2 rounded-xl border border-warning/25 bg-warning-light px-4 py-3 text-sm text-warning'>
                 <Icon name='bx-time' className='text-base' />
                 Pedido en espera. Tienes 5 días para enviar tu comprobante desde "Mis pedidos".
               </Box>
@@ -648,15 +648,15 @@ const CartPage = () => {
                   Captura de pantalla del pago <span className='text-neutral-dark/40'>(recomendado)</span>
                 </label>
                 {evidenceImage ? (
-                  <Box className='flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5'>
-                    <Icon name='bx-image' className='shrink-0 text-lg text-emerald-600' />
-                    <span className='min-w-0 flex-1 truncate text-sm font-medium text-emerald-800'>
+                  <Box className='flex items-center gap-3 rounded-xl border border-success/25 bg-success-light px-3 py-2.5'>
+                    <Icon name='bx-image' className='shrink-0 text-lg text-success' />
+                    <span className='min-w-0 flex-1 truncate text-sm font-medium text-success'>
                       {evidenceImage.name}
                     </span>
                     <button
                       type='button'
                       onClick={() => setEvidenceImage(null)}
-                      className='shrink-0 text-xs text-emerald-600 hover:text-red-500'
+                      className='shrink-0 text-xs text-success hover:text-error'
                     >
                       Quitar
                     </button>
@@ -676,7 +676,7 @@ const CartPage = () => {
               </Box>
 
               {paymentError ? (
-                <Box className='flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700'>
+                <Box className='flex items-center gap-2 rounded-xl border border-error/25 bg-error-light px-3 py-2 text-xs text-error'>
                   <Icon name='bx-error-circle' className='shrink-0 text-sm' />
                   {paymentError}
                 </Box>

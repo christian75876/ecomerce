@@ -30,8 +30,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             'transition-all duration-200',
             'focus:outline-none focus:ring-2 focus:ring-offset-0',
             error
-              ? 'border-red-300 bg-red-50/40 focus:border-red-400 focus:ring-red-300/30'
-              : 'border-slate-200 hover:border-indigo-200 focus:border-indigo-400 focus:ring-indigo-400/20',
+              ? 'border-error/40 bg-error-light/40 focus:border-error focus:ring-error/25'
+              : 'border-slate-200 hover:border-primary/30 focus:border-primary focus:ring-primary/20',
             className
           )}
           {...props}
