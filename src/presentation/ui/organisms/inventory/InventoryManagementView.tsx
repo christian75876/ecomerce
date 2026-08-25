@@ -408,7 +408,7 @@ export const InventoryManagementView = ({
                         onChange={(event) => onUnitCostChange(event.target.value.replace(/\D/g, ''))}
                         disabled={submitting}
                         placeholder='0'
-                        className='w-full rounded-xl border border-neutral-gray/30 py-2.5 pl-7 pr-4 text-sm text-neutral-dark placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-60'
+                        className='w-full rounded-xl border border-neutral-gray/30 py-2.5 pl-7 pr-4 text-sm text-neutral-dark placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-60'
                       />
                     </div>
                   </Box>

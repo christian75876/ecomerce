@@ -459,7 +459,7 @@ const CartPage = () => {
                   placeholder='Código de descuento'
                   maxLength={50}
                   disabled={!!appliedCoupon}
-                  className='flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60'
+                  className='flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-500 focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60'
                 />
                 <button
                   type='button'
@@ -624,7 +624,7 @@ const CartPage = () => {
                   value={paymentMethodType}
                   onChange={(e) => setPaymentMethodType(e.target.value)}
                   maxLength={120}
-                  className='w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20'
+                  className='w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-500 focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20'
                 />
               </Box>
 
@@ -638,7 +638,7 @@ const CartPage = () => {
                   value={paymentReference}
                   onChange={(e) => setPaymentReference(e.target.value)}
                   maxLength={200}
-                  className='w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20'
+                  className='w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-500 focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20'
                 />
               </Box>
 

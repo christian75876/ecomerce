@@ -33,7 +33,7 @@ interface Props {
 }
 
 const field =
-  'w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400';
+  'w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-slate-500';
 
 export const PosGuestModal = ({
   guestName,
@@ -140,7 +140,7 @@ export const PosGuestModal = ({
                   placeholder='Ej. 3001234567'
                   value={guestPhone}
                   onChange={(e) => onGuestPhoneChange(e.target.value)}
-                  className='min-w-0 flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400'
+                  className='min-w-0 flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-500'
                 />
               </div>
             </div>

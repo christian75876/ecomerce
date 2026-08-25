@@ -64,7 +64,7 @@ const RestaurantMenuView = ({
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={`Buscar platos en ${storeName}...`}
-            className='flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none'
+            className='flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-500 focus:outline-none'
           />
           {search ? (
             <button type='button' onClick={() => onSearchChange('')} className='shrink-0 text-slate-400 hover:text-slate-600'>

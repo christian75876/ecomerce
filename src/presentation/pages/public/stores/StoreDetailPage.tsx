@@ -353,7 +353,7 @@ const StoreDetailPage = () => {
                       value={storeSearch}
                       onChange={(e) => setStoreSearch(e.target.value)}
                       placeholder={`Buscar en ${store.name}...`}
-                      className='flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none'
+                      className='flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-500 focus:outline-none'
                     />
                     {storeSearch ? (
                       <button type='button' onClick={() => setStoreSearch('')} className='shrink-0 text-slate-400 hover:text-slate-600'>

@@ -365,7 +365,7 @@ export const ProductsManagementView = ({
                     onChange={(e) => onFormChange('price', e.target.value.replace(/\D/g, ''))}
                     disabled={submitting}
                     placeholder="0"
-                    className={`w-full rounded-xl border py-2.5 pl-7 pr-4 text-sm text-slate-800 placeholder:text-slate-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-60 ${fieldErrors.price ? 'border-red-300 bg-red-50/40 focus:border-red-400 focus:ring-red-300/30' : 'border-slate-200 bg-white hover:border-indigo-200 focus:border-indigo-400 focus:ring-indigo-400/20'}`}
+                    className={`w-full rounded-xl border py-2.5 pl-7 pr-4 text-sm text-slate-800 placeholder:text-slate-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-60 ${fieldErrors.price ? 'border-red-300 bg-red-50/40 focus:border-red-400 focus:ring-red-300/30' : 'border-slate-200 bg-white hover:border-indigo-200 focus:border-indigo-400 focus:ring-indigo-400/20'}`}
                   />
                 </div>
                 {fieldErrors.price ? (
@@ -387,7 +387,7 @@ export const ProductsManagementView = ({
                     onChange={(e) => onFormChange('compareAtPrice', e.target.value.replace(/\D/g, ''))}
                     disabled={submitting}
                     placeholder="Precio original (opcional)"
-                    className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-7 pr-4 text-sm text-slate-800 placeholder:text-slate-300 transition-all duration-200 hover:border-indigo-200 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-7 pr-4 text-sm text-slate-800 placeholder:text-slate-500 transition-all duration-200 hover:border-indigo-200 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-60"
                   />
                 </div>
               </Box>
@@ -403,7 +403,7 @@ export const ProductsManagementView = ({
                     onChange={(e) => onFormChange('cost', e.target.value.replace(/\D/g, ''))}
                     disabled={submitting}
                     placeholder="Costo de adquisición"
-                    className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-7 pr-4 text-sm text-slate-800 placeholder:text-slate-300 transition-all duration-200 hover:border-indigo-200 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-7 pr-4 text-sm text-slate-800 placeholder:text-slate-500 transition-all duration-200 hover:border-indigo-200 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-60"
                   />
                 </div>
               </Box>
