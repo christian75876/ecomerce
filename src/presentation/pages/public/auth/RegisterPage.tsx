@@ -27,15 +27,18 @@ const RegisterPage = () => {
 
   useEffect(() => {
     if (!token) return;
-    InvitationsRepository.validateToken(token)
-      .then((res) => {
+    const validate = async () => {
+      try {
+        const res = await InvitationsRepository.validateToken(token);
         setInviteEmail(res.data.email);
         setForm((f) => ({ ...f, email: res.data.email }));
-      })
-      .catch((err) => {
+      } catch (err) {
         setTokenError(err instanceof Error ? err.message : 'Invitación no válida');
-      })
-      .finally(() => setValidating(false));
+      } finally {
+        setValidating(false);
+      }
+    };
+    void validate();
   }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {

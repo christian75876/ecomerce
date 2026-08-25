@@ -45,11 +45,15 @@ export const useCashManagement = () => {
       setMovements([]);
       return;
     }
-    void CashRepository.getSessionMovements(selectedSessionId)
-      .then((response) => setMovements(response.data))
-      .catch((err) =>
-        setError(err instanceof Error ? err.message : 'No fue posible cargar movimientos'),
-      );
+    const loadMovements = async () => {
+      try {
+        const response = await CashRepository.getSessionMovements(selectedSessionId);
+        setMovements(response.data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'No fue posible cargar movimientos');
+      }
+    };
+    void loadMovements();
   }, [selectedSessionId]);
 
   const openSession = async () => {

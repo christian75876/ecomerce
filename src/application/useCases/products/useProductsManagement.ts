@@ -313,9 +313,15 @@ export const useProductsManagement = () => {
       setMenuCategories([]);
       return;
     }
-    MenuCategoriesRepository.getByStore(form.storeId)
-      .then((resp) => setMenuCategories(resp.data))
-      .catch(() => setMenuCategories([]));
+    const loadMenuCategories = async () => {
+      try {
+        const resp = await MenuCategoriesRepository.getByStore(form.storeId);
+        setMenuCategories(resp.data);
+      } catch {
+        setMenuCategories([]);
+      }
+    };
+    void loadMenuCategories();
   }, [form.storeId, stores]);
 
   const updateForm = <K extends keyof ProductFormState>(

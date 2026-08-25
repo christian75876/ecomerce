@@ -56,32 +56,33 @@ const ProfilePage = () => {
 
   useEffect(() => {
     let cancelled = false;
-    void AuthRepository.getAuthenticatedUser().then((res: IAuthMeResp) => {
-      if (cancelled) return;
-      const u = res.data;
-      setUser(u);
-      // Sync session so navbar name is always fresh
-      authSession.setUser(u);
-      setForm({
-        firstName: u.customer?.firstName ?? '',
-        lastName: u.customer?.lastName ?? '',
-        phone: u.customer?.phone ?? '',
-      });
-      setLoading(false);
-    }).catch(() => {
-      if (!cancelled) setLoading(false);
-    });
+    const loadUser = async () => {
+      try {
+        const res: IAuthMeResp = await AuthRepository.getAuthenticatedUser();
+        if (cancelled) return;
+        const u = res.data;
+        setUser(u);
+        // Sync session so navbar name is always fresh
+        authSession.setUser(u);
+        setForm({
+          firstName: u.customer?.firstName ?? '',
+          lastName: u.customer?.lastName ?? '',
+          phone: u.customer?.phone ?? '',
+        });
+        setLoading(false);
+      } catch {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    void loadUser();
     return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
     if (!canManageStores || !user) return;
-    const fetch = isAdmin
-      ? StoresRepository.getStores()
-      : StoresRepository.getMyStores();
-
-    fetch
-      .then((res) => {
+    const loadStores = async () => {
+      try {
+        const res = await (isAdmin ? StoresRepository.getStores() : StoresRepository.getMyStores());
         setStores(res.data);
         const d: Record<string, { apiKey: string; phone: string }> = {};
         const p: Record<string, string> = {};
@@ -91,16 +92,27 @@ const ProfilePage = () => {
         });
         setDrafts(d);
         setPaymentDrafts(p);
-      })
-      .catch(() => SnackbarUtilities.error('No se pudieron cargar las tiendas'))
-      .finally(() => setStoresLoading(false));
+      } catch {
+        SnackbarUtilities.error('No se pudieron cargar las tiendas');
+      } finally {
+        setStoresLoading(false);
+      }
+    };
+    void loadStores();
   }, [canManageStores, isAdmin, user]);
 
   useEffect(() => {
     if (!isAdmin) return;
-    AppConfigRepository.getConfig()
-      .then((cfg) => { setAppConfig(cfg); setBlockMsg(cfg.blockedMessage ?? ''); })
-      .catch(() => {});
+    const loadConfig = async () => {
+      try {
+        const cfg = await AppConfigRepository.getConfig();
+        setAppConfig(cfg);
+        setBlockMsg(cfg.blockedMessage ?? '');
+      } catch {
+        // non-fatal — admin block toggle just won't show current state
+      }
+    };
+    void loadConfig();
   }, [isAdmin]);
 
   if (!isAuthenticated()) return <Navigate to={ROUTES.PUBLIC.LOGIN} replace />;

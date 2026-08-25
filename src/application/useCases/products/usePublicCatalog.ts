@@ -66,26 +66,28 @@ export const usePublicCatalog = () => {
       // organic page) so paid placements don't depend on happening to land
       // on whatever page loaded — capped small and rotated fairly, not a
       // flood of every advertiser. A failure here shouldn't break the catalog.
-      void ProductRepository.getProducts({
-        active: true,
-        search: search || undefined,
-        categoryId: selectedCategoryId || undefined,
-        minPrice: minPrice ?? undefined,
-        maxPrice: maxPrice ?? undefined,
-        onlyAvailable: onlyAvailable || undefined,
-        sponsoredOnly: true,
-        sortBy: 'random',
-        seed: userPreferences.getDailySeed(),
-        page: 1,
-        limit: SPONSORED_LIMIT,
-      })
-        .then((res) => {
+      const loadSponsored = async () => {
+        try {
+          const res = await ProductRepository.getProducts({
+            active: true,
+            search: search || undefined,
+            categoryId: selectedCategoryId || undefined,
+            minPrice: minPrice ?? undefined,
+            maxPrice: maxPrice ?? undefined,
+            onlyAvailable: onlyAvailable || undefined,
+            sponsoredOnly: true,
+            sortBy: 'random',
+            seed: userPreferences.getDailySeed(),
+            page: 1,
+            limit: SPONSORED_LIMIT,
+          });
           if (requestIdRef.current !== requestId) return;
           setSponsoredProducts(res.data.items);
-        })
-        .catch(() => {
+        } catch {
           if (requestIdRef.current === requestId) setSponsoredProducts([]);
-        });
+        }
+      };
+      void loadSponsored();
 
       try {
         const [productsResponse, categoriesResponse] = await Promise.all([

@@ -30,9 +30,15 @@ export const AdminStoreProvider = ({ children }: { children: ReactNode }) => {
   const loadStores = useCallback(() => {
     if (loaded || getAuthenticatedRole() !== 'admin') return;
     setLoaded(true);
-    StoresRepository.getStores({ active: true })
-      .then((res) => setStores(res.data))
-      .catch(() => setLoaded(false));
+    const load = async () => {
+      try {
+        const res = await StoresRepository.getStores({ active: true });
+        setStores(res.data);
+      } catch {
+        setLoaded(false);
+      }
+    };
+    void load();
   }, [loaded]);
 
   const selectedStore = stores.find((s) => s.id === selectedStoreId);

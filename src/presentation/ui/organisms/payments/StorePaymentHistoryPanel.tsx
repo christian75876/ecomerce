@@ -136,15 +136,30 @@ const StorePaymentHistoryPanel = ({ storeId, storeName, onClose }: Props) => {
   const [loadingAds, setLoadingAds] = useState(true);
 
   useEffect(() => {
-    setLoadingSubs(true);
-    SubscriptionsRepository.getStoreSubscriptions(storeId)
-      .then((r) => setSubs(r.data ?? []))
-      .finally(() => setLoadingSubs(false));
-
-    setLoadingAds(true);
-    AdvertisingRepository.getStoreAdvertisements(storeId)
-      .then((r) => setAds(r.data ?? []))
-      .finally(() => setLoadingAds(false));
+    const loadSubs = async () => {
+      setLoadingSubs(true);
+      try {
+        const r = await SubscriptionsRepository.getStoreSubscriptions(storeId);
+        setSubs(r.data ?? []);
+      } catch {
+        setSubs([]);
+      } finally {
+        setLoadingSubs(false);
+      }
+    };
+    const loadAds = async () => {
+      setLoadingAds(true);
+      try {
+        const r = await AdvertisingRepository.getStoreAdvertisements(storeId);
+        setAds(r.data ?? []);
+      } catch {
+        setAds([]);
+      } finally {
+        setLoadingAds(false);
+      }
+    };
+    void loadSubs();
+    void loadAds();
   }, [storeId]);
 
   const totalSubs = subs

@@ -24,15 +24,19 @@ function App() {
   const [appConfig, setAppConfig] = useState<IAppConfig | null>(null);
 
   useEffect(() => {
-    AppConfigRepository.getConfig()
-      .then(setAppConfig)
-      .catch(() =>
+    const loadConfig = async () => {
+      try {
+        const config = await AppConfigRepository.getConfig();
+        setAppConfig(config);
+      } catch {
         setAppConfig({
           isAccessBlocked: false,
           blockedMessage: null,
           updatedAt: ''
-        })
-      );
+        });
+      }
+    };
+    void loadConfig();
   }, []);
 
   // Admins always bypass the block so they can re-enable the app
