@@ -76,16 +76,21 @@
   --color-whatsapp: #25d366;
 
   /* ── Semantic (kept legible/conventional — success=green, error=red — so
-       status meaning isn't lost inside a maximalist palette) ── */
+       status meaning isn't lost inside a maximalist palette). Same AA rule
+       as primary/secondary/accent above: the base token has to pass as
+       small text-on-cream, not just look right as a swatch — the obvious
+       "-600" pick for each of these (green/amber/sky) measures 2.8–3.3:1
+       as text and fails, so these are one step darker than the Tailwind
+       default most people would reach for. ── */
   --color-background: #fbf3e7;
   --color-surface: #ffffff;
-  --color-success: #16a34a;
+  --color-success: #15803d;
   --color-success-light: #dcfce7;
-  --color-warning: #d97706;
+  --color-warning: #b45309;
   --color-warning-light: #fef3c7;
   --color-error: #dc2626;
   --color-error-light: #fee2e2;
-  --color-info: #0ea5e9;
+  --color-info: #0369a1;
   --color-info-light: #e0f2fe;
 
   /* ── Type — moved here from tailwind.config.js: Tailwind v4 only reads a
