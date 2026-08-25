@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import PhoneInputCO from '@/presentation/ui/molecules/common/PhoneInputCO';
+import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import { AuthRepository } from '@/infrastructure/repositories/api/auth/AuthRepository';
 import { StoresRepository } from '@/infrastructure/repositories/api/stores/StoresRepository';
 import { AppConfigRepository, type IAppConfig } from '@/infrastructure/repositories/api/app-config/AppConfigRepository';
@@ -20,9 +21,9 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 const roleColor = (role: string | null | undefined) => {
-  if (role === 'admin') return 'bg-amber-50 text-amber-700 ring-1 ring-amber-200';
-  if (role === 'seller') return 'bg-blue-50 text-blue-700 ring-1 ring-blue-200';
-  return 'bg-sky-50 text-sky-700 ring-1 ring-sky-200';
+  if (role === 'admin') return 'bg-highlight-50 text-warning ring-1 ring-highlight/30';
+  if (role === 'seller') return 'bg-secondary-50 text-secondary ring-1 ring-secondary/20';
+  return 'bg-info-light text-info ring-1 ring-info/20';
 };
 
 const initials = (user: IAuthenticatedUser) => {
@@ -220,8 +221,8 @@ const ProfilePage = () => {
   return (
     <Box className='space-y-8'>
       {/* Header */}
-      <Box className='rounded-[2rem] bg-[linear-gradient(135deg,_#fff7ed_0%,_#ffffff_55%,_#eff6ff_100%)] px-6 py-10 shadow-sm'>
-        <Typography variant='h1' className='text-3xl font-bold'>
+      <Box className='rounded-[2rem] bg-gradient-to-br from-primary/6 via-white to-secondary/4 px-6 py-10 shadow-soft'>
+        <Typography variant='h1' className='font-display text-3xl font-extrabold'>
           Mi perfil
         </Typography>
         <Typography className='mt-3 max-w-2xl text-neutral-dark/70'>
@@ -235,7 +236,7 @@ const ProfilePage = () => {
           <i className='bx bx-loader-alt animate-spin text-3xl text-primary' />
         </Box>
       ) : !user ? (
-        <Box className='rounded-3xl border border-red-200 bg-red-50 px-6 py-4 text-sm text-red-600'>
+        <Box className='rounded-3xl border border-error/25 bg-error-light px-6 py-4 text-sm text-error'>
           No se pudo cargar la información del perfil.
         </Box>
       ) : (
@@ -248,12 +249,12 @@ const ProfilePage = () => {
                 <div className='mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-2xl font-extrabold text-white shadow-md'>
                   {initials(user)}
                 </div>
-                <p className='font-semibold text-slate-800'>
+                <p className='font-semibold text-neutral-dark'>
                   {user.customer
                     ? `${user.customer.firstName} ${user.customer.lastName}`
                     : user.email}
                 </p>
-                <p className='mt-0.5 text-sm text-slate-500'>{user.email}</p>
+                <p className='mt-0.5 text-sm text-neutral-dark/50'>{user.email}</p>
                 <span
                   className={`mt-3 inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${roleColor(user.role)}`}
                 >
@@ -261,8 +262,8 @@ const ProfilePage = () => {
                 </span>
 
                 {user.customer ? (
-                  <div className='mt-4 flex items-center justify-center gap-1.5 text-xs text-slate-400'>
-                    <i className='bx bx-check-circle text-sm text-green-500' />
+                  <div className='mt-4 flex items-center justify-center gap-1.5 text-xs text-neutral-dark/40'>
+                    <i className='bx bx-check-circle text-sm text-success' />
                     Cuenta verificada
                   </div>
                 ) : null}
@@ -276,7 +277,7 @@ const ProfilePage = () => {
               </Typography>
 
               {!user.customer ? (
-                <div className='rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700'>
+                <div className='rounded-2xl border border-warning/25 bg-warning-light px-4 py-3 text-sm text-warning'>
                   <i className='bx bx-info-circle mr-1.5' />
                   Tu cuenta de administrador no tiene un perfil de cliente
                   asociado. Los campos de nombre y teléfono no están
@@ -290,45 +291,33 @@ const ProfilePage = () => {
                   className='space-y-5'
                 >
                   <div className='grid gap-5 sm:grid-cols-2'>
-                    <div className='flex flex-col gap-1.5'>
-                      <label className='text-xs font-semibold text-slate-500 uppercase tracking-wide'>
-                        Nombre
-                      </label>
-                      <input
-                        type='text'
-                        name='firstName'
-                        value={form.firstName}
-                        onChange={handleChange}
-                        maxLength={120}
-                        placeholder='Tu nombre'
-                        className='rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/20'
-                      />
-                    </div>
-                    <div className='flex flex-col gap-1.5'>
-                      <label className='text-xs font-semibold text-slate-500 uppercase tracking-wide'>
-                        Apellido
-                      </label>
-                      <input
-                        type='text'
-                        name='lastName'
-                        value={form.lastName}
-                        onChange={handleChange}
-                        maxLength={120}
-                        placeholder='Tu apellido'
-                        className='rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/20'
-                      />
-                    </div>
+                    <Input
+                      label='Nombre'
+                      type='text'
+                      name='firstName'
+                      value={form.firstName}
+                      onChange={handleChange}
+                      maxLength={120}
+                      placeholder='Tu nombre'
+                    />
+                    <Input
+                      label='Apellido'
+                      type='text'
+                      name='lastName'
+                      value={form.lastName}
+                      onChange={handleChange}
+                      maxLength={120}
+                      placeholder='Tu apellido'
+                    />
                   </div>
 
                   <div className='flex flex-col gap-1.5'>
-                    <label className='text-xs font-semibold text-slate-500 uppercase tracking-wide'>
-                      Correo electrónico
-                    </label>
-                    <input
+                    <Input
+                      label='Correo electrónico'
                       type='email'
                       value={user.email}
                       readOnly
-                      className='cursor-not-allowed rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm text-slate-500'
+                      className='cursor-not-allowed bg-slate-100 text-slate-500'
                     />
                     <p className='text-[11px] text-slate-400'>
                       El correo no se puede cambiar desde aquí.
@@ -387,14 +376,14 @@ const ProfilePage = () => {
           {/* ── App Access Control (admin only) ── */}
           {isAdmin && appConfig ? (
             <div
-              className={`rounded-[1.75rem] border p-6 shadow-sm ${appConfig.isAccessBlocked ? 'border-red-300 bg-red-50' : 'border-neutral-gray/20 bg-white'}`}
+              className={`rounded-[1.75rem] border p-6 shadow-sm ${appConfig.isAccessBlocked ? 'border-error/30 bg-error-light' : 'border-neutral-gray/20 bg-white'}`}
             >
               <div className='mb-5 flex items-center gap-3'>
                 <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-2xl ${appConfig.isAccessBlocked ? 'bg-red-100' : 'bg-slate-100'}`}
+                  className={`flex h-10 w-10 items-center justify-center rounded-2xl ${appConfig.isAccessBlocked ? 'bg-error-light' : 'bg-slate-100'}`}
                 >
                   <i
-                    className={`bx ${appConfig.isAccessBlocked ? 'bx-lock' : 'bx-lock-open'} text-xl ${appConfig.isAccessBlocked ? 'text-red-600' : 'text-slate-500'}`}
+                    className={`bx ${appConfig.isAccessBlocked ? 'bx-lock' : 'bx-lock-open'} text-xl ${appConfig.isAccessBlocked ? 'text-error' : 'text-slate-500'}`}
                     aria-hidden='true'
                   />
                 </div>
@@ -411,19 +400,14 @@ const ProfilePage = () => {
               </div>
 
               <div className='space-y-3'>
-                <div>
-                  <label className='mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500'>
-                    Mensaje para el usuario (opcional)
-                  </label>
-                  <input
-                    type='text'
-                    value={blockMsg}
-                    onChange={e => setBlockMsg(e.target.value)}
-                    placeholder='Ej: Estamos en mantenimiento. Volvemos en 30 minutos.'
-                    maxLength={300}
-                    className='w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20'
-                  />
-                </div>
+                <Input
+                  label='Mensaje para el usuario (opcional)'
+                  type='text'
+                  value={blockMsg}
+                  onChange={e => setBlockMsg(e.target.value)}
+                  placeholder='Ej: Estamos en mantenimiento. Volvemos en 30 minutos.'
+                  maxLength={300}
+                />
 
                 <button
                   type='button'
@@ -431,8 +415,8 @@ const ProfilePage = () => {
                   disabled={savingConfig}
                   className={`flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition active:scale-95 disabled:opacity-50 ${
                     appConfig.isAccessBlocked
-                      ? 'bg-green-600 hover:bg-green-700'
-                      : 'bg-red-600 hover:bg-red-700'
+                      ? 'bg-success hover:opacity-90'
+                      : 'bg-error hover:opacity-90'
                   }`}
                 >
                   {savingConfig ? (
@@ -473,12 +457,12 @@ const ProfilePage = () => {
                 </div>
 
                 {/* Instrucciones CallMeBot */}
-                <details className='mb-5 rounded-2xl border border-amber-200 bg-amber-50'>
-                  <summary className='cursor-pointer px-4 py-3 text-sm font-semibold text-amber-800 select-none'>
+                <details className='mb-5 rounded-2xl border border-warning/25 bg-warning-light'>
+                  <summary className='cursor-pointer px-4 py-3 text-sm font-semibold text-warning select-none'>
                     ¿Cómo obtener tu API Key?{' '}
                     <span className='font-normal'>(ver instrucciones)</span>
                   </summary>
-                  <ol className='px-4 pb-4 pt-1 text-xs text-amber-700 list-decimal space-y-1.5 pl-8'>
+                  <ol className='px-4 pb-4 pt-1 text-xs text-warning list-decimal space-y-1.5 pl-8'>
                     <li>
                       Abre WhatsApp y busca el número{' '}
                       <strong>+34 623 91 22 04</strong> (CallMeBot).
@@ -575,46 +559,38 @@ const ProfilePage = () => {
                         {store.wppNotificationsEnabled ? (
                           <div className='space-y-2'>
                             <div className='grid grid-cols-1 gap-2 sm:grid-cols-2'>
-                              <div>
-                                <label className='mb-1 block text-xs font-medium text-slate-500'>
-                                  Número de WhatsApp
-                                </label>
-                                <input
-                                  type='tel'
-                                  placeholder='57300xxxxxxx'
-                                  value={drafts[store.id]?.phone ?? ''}
-                                  onChange={e =>
-                                    setDrafts(d => ({
-                                      ...d,
-                                      [store.id]: {
-                                        ...d[store.id],
-                                        phone: e.target.value
-                                      }
-                                    }))
-                                  }
-                                  className='w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-whatsapp/40 focus:ring-2 focus:ring-whatsapp/10'
-                                />
-                              </div>
-                              <div>
-                                <label className='mb-1 block text-xs font-medium text-slate-500'>
-                                  API Key de CallMeBot
-                                </label>
-                                <input
-                                  type='text'
-                                  placeholder='La key que te envió CallMeBot'
-                                  value={drafts[store.id]?.apiKey ?? ''}
-                                  onChange={e =>
-                                    setDrafts(d => ({
-                                      ...d,
-                                      [store.id]: {
-                                        ...d[store.id],
-                                        apiKey: e.target.value
-                                      }
-                                    }))
-                                  }
-                                  className='w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-whatsapp/40 focus:ring-2 focus:ring-whatsapp/10'
-                                />
-                              </div>
+                              <Input
+                                label='Número de WhatsApp'
+                                type='tel'
+                                placeholder='57300xxxxxxx'
+                                value={drafts[store.id]?.phone ?? ''}
+                                onChange={e =>
+                                  setDrafts(d => ({
+                                    ...d,
+                                    [store.id]: {
+                                      ...d[store.id],
+                                      phone: e.target.value
+                                    }
+                                  }))
+                                }
+                                className='focus:border-whatsapp focus:ring-whatsapp/20'
+                              />
+                              <Input
+                                label='API Key de CallMeBot'
+                                type='text'
+                                placeholder='La key que te envió CallMeBot'
+                                value={drafts[store.id]?.apiKey ?? ''}
+                                onChange={e =>
+                                  setDrafts(d => ({
+                                    ...d,
+                                    [store.id]: {
+                                      ...d[store.id],
+                                      apiKey: e.target.value
+                                    }
+                                  }))
+                                }
+                                className='focus:border-whatsapp focus:ring-whatsapp/20'
+                              />
                             </div>
                             <button
                               type='button'
@@ -641,9 +617,9 @@ const ProfilePage = () => {
               {/* Payment instructions panel */}
               <div className='rounded-[1.75rem] border border-neutral-gray/20 bg-white p-6 shadow-sm'>
                 <div className='mb-6 flex items-center gap-3'>
-                  <div className='flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100'>
+                  <div className='flex h-10 w-10 items-center justify-center rounded-2xl bg-success-light'>
                     <i
-                      className='bx bx-transfer-alt text-xl text-emerald-600'
+                      className='bx bx-transfer-alt text-xl text-success'
                       aria-hidden='true'
                     />
                   </div>
@@ -706,14 +682,14 @@ const ProfilePage = () => {
                                 [store.id]: e.target.value
                               }))
                             }
-                            className='w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-500 focus:border-emerald-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100'
+                            className='w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-500 focus:border-success focus:bg-white focus:outline-none focus:ring-2 focus:ring-success/20'
                           />
                         </div>
                         <button
                           type='button'
                           onClick={() => void savePaymentInstructions(store)}
                           disabled={storeSaving === store.id + '_pay'}
-                          className='flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50'
+                          className='flex items-center gap-2 rounded-xl bg-success px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50'
                         >
                           <i
                             className='bx bx-check text-base'
