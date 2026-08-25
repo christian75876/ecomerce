@@ -1,13 +1,29 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
-import PhoneInputCO from '@/presentation/ui/molecules/common/PhoneInputCO';
+import FormField from '@/presentation/ui/molecules/forms/FormField';
+import Button from '@/presentation/ui/atoms/button/SimpleButton';
+import CustomerRegisterForm from '@/presentation/ui/molecules/auth/CustomerRegisterForm';
+import { useFormValidation } from '@/shared/hooks/useFormValidation';
+import { useRegisterCustomer } from '@/application/useCases/auth/useRegisterCustomer';
+import { registerInvitedSellerSchema } from '@/domain/validations/auth/RegisterInvitedSellerValidation';
 import { InvitationsRepository } from '@/infrastructure/repositories/api/invitations/InvitationsRepository';
 import { AuthRepository } from '@/infrastructure/repositories/api/auth/AuthRepository';
 import { ROUTES } from '@/shared/constants/routes';
 import { SnackbarUtilities } from '@/shared/utils/SnackbarManager';
 import { authSession } from '@/shared/utils/authSession';
 import { ADMIN_WHATSAPP } from '@/shared/config/appContact';
+
+const PAGE_BACKGROUND =
+  'bg-[radial-gradient(circle_at_top,_rgba(249,115,22,0.14),_transparent_32%),linear-gradient(135deg,_#fff7f2_0%,_#ffffff_45%,_#eef6ff_100%)]';
+
+interface InvitedSellerForm {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  password: string;
+  password_confirm: string;
+}
 
 const RegisterPage = () => {
   const [searchParams] = useSearchParams();
@@ -17,13 +33,23 @@ const RegisterPage = () => {
   const [validating, setValidating] = useState(!!token);
   const [inviteEmail, setInviteEmail] = useState('');
   const [tokenError, setTokenError] = useState<string | null>(null);
-
-  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', password: '', confirm: '' });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { handleRegisterCustomer, isLoading: buyerLoading, error: buyerError } = useRegisterCustomer();
+
+  const {
+    control,
+    handleSubmit,
+    formState: { isValid },
+  } = useFormValidation(registerInvitedSellerSchema, submitting, {
+    firstName: '',
+    lastName: '',
+    phone: '',
+    password: '',
+    password_confirm: '',
+  });
 
   useEffect(() => {
     if (!token) return;
@@ -31,7 +57,6 @@ const RegisterPage = () => {
       try {
         const res = await InvitationsRepository.validateToken(token);
         setInviteEmail(res.data.email);
-        setForm((f) => ({ ...f, email: res.data.email }));
       } catch (err) {
         setTokenError(err instanceof Error ? err.message : 'Invitación no válida');
       } finally {
@@ -41,28 +66,18 @@ const RegisterPage = () => {
     void validate();
   }, [token]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.firstName.trim()) {
-      setError('El nombre es obligatorio');
+  const onSubmitBuyer = async (data: Parameters<typeof handleRegisterCustomer>[0]) => {
+    const result = await handleRegisterCustomer(data);
+    if (!result) return;
+    if (result.autoLogin) {
+      navigate(ROUTES.PUBLIC.HOME);
       return;
     }
-    if (!form.lastName.trim()) {
-      setError('El apellido es obligatorio');
-      return;
-    }
-    if (!form.phone.trim()) {
-      setError('El teléfono es obligatorio');
-      return;
-    }
-    if (form.phone.trim().replace(/\D/g, '').length < 7) {
-      setError('El teléfono es demasiado corto');
-      return;
-    }
-    if (form.password !== form.confirm) {
-      setError('Las contraseñas no coinciden');
-      return;
-    }
+    SnackbarUtilities.success(result.message ?? 'Revisa tu correo para confirmar tu cuenta', 'top', 'center');
+    navigate(ROUTES.PUBLIC.LOGIN);
+  };
+
+  const onSubmitInvitedSeller = async (data: InvitedSellerForm) => {
     if (!acceptedTerms) {
       setError('Debes aceptar los términos y condiciones para continuar');
       return;
@@ -71,11 +86,11 @@ const RegisterPage = () => {
     setSubmitting(true);
     try {
       const res = await AuthRepository.registerCustomer({
-        firstName: form.firstName.trim(),
-        lastName: form.lastName.trim(),
-        email: form.email.trim(),
-        phone: form.phone.trim(),
-        password: form.password,
+        firstName: data.firstName.trim(),
+        lastName: data.lastName.trim(),
+        email: inviteEmail,
+        phone: data.phone.trim(),
+        password: data.password,
         inviteToken: token ?? undefined,
       });
       SnackbarUtilities.success(res.data.message, 'top', 'center');
@@ -101,10 +116,10 @@ const RegisterPage = () => {
     }
   };
 
-  // No token — buyer self-registration form
+  // No token — buyer self-registration, same form used from the login page
   if (!token) {
     return (
-      <div className='min-h-screen bg-[radial-gradient(circle_at_top,_rgba(249,115,22,0.14),_transparent_32%),linear-gradient(135deg,_#fff7f2_0%,_#ffffff_45%,_#eef6ff_100%)] px-4 py-4 sm:py-10'>
+      <div className={`min-h-screen ${PAGE_BACKGROUND} px-4 py-4 sm:py-10`}>
         <Helmet>
           <title>Crea tu cuenta — Merku</title>
           <meta name='description' content='Regístrate gratis en Merku para comprar en tiendas y restaurantes locales.' />
@@ -125,7 +140,7 @@ const RegisterPage = () => {
               to={ROUTES.PUBLIC.HOME}
               className='flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-500 transition hover:border-primary/30 hover:text-primary'
             >
-              <i className='bx bx-arrow-back text-sm' />
+              <i className='bx bx-arrow-back text-sm' aria-hidden='true' />
               Volver
             </Link>
             <Link to={ROUTES.PUBLIC.LOGIN} className='text-xs font-medium text-slate-400 transition hover:text-primary'>
@@ -136,92 +151,9 @@ const RegisterPage = () => {
           <h1 className='text-2xl font-bold text-slate-800'>Crea tu cuenta</h1>
           <p className='mt-1 text-sm text-slate-500'>Empieza a comprar en tiendas locales.</p>
 
-          {error && (
-            <div className='mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600'>{error}</div>
-          )}
-
-          <form onSubmit={(e) => void handleSubmit(e)} className='mt-6 space-y-4'>
-            <div className='grid gap-4 sm:grid-cols-2'>
-              <div>
-                <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Nombre <span className='text-red-500'>*</span></label>
-                <input required type='text' placeholder='Christian' value={form.firstName}
-                  onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
-                  className='w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10' />
-              </div>
-              <div>
-                <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Apellido <span className='text-red-500'>*</span></label>
-                <input required type='text' placeholder='Pabón' value={form.lastName}
-                  onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
-                  className='w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10' />
-              </div>
-            </div>
-
-            <div>
-              <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Correo electrónico <span className='text-red-500'>*</span></label>
-              <input required type='email' placeholder='tu@correo.com' value={form.email}
-                onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                className='w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10' />
-            </div>
-
-            <div>
-              <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Teléfono <span className='text-red-500'>*</span></label>
-              <PhoneInputCO value={form.phone} onChange={(v) => setForm((f) => ({ ...f, phone: v }))} />
-            </div>
-
-            <div>
-              <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Contraseña <span className='text-red-500'>*</span></label>
-              <div className='relative'>
-                <input required type={showPassword ? 'text' : 'password'} minLength={6} placeholder='Mínimo 6 caracteres'
-                  value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-                  className='w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 pr-11 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10' />
-                <button type='button' onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                  aria-pressed={showPassword}
-                  className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded'>
-                  <i className={`bx ${showPassword ? 'bx-hide' : 'bx-show'} text-lg`} aria-hidden='true' />
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Confirmar contraseña <span className='text-red-500'>*</span></label>
-              <div className='relative'>
-                <input required type={showConfirm ? 'text' : 'password'} placeholder='Repite tu contraseña'
-                  value={form.confirm} onChange={(e) => setForm((f) => ({ ...f, confirm: e.target.value }))}
-                  className='w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 pr-11 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10' />
-                <button type='button' onClick={() => setShowConfirm((v) => !v)}
-                  aria-label={showConfirm ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                  aria-pressed={showConfirm}
-                  className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded'>
-                  <i className={`bx ${showConfirm ? 'bx-hide' : 'bx-show'} text-lg`} aria-hidden='true' />
-                </button>
-              </div>
-            </div>
-
-            <label className='flex items-start gap-2 text-xs text-slate-500'>
-              <input
-                type='checkbox'
-                checked={acceptedTerms}
-                onChange={(e) => setAcceptedTerms(e.target.checked)}
-                className='mt-0.5 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary/30'
-              />
-              <span>
-                Acepto los{' '}
-                <Link to={ROUTES.PUBLIC.TERMS} target='_blank' className='font-semibold text-primary hover:underline'>
-                  términos y condiciones
-                </Link>{' '}
-                y la{' '}
-                <Link to={ROUTES.PUBLIC.PRIVACY} target='_blank' className='font-semibold text-primary hover:underline'>
-                  política de privacidad
-                </Link>
-              </span>
-            </label>
-
-            <button type='submit' disabled={submitting || !acceptedTerms}
-              className='mt-2 w-full rounded-2xl bg-primary py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50'>
-              {submitting ? 'Creando cuenta…' : 'Crear cuenta'}
-            </button>
-          </form>
+          <div className='mt-6'>
+            <CustomerRegisterForm onSubmit={onSubmitBuyer} isLoading={buyerLoading} error={buyerError} />
+          </div>
 
           <div className='mt-5 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-center'>
             <p className='text-xs text-slate-500'>
@@ -249,7 +181,7 @@ const RegisterPage = () => {
   // Token error
   if (tokenError) {
     return (
-      <div className='min-h-screen bg-[radial-gradient(circle_at_top,_rgba(249,115,22,0.14),_transparent_32%),linear-gradient(135deg,_#fff7f2_0%,_#ffffff_45%,_#eef6ff_100%)] px-4 py-4 sm:py-10'>
+      <div className={`min-h-screen ${PAGE_BACKGROUND} px-4 py-4 sm:py-10`}>
         <div className='mx-auto w-full max-w-md rounded-[2rem] border border-white/70 bg-white/85 p-10 shadow-[0_30px_80px_rgba(34,34,34,0.12)] text-center backdrop-blur'>
           <div className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-100'>
             <i className='bx bx-error-circle text-3xl text-red-500' aria-hidden='true' />
@@ -267,9 +199,9 @@ const RegisterPage = () => {
     );
   }
 
-  // Valid token — show registration form
+  // Valid token — invited seller registration, with real-time field validation
   return (
-    <div className='min-h-screen bg-[radial-gradient(circle_at_top,_rgba(249,115,22,0.14),_transparent_32%),linear-gradient(135deg,_#fff7f2_0%,_#ffffff_45%,_#eef6ff_100%)] px-4 py-4 sm:py-10'>
+    <div className={`min-h-screen ${PAGE_BACKGROUND} px-4 py-4 sm:py-10`}>
       <div className='mx-auto w-full max-w-md rounded-[2rem] border border-white/70 bg-white/85 p-8 shadow-[0_30px_80px_rgba(34,34,34,0.12)] backdrop-blur'>
         {/* Back link */}
         <div className='mb-5 flex items-center justify-between'>
@@ -306,30 +238,10 @@ const RegisterPage = () => {
           </div>
         ) : null}
 
-        <form onSubmit={(e) => void handleSubmit(e)} className='mt-6 space-y-4'>
+        <form onSubmit={handleSubmit(onSubmitInvitedSeller)} className='mt-6 space-y-4'>
           <div className='grid gap-4 sm:grid-cols-2'>
-            <div>
-              <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Nombre <span className='text-red-500'>*</span></label>
-              <input
-                required
-                type='text'
-                placeholder='Christian'
-                value={form.firstName}
-                onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
-                className='w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10'
-              />
-            </div>
-            <div>
-              <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Apellido <span className='text-red-500'>*</span></label>
-              <input
-                required
-                type='text'
-                placeholder='Pabón'
-                value={form.lastName}
-                onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
-                className='w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10'
-              />
-            </div>
+            <FormField name='firstName' label='Nombre *' control={control} type='text' placeholder='Christian' showLabel boxClassName='w-full' />
+            <FormField name='lastName' label='Apellido *' control={control} type='text' placeholder='Pabón' showLabel boxClassName='w-full' />
           </div>
 
           <div>
@@ -343,60 +255,26 @@ const RegisterPage = () => {
             <p className='mt-1 text-xs text-slate-400'>El correo viene fijo en tu invitación.</p>
           </div>
 
-          <div>
-            <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Teléfono <span className='text-red-500'>*</span></label>
-            <PhoneInputCO
-              value={form.phone}
-              onChange={(v) => setForm((f) => ({ ...f, phone: v }))}
-            />
-          </div>
+          <FormField name='phone' label='Teléfono *' control={control} type='text' placeholder='300 123 4567' showLabel boxClassName='w-full' />
 
-          <div>
-            <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Contraseña <span className='text-red-500'>*</span></label>
-            <div className='relative'>
-              <input
-                required
-                type={showPassword ? 'text' : 'password'}
-                minLength={6}
-                placeholder='Mínimo 6 caracteres'
-                value={form.password}
-                onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-                className='w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 pr-11 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10'
-              />
-              <button
-                type='button'
-                onClick={() => setShowPassword((v) => !v)}
-                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                aria-pressed={showPassword}
-                className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded'
-              >
-                <i className={`bx ${showPassword ? 'bx-hide' : 'bx-show'} text-lg`} aria-hidden='true' />
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label className='mb-1.5 block text-xs font-semibold text-slate-600'>Confirmar contraseña <span className='text-red-500'>*</span></label>
-            <div className='relative'>
-              <input
-                required
-                type={showConfirm ? 'text' : 'password'}
-                placeholder='Repite tu contraseña'
-                value={form.confirm}
-                onChange={(e) => setForm((f) => ({ ...f, confirm: e.target.value }))}
-                className='w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 pr-11 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10'
-              />
-              <button
-                type='button'
-                onClick={() => setShowConfirm((v) => !v)}
-                aria-label={showConfirm ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                aria-pressed={showConfirm}
-                className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded'
-              >
-                <i className={`bx ${showConfirm ? 'bx-hide' : 'bx-show'} text-lg`} aria-hidden='true' />
-              </button>
-            </div>
-          </div>
+          <FormField
+            name='password'
+            label='Contraseña *'
+            control={control}
+            type='password'
+            placeholder='Mínimo 6 caracteres'
+            showLabel
+            boxClassName='w-full'
+          />
+          <FormField
+            name='password_confirm'
+            label='Confirmar contraseña *'
+            control={control}
+            type='password'
+            placeholder='Repite tu contraseña'
+            showLabel
+            boxClassName='w-full'
+          />
 
           <label className='flex items-start gap-2 text-xs text-slate-500'>
             <input
@@ -417,13 +295,16 @@ const RegisterPage = () => {
             </span>
           </label>
 
-          <button
+          <Button
             type='submit'
-            disabled={submitting || !acceptedTerms}
-            className='mt-2 w-full rounded-2xl bg-primary py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50'
+            variant='primary'
+            fullWidth
+            size='lg'
+            disabled={!isValid || submitting || !acceptedTerms}
+            className='mt-2 min-h-12'
           >
             {submitting ? 'Creando cuenta...' : 'Crear cuenta y entrar'}
-          </button>
+          </Button>
         </form>
       </div>
     </div>
