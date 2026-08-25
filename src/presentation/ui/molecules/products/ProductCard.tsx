@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants/routes';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
-import { buildAssetUrl } from '@/shared/utils/buildAssetUrl';
+import { buildAssetUrl, buildResponsiveSrcSet, cloudinaryTransform } from '@/shared/utils/buildAssetUrl';
+
+const RESPONSIVE_WIDTHS = [320, 480, 640, 960];
+const CARD_IMAGE_SIZES = '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 240px';
 
 interface ProductCardProps {
   image: string | null;
@@ -56,7 +59,9 @@ const ProductCard = ({
   onAddToCart,
   addToCartLabel = 'Agregar',
 }: ProductCardProps) => {
-  const imgSrc = (image ? buildAssetUrl(image) : null) ?? PLACEHOLDER;
+  const resolvedImgUrl = image ? buildAssetUrl(image) : null;
+  const imgSrc = resolvedImgUrl ? cloudinaryTransform(resolvedImgUrl, 'f_auto,q_auto,w_480') : PLACEHOLDER;
+  const imgSrcSet = resolvedImgUrl ? buildResponsiveSrcSet(resolvedImgUrl, RESPONSIVE_WIDTHS) : undefined;
   const numPrice = Number(price);
   const isOutOfStock = availableQuantity === 0;
   const isLowStock = availableQuantity !== undefined && availableQuantity > 0 && availableQuantity <= 5;
@@ -79,6 +84,8 @@ const ProductCard = ({
         <div className={`relative overflow-hidden bg-slate-50 ${layoutStyle === 'LIST' ? 'h-full min-h-[120px]' : 'aspect-[4/3] w-full'}`}>
           <img
             src={imgSrc}
+            srcSet={imgSrcSet}
+            sizes={imgSrcSet ? CARD_IMAGE_SIZES : undefined}
             alt={name}
             className={`h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 ${isAdultContent ? 'blur-md scale-110' : ''}`}
             loading='lazy'
