@@ -206,12 +206,12 @@ const HomeCatalogSection = ({
   const priceFilterActive = minPrice !== null || maxPrice !== null;
 
   return (
-    <div className='space-y-6'>
+    <div className='space-y-6 '>
       {/* ── Hero search banner — the colored background is full-bleed by
           default (this whole page is wrapped in .section-full-bleed at
           the root), its content re-centers via .content-container. ── */}
       <>
-        <div className='gradient-hero relative overflow-hidden pb-10 pt-12 text-neutral-dark sm:pb-14 sm:pt-16 lg:rounded-b-[2.5rem]'>
+        <div className='gradient-hero relative overflow-hidden pb-10 pt-12 text-neutral-dark sm:pb-8 sm:pt-8 '>
           <div
             className='pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full bg-white/10 blur-2xl'
             aria-hidden='true'
@@ -227,64 +227,70 @@ const HomeCatalogSection = ({
 
           <Reveal effect='fade-up' slow>
             <div className='content-container relative z-10'>
-            <div className='mx-auto max-w-2xl text-center'>
-              <p className='mb-2 text-xs font-bold uppercase tracking-[0.3em] text-neutral-dark/60'>
-                Mercado Merku
-              </p>
-              <h1 className='mb-4 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-balance sm:text-5xl'>
-                Todo tu barrio, a un clic de distancia
-              </h1>
-              <p className='mx-auto mb-6 max-w-md text-sm font-medium text-neutral-dark/70 sm:text-base'>
-                Miles de productos de tiendas y restaurantes cerca de ti.
-              </p>
+              <div className='mx-auto max-w-2xl text-center'>
+                <p className='mb-2 text-xs font-bold uppercase tracking-[0.3em] text-neutral-dark/60'>
+                  Mercado Merku
+                </p>
+                <h1 className='mb-4 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-balance sm:text-5xl'>
+                  Todo tu barrio, a un clic de distancia
+                </h1>
+                <p className='mx-auto mb-6 max-w-md text-sm font-medium text-neutral-dark/70 sm:text-base'>
+                  Miles de productos de tiendas y restaurantes cerca de ti.
+                </p>
 
-              <div ref={searchBoxRef} className='relative'>
-                <div className='flex items-center gap-2 rounded-2xl bg-white/70 px-4 py-3 shadow-panel ring-1 ring-white/60 backdrop-blur-sm transition-all focus-within:ring-2 focus-within:ring-neutral-dark/20'>
-                  <i
-                    className='bx bx-search text-xl text-neutral-dark/50'
-                    aria-hidden='true'
-                  />
-                  <input
-                    type='text'
-                    value={search}
-                    onChange={e => onSearchChange(e.target.value)}
-                    onFocus={() => setSearchSuggestionsOpen(true)}
-                    placeholder='Buscar productos...'
-                    className='flex-1 bg-transparent text-sm font-medium text-neutral-dark placeholder:text-neutral-dark/40 focus:outline-none'
-                    aria-label='Buscar productos'
-                  />
-                  {search ? (
-                    <button
-                      type='button'
-                      onClick={() => onSearchChange('')}
-                      className='text-neutral-dark/50 hover:text-neutral-dark'
-                      aria-label='Limpiar búsqueda'
-                    >
-                      <i className='bx bx-x text-lg' aria-hidden='true' />
-                    </button>
+                <div ref={searchBoxRef} className='relative'>
+                  <div className='flex items-center gap-2 rounded-2xl bg-white/70 px-4 py-3 shadow-panel ring-1 ring-white/60 backdrop-blur-sm transition-all focus-within:ring-2 focus-within:ring-neutral-dark/20'>
+                    <i
+                      className='bx bx-search text-xl text-neutral-dark/50'
+                      aria-hidden='true'
+                    />
+                    <input
+                      type='text'
+                      value={search}
+                      onChange={e => onSearchChange(e.target.value)}
+                      onFocus={() => setSearchSuggestionsOpen(true)}
+                      placeholder='Buscar productos...'
+                      className='flex-1 bg-transparent text-sm font-medium text-neutral-dark placeholder:text-neutral-dark/40 focus:outline-none'
+                      aria-label='Buscar productos'
+                    />
+                    {search ? (
+                      <button
+                        type='button'
+                        onClick={() => onSearchChange('')}
+                        className='text-neutral-dark/50 hover:text-neutral-dark'
+                        aria-label='Limpiar búsqueda'
+                      >
+                        <i className='bx bx-x text-lg' aria-hidden='true' />
+                      </button>
+                    ) : null}
+                  </div>
+
+                  {searchSuggestionsOpen && searchSuggestions.length > 0 ? (
+                    <div className='absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-xl'>
+                      <p className='px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400'>
+                        Búsquedas recientes
+                      </p>
+                      {searchSuggestions.map(term => (
+                        <button
+                          key={term}
+                          type='button'
+                          onClick={() => {
+                            onSearchChange(term);
+                            setSearchSuggestionsOpen(false);
+                          }}
+                          className='flex w-full items-center gap-3 px-4 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900'
+                        >
+                          <i
+                            className='bx bx-history text-base text-slate-400'
+                            aria-hidden='true'
+                          />
+                          {term}
+                        </button>
+                      ))}
+                    </div>
                   ) : null}
                 </div>
-
-                {searchSuggestionsOpen && searchSuggestions.length > 0 ? (
-                  <div className='absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-xl'>
-                    <p className='px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400'>
-                      Búsquedas recientes
-                    </p>
-                    {searchSuggestions.map((term) => (
-                      <button
-                        key={term}
-                        type='button'
-                        onClick={() => { onSearchChange(term); setSearchSuggestionsOpen(false); }}
-                        className='flex w-full items-center gap-3 px-4 py-2.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900'
-                      >
-                        <i className='bx bx-history text-base text-slate-400' aria-hidden='true' />
-                        {term}
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
               </div>
-            </div>
             </div>
           </Reveal>
         </div>
@@ -296,9 +302,9 @@ const HomeCatalogSection = ({
       </>
 
       <div className='content-container space-y-6'>
-      {/* ── Controls ── */}
-      <div className='flex flex-col gap-3'>
-        <div className='flex items-center gap-2'>
+        {/* ── Controls ── */}
+        <div className='flex flex-col gap-3'>
+          <div className='flex items-center gap-2'>
             {/* Filters toggle */}
             <button
               type='button'
@@ -377,56 +383,124 @@ const HomeCatalogSection = ({
             </div>
           </div>
 
-        {/* Row 2: collapsible filter panel */}
-        {filtersOpen ? (
-          <div
-            ref={filtersRef}
-            className='flex flex-wrap items-end gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm'
-          >
-            {/* Price range */}
-            <div className='flex flex-wrap items-end gap-3'>
-              <div className='flex flex-col gap-1'>
-                <label className='text-xs font-semibold text-slate-500'>
-                  Precio mínimo
-                </label>
-                <div className='flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 focus-within:border-primary focus-within:bg-white'>
-                  <span className='text-xs text-slate-400'>$</span>
-                  <input
-                    type='number'
-                    min={0}
-                    value={minPriceInput}
-                    onChange={e => setMinPriceInput(e.target.value)}
-                    placeholder='0'
-                    className='w-24 bg-transparent text-sm text-slate-800 focus:outline-none'
+          {/* Row 2: collapsible filter panel */}
+          {filtersOpen ? (
+            <div
+              ref={filtersRef}
+              className='flex flex-wrap items-end gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm'
+            >
+              {/* Price range */}
+              <div className='flex flex-wrap items-end gap-3'>
+                <div className='flex flex-col gap-1'>
+                  <label className='text-xs font-semibold text-slate-500'>
+                    Precio mínimo
+                  </label>
+                  <div className='flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 focus-within:border-primary focus-within:bg-white'>
+                    <span className='text-xs text-slate-400'>$</span>
+                    <input
+                      type='number'
+                      min={0}
+                      value={minPriceInput}
+                      onChange={e => setMinPriceInput(e.target.value)}
+                      placeholder='0'
+                      className='w-24 bg-transparent text-sm text-slate-800 focus:outline-none'
+                    />
+                  </div>
+                </div>
+                <div className='flex flex-col gap-1'>
+                  <label className='text-xs font-semibold text-slate-500'>
+                    Precio máximo
+                  </label>
+                  <div className='flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 focus-within:border-primary focus-within:bg-white'>
+                    <span className='text-xs text-slate-400'>$</span>
+                    <input
+                      type='number'
+                      min={0}
+                      value={maxPriceInput}
+                      onChange={e => setMaxPriceInput(e.target.value)}
+                      placeholder='Sin límite'
+                      className='w-28 bg-transparent text-sm text-slate-800 focus:outline-none'
+                    />
+                  </div>
+                </div>
+                <button
+                  type='button'
+                  onClick={applyPriceFilter}
+                  className='rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white transition hover:bg-primary-dark active:scale-95'
+                >
+                  Aplicar
+                </button>
+                {priceFilterActive ? (
+                  <div className='flex items-center gap-1.5 rounded-xl bg-primary/8 px-3 py-2 text-xs font-medium text-primary'>
+                    <i
+                      className='bx bx-filter-alt text-sm'
+                      aria-hidden='true'
+                    />
+                    {minPrice !== null && maxPrice !== null
+                      ? `${formatCurrencyCOP(minPrice)} – ${formatCurrencyCOP(maxPrice)}`
+                      : minPrice !== null
+                        ? `Desde ${formatCurrencyCOP(minPrice)}`
+                        : `Hasta ${formatCurrencyCOP(maxPrice!)}`}
+                    <button
+                      type='button'
+                      onClick={clearPriceFilter}
+                      className='ml-0.5 text-primary/70 hover:text-primary'
+                      aria-label='Quitar filtro de precio'
+                    >
+                      <i className='bx bx-x text-sm' aria-hidden='true' />
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+
+              {/* Divider */}
+              <div
+                className='h-8 w-px bg-slate-200 max-sm:hidden'
+                aria-hidden='true'
+              />
+
+              {/* Stock toggle */}
+              <label className='flex cursor-pointer items-center gap-2.5'>
+                <div
+                  className={`relative h-5 w-9 rounded-full transition-colors duration-200 ${onlyAvailable ? 'bg-primary' : 'bg-slate-300'}`}
+                  onClick={() => onOnlyAvailableChange(!onlyAvailable)}
+                  role='switch'
+                  aria-checked={onlyAvailable}
+                  tabIndex={0}
+                  onKeyDown={e => {
+                    if (e.key === ' ' || e.key === 'Enter')
+                      onOnlyAvailableChange(!onlyAvailable);
+                  }}
+                >
+                  <span
+                    className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${onlyAvailable ? 'translate-x-4' : 'translate-x-0.5'}`}
                   />
                 </div>
-              </div>
-              <div className='flex flex-col gap-1'>
-                <label className='text-xs font-semibold text-slate-500'>
-                  Precio máximo
-                </label>
-                <div className='flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 focus-within:border-primary focus-within:bg-white'>
-                  <span className='text-xs text-slate-400'>$</span>
-                  <input
-                    type='number'
-                    min={0}
-                    value={maxPriceInput}
-                    onChange={e => setMaxPriceInput(e.target.value)}
-                    placeholder='Sin límite'
-                    className='w-28 bg-transparent text-sm text-slate-800 focus:outline-none'
-                  />
-                </div>
-              </div>
-              <button
-                type='button'
-                onClick={applyPriceFilter}
-                className='rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white transition hover:bg-primary-dark active:scale-95'
-              >
-                Aplicar
-              </button>
+                <span className='text-sm font-medium text-slate-700'>
+                  Solo disponibles
+                </span>
+              </label>
+
+              {/* Clear all */}
+              {activeFilterCount > 0 ? (
+                <button
+                  type='button'
+                  onClick={clearAllFilters}
+                  className='ml-auto text-sm font-medium text-slate-400 transition hover:text-red-500'
+                >
+                  <i className='bx bx-reset mr-1 text-sm' aria-hidden='true' />
+                  Limpiar todo
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+
+          {/* Active filter chips (when panel is closed) */}
+          {!filtersOpen && activeFilterCount > 0 ? (
+            <div className='flex flex-wrap gap-2'>
               {priceFilterActive ? (
-                <div className='flex items-center gap-1.5 rounded-xl bg-primary/8 px-3 py-2 text-xs font-medium text-primary'>
-                  <i className='bx bx-filter-alt text-sm' aria-hidden='true' />
+                <span className='flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/8 px-3 py-1 text-xs font-semibold text-primary'>
+                  <i className='bx bx-dollar text-sm' aria-hidden='true' />
                   {minPrice !== null && maxPrice !== null
                     ? `${formatCurrencyCOP(minPrice)} – ${formatCurrencyCOP(maxPrice)}`
                     : minPrice !== null
@@ -435,131 +509,71 @@ const HomeCatalogSection = ({
                   <button
                     type='button'
                     onClick={clearPriceFilter}
-                    className='ml-0.5 text-primary/70 hover:text-primary'
-                    aria-label='Quitar filtro de precio'
+                    aria-label='Quitar filtro precio'
                   >
                     <i className='bx bx-x text-sm' aria-hidden='true' />
                   </button>
-                </div>
+                </span>
+              ) : null}
+              {onlyAvailable ? (
+                <span className='flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-semibold text-green-700'>
+                  <i
+                    className='bx bx-check-circle text-sm'
+                    aria-hidden='true'
+                  />
+                  Solo disponibles
+                  <button
+                    type='button'
+                    onClick={() => onOnlyAvailableChange(false)}
+                    aria-label='Quitar filtro disponibilidad'
+                  >
+                    <i className='bx bx-x text-sm' aria-hidden='true' />
+                  </button>
+                </span>
+              ) : null}
+              {sortBy !== 'newest' ? (
+                <span className='flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600'>
+                  <i className='bx bx-sort-alt-2 text-sm' aria-hidden='true' />
+                  {SORT_OPTIONS.find(o => o.value === sortBy)?.label}
+                  <button
+                    type='button'
+                    onClick={() => onSortChange(null)}
+                    aria-label='Quitar filtro de orden'
+                  >
+                    <i className='bx bx-x text-sm' aria-hidden='true' />
+                  </button>
+                </span>
               ) : null}
             </div>
-
-            {/* Divider */}
-            <div
-              className='h-8 w-px bg-slate-200 max-sm:hidden'
-              aria-hidden='true'
-            />
-
-            {/* Stock toggle */}
-            <label className='flex cursor-pointer items-center gap-2.5'>
-              <div
-                className={`relative h-5 w-9 rounded-full transition-colors duration-200 ${onlyAvailable ? 'bg-primary' : 'bg-slate-300'}`}
-                onClick={() => onOnlyAvailableChange(!onlyAvailable)}
-                role='switch'
-                aria-checked={onlyAvailable}
-                tabIndex={0}
-                onKeyDown={e => {
-                  if (e.key === ' ' || e.key === 'Enter')
-                    onOnlyAvailableChange(!onlyAvailable);
-                }}
-              >
-                <span
-                  className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${onlyAvailable ? 'translate-x-4' : 'translate-x-0.5'}`}
-                />
-              </div>
-              <span className='text-sm font-medium text-slate-700'>
-                Solo disponibles
-              </span>
-            </label>
-
-            {/* Clear all */}
-            {activeFilterCount > 0 ? (
-              <button
-                type='button'
-                onClick={clearAllFilters}
-                className='ml-auto text-sm font-medium text-slate-400 transition hover:text-red-500'
-              >
-                <i className='bx bx-reset mr-1 text-sm' aria-hidden='true' />
-                Limpiar todo
-              </button>
-            ) : null}
-          </div>
-        ) : null}
-
-        {/* Active filter chips (when panel is closed) */}
-        {!filtersOpen && activeFilterCount > 0 ? (
-          <div className='flex flex-wrap gap-2'>
-            {priceFilterActive ? (
-              <span className='flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/8 px-3 py-1 text-xs font-semibold text-primary'>
-                <i className='bx bx-dollar text-sm' aria-hidden='true' />
-                {minPrice !== null && maxPrice !== null
-                  ? `${formatCurrencyCOP(minPrice)} – ${formatCurrencyCOP(maxPrice)}`
-                  : minPrice !== null
-                    ? `Desde ${formatCurrencyCOP(minPrice)}`
-                    : `Hasta ${formatCurrencyCOP(maxPrice!)}`}
-                <button
-                  type='button'
-                  onClick={clearPriceFilter}
-                  aria-label='Quitar filtro precio'
-                >
-                  <i className='bx bx-x text-sm' aria-hidden='true' />
-                </button>
-              </span>
-            ) : null}
-            {onlyAvailable ? (
-              <span className='flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-semibold text-green-700'>
-                <i className='bx bx-check-circle text-sm' aria-hidden='true' />
-                Solo disponibles
-                <button
-                  type='button'
-                  onClick={() => onOnlyAvailableChange(false)}
-                  aria-label='Quitar filtro disponibilidad'
-                >
-                  <i className='bx bx-x text-sm' aria-hidden='true' />
-                </button>
-              </span>
-            ) : null}
-            {sortBy !== 'newest' ? (
-              <span className='flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600'>
-                <i className='bx bx-sort-alt-2 text-sm' aria-hidden='true' />
-                {SORT_OPTIONS.find(o => o.value === sortBy)?.label}
-                <button
-                  type='button'
-                  onClick={() => onSortChange(null)}
-                  aria-label='Quitar filtro de orden'
-                >
-                  <i className='bx bx-x text-sm' aria-hidden='true' />
-                </button>
-              </span>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-
-      {/* ── Error ── */}
-      {error ? (
-        <div className='flex items-center gap-2 rounded-2xl border border-error/25 bg-error-light px-4 py-3 text-sm text-error'>
-          <i className='bx bx-error-circle text-base' aria-hidden='true' />
-          {error}
+          ) : null}
         </div>
-      ) : null}
 
-      {/* ── Products grid ── */}
-      <ProductBody
-        products={processedProducts}
-        loading={loading}
-        sponsoredIds={sponsoredIds}
-        emptyMessage='No encontramos productos para este filtro.'
-        onAddToCart={handleAddToCart}
-      />
+        {/* ── Error ── */}
+        {error ? (
+          <div className='flex items-center gap-2 rounded-2xl border border-error/25 bg-error-light px-4 py-3 text-sm text-error'>
+            <i className='bx bx-error-circle text-base' aria-hidden='true' />
+            {error}
+          </div>
+        ) : null}
 
-      {hasMore ? <div ref={scrollSentinelRef} className='h-1 w-full' /> : null}
+        {/* ── Products grid ── */}
+        <ProductBody
+          products={processedProducts}
+          loading={loading}
+          sponsoredIds={sponsoredIds}
+          emptyMessage='No encontramos productos para este filtro.'
+          onAddToCart={handleAddToCart}
+        />
 
-      {loadingMore ? (
-        <p className='py-4 text-center text-sm text-slate-400'>
-          Cargando más productos...
-        </p>
-      ) : null}
+        {hasMore ? (
+          <div ref={scrollSentinelRef} className='h-1 w-full' />
+        ) : null}
+
+        {loadingMore ? (
+          <p className='py-4 text-center text-sm text-slate-400'>
+            Cargando más productos...
+          </p>
+        ) : null}
       </div>
     </div>
   );

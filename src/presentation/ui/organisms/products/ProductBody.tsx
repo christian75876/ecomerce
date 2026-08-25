@@ -144,8 +144,11 @@ const ProductBody = ({
           ))}
         </div>
 
-        {/* sm+: standard grid */}
-        <div className='hidden sm:grid sm:grid-cols-2 sm:gap-6 xl:grid-cols-3 2xl:grid-cols-4'>
+        {/* sm+: standard grid — auto-fill so columns scale to whatever
+            width is actually available (content-container has no max-
+            width cap anymore) instead of stopping at a fixed count and
+            leaving the extra space on wide screens unused. */}
+        <div className='hidden sm:grid sm:gap-6 sm:[grid-template-columns:repeat(auto-fill,minmax(260px,1fr))]'>
           {cards}
         </div>
       </>
@@ -153,7 +156,7 @@ const ProductBody = ({
   }
 
   return (
-    <div className='grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'>
+    <div className='grid grid-cols-1 gap-6 sm:[grid-template-columns:repeat(auto-fill,minmax(260px,1fr))]'>
       {cards}
     </div>
   );

@@ -200,16 +200,17 @@
     margin-right: calc(50% - 50vw);
   }
 
-  /* Content column reused inside .section-full-bleed. Deliberately wider
-     than DashboardLayout's site-wide 1440px — this is scoped to pages that
-     opt into the full-bleed pattern (Home/Stores), not a global bump, so
-     checkout/POS/admin content width is untouched. Widening it lets the
-     product grid use the extra room on very wide screens; a section's own
-     inner text (e.g. the hero headline) keeps its own narrower max-width
-     so lines don't stretch just because the column got wider. */
+  /* Content column reused inside .section-full-bleed. No max-width — grid-
+     heavy sections (product grids, the store map) should genuinely fill
+     whatever width the screen has, not stop at a fixed column and leave
+     visible margins on wide monitors. This is scoped to pages that opt
+     into the full-bleed pattern (Home/Stores/Map), not a global change —
+     checkout/POS/admin content width is untouched. A section's own inner
+     text (e.g. the hero headline's max-w-2xl) keeps its own narrower
+     wrapper, so lines don't stretch just because the column has no cap;
+     the product grid itself uses auto-fill/minmax (see ProductBody) so
+     cards add columns instead of stretching absurdly wide. */
   .content-container {
-    margin-inline: auto;
-    max-width: 1600px;
     padding-inline: 1rem;
   }
   @media (min-width: 640px) {

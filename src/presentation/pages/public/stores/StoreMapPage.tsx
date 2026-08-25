@@ -275,7 +275,7 @@ const StoreMapPage = () => {
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <>
+    <div className='section-full-bleed'>
       <Helmet>
         <title>Mapa de tiendas — Merku</title>
         <meta name='description' content='Encuentra tiendas cercanas, obtén indicaciones y explora el catálogo de cada tienda.' />
@@ -293,7 +293,7 @@ const StoreMapPage = () => {
       </Helmet>
 
       {/* Page header */}
-      <div className='mb-3 flex items-end justify-between'>
+      <div className='content-container mb-3 flex items-end justify-between'>
         <div>
           <h1 className='text-2xl font-bold tracking-tight text-slate-900'>Mapa de tiendas</h1>
           <p className='mt-0.5 text-sm text-slate-400'>
@@ -312,14 +312,15 @@ const StoreMapPage = () => {
       </div>
 
       {/* ── Mobile search strip (above map, hidden on sm+) ── */}
-      <div className='mb-2 sm:hidden'>
+      <div className='content-container mb-2 sm:hidden'>
         <SearchControls />
       </div>
 
-      {/* ── Main layout ── */}
+      {/* ── Main layout — full-bleed, fills the whole viewport width like
+          a real map canvas instead of stopping at the page's column. ── */}
       {/* Mobile: subtract search strip (~5.5rem) + bottom navbar (~5rem) + header (~4rem) + gaps */}
       {/* Desktop: no bottom navbar, no search strip above */}
-      <div className='flex overflow-hidden rounded-3xl border border-slate-200 shadow-sm h-[max(400px,calc(100svh-18rem))] sm:h-[max(520px,calc(100svh-9rem))]'>
+      <div className='flex overflow-hidden border-y border-slate-200 shadow-sm h-[max(400px,calc(100svh-18rem))] sm:h-[max(520px,calc(100svh-9rem))]'>
         {/* Desktop sidebar — search only, no store list */}
         <div className='hidden sm:flex sm:w-60 sm:flex-shrink-0 sm:flex-col sm:border-r sm:border-slate-100 sm:bg-white'>
           <div className='border-b border-slate-100 p-3'>
@@ -486,7 +487,7 @@ const StoreMapPage = () => {
           ) : null}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
