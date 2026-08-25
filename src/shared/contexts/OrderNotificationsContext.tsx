@@ -10,7 +10,6 @@ import type { ReactNode } from 'react';
 import { authSession } from '@/shared/utils/authSession';
 import { canAccessAdminPanel, isAdminRole } from '@/shared/utils/checkIsUserAuthenticated.util';
 import { OrdersRepository } from '@/infrastructure/repositories/api/orders/OrdersRepository';
-import type { IOrder } from '@/application/dtos/orders/response/OrderResponse';
 import { playNotificationSound } from '@/shared/utils/notificationSound';
 
 interface BaseNotification {
@@ -126,8 +125,7 @@ export const OrderNotificationsProvider = ({ children }: { children: ReactNode }
     if (!canAccessAdminPanel()) return;
     try {
       const resp = await OrdersRepository.getOrders({ limit: 20 });
-      const raw = resp.data as unknown as { items?: IOrder[] } | IOrder[];
-      const orders: IOrder[] = Array.isArray(raw) ? raw : (raw as { items?: IOrder[] }).items ?? [];
+      const orders = resp.data.items;
       if (orders.length === 0) return;
       const readIds = getReadIds();
       const mapped: NewOrderNotification[] = orders.map((o) => ({

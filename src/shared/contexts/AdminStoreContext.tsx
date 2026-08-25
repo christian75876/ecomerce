@@ -31,7 +31,7 @@ export const AdminStoreProvider = ({ children }: { children: ReactNode }) => {
     if (loaded || getAuthenticatedRole() !== 'admin') return;
     setLoaded(true);
     StoresRepository.getStores({ active: true })
-      .then((res) => setStores(res.data as unknown as IStore[]))
+      .then((res) => setStores(res.data))
       .catch(() => setLoaded(false));
   }, [loaded]);
 

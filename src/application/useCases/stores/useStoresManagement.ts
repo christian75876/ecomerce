@@ -119,9 +119,7 @@ export const useStoresManagement = () => {
       const response = isSeller
         ? await StoresRepository.getMyStores()
         : await StoresRepository.getStores();
-      const loaded: IStore[] = Array.isArray(response.data)
-        ? response.data
-        : (response.data as unknown as { items?: IStore[] }).items ?? [];
+      const loaded = response.data;
       setStores(loaded);
       if (isSeller && loaded.length > 0) {
         const f = storeToForm(loaded[0]);

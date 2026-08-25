@@ -23,7 +23,7 @@ export const useAdvertisingManagement = () => {
     setError(null);
     try {
       const res = await AdvertisingRepository.getDashboard(from, to);
-      setDashboard((res as unknown as { data: IAdvertisingDashboard }).data);
+      setDashboard(res.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar el dashboard');
     }

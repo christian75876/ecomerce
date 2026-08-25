@@ -17,6 +17,7 @@ import {
   IProductVariantsResp,
   IProductVideoResp,
   IProductVideosResp,
+  IRelatedProductsResp,
 } from '@/application/dtos/products/response/ProductResponse';
 import { IApiResponse } from '@/application/dtos/common/HttpResponse';
 import { IAsyncOptionsData } from '@/application/dtos/common/AsyncOption';
@@ -121,9 +122,9 @@ export class ProductRepository {
     );
   }
 
-  static async getRelatedProducts(id: string): Promise<IProductsResp> {
+  static async getRelatedProducts(id: string): Promise<IRelatedProductsResp> {
     return ErrorHandler.handleApiErrors(() =>
-      publicClientHTTP.get<IProductsResp>(`/products/${id}/related`),
+      publicClientHTTP.get<IRelatedProductsResp>(`/products/${id}/related`),
     );
   }
 

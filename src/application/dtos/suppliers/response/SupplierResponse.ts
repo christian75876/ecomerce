@@ -1,4 +1,4 @@
-import { IApiResponse } from '@/application/dtos/common/HttpResponse';
+import { IApiResponse, IFlatPaginatedData } from '@/application/dtos/common/HttpResponse';
 
 export interface ISupplier {
   id: string;
@@ -14,5 +14,5 @@ export interface ISupplier {
   updatedAt: string;
 }
 
-export type ISuppliersResp = IApiResponse<ISupplier[]>;
+export type ISuppliersResp = IApiResponse<IFlatPaginatedData<ISupplier>>;
 export type ISupplierResp = IApiResponse<ISupplier>;

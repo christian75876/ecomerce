@@ -24,14 +24,6 @@ export type CartRow = {
 
 const ORDERS_PER_PAGE = 20;
 
-type OrdersPageRaw = {
-  items: IOrder[];
-  total: number;
-  page: number;
-  totalPages: number;
-  limit: number;
-};
-
 export const useOrdersManagement = () => {
   const { selectedStoreId: contextStoreId } = useAdminStore();
   const { notifications } = useOrderNotifications();
@@ -65,11 +57,10 @@ export const useOrdersManagement = () => {
         page,
         limit: ORDERS_PER_PAGE,
       });
-      const raw = response.data as unknown as OrdersPageRaw;
-      setOrders(raw.items ?? []);
-      setCurrentPage(raw.page ?? 1);
-      setTotalPages(raw.totalPages ?? 1);
-      setTotalItems(raw.total ?? 0);
+      setOrders(response.data.items);
+      setCurrentPage(response.data.page);
+      setTotalPages(response.data.totalPages);
+      setTotalItems(response.data.total);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'No fue posible cargar pedidos',
@@ -90,13 +81,12 @@ export const useOrdersManagement = () => {
           ProductRepository.getProducts({ active: true }),
           OrdersRepository.getOrders({ storeId: contextStoreId, page: 1, limit: ORDERS_PER_PAGE }),
         ]);
-      setCustomers((customersResponse.data as unknown as { items?: ICustomer[] }).items ?? []);
-      setProducts((productsResponse.data as unknown as { items?: IProduct[] }).items ?? []);
-      const raw = ordersResponse.data as unknown as OrdersPageRaw;
-      setOrders(raw.items ?? []);
-      setCurrentPage(raw.page ?? 1);
-      setTotalPages(raw.totalPages ?? 1);
-      setTotalItems(raw.total ?? 0);
+      setCustomers(customersResponse.data.items);
+      setProducts(productsResponse.data.items);
+      setOrders(ordersResponse.data.items);
+      setCurrentPage(ordersResponse.data.page);
+      setTotalPages(ordersResponse.data.totalPages);
+      setTotalItems(ordersResponse.data.total);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'No fue posible cargar pedidos',
@@ -114,11 +104,10 @@ export const useOrdersManagement = () => {
   const silentReloadOrders = useCallback(async (page: number) => {
     try {
       const response = await OrdersRepository.getOrders({ storeId: contextStoreId, page, limit: ORDERS_PER_PAGE });
-      const raw = response.data as unknown as OrdersPageRaw;
-      setOrders(raw.items ?? []);
-      setCurrentPage(raw.page ?? 1);
-      setTotalPages(raw.totalPages ?? 1);
-      setTotalItems(raw.total ?? 0);
+      setOrders(response.data.items);
+      setCurrentPage(response.data.page);
+      setTotalPages(response.data.totalPages);
+      setTotalItems(response.data.total);
     } catch { /* silent — don't surface background refresh errors */ }
   }, [contextStoreId]);
 

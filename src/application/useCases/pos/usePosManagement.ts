@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ICustomer } from '@/application/dtos/customers/response/CustomerResponse';
 import { IProduct } from '@/application/dtos/products/response/ProductResponse';
 import { ISale } from '@/application/dtos/sales/response/SaleResponse';
-import { IStore } from '@/application/dtos/stores/response/StoreResponse';
 import { CustomersRepository } from '@/infrastructure/repositories/api/customers/CustomersRepository';
 import { ProductRepository } from '@/infrastructure/repositories/api/products/ProductsRepository';
 import { SalesRepository } from '@/infrastructure/repositories/api/sales/SalesRepository';
@@ -63,8 +62,8 @@ export const usePosManagement = () => {
         }),
         SalesRepository.getSales(),
       ]);
-      setProducts((productsResponse.data as unknown as { items?: IProduct[] }).items ?? []);
-      setSales((salesResponse.data as unknown as { items?: ISale[] }).items ?? []);
+      setProducts(productsResponse.data.items);
+      setSales(salesResponse.data.items);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No fue posible cargar POS');
     } finally {
@@ -80,15 +79,15 @@ export const usePosManagement = () => {
           CustomersRepository.getCustomers(),
           StoresRepository.getMyStores(),
         ]);
-        setCustomers((customersResponse.data as unknown as { items?: ICustomer[] }).items ?? []);
-        const storeList = storesResponse.data as unknown as IStore[];
+        setCustomers(customersResponse.data.items);
+        const storeList = storesResponse.data;
         if (storeList.length > 0) {
           setSelectedStoreId(storeList[0].id);
         }
       } else {
         // Admin: only load customers; storeId is controlled by the navbar context
         const customersResponse = await CustomersRepository.getCustomers();
-        setCustomers((customersResponse.data as unknown as { items?: ICustomer[] }).items ?? []);
+        setCustomers(customersResponse.data.items);
       }
     } catch (err) {
       setError(
@@ -203,7 +202,7 @@ export const usePosManagement = () => {
         deliveryNotes: guestSnapshot.deliveryNotes || undefined,
       });
 
-      const saleFromApi = saleResponse.data as unknown as ISale;
+      const saleFromApi = saleResponse.data;
 
       // Build receipt from API response, falling back to cart snapshot for product details
       const storeInfo = saleFromApi?.store ?? (cartSnapshot[0]?.product?.store

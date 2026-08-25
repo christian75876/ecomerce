@@ -1,4 +1,4 @@
-import { IApiResponse } from '@/application/dtos/common/HttpResponse';
+import { IApiResponse, IFlatPaginatedData } from '@/application/dtos/common/HttpResponse';
 
 export interface IOrder {
   id: string;
@@ -45,5 +45,7 @@ export interface IOrder {
   }>;
 }
 
-export type IOrdersResp = IApiResponse<IOrder[]>;
+export type IOrdersResp = IApiResponse<IFlatPaginatedData<IOrder>>;
 export type IOrderResp = IApiResponse<IOrder>;
+/** GET /orders/mine returns a bare array, unlike the paginated GET /orders. */
+export type IMyOrdersResp = IApiResponse<IOrder[]>;

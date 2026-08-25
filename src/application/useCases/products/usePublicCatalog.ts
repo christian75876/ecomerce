@@ -9,11 +9,6 @@ const PAGE_SIZE = 24;
 const SEARCH_TRACK_DEBOUNCE_MS = 600;
 const SPONSORED_LIMIT = 4;
 
-type ProductsPage = {
-  items?: IProduct[];
-  pagination?: { currentPage: number; totalPages: number; totalItems: number };
-};
-
 export type CatalogSortOption = 'newest' | 'price_asc' | 'price_desc' | 'name_asc';
 type ResolvedSort = CatalogSortOption | 'random';
 type SortConfig = { sortBy: ResolvedSort; seed?: string };
@@ -86,8 +81,7 @@ export const usePublicCatalog = () => {
       })
         .then((res) => {
           if (requestIdRef.current !== requestId) return;
-          const sponsoredData = res.data as unknown as ProductsPage;
-          setSponsoredProducts(sponsoredData.items ?? []);
+          setSponsoredProducts(res.data.items);
         })
         .catch(() => {
           if (requestIdRef.current === requestId) setSponsoredProducts([]);
@@ -112,10 +106,10 @@ export const usePublicCatalog = () => {
 
         if (requestIdRef.current !== requestId) return;
 
-        const productData = productsResponse.data as unknown as ProductsPage;
-        setProducts(productData.items ?? []);
-        setPage(productData.pagination?.currentPage ?? 1);
-        setTotalPages(productData.pagination?.totalPages ?? 1);
+        const productData = productsResponse.data;
+        setProducts(productData.items);
+        setPage(productData.pagination.currentPage);
+        setTotalPages(productData.pagination.totalPages);
         setCategories(categoriesResponse.data);
       } catch (err) {
         if (requestIdRef.current !== requestId) return;
@@ -159,10 +153,10 @@ export const usePublicCatalog = () => {
         limit: PAGE_SIZE,
       });
       if (requestIdRef.current !== requestId) return;
-      const productData = response.data as unknown as ProductsPage;
-      setProducts((prev) => [...prev, ...(productData.items ?? [])]);
-      setPage(productData.pagination?.currentPage ?? nextPage);
-      setTotalPages(productData.pagination?.totalPages ?? totalPages);
+      const productData = response.data;
+      setProducts((prev) => [...prev, ...productData.items]);
+      setPage(productData.pagination.currentPage);
+      setTotalPages(productData.pagination.totalPages);
     } catch {
       // Silently ignore: the shopper keeps browsing what already loaded.
     } finally {

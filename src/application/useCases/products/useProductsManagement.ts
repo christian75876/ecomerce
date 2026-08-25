@@ -201,26 +201,16 @@ export const useProductsManagement = () => {
   const loadStores = useCallback(async () => {
     if (isSeller) {
       const response = await StoresRepository.getMyStores();
-      const loaded: IStore[] = Array.isArray(response.data)
-        ? response.data
-        : (response.data as unknown as { items?: IStore[] }).items ?? [];
-      setStores(loaded);
+      setStores(response.data);
     } else {
       const response = await StoresRepository.getStores({ active: true });
-      const loaded: IStore[] = Array.isArray(response.data)
-        ? response.data
-        : (response.data as unknown as { items?: IStore[] }).items ?? [];
-      setStores(loaded);
+      setStores(response.data);
     }
   }, [isSeller]);
 
   const loadSuppliers = useCallback(async () => {
     const response = await SuppliersRepository.getSuppliers();
-    const raw = response.data as unknown;
-    const items: ISupplier[] = Array.isArray(raw)
-      ? raw
-      : ((raw as { items?: ISupplier[] }).items ?? []);
-    setSuppliers(items.filter((s) => s.isActive));
+    setSuppliers(response.data.items.filter((s) => s.isActive));
   }, []);
 
   const loadProducts = useCallback(async (page = 1) => {
@@ -235,14 +225,10 @@ export const useProductsManagement = () => {
         page,
         limit: itemsPerPage,
       });
-      const data = response.data as unknown as {
-        items?: IProduct[];
-        pagination?: { currentPage: number; totalPages: number; totalItems: number };
-      };
-      setProducts(data.items ?? []);
-      setCurrentPage(data.pagination?.currentPage ?? page);
-      setTotalPages(data.pagination?.totalPages ?? 1);
-      setTotalItems(data.pagination?.totalItems ?? 0);
+      setProducts(response.data.items);
+      setCurrentPage(response.data.pagination.currentPage);
+      setTotalPages(response.data.pagination.totalPages);
+      setTotalItems(response.data.pagination.totalItems);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'No fue posible cargar los productos',

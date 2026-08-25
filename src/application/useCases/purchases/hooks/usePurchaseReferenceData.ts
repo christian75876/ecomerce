@@ -25,13 +25,9 @@ export const usePurchaseReferenceData = () => {
           CategoriesRepository.getCategories(true),
         ]);
 
-      setSuppliers(
-        ((suppliersResponse.data as unknown as { items?: ISupplier[] }).items ?? []).filter(
-          (item) => item.isActive,
-        ),
-      );
-      setStores((storesResponse.data as unknown as IStore[]).filter((item) => item.isActive));
-      setCategories(categoriesResponse.data as unknown as ICategory[]);
+      setSuppliers(suppliersResponse.data.items.filter((item) => item.isActive));
+      setStores(storesResponse.data.filter((item) => item.isActive));
+      setCategories(categoriesResponse.data);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'No fue posible cargar compras',

@@ -41,11 +41,10 @@ export const useSuppliersManagement = () => {
     setError(null);
     try {
       const response = await SuppliersRepository.getSuppliers(search || undefined, contextStoreId, page, itemsPerPage);
-      const raw = response.data as unknown as { items: ISupplier[]; total: number; page: number; totalPages: number };
-      setSuppliers(raw.items ?? []);
-      setCurrentPage(raw.page ?? 1);
-      setTotalPages(raw.totalPages ?? 1);
-      setTotalItems(raw.total ?? 0);
+      setSuppliers(response.data.items);
+      setCurrentPage(response.data.page);
+      setTotalPages(response.data.totalPages);
+      setTotalItems(response.data.total);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No fue posible cargar proveedores');
     } finally {

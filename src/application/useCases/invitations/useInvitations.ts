@@ -38,9 +38,8 @@ export const useInvitations = () => {
     try {
       const res = await InvitationsRepository.create(email.trim());
       clearTimeout(timeout);
-      const msg = (res as unknown as { data?: { message?: string; emailSent?: boolean } }).data;
-      setSuccess(msg?.message ?? 'Invitación enviada');
-      if (msg?.emailSent === false) setError('La invitación se guardó pero el correo no pudo enviarse. Revisa los logs del servidor.');
+      setSuccess(res.data.message ?? 'Invitación enviada');
+      if (res.data.emailSent === false) setError('La invitación se guardó pero el correo no pudo enviarse. Revisa los logs del servidor.');
       setEmail('');
       await load();
     } catch (err) {
@@ -58,9 +57,8 @@ export const useInvitations = () => {
     setSuccess(null);
     try {
       const res = await InvitationsRepository.resend(id);
-      const msg = (res as unknown as { data?: { message?: string; emailSent?: boolean } }).data;
-      setSuccess(msg?.message ?? 'Invitación reenviada');
-      if (msg?.emailSent === false) setError('La invitación se renovó pero el correo no pudo enviarse.');
+      setSuccess(res.data.message ?? 'Invitación reenviada');
+      if (res.data.emailSent === false) setError('La invitación se renovó pero el correo no pudo enviarse.');
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo reenviar la invitación');

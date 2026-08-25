@@ -16,6 +16,7 @@ import { IRegisterCustomerRequest } from '@/application/dtos/auth/register/custo
 import { IRegisterCustomerResp } from '@/application/dtos/auth/register/customer/RegisterCustomerResponse';
 import { IVerifyEmailRequest } from '@/application/dtos/auth/verify-email/request/VerifyEmailRequest';
 import { IVerifyEmailResp } from '@/application/dtos/auth/verify-email/response/VerifyEmailResponse';
+import { IApiResponse } from '@/application/dtos/common/HttpResponse';
 
 export class AuthRepository {
   /**
@@ -83,11 +84,9 @@ export class AuthRepository {
 
   static async refreshToken(): Promise<string> {
     const response = await ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.post<{ token: string }>('/auth/refresh', {})
+      authenticatedClientHTTP.post<IApiResponse<{ token: string }>>('/auth/refresh', {})
     );
-    // response is the IApiResponse wrapper; actual token is at .data.token
-    const newToken = (response as unknown as { data: { token: string } }).data?.token
-      ?? (response as unknown as { token: string }).token;
+    const newToken = response.data?.token;
     if (!newToken) throw new Error('refresh_empty');
     localStorage.setItem('token', newToken);
     return newToken;

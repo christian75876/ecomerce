@@ -1,4 +1,4 @@
-import { IApiResponse } from '@/application/dtos/common/HttpResponse';
+import { IApiResponse, IPaginatedData } from '@/application/dtos/common/HttpResponse';
 import { ICategory } from '@/application/dtos/categories/response/CategoryResponse';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
 import { ISupplier } from '@/application/dtos/suppliers/response/SupplierResponse';
@@ -77,7 +77,9 @@ export interface IProductVideo {
   createdAt: string;
 }
 
-export type IProductsResp = IApiResponse<IProduct[]>;
+export type IProductsResp = IApiResponse<IPaginatedData<IProduct>>;
+/** GET /products/:id/related returns a bare array, unlike the paginated GET /products. */
+export type IRelatedProductsResp = IApiResponse<IProduct[]>;
 export type IProductImagesResp = IApiResponse<IProductImage[]>;
 export type IProductImageResp = IApiResponse<IProductImage>;
 export type IProductResp = IApiResponse<IProduct>;

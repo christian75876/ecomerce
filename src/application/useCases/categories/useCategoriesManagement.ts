@@ -109,8 +109,7 @@ export const useCategoriesManagement = () => {
     setProductsLoading(true);
     try {
       const response = await ProductRepository.getProducts({ categoryId, limit: 500 });
-      const data = response.data as unknown as { items?: IProduct[] };
-      setCategoryProducts(data.items ?? []);
+      setCategoryProducts(response.data.items);
     } catch {
       setCategoryProducts([]);
     } finally {

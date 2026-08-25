@@ -4,6 +4,7 @@ import {
   IUpdateOrderStatusRequest,
 } from '@/application/dtos/orders/request/OrderRequest';
 import {
+  IMyOrdersResp,
   IOrderResp,
   IOrdersResp,
 } from '@/application/dtos/orders/response/OrderResponse';
@@ -52,9 +53,9 @@ export class OrdersRepository {
     );
   }
 
-  static async getMyOrders(): Promise<IOrdersResp> {
+  static async getMyOrders(): Promise<IMyOrdersResp> {
     return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.get<IOrdersResp>('/orders/me'),
+      authenticatedClientHTTP.get<IMyOrdersResp>('/orders/me'),
     );
   }
 

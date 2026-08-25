@@ -1,4 +1,4 @@
-import { IApiResponse } from '@/application/dtos/common/HttpResponse';
+import { IApiResponse, IPaginatedData } from '@/application/dtos/common/HttpResponse';
 
 export interface IInventoryItem {
   productId: string;
@@ -64,8 +64,8 @@ export interface IInventoryBatch {
   } | null;
 }
 
-export type IInventoryResp = IApiResponse<IInventoryItem[]>;
-export type IInventoryMovementsResp = IApiResponse<IInventoryMovement[]>;
+export type IInventoryResp = IApiResponse<IPaginatedData<IInventoryItem>>;
+export type IInventoryMovementsResp = IApiResponse<IPaginatedData<IInventoryMovement>>;
 export type IInventoryMovementResp = IApiResponse<IInventoryMovement>;
-export type IInventoryBatchesResp = IApiResponse<IInventoryBatch[]>;
+export type IInventoryBatchesResp = IApiResponse<IPaginatedData<IInventoryBatch>>;
 export type IInventoryBatchResp = IApiResponse<IInventoryBatch>;

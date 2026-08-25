@@ -1,4 +1,4 @@
-import { IApiResponse } from '@/application/dtos/common/HttpResponse';
+import { IApiResponse, IFlatPaginatedData } from '@/application/dtos/common/HttpResponse';
 
 export interface ISale {
   id: string;
@@ -49,6 +49,6 @@ export interface ISalesHistoryResponse {
   totalPages: number;
 }
 
-export type ISalesResp = IApiResponse<ISale[]>;
+export type ISalesResp = IApiResponse<IFlatPaginatedData<ISale>>;
 export type ISaleResp = IApiResponse<ISale>;
 export type ISalesHistoryResp = IApiResponse<ISalesHistoryResponse>;

@@ -59,16 +59,12 @@ export const useInventoryManagement = () => {
           InventoryRepository.getExpiring(30, contextStoreId),
         ]);
 
-      setProducts((productsResponse.data as unknown as { items?: IProduct[] }).items ?? []);
-      setSuppliers(
-        ((suppliersResponse.data as unknown as { items?: ISupplier[] }).items ?? []).filter(
-          (s) => s.isActive,
-        ),
-      );
-      setInventory((inventoryResponse.data as unknown as { items?: IInventoryItem[] }).items ?? []);
-      setMovements((movementsResponse.data as unknown as { items?: IInventoryMovement[] }).items ?? []);
-      setBatches((batchesResponse.data as unknown as { items?: IInventoryBatch[] }).items ?? []);
-      setExpiringBatches((expiringResponse.data as unknown as { items?: IInventoryBatch[] }).items ?? []);
+      setProducts(productsResponse.data.items);
+      setSuppliers(suppliersResponse.data.items.filter((s) => s.isActive));
+      setInventory(inventoryResponse.data.items);
+      setMovements(movementsResponse.data.items);
+      setBatches(batchesResponse.data.items);
+      setExpiringBatches(expiringResponse.data.items);
     } catch (err) {
       setError(
         err instanceof Error
@@ -161,7 +157,7 @@ export const useInventoryManagement = () => {
         isActive: true,
       });
       const updated = await ProductRepository.getProducts();
-      setProducts((updated.data as unknown as { items?: IProduct[] }).items ?? []);
+      setProducts(updated.data.items);
       return response.data;
     } catch {
       return null;
@@ -173,11 +169,7 @@ export const useInventoryManagement = () => {
       const response = await SuppliersRepository.createSupplier({ name });
       // Reload suppliers so the new one appears in the dropdown
       const updated = await SuppliersRepository.getSuppliers();
-      setSuppliers(
-        ((updated.data as unknown as { items?: ISupplier[] }).items ?? []).filter(
-          (s) => s.isActive,
-        ),
-      );
+      setSuppliers(updated.data.items.filter((s) => s.isActive));
       return response.data;
     } catch {
       return null;

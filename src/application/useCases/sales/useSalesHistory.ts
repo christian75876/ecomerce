@@ -70,7 +70,7 @@ export const useSalesHistory = () => {
         to: filters.to || undefined,
       };
       const res = await SalesRepository.getSalesHistory(params);
-      setResult(res.data as unknown as ISalesHistoryResponse);
+      setResult(res.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar el historial');
     } finally {
@@ -89,7 +89,7 @@ export const useSalesHistory = () => {
       setDetailLoading(true);
       try {
         const res = await SalesRepository.getSaleById(sale.id);
-        setSelectedSale(res.data as unknown as ISale);
+        setSelectedSale(res.data);
       } catch {
         // keep the partial data already set
       } finally {

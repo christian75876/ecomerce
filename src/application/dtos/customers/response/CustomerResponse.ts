@@ -1,4 +1,4 @@
-import { IApiResponse } from '@/application/dtos/common/HttpResponse';
+import { IApiResponse, IPaginatedData } from '@/application/dtos/common/HttpResponse';
 
 export interface ICustomer {
   id: string;
@@ -13,7 +13,7 @@ export interface ICustomer {
   updatedAt: string;
 }
 
-export type ICustomersResp = IApiResponse<ICustomer[]>;
+export type ICustomersResp = IApiResponse<IPaginatedData<ICustomer>>;
 export type ICustomerResp = IApiResponse<ICustomer>;
 
 export interface ICustomerLedgerEntry {

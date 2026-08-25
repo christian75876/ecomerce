@@ -15,7 +15,7 @@ export interface IInvitation {
 export class InvitationsRepository {
   static async create(email: string) {
     return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.post<{ message: string; email: string; emailSent: boolean }>(
+      authenticatedClientHTTP.post<IApiResponse<{ message: string; email: string; emailSent: boolean }>>(
         '/invitations',
         { email },
       ),
@@ -30,7 +30,7 @@ export class InvitationsRepository {
 
   static async resend(id: string) {
     return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.post<{ message: string; email: string; emailSent: boolean }>(
+      authenticatedClientHTTP.post<IApiResponse<{ message: string; email: string; emailSent: boolean }>>(
         `/invitations/${id}/resend`,
         {},
       ),

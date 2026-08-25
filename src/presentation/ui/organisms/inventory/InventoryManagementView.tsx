@@ -62,12 +62,8 @@ const QuickCreateProductModal = ({
             ? StoresRepository.getMyStores()
             : StoresRepository.getStores({ active: true }),
         ]);
-        const cats = catResp.data;
-        setCategories(Array.isArray(cats) ? cats : []);
-        const rawStores = storeResp.data;
-        const storeList: IStore[] = Array.isArray(rawStores)
-          ? rawStores
-          : (rawStores as unknown as { items?: IStore[] }).items ?? [];
+        setCategories(catResp.data);
+        const storeList = storeResp.data;
         setStores(storeList);
         if (isSeller && storeList.length > 0) setStoreId(storeList[0].id);
       } catch {

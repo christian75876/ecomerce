@@ -318,8 +318,7 @@ const ImagePickerInput = ({
       const res = variant === 'logo'
         ? await StoresRepository.uploadLogo(storeId, file)
         : await StoresRepository.uploadBanner(storeId, file);
-      const url = (res as unknown as { data?: { logoUrl?: string; bannerUrl?: string } }).data;
-      const newUrl = variant === 'logo' ? url?.logoUrl : url?.bannerUrl;
+      const newUrl = variant === 'logo' ? res.data.logoUrl : res.data.bannerUrl;
       if (newUrl) { onChange(newUrl); setLocalPreview(null); }
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : 'Error al subir imagen');

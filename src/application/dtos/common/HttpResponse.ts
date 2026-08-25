@@ -21,3 +21,12 @@ export interface IPaginatedData<T> {
   items: T[];
   pagination: IMetaData;
 }
+
+/** Some list endpoints return pagination fields flat on the payload instead of nested under `pagination` — this matches that shape. */
+export interface IFlatPaginatedData<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}

@@ -29,11 +29,10 @@ export const useCustomersCreditManagement = () => {
     setError(null);
     try {
       const response = await CustomersRepository.getCustomers(search || undefined, contextStoreId, page, itemsPerPage);
-      const raw = response.data as unknown as { items: ICustomer[]; pagination: { currentPage: number; totalPages: number; totalItems: number; itemsPerPage: number } };
-      setCustomers(raw.items ?? []);
-      setCurrentPage(raw.pagination?.currentPage ?? 1);
-      setTotalPages(raw.pagination?.totalPages ?? 1);
-      setTotalItems(raw.pagination?.totalItems ?? 0);
+      setCustomers(response.data.items);
+      setCurrentPage(response.data.pagination.currentPage);
+      setTotalPages(response.data.pagination.totalPages);
+      setTotalItems(response.data.pagination.totalItems);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No fue posible cargar clientes');
     } finally {

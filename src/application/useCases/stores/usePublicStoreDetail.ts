@@ -11,11 +11,6 @@ const SEARCH_DEBOUNCE_MS = 400;
 
 export type StoreSortOption = 'newest' | 'price_asc' | 'price_desc' | 'name_asc';
 
-type ProductsPage = {
-  items?: IProduct[];
-  pagination?: { currentPage: number; totalPages: number; totalItems: number };
-};
-
 export const usePublicStoreDetail = (slug?: string) => {
   const [store, setStore] = useState<IStore | null>(null);
   const [products, setProducts] = useState<IProduct[]>([]);
@@ -53,7 +48,7 @@ export const usePublicStoreDetail = (slug?: string) => {
         sortBy: sort,
         search: searchTerm || undefined,
       });
-      return response.data as unknown as ProductsPage;
+      return response.data;
     },
     [],
   );

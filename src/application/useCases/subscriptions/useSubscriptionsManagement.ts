@@ -26,7 +26,7 @@ export const useSubscriptionsManagement = () => {
     setError(null);
     try {
       const res = await SubscriptionsRepository.getDashboard(from, to);
-      setDashboard((res as unknown as { data: ISubscriptionAdminDashboard }).data);
+      setDashboard(res.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar el dashboard');
     }
@@ -35,8 +35,7 @@ export const useSubscriptionsManagement = () => {
   const loadPlans = async () => {
     try {
       const res = await SubscriptionsRepository.getPlans();
-      const plansData = (res as unknown as { data: ISubscriptionPlan[] }).data;
-      setPlans(Array.isArray(plansData) ? plansData : []);
+      setPlans(res.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar los planes');
     }
