@@ -4,7 +4,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Urbanist', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: ['Work Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['Bricolage Grotesque', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['IBM Plex Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       borderRadius: {
         '3xl': '1.75rem',
@@ -17,8 +19,8 @@ export default {
         'card': '0 2px 8px rgba(15,23,42,0.05), 0 12px 28px rgba(15,23,42,0.07)',
         'panel': '0 4px 16px rgba(15,23,42,0.06), 0 24px 56px rgba(15,23,42,0.09)',
         'float': '0 8px 32px rgba(15,23,42,0.07), 0 40px 80px rgba(15,23,42,0.10)',
-        'glow-primary': '0 0 0 3px rgba(249,115,22,0.18)',
-        'glow-secondary': '0 0 0 3px rgba(15,118,110,0.18)',
+        'glow-primary': '0 0 0 3px rgba(255,107,53,0.18)',
+        'glow-secondary': '0 0 0 3px rgba(14,149,148,0.18)',
       },
       transitionTimingFunction: {
         'spring': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
@@ -27,6 +29,7 @@ export default {
       transitionDuration: {
         '250': '250ms',
         '350': '350ms',
+        '700': '700ms',
       },
       animation: {
         'fade-up':   'fade-up 0.35s ease both',

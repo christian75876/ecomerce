@@ -1,30 +1,6 @@
-@font-face {
-  font-family: 'Urbanist';
-  src: url('/src/assets/media/fonts/urbanist/Urbanist-Regular.woff2')
-    format('woff2');
-  font-weight: 400;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Urbanist';
-  src: url('/src/assets/media/fonts/urbanist/Urbanist-Bold.woff2')
-    format('woff2');
-  font-weight: 700;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Urbanist';
-  src: url('/src/assets/media/fonts/urbanist/Urbanist-Italic.woff2')
-    format('woff2');
-  font-weight: 400;
-  font-style: italic;
-}
-
 html,
 body {
-  font-family: 'Urbanist', sans-serif;
+  font-family: 'Work Sans', ui-sans-serif, system-ui, sans-serif;
   /* "clip" en vez de "hidden": evita el scroll horizontal sin que el
      navegador termine forzando overflow-y a "auto" en html/body (regla del
      spec: si un eje no es "visible" y el otro sí, el "visible" pasa a
@@ -36,30 +12,32 @@ body {
 }
 
 :root {
+  /* Panel/surface system (admin views) — derived from the same warm
+     "Mercado" palette as palette.tailwind.css, not a separate color set. */
   --surface-base: #ffffff;
-  --surface-muted: #f5f5fb;
-  --surface-soft: #f0f0f8;
-  --border-soft: rgba(99, 102, 241, 0.08);
-  --border-strong: rgba(99, 102, 241, 0.15);
-  --text-primary: #0f172a;
-  --text-secondary: #475467;
-  --text-tertiary: #64748b;
-  --shadow-soft: 0 8px 32px rgba(99, 102, 241, 0.10);
-  --shadow-strong: 0 16px 48px rgba(99, 102, 241, 0.16);
+  --surface-muted: #fbf3e7;
+  --surface-soft: #f6e9d8;
+  --border-soft: rgba(255, 107, 53, 0.10);
+  --border-strong: rgba(255, 107, 53, 0.18);
+  --text-primary: #2b1b12;
+  --text-secondary: #6b5644;
+  --text-tertiary: #8a7563;
+  --shadow-soft: 0 8px 32px rgba(43, 27, 18, 0.10);
+  --shadow-strong: 0 16px 48px rgba(43, 27, 18, 0.16);
   --radius-card: 1rem;
   --radius-panel: 1.5rem;
 
-  --page-bg: #f5f5fb;
+  --page-bg: #fbf3e7;
   --panel-bg: #ffffff;
   --surface-bg: #ffffff;
   --input-bg: #ffffff;
-  --panel-border: rgba(99, 102, 241, 0.1);
-  --input-border: #e2e8f0;
-  --text-heading: #0f172a;
-  --text-body: #334155;
-  --text-muted: #64748b;
-  --text-faint: #94a3b8;
+  --panel-border: rgba(255, 107, 53, 0.12);
+  --input-border: #e8d3b8;
+  --text-heading: #2b1b12;
+  --text-body: #4a3a2c;
+  --text-muted: #7a6552;
+  --text-faint: #a3907c;
   --row-bg: #ffffff;
-  --row-hover-bg: #f8f8fd;
-  --row-border: rgba(15, 23, 42, 0.07);
+  --row-hover-bg: #fdf8f0;
+  --row-border: rgba(43, 27, 18, 0.08);
 }

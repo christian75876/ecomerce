@@ -1,44 +1,70 @@
 @import 'tailwindcss';
 
+/*
+ * "Mercado" — Merku's design tokens.
+ * Warm daytime market: sand base, four saturated accents that rotate across
+ * sections instead of a single dominant brand color. Every color used in the
+ * app should trace back to a token here — see MEMORY/audit notes: we already
+ * cleaned up ~90 scattered hardcoded hex values once, don't reintroduce them.
+ *
+ * WCAG AA contrast, measured against the two text colors this system uses
+ * (verified with the actual relative-luminance formula, not eyeballed):
+ *   --color-neutral-dark (ink)  on primary/highlight → 5.7:1 / 10.6:1  ✅ passes at any size
+ *   --color-neutral-dark (ink)  on secondary/accent  → 4.3:1 / 4.2:1  ✅ large text (≥24px or ≥19px bold) only
+ *   white                       on primary/secondary/accent/highlight → 2.9–3.9:1  ❌ fails at any size
+ *   white                       on the *-dark shade of secondary/accent → 5.4–5.5:1 ✅ passes at any size
+ * Practical rule: big display type sits directly on a raw section color and
+ * always uses ink (never white). Small UI text/paragraphs never sit directly
+ * on a raw accent fill — they live inside a white/cream card floating on top
+ * (the "market stall" construction), or use the color's *-dark shade with
+ * white if a solid small badge/button really needs to be accent-colored.
+ */
 @theme {
-  /* ── Primary: Indigo ── */
-  --color-primary: #6366f1;
-  --color-primary-50: #eef2ff;
-  --color-primary-100: #e0e7ff;
-  --color-primary-200: #c7d2fe;
-  --color-primary-light: #818cf8;
-  --color-primary-dark: #4f46e5;
-  --color-primary-darker: #4338ca;
+  /* ── Primary: Papaya (CTAs, links, the "Merku orange" people recognize) ── */
+  --color-primary: #ff6b35;
+  --color-primary-50: #fff1ea;
+  --color-primary-100: #ffe0d0;
+  --color-primary-200: #ffc2a1;
+  --color-primary-light: #ff8b5c;
+  --color-primary-dark: #e5501c;
+  --color-primary-darker: #c23f13;
 
-  /* ── Accent: Orange (CTAs, prices, badges) ── */
-  --color-accent: #f97316;
-  --color-accent-50: #fff7ed;
-  --color-accent-100: #ffedd5;
-  --color-accent-light: #fb923c;
-  --color-accent-dark: #ea6500;
-  --color-accent-darker: #c2410c;
+  /* ── Secondary: Turquesa (secondary actions, one of the 4 section blocks) ── */
+  --color-secondary: #0e9594;
+  --color-secondary-50: #e6f7f6;
+  --color-secondary-100: #c3ecea;
+  --color-secondary-light: #29b0ae;
+  --color-secondary-dark: #0b7776;
 
-  /* ── Secondary: Violet ── */
-  --color-secondary: #8b5cf6;
-  --color-secondary-50: #f5f3ff;
-  --color-secondary-100: #ede9fe;
-  --color-secondary-light: #a78bfa;
-  --color-secondary-dark: #7c3aed;
+  /* ── Accent: Guayaba (prices, sponsored badges, a 2nd section block) ── */
+  --color-accent: #e93e7d;
+  --color-accent-50: #fdecf2;
+  --color-accent-100: #fbd2e1;
+  --color-accent-light: #f0619a;
+  --color-accent-dark: #c42763;
+  --color-accent-darker: #9e1e4f;
 
-  /* ── Neutrals ── */
+  /* ── Highlight: Banano (ratings/small highlights, a 3rd section block) ── */
+  --color-highlight: #ffc93c;
+  --color-highlight-50: #fff8e1;
+  --color-highlight-light: #ffda70;
+  --color-highlight-dark: #e6ac00;
+
+  /* ── Neutrals: warm (sand/coffee, not cool slate) ── */
   --color-neutral-white: #ffffff;
-  --color-neutral-50: #f8fafc;
-  --color-neutral-100: #f1f5f9;
-  --color-neutral-200: #e2e8f0;
-  --color-neutral-dark: #0f172a;
-  --color-neutral-gray: #cbd5e1;
-  --color-neutral-muted: #64748b;
+  --color-neutral-50: #fbf3e7;
+  --color-neutral-100: #f3e6d3;
+  --color-neutral-200: #e8d3b8;
+  --color-neutral-dark: #2b1b12;
+  --color-neutral-gray: #d8c4ac;
+  --color-neutral-muted: #7a6552;
 
   /* ── Brand-external: WhatsApp (contact links, floating button) ── */
   --color-whatsapp: #25d366;
 
-  /* ── Semantic ── */
-  --color-background: #f7f7fb;
+  /* ── Semantic (kept legible/conventional — success=green, error=red — so
+       status meaning isn't lost inside a maximalist palette) ── */
+  --color-background: #fbf3e7;
   --color-surface: #ffffff;
   --color-success: #16a34a;
   --color-success-light: #dcfce7;
@@ -63,6 +89,9 @@
 
   .bg-secondary     { background-color: var(--color-secondary); }
   .text-secondary   { color: var(--color-secondary); }
+
+  .bg-highlight     { background-color: var(--color-highlight); }
+  .text-highlight   { color: var(--color-highlight); }
 }
 
 /* ── Surface system ── */
@@ -72,8 +101,8 @@
     background: var(--panel-bg);
     border: 1px solid var(--panel-border);
     box-shadow:
-      0 1px 3px rgba(15, 23, 42, 0.04),
-      0 8px 24px rgba(99, 102, 241, 0.07);
+      0 1px 3px rgba(43, 27, 18, 0.05),
+      0 8px 24px rgba(255, 107, 53, 0.08);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
   }
@@ -83,39 +112,39 @@
     background: var(--panel-bg);
     border: 1px solid var(--panel-border);
     box-shadow:
-      0 1px 2px rgba(15, 23, 42, 0.03),
-      0 8px 32px rgba(99, 102, 241, 0.06);
+      0 1px 2px rgba(43, 27, 18, 0.04),
+      0 8px 32px rgba(255, 107, 53, 0.07);
   }
 
   /* Elevated boxes */
   .surface-elevated {
     background: var(--surface-bg);
     border: 1px solid var(--row-border);
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.09);
   }
 
   /* Glass surface */
   .surface-glass {
-    background: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.72);
     border: 1px solid rgba(255, 255, 255, 0.8);
-    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.10);
+    box-shadow: 0 8px 32px rgba(43, 27, 18, 0.10);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
   }
 
-  /* Hero/banner gradient */
+  /* Hero/banner gradient — papaya into guayaba, the two warmest accents */
   .gradient-hero {
-    background: linear-gradient(135deg, #4338ca 0%, #6366f1 45%, #8b5cf6 100%);
+    background: linear-gradient(135deg, #e5501c 0%, #ff6b35 45%, #e93e7d 100%);
   }
 
-  /* Primary button gradient — same stops as .text-gradient-brand, driven by
-     the theme tokens so both stay in sync if the brand colors ever change. */
+  /* Primary button gradient — driven by the theme tokens so it can never
+     drift from the palette above. */
   .btn-gradient-primary {
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+    box-shadow: 0 4px 14px rgba(255, 107, 53, 0.35);
   }
   .btn-gradient-primary:hover:not(:disabled) {
-    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.45);
   }
 
   /* Admin page background */
@@ -125,7 +154,7 @@
 
   /* Gradient brand text */
   .text-gradient-brand {
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    background: linear-gradient(135deg, #ff6b35 0%, #e93e7d 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -133,7 +162,7 @@
 
   /* Gradient accent text */
   .text-gradient-accent {
-    background: linear-gradient(135deg, #f97316 0%, #ea6500 100%);
+    background: linear-gradient(135deg, #0e9594 0%, #ffc93c 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -149,14 +178,24 @@
   .badge-error    { @apply inline-flex items-center gap-1 rounded-full bg-red-50    px-2.5 py-0.5 text-xs font-semibold text-red-700    ring-1 ring-red-200/70; }
   .badge-info     { @apply inline-flex items-center gap-1 rounded-full bg-sky-50    px-2.5 py-0.5 text-xs font-semibold text-sky-700    ring-1 ring-sky-200/70; }
   .badge-neutral  { @apply inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600  ring-1 ring-slate-200/70; }
-  .badge-primary  { @apply inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-200/70; }
-  .badge-accent   { @apply inline-flex items-center gap-1 rounded-full bg-orange-50 px-2.5 py-0.5 text-xs font-semibold text-orange-700 ring-1 ring-orange-200/70; }
+  .badge-primary {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset;
+    background-color: var(--color-primary-50);
+    color: var(--color-primary-dark);
+    --tw-ring-color: var(--color-primary-100);
+  }
+  .badge-accent {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset;
+    background-color: var(--color-accent-50);
+    color: var(--color-accent-dark);
+    --tw-ring-color: var(--color-accent-100);
+  }
 }
 
 /* ── Skeleton ── */
 @layer utilities {
   .skeleton {
-    background: linear-gradient(90deg, #ededf6 25%, #e4e4f0 50%, #ededf6 75%);
+    background: linear-gradient(90deg, #f3e6d3 25%, #e8d3b8 50%, #f3e6d3 75%);
     background-size: 200% 100%;
     animation: shimmer 1.6s infinite;
   }
@@ -183,10 +222,34 @@
   to   { opacity: 1; transform: translateX(0); }
 }
 
+/* Horizontal ticker — signature "market signage" element on Home/Catalog. */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
 @layer utilities {
   .animate-fade-up       { animation: fade-up 0.30s cubic-bezier(0.16, 1, 0.3, 1) both; }
   .animate-fade-in       { animation: fade-in 0.22s ease both; }
   .animate-slide-in-left { animation: slide-in-left 0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .animate-marquee       { animation: marquee 32s linear infinite; }
+}
+
+/* ── Motion accessibility floor ──────────────────────────────────────────
+   Applies to every CSS transition/animation in the app (Tailwind's own
+   `transition-*` utilities included) — framer-motion components handle
+   their own reduced-motion branch separately via useReducedMotion() in
+   shared/constants/motion.ts, since spring physics run outside the CSS
+   pipeline and this rule alone can't reach them. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ── Calendar ── */

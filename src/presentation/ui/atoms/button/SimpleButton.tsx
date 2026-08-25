@@ -54,20 +54,23 @@ const Button: React.FC<ButtonProps> = ({
           'w-full':  fullWidth,
           'w-auto': !fullWidth,
 
-          /* Variants */
-          'btn-gradient-primary text-white hover:opacity-90 focus-visible:ring-indigo-400/50 transition-shadow':
+          /* Variants — primary/highlight fills pair with dark ink text, not
+             white: measured contrast of white-on-papaya is ~2.9:1 (fails AA),
+             ink-on-papaya is ~5.7:1 (passes). See palette.tailwind.css for
+             the full contrast table this is derived from. */
+          'btn-gradient-primary text-neutral-dark hover:opacity-90 focus-visible:ring-primary/50 transition-shadow':
             variant === 'primary' && !isDisabled,
-          'bg-violet-600 text-white shadow-sm hover:bg-violet-700 focus-visible:ring-violet-400/50':
+          'bg-secondary-dark text-white shadow-sm hover:opacity-90 focus-visible:ring-secondary/50':
             variant === 'secondary' && !isDisabled,
           'border border-slate-200 bg-white text-slate-700 shadow-xs hover:border-slate-300 hover:bg-slate-50 hover:shadow-sm focus-visible:ring-slate-300':
             variant === 'outline' && !isDisabled,
-          'border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:border-indigo-300 focus-visible:ring-indigo-300':
+          'border border-primary-200 bg-primary-50 text-primary-dark hover:bg-primary-100 hover:border-primary-light focus-visible:ring-primary/40':
             variant === 'outlinePrimary' && !isDisabled,
           'bg-red-600 text-white shadow-sm hover:bg-red-700 hover:shadow-md focus-visible:ring-red-400':
             variant === 'danger' && !isDisabled,
           'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-800 focus-visible:ring-slate-300':
             variant === 'ghost' && !isDisabled,
-          'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 focus-visible:ring-indigo-300':
+          'bg-primary-50 text-primary-dark hover:bg-primary-100 focus-visible:ring-primary/40':
             variant === 'primary-opacity' && !isDisabled,
 
           /* Disabled */
