@@ -66,7 +66,9 @@ const FormField = <T extends FieldValues>({
               <button
                 type='button'
                 onClick={() => setShowPassword(prev => !prev)}
-                className='absolute inset-y-0 right-2 flex items-center text-sm text-gray-500'
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                aria-pressed={showPassword}
+                className='absolute inset-y-0 right-2 flex items-center text-sm text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded'
               >
                 {showPassword ? (
                   <Icon name='bx-hide' size={20} />

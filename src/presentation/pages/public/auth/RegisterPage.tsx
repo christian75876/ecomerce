@@ -104,7 +104,7 @@ const RegisterPage = () => {
   // No token — buyer self-registration form
   if (!token) {
     return (
-      <div className='min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,69,0,0.14),_transparent_32%),linear-gradient(135deg,_#fff7f2_0%,_#ffffff_45%,_#eef6ff_100%)] px-4 py-4 sm:py-10'>
+      <div className='min-h-screen bg-[radial-gradient(circle_at_top,_rgba(249,115,22,0.14),_transparent_32%),linear-gradient(135deg,_#fff7f2_0%,_#ffffff_45%,_#eef6ff_100%)] px-4 py-4 sm:py-10'>
         <Helmet>
           <title>Crea tu cuenta — Merku</title>
           <meta name='description' content='Regístrate gratis en Merku para comprar en tiendas y restaurantes locales.' />
@@ -175,8 +175,10 @@ const RegisterPage = () => {
                   value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
                   className='w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 pr-11 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10' />
                 <button type='button' onClick={() => setShowPassword((v) => !v)}
-                  className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600' tabIndex={-1}>
-                  <i className={`bx ${showPassword ? 'bx-hide' : 'bx-show'} text-lg`} />
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  aria-pressed={showPassword}
+                  className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded'>
+                  <i className={`bx ${showPassword ? 'bx-hide' : 'bx-show'} text-lg`} aria-hidden='true' />
                 </button>
               </div>
             </div>
@@ -188,8 +190,10 @@ const RegisterPage = () => {
                   value={form.confirm} onChange={(e) => setForm((f) => ({ ...f, confirm: e.target.value }))}
                   className='w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 pr-11 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/10' />
                 <button type='button' onClick={() => setShowConfirm((v) => !v)}
-                  className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600' tabIndex={-1}>
-                  <i className={`bx ${showConfirm ? 'bx-hide' : 'bx-show'} text-lg`} />
+                  aria-label={showConfirm ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  aria-pressed={showConfirm}
+                  className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded'>
+                  <i className={`bx ${showConfirm ? 'bx-hide' : 'bx-show'} text-lg`} aria-hidden='true' />
                 </button>
               </div>
             </div>
@@ -245,7 +249,7 @@ const RegisterPage = () => {
   // Token error
   if (tokenError) {
     return (
-      <div className='min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,69,0,0.14),_transparent_32%),linear-gradient(135deg,_#fff7f2_0%,_#ffffff_45%,_#eef6ff_100%)] px-4 py-4 sm:py-10'>
+      <div className='min-h-screen bg-[radial-gradient(circle_at_top,_rgba(249,115,22,0.14),_transparent_32%),linear-gradient(135deg,_#fff7f2_0%,_#ffffff_45%,_#eef6ff_100%)] px-4 py-4 sm:py-10'>
         <div className='mx-auto w-full max-w-md rounded-[2rem] border border-white/70 bg-white/85 p-10 shadow-[0_30px_80px_rgba(34,34,34,0.12)] text-center backdrop-blur'>
           <div className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-100'>
             <i className='bx bx-error-circle text-3xl text-red-500' aria-hidden='true' />
@@ -265,7 +269,7 @@ const RegisterPage = () => {
 
   // Valid token — show registration form
   return (
-    <div className='min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,69,0,0.14),_transparent_32%),linear-gradient(135deg,_#fff7f2_0%,_#ffffff_45%,_#eef6ff_100%)] px-4 py-4 sm:py-10'>
+    <div className='min-h-screen bg-[radial-gradient(circle_at_top,_rgba(249,115,22,0.14),_transparent_32%),linear-gradient(135deg,_#fff7f2_0%,_#ffffff_45%,_#eef6ff_100%)] px-4 py-4 sm:py-10'>
       <div className='mx-auto w-full max-w-md rounded-[2rem] border border-white/70 bg-white/85 p-8 shadow-[0_30px_80px_rgba(34,34,34,0.12)] backdrop-blur'>
         {/* Back link */}
         <div className='mb-5 flex items-center justify-between'>
@@ -362,8 +366,9 @@ const RegisterPage = () => {
               <button
                 type='button'
                 onClick={() => setShowPassword((v) => !v)}
-                className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600'
-                tabIndex={-1}
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                aria-pressed={showPassword}
+                className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded'
               >
                 <i className={`bx ${showPassword ? 'bx-hide' : 'bx-show'} text-lg`} aria-hidden='true' />
               </button>
@@ -384,8 +389,9 @@ const RegisterPage = () => {
               <button
                 type='button'
                 onClick={() => setShowConfirm((v) => !v)}
-                className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600'
-                tabIndex={-1}
+                aria-label={showConfirm ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                aria-pressed={showConfirm}
+                className='absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded'
               >
                 <i className={`bx ${showConfirm ? 'bx-hide' : 'bx-show'} text-lg`} aria-hidden='true' />
               </button>
