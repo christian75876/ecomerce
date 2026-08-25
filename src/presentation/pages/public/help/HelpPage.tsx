@@ -466,16 +466,22 @@ const HelpPage = () => {
         <meta name='twitter:title' content='Centro de ayuda — Merku' />
         <meta name='twitter:description' content='Encuentra respuestas sobre cómo usar Merku.' />
       </Helmet>
-      {/* Hero */}
-      <div className='gradient-hero relative overflow-hidden rounded-3xl px-6 py-12 text-white shadow-lg sm:px-10'>
-        <div className='pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/5' aria-hidden='true' />
-        <div className='pointer-events-none absolute -bottom-20 left-8 h-48 w-48 rounded-full bg-white/5' aria-hidden='true' />
-        <div className='relative z-10 max-w-2xl'>
-          <p className='text-xs font-semibold uppercase tracking-[0.2em] text-white/60'>Documentación</p>
-          <h1 className='mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl'>Centro de ayuda</h1>
-          <p className='mt-2 text-sm text-white/70'>
-            Guías paso a paso para compradores, vendedores y administradores.
-          </p>
+      {/* Hero — full-bleed background only; the rest of this page is a
+          text-heavy doc, so it stays at the site's normal reading width
+          rather than opting into .content-container's wider column. */}
+      <div className='section-full-bleed'>
+        <div className='gradient-hero relative overflow-hidden py-12 text-neutral-dark lg:rounded-b-[2.5rem]'>
+          <div className='pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/10 blur-2xl' aria-hidden='true' />
+          <div className='pointer-events-none absolute -bottom-20 left-8 h-48 w-48 rounded-full bg-highlight/20 blur-2xl' aria-hidden='true' />
+          <div className='content-container relative z-10'>
+            <div className='max-w-2xl'>
+              <p className='text-xs font-bold uppercase tracking-[0.2em] text-neutral-dark/60'>Documentación</p>
+              <h1 className='mt-2 font-display text-3xl font-extrabold tracking-tight sm:text-4xl'>Centro de ayuda</h1>
+              <p className='mt-2 text-sm text-neutral-dark/70'>
+                Guías paso a paso para compradores, vendedores y administradores.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 

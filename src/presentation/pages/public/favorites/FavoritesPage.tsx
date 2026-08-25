@@ -28,8 +28,8 @@ const FavoritesPage = () => {
 
   return (
     <Box className='space-y-8'>
-      <Box className='rounded-[2rem] bg-[linear-gradient(135deg,_#fff1f2_0%,_#ffffff_55%,_#fff7ed_100%)] px-6 py-10 shadow-sm'>
-        <Typography variant='h1' className='text-3xl font-bold'>
+      <Box className='rounded-[2rem] bg-gradient-to-br from-accent/6 via-white to-primary/6 px-6 py-10 shadow-soft'>
+        <Typography variant='h1' className='font-display text-3xl font-extrabold'>
           Mis favoritos
         </Typography>
         <Typography className='mt-3 max-w-2xl text-neutral-dark/70'>
@@ -38,7 +38,7 @@ const FavoritesPage = () => {
       </Box>
 
       {error ? (
-        <Box className='rounded-3xl border border-red-200 bg-red-50 px-6 py-4 text-sm text-red-600'>
+        <Box className='rounded-3xl border border-error/25 bg-error-light px-6 py-4 text-sm text-error'>
           {error}
         </Box>
       ) : null}

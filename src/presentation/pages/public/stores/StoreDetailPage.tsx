@@ -135,7 +135,7 @@ const StoreDetailPage = () => {
 
   if (error || !store) {
     return (
-      <Box className='rounded-3xl border border-red-200 bg-red-50 px-6 py-4 text-sm text-red-600'>
+      <Box className='content-container rounded-3xl border border-error/25 bg-error-light px-6 py-4 text-sm text-error'>
         {error || 'No fue posible encontrar la tienda.'}
       </Box>
     );
@@ -175,10 +175,11 @@ const StoreDetailPage = () => {
         <meta name='twitter:image' content={store.bannerUrl || store.logoUrl || `${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
       </Helmet>
 
-      <div className={`space-y-8 ${font}`} style={themeVars}>
-        {/* ── Header / Cover ── */}
+      <div className={`section-full-bleed space-y-8 ${font}`} style={themeVars}>
+        {/* ── Header / Cover — full-bleed background, content re-centers
+            via .content-container, same pattern as Home/Stores. ── */}
         <div
-          className='relative overflow-hidden rounded-[2rem] px-6 py-10 shadow-sm'
+          className='relative overflow-hidden py-10 shadow-sm lg:rounded-b-[2.5rem]'
           style={{ background: coverBackground(store), color: coverTextColor(store) }}
         >
           {/* Banner image overlay */}
@@ -196,7 +197,7 @@ const StoreDetailPage = () => {
             </>
           ) : null}
 
-          <div className='relative z-10'>
+          <div className='content-container relative z-10'>
             {/* Breadcrumb */}
             <div className='flex flex-wrap items-center gap-2 text-sm opacity-75'>
               <Link
@@ -282,7 +283,7 @@ const StoreDetailPage = () => {
 
         {/* ── Store location map ── */}
         {store.lat && store.lng && !store.hideLocation && store.deliveryOptions !== 'DELIVERY' ? (
-          <div className='rounded-[2rem] overflow-hidden border border-slate-200 shadow-sm'>
+          <div className='content-container rounded-[2rem] overflow-hidden border border-slate-200 shadow-sm'>
             <div className='flex items-center justify-between px-5 py-3 bg-white border-b border-slate-100'>
               <div className='flex items-center gap-2'>
                 <i className='bx bx-map-pin text-lg text-primary' aria-hidden='true' />
@@ -319,8 +320,10 @@ const StoreDetailPage = () => {
           </div>
         ) : null}
 
-        {/* ── Products / Menu ── */}
+        {/* ── Products / Menu — full-bleed background (store's custom
+            bgColor), content re-centers via .content-container. ── */}
         <div style={{ backgroundColor: themeVars.backgroundColor }}>
+          <div className='content-container'>
           {store.storeType === 'RESTAURANT' ? (
             <RestaurantMenuView
               products={products}
@@ -429,10 +432,15 @@ const StoreDetailPage = () => {
               Cargando más productos...
             </Typography>
           ) : null}
+          </div>
         </div>
       </div>
 
-      <StoreReviews storeId={store.id} />
+      {/* Outside the full-bleed wrapper above — kept in its own
+          .content-container so it still lines up with the same column. */}
+      <div className='content-container'>
+        <StoreReviews storeId={store.id} />
+      </div>
 
       {(store.whatsappNumber || store.phone || import.meta.env.VITE_WHATSAPP_SUPPORT) ? (
         <WhatsAppFloat
