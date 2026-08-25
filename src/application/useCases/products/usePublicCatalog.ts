@@ -7,6 +7,7 @@ import { userPreferences } from '@/shared/utils/userPreferences';
 
 const PAGE_SIZE = 24;
 const SEARCH_TRACK_DEBOUNCE_MS = 600;
+const SEARCH_QUERY_DEBOUNCE_MS = 400;
 const SPONSORED_LIMIT = 4;
 
 export type CatalogSortOption = 'newest' | 'price_asc' | 'price_desc' | 'name_asc';
@@ -18,6 +19,7 @@ export const usePublicCatalog = () => {
   const [sponsoredProducts, setSponsoredProducts] = useState<IProduct[]>([]);
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
   const [explicitSort, setExplicitSort] = useState<CatalogSortOption | null>(null);
   const [minPrice, setMinPrice] = useState<number | null>(null);
@@ -31,13 +33,18 @@ export const usePublicCatalog = () => {
   const requestIdRef = useRef(0);
   const sortConfigRef = useRef<SortConfig>({ sortBy: 'newest' });
 
-  // Debounced: only persist a search term once the user pauses typing, so we
-  // don't pollute the suggestion history with partial keystrokes.
+  // Debounced: only query the catalog (and persist the search term) once the
+  // user pauses typing, instead of firing a request on every keystroke.
   useEffect(() => {
-    if (!search.trim()) return;
-    const timer = setTimeout(() => userPreferences.trackSearch(search), SEARCH_TRACK_DEBOUNCE_MS);
+    const timer = setTimeout(() => setDebouncedSearch(search), SEARCH_QUERY_DEBOUNCE_MS);
     return () => clearTimeout(timer);
   }, [search]);
+
+  useEffect(() => {
+    if (!debouncedSearch.trim()) return;
+    const timer = setTimeout(() => userPreferences.trackSearch(debouncedSearch), SEARCH_TRACK_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [debouncedSearch]);
 
   useEffect(() => {
     const requestId = ++requestIdRef.current;
@@ -51,7 +58,7 @@ export const usePublicCatalog = () => {
       // No active search/category and no personalization signal yet → show a
       // fair, seeded-random order instead of "newest first", which would
       // otherwise always favor whichever store registered most recently.
-      const noActiveFilter = !search.trim() && !selectedCategoryId;
+      const noActiveFilter = !debouncedSearch.trim() && !selectedCategoryId;
       const hasSignal = userPreferences.hasPreferences() || userPreferences.hasSearchHistory();
       sortBy = noActiveFilter && !hasSignal ? 'random' : 'newest';
       seed = sortBy === 'random' ? userPreferences.getDailySeed() : undefined;
@@ -70,7 +77,7 @@ export const usePublicCatalog = () => {
         try {
           const res = await ProductRepository.getProducts({
             active: true,
-            search: search || undefined,
+            search: debouncedSearch || undefined,
             categoryId: selectedCategoryId || undefined,
             minPrice: minPrice ?? undefined,
             maxPrice: maxPrice ?? undefined,
@@ -93,7 +100,7 @@ export const usePublicCatalog = () => {
         const [productsResponse, categoriesResponse] = await Promise.all([
           ProductRepository.getProducts({
             active: true,
-            search: search || undefined,
+            search: debouncedSearch || undefined,
             categoryId: selectedCategoryId || undefined,
             sortBy,
             seed,
@@ -126,7 +133,7 @@ export const usePublicCatalog = () => {
     };
 
     void loadProducts();
-  }, [search, selectedCategoryId, explicitSort, minPrice, maxPrice, onlyAvailable]);
+  }, [debouncedSearch, selectedCategoryId, explicitSort, minPrice, maxPrice, onlyAvailable]);
 
   const hasMore = page < totalPages;
 
@@ -144,7 +151,7 @@ export const usePublicCatalog = () => {
       const { sortBy, seed } = sortConfigRef.current;
       const response = await ProductRepository.getProducts({
         active: true,
-        search: search || undefined,
+        search: debouncedSearch || undefined,
         categoryId: selectedCategoryId || undefined,
         sortBy,
         seed,
@@ -164,7 +171,7 @@ export const usePublicCatalog = () => {
     } finally {
       setLoadingMore(false);
     }
-  }, [loadingMore, hasMore, page, totalPages, search, selectedCategoryId, minPrice, maxPrice, onlyAvailable]);
+  }, [loadingMore, hasMore, page, totalPages, debouncedSearch, selectedCategoryId, minPrice, maxPrice, onlyAvailable]);
 
   return {
     products,
