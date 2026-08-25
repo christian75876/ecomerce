@@ -51,7 +51,7 @@ const StoresPage = () => {
     .filter((s) => !search || s.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className='space-y-6 animate-fade-up'>
+    <div className='section-full-bleed space-y-6 animate-fade-up'>
       <Helmet>
         <title>Tiendas disponibles — Merku</title>
         <meta name='description' content='Explora todas las tiendas y restaurantes disponibles en Merku. Encuentra productos locales y realiza tu pedido.' />
@@ -66,34 +66,37 @@ const StoresPage = () => {
         <meta name='twitter:title' content='Tiendas disponibles — Merku' />
         <meta name='twitter:description' content='Explora todas las tiendas y restaurantes disponibles en Merku.' />
       </Helmet>
-      {/* Header */}
-      <div className='gradient-hero relative overflow-hidden rounded-3xl px-6 py-6 text-white shadow-lg sm:px-10'>
-        <div className='pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/5' aria-hidden='true' />
-        <div className='pointer-events-none absolute -bottom-20 left-8 h-48 w-48 rounded-full bg-white/5' aria-hidden='true' />
-        <div className='relative z-10 mx-auto max-w-2xl text-center'>
-          <p className='mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/60'>Merku</p>
-          <h1 className='mb-3 text-2xl font-extrabold tracking-tight'>
+      {/* Header — full-bleed background, content re-centers via .content-container */}
+      <div className='gradient-hero relative overflow-hidden py-8 text-neutral-dark lg:rounded-b-[2.5rem]'>
+        <div className='pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/10 blur-2xl' aria-hidden='true' />
+        <div className='pointer-events-none absolute -bottom-20 left-8 h-48 w-48 rounded-full bg-highlight/20 blur-2xl' aria-hidden='true' />
+        <div className='content-container relative z-10'>
+        <div className='mx-auto max-w-2xl text-center'>
+          <p className='mb-1 text-xs font-bold uppercase tracking-[0.2em] text-neutral-dark/60'>Merku</p>
+          <h1 className='mb-3 font-display text-2xl font-extrabold tracking-tight sm:text-3xl'>
             {activeTab === 'RESTAURANT' ? 'Restaurantes' : 'Tiendas disponibles'}
           </h1>
-          <div className='flex items-center gap-2 rounded-2xl bg-white/15 px-4 py-2.5 ring-1 ring-white/20 backdrop-blur-sm transition-all focus-within:bg-white/20 focus-within:ring-white/40'>
-            <i className='bx bx-search text-xl text-white/70' aria-hidden='true' />
+          <div className='flex items-center gap-2 rounded-2xl bg-white/70 px-4 py-2.5 shadow-panel ring-1 ring-white/60 backdrop-blur-sm transition-all focus-within:ring-2 focus-within:ring-neutral-dark/20'>
+            <i className='bx bx-search text-xl text-neutral-dark/50' aria-hidden='true' />
             <input
               type='text'
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder='Buscar tiendas...'
-              className='flex-1 bg-transparent text-sm font-medium text-white placeholder:text-white/50 focus:outline-none'
+              className='flex-1 bg-transparent text-sm font-medium text-neutral-dark placeholder:text-neutral-dark/40 focus:outline-none'
               aria-label='Buscar tiendas'
             />
             {search ? (
-              <button type='button' onClick={() => setSearch('')} className='text-white/60 hover:text-white' aria-label='Limpiar'>
+              <button type='button' onClick={() => setSearch('')} className='text-neutral-dark/50 hover:text-neutral-dark' aria-label='Limpiar'>
                 <i className='bx bx-x text-lg' aria-hidden='true' />
               </button>
             ) : null}
           </div>
         </div>
+        </div>
       </div>
 
+      <div className='content-container space-y-6'>
       {/* Tabs */}
       {showTabs ? (
         <div className='flex gap-2 overflow-x-auto pb-1 scrollbar-hide'>
@@ -236,6 +239,7 @@ const StoresPage = () => {
           })}
         </div>
       ) : null}
+      </div>
     </div>
   );
 };

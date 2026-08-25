@@ -207,10 +207,11 @@ const HomeCatalogSection = ({
 
   return (
     <div className='space-y-6'>
-      {/* ── Hero search banner — full-bleed, escapes the page's px padding
-          via negative margins matched to DashboardLayout's own px-4/6/8. ── */}
-      <div className='-mx-4 sm:-mx-6 lg:-mx-8'>
-        <div className='gradient-hero relative overflow-hidden px-6 pb-10 pt-12 text-neutral-dark sm:px-10 sm:pb-14 sm:pt-16 lg:rounded-b-[2.5rem]'>
+      {/* ── Hero search banner — the colored background is full-bleed by
+          default (this whole page is wrapped in .section-full-bleed at
+          the root), its content re-centers via .content-container. ── */}
+      <>
+        <div className='gradient-hero relative overflow-hidden pb-10 pt-12 text-neutral-dark sm:pb-14 sm:pt-16 lg:rounded-b-[2.5rem]'>
           <div
             className='pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full bg-white/10 blur-2xl'
             aria-hidden='true'
@@ -225,7 +226,8 @@ const HomeCatalogSection = ({
           />
 
           <Reveal effect='fade-up' slow>
-            <div className='relative z-10 mx-auto max-w-2xl text-center'>
+            <div className='content-container relative z-10'>
+            <div className='mx-auto max-w-2xl text-center'>
               <p className='mb-2 text-xs font-bold uppercase tracking-[0.3em] text-neutral-dark/60'>
                 Mercado Merku
               </p>
@@ -283,6 +285,7 @@ const HomeCatalogSection = ({
                 ) : null}
               </div>
             </div>
+            </div>
           </Reveal>
         </div>
 
@@ -290,8 +293,9 @@ const HomeCatalogSection = ({
           items={MARQUEE_ITEMS}
           className='border-y border-black/10 bg-neutral-dark py-2.5 text-neutral-50'
         />
-      </div>
+      </>
 
+      <div className='content-container space-y-6'>
       {/* ── Controls ── */}
       <div className='flex flex-col gap-3'>
         <div className='flex items-center gap-2'>
@@ -534,7 +538,7 @@ const HomeCatalogSection = ({
 
       {/* ── Error ── */}
       {error ? (
-        <div className='flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700'>
+        <div className='flex items-center gap-2 rounded-2xl border border-error/25 bg-error-light px-4 py-3 text-sm text-error'>
           <i className='bx bx-error-circle text-base' aria-hidden='true' />
           {error}
         </div>
@@ -556,6 +560,7 @@ const HomeCatalogSection = ({
           Cargando más productos...
         </p>
       ) : null}
+      </div>
     </div>
   );
 };

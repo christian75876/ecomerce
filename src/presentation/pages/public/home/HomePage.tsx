@@ -59,7 +59,7 @@ export const HomePage = () => {
   };
 
   return (
-    <Box className='space-y-8'>
+    <Box className='section-full-bleed space-y-8'>
       <Helmet>
         <title>Merku — Encuentra lo que buscas</title>
         <meta name='description' content='Merku: explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.' />
@@ -102,12 +102,12 @@ export const HomePage = () => {
       {!search.trim() && !selectedCategoryId ? (
         <>
           {homeError ? (
-            <Box className='rounded-3xl border border-red-200 bg-red-50 px-6 py-4 text-sm text-red-600'>
+            <Box className='content-container rounded-3xl border border-error/25 bg-error-light px-6 py-4 text-sm text-error'>
               {homeError}
             </Box>
           ) : null}
 
-          <Box className='grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)] [&>*]:min-w-0'>
+          <Box className='content-container grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)] [&>*]:min-w-0'>
             <HomeProductRail
               title='Productos más vendidos'
               subtitle='Lo que más está moviendo ventas en la plataforma.'
@@ -122,17 +122,21 @@ export const HomePage = () => {
             <HomeFeaturedStores stores={featuredStores} />
           </Box>
 
-          <Box className='-mx-4 border-y border-secondary-100 bg-secondary-50/60 px-4 py-8 sm:-mx-6 sm:px-6 lg:-mx-8 lg:rounded-[2rem] lg:border-x lg:px-8'>
-            <HomeProductRail
-              title='Recién llegados'
-              subtitle='Productos nuevos para descubrir antes que nadie.'
-              products={newestProducts.slice(0, 6)}
-              loading={homeLoading}
-              emptyMessage='Todavía no hay productos nuevos para mostrar.'
-              onAddToCart={(productId) =>
-                addProductToCart(productId, newestProducts)
-              }
-            />
+          {/* Full-bleed background strip — content re-centers inside via
+              .content-container, matching the hero/marquee pattern above. */}
+          <Box className='border-y border-secondary-100 bg-secondary-50/60 py-8'>
+            <Box className='content-container'>
+              <HomeProductRail
+                title='Recién llegados'
+                subtitle='Productos nuevos para descubrir antes que nadie.'
+                products={newestProducts.slice(0, 6)}
+                loading={homeLoading}
+                emptyMessage='Todavía no hay productos nuevos para mostrar.'
+                onAddToCart={(productId) =>
+                  addProductToCart(productId, newestProducts)
+                }
+              />
+            </Box>
           </Box>
         </>
       ) : null}
