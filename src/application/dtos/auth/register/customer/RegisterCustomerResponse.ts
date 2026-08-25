@@ -5,6 +5,7 @@ export type IRegisterCustomerResp = IApiResponse<{
   message: string;
   email_delivery?: 'sent' | 'failed';
   token?: string;
+  refreshToken?: string;
   user?: IAuthenticatedUser;
   customer?: {
     id: string;

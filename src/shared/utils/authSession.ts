@@ -1,6 +1,7 @@
 import { IAuthenticatedUser } from '@/application/dtos/auth/login/response/LoginResponse';
 
 const TOKEN_KEY = 'token';
+const REFRESH_TOKEN_KEY = 'refresh_token';
 const USER_KEY = 'authenticated_user';
 
 export const authSession = {
@@ -14,6 +15,18 @@ export const authSession = {
 
   clearToken() {
     localStorage.removeItem(TOKEN_KEY);
+  },
+
+  getRefreshToken(): string | null {
+    return localStorage.getItem(REFRESH_TOKEN_KEY);
+  },
+
+  setRefreshToken(refreshToken: string) {
+    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+  },
+
+  clearRefreshToken() {
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
   },
 
   getUser(): IAuthenticatedUser | null {
@@ -53,6 +66,7 @@ export const authSession = {
 
   clear() {
     this.clearToken();
+    this.clearRefreshToken();
     this.clearUser();
   },
 };

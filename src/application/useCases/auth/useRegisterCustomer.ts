@@ -23,6 +23,7 @@ export const useRegisterCustomer = () => {
       if (data.token && data.user) {
         // Invited seller or DEV auto-verify — auto-login
         authSession.setToken(data.token);
+        if (data.refreshToken) authSession.setRefreshToken(data.refreshToken);
         authSession.setUser({
           ...data.user,
           customer: (data as { customer?: { id: string; firstName: string; lastName: string; phone: string | null } }).customer ?? data.user.customer ?? null,

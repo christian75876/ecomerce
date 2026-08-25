@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { authSession } from '@/shared/utils/authSession';
 import { handleUnauthorized } from '@/infrastructure/repositories/api/errors/ErrorUtils';
-import { AuthRepository } from '@/infrastructure/repositories/api/auth/AuthRepository';
+import { refreshAccessToken } from '@/infrastructure/repositories/api/ClientHTTP';
 
 const REFRESH_BEFORE_MS = 5 * 60 * 1000; // refresh 5 min before expiry
 
@@ -12,7 +12,7 @@ export const useTokenRefresh = () => {
   useEffect(() => {
     const doRefresh = async () => {
       try {
-        await AuthRepository.refreshToken();
+        await refreshAccessToken();
         scheduleRef.current();
       } catch {
         handleUnauthorized();

@@ -18,6 +18,7 @@ export interface IAuthenticatedUser {
 export type ILoginResp = IApiResponse<{
   message: string;
   token: string;
+  refreshToken: string;
   user: IAuthenticatedUser;
 }>;
 

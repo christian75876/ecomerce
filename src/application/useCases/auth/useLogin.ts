@@ -21,6 +21,7 @@ export const useLogin = () => {
     try {
       const response = await AuthRepository.login(credentials);
       authSession.setToken(response.data.token);
+      authSession.setRefreshToken(response.data.refreshToken);
       authSession.setUser(response.data.user);
       navigation(
         response.data.user.role === 'buyer'

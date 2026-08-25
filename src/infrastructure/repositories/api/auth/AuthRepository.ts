@@ -16,7 +16,6 @@ import { IRegisterCustomerRequest } from '@/application/dtos/auth/register/custo
 import { IRegisterCustomerResp } from '@/application/dtos/auth/register/customer/RegisterCustomerResponse';
 import { IVerifyEmailRequest } from '@/application/dtos/auth/verify-email/request/VerifyEmailRequest';
 import { IVerifyEmailResp } from '@/application/dtos/auth/verify-email/response/VerifyEmailResponse';
-import { IApiResponse } from '@/application/dtos/common/HttpResponse';
 
 export class AuthRepository {
   /**
@@ -82,22 +81,12 @@ export class AuthRepository {
     );
   }
 
-  static async refreshToken(): Promise<string> {
-    const response = await ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.post<IApiResponse<{ token: string }>>('/auth/refresh', {})
-    );
-    const newToken = response.data?.token;
-    if (!newToken) throw new Error('refresh_empty');
-    localStorage.setItem('token', newToken);
-    return newToken;
-  }
-
   /**
-   * Logs out the user by invalidating the token.
+   * Logs out the user, revoking the refresh token server-side.
    */
-  static async logout() {
+  static async logout(refreshToken?: string | null) {
     await ErrorHandler.handleApiErrors(
-      () => authenticatedClientHTTP.post('/auth/logout'),
+      () => authenticatedClientHTTP.post('/auth/logout', { refreshToken: refreshToken ?? undefined }),
       // Un 401 aquí solo significa "ya no había sesión" — no debe mostrar toast.
       () => {},
     );

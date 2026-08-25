@@ -13,7 +13,7 @@ export const useLogout = () => {
     setIsLoading(true);
     setError(null);
     try {
-      await AuthRepository.logout();
+      await AuthRepository.logout(authSession.getRefreshToken());
     } catch {
       // Token may already be expired — always clear session locally
     } finally {

@@ -99,6 +99,7 @@ const RegisterPage = () => {
       // entrar directo en vez de mandar a login a repetir credenciales que apenas escribió.
       if (res.data.token && res.data.user) {
         authSession.setToken(res.data.token);
+        if (res.data.refreshToken) authSession.setRefreshToken(res.data.refreshToken);
         const customer = res.data.customer ?? res.data.user.customer ?? null;
         authSession.setUser({
           ...res.data.user,

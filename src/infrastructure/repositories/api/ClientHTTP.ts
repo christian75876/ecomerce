@@ -1,13 +1,51 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { handleUnauthorized } from '@/infrastructure/repositories/api/errors/ErrorUtils';
 
-// Shared refresh state — prevents duplicate refresh calls across concurrent 401s
+// Shared refresh state — prevents duplicate refresh calls across concurrent
+// 401s AND across the proactive background refresh in useTokenRefresh.ts.
+// This matters now that refresh tokens rotate (single-use): two refresh
+// calls racing with the same stored refresh token would have one succeed
+// and one get rejected as "already used", logging the user out even though
+// the session is actually still fine.
 let isRefreshing = false;
 let refreshQueue: Array<(newToken: string | null) => void> = [];
+let refreshInFlight: Promise<string> | null = null;
 
 function flushRefreshQueue(newToken: string | null) {
   refreshQueue.forEach((cb) => cb(newToken));
   refreshQueue = [];
+}
+
+/**
+ * Rotates the stored refresh token for a new access + refresh pair. Callers
+ * that just need a valid access token (not axios-request retry semantics)
+ * should use this instead of talking to AuthRepository directly.
+ */
+export async function refreshAccessToken(): Promise<string> {
+  if (refreshInFlight) return refreshInFlight;
+
+  refreshInFlight = (async () => {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (!refreshToken) throw new Error('no_refresh_token');
+    const res = await axios.post(
+      `${ClientHTTP.defaultBaseURL}auth/refresh`,
+      { refreshToken },
+      { headers: { 'Content-Type': 'application/json' } },
+    );
+    const data = res.data?.data ?? res.data;
+    const newToken: string | undefined = data?.token;
+    const newRefreshToken: string | undefined = data?.refreshToken;
+    if (!newToken || !newRefreshToken) throw new Error('refresh_empty');
+    localStorage.setItem('token', newToken);
+    localStorage.setItem('refresh_token', newRefreshToken);
+    return newToken;
+  })();
+
+  try {
+    return await refreshInFlight;
+  } finally {
+    refreshInFlight = null;
+  }
 }
 
 /**
@@ -36,7 +74,7 @@ class ClientHTTP {
   }
 
   // Accepts VITE_API_URL (local .env) or VITE_API_BASE_URL (Vercel)
-  private static defaultBaseURL = this.normalizeBaseURL(
+  static defaultBaseURL = this.normalizeBaseURL(
     import.meta.env.VITE_API_URL ||
     import.meta.env.VITE_API_BASE_URL ||
     'http://127.0.0.1:3000/api/'
@@ -117,16 +155,7 @@ class ClientHTTP {
     isRefreshing = true;
 
     try {
-      const expiredToken = localStorage.getItem('token');
-      const res = await axios.post(
-        `${ClientHTTP.defaultBaseURL}auth/refresh`,
-        {},
-        { headers: { Authorization: `Bearer ${expiredToken}`, 'Content-Type': 'application/json' } },
-      );
-      // Backend wraps response via ResponseInterceptor: { success, data: { token }, ... }
-      const newToken: string = res.data?.data?.token ?? res.data?.token;
-      if (!newToken) throw new Error('refresh_empty');
-      localStorage.setItem('token', newToken);
+      const newToken = await refreshAccessToken();
       config.headers['Authorization'] = `Bearer ${newToken}`;
       flushRefreshQueue(newToken);
       return axios(config);
