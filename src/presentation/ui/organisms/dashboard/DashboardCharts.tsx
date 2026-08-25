@@ -35,7 +35,7 @@ import {
   IDashboardTopProduct,
 } from '@/application/dtos/dashboard/response/DashboardResponse';
 
-const palette = ['#f97316', '#0f766e', '#1d4ed8', '#eab308', '#8b5cf6', '#ef4444'];
+const palette = ['#ff6b35', '#0e9594', '#e93e7d', '#ffc93c', '#0369a1', '#7a1740'];
 
 const ChartCard = ({
   title,
@@ -62,8 +62,8 @@ export const SalesOverviewChart = ({ data }: { data: IDashboardSalesPoint[] }) =
       <AreaChart data={data} margin={{ left: 0, right: 8, top: 4, bottom: 0 }}>
         <defs>
           <linearGradient id='salesTotalGradient' x1='0' y1='0' x2='0' y2='1'>
-            <stop offset='5%' stopColor='#f97316' stopOpacity={0.35} />
-            <stop offset='95%' stopColor='#f97316' stopOpacity={0.05} />
+            <stop offset='5%' stopColor='#ff6b35' stopOpacity={0.35} />
+            <stop offset='95%' stopColor='#ff6b35' stopOpacity={0.05} />
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray='3 3' stroke='#e5e7eb' />
@@ -71,9 +71,9 @@ export const SalesOverviewChart = ({ data }: { data: IDashboardSalesPoint[] }) =
         <YAxis tick={{ fill: '#475569', fontSize: 12 }} tickFormatter={copAxisTick} width={48} />
         <Tooltip formatter={copTooltipFormatter} />
         <Legend />
-        <Area type='monotone' dataKey='total' stroke='#f97316' fill='url(#salesTotalGradient)' strokeWidth={3} name='Total' />
-        <Area type='monotone' dataKey='pos' stroke='#0f766e' fillOpacity={0} strokeWidth={2} name='POS' />
-        <Area type='monotone' dataKey='online' stroke='#1d4ed8' fillOpacity={0} strokeWidth={2} name='Online' />
+        <Area type='monotone' dataKey='total' stroke='#ff6b35' fill='url(#salesTotalGradient)' strokeWidth={3} name='Total' />
+        <Area type='monotone' dataKey='pos' stroke='#0e9594' fillOpacity={0} strokeWidth={2} name='POS' />
+        <Area type='monotone' dataKey='online' stroke='#0369a1' fillOpacity={0} strokeWidth={2} name='Online' />
       </AreaChart>
     </ResponsiveContainer>
   </ChartCard>
@@ -95,7 +95,7 @@ export const TopProductsChart = ({ data }: { data: IDashboardTopProduct[] }) => 
           tick={{ fill: '#475569', fontSize: 12 }}
         />
         <Tooltip formatter={copTooltipFormatter} />
-        <Bar dataKey='revenue' radius={[0, 8, 8, 0]} fill='#f97316' />
+        <Bar dataKey='revenue' radius={[0, 8, 8, 0]} fill='#ff6b35' />
       </BarChart>
     </ResponsiveContainer>
   </ChartCard>
@@ -143,15 +143,15 @@ export const ChannelComparisonChart = ({
         <CartesianGrid strokeDasharray='3 3' stroke='#e5e7eb' />
         <XAxis dataKey='channel' tick={{ fill: '#475569', fontSize: 12 }} />
         <YAxis yAxisId='left' tick={{ fill: '#475569', fontSize: 12 }} tickFormatter={copAxisTick} width={48} />
-        <YAxis yAxisId='right' orientation='right' tick={{ fill: '#1d4ed8', fontSize: 12 }} width={28} />
+        <YAxis yAxisId='right' orientation='right' tick={{ fill: '#0369a1', fontSize: 12 }} width={28} />
         <Tooltip
           formatter={(value: number, name: string) =>
             name === 'Operaciones' ? [value, name] : [formatCurrencyCOP(value), name]
           }
         />
         <Legend />
-        <Bar yAxisId='left' dataKey='revenue' fill='#0f766e' radius={[8, 8, 0, 0]} name='Ingresos' />
-        <Bar yAxisId='right' dataKey='count' fill='#1d4ed8' radius={[8, 8, 0, 0]} name='Operaciones' />
+        <Bar yAxisId='left' dataKey='revenue' fill='#0e9594' radius={[8, 8, 0, 0]} name='Ingresos' />
+        <Bar yAxisId='right' dataKey='count' fill='#0369a1' radius={[8, 8, 0, 0]} name='Operaciones' />
       </BarChart>
     </ResponsiveContainer>
   </ChartCard>
@@ -173,9 +173,9 @@ export const InventoryFlowChart = ({
         <YAxis tick={{ fill: '#475569', fontSize: 12 }} />
         <Tooltip />
         <Legend />
-        <Bar dataKey='inbound' fill='#0f766e' radius={[8, 8, 0, 0]} name='Entradas' />
-        <Bar dataKey='outbound' fill='#ef4444' radius={[8, 8, 0, 0]} name='Salidas' />
-        <Bar dataKey='net' fill='#f97316' radius={[8, 8, 0, 0]} name='Neto' />
+        <Bar dataKey='inbound' fill='#0e9594' radius={[8, 8, 0, 0]} name='Entradas' />
+        <Bar dataKey='outbound' fill='#dc2626' radius={[8, 8, 0, 0]} name='Salidas' />
+        <Bar dataKey='net' fill='#ff6b35' radius={[8, 8, 0, 0]} name='Neto' />
       </BarChart>
     </ResponsiveContainer>
   </ChartCard>

@@ -76,7 +76,7 @@ function NavGroupSection({ group, unreadCount }: { group: NavGroup; unreadCount:
     <div className='mb-4'>
       <p
         className='mb-1.5 px-3 text-[9px] font-bold uppercase tracking-[0.15em]'
-        style={{ color: 'rgba(148, 163, 184, 0.5)' }}
+        style={{ color: 'rgba(251, 243, 231, 0.35)' }}
       >
         {group.label}
       </p>
@@ -89,14 +89,14 @@ function NavGroupSection({ group, unreadCount }: { group: NavGroup; unreadCount:
             className={({ isActive }) =>
               clsx(
                 'relative flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium transition-all duration-150',
-                isActive ? 'text-white' : 'text-slate-400 hover:text-slate-200',
+                isActive ? 'text-white' : 'text-white/40 hover:text-white/75',
               )
             }
             style={({ isActive }) =>
               isActive
                 ? {
-                    background: 'linear-gradient(135deg, rgba(99,102,241,0.25) 0%, rgba(139,92,246,0.15) 100%)',
-                    boxShadow: 'inset 0 0 0 1px rgba(99,102,241,0.3)',
+                    background: 'linear-gradient(135deg, rgba(255,107,53,0.22) 0%, rgba(233,62,125,0.14) 100%)',
+                    boxShadow: 'inset 0 0 0 1px rgba(255,107,53,0.3)',
                   }
                 : undefined
             }
@@ -106,17 +106,17 @@ function NavGroupSection({ group, unreadCount }: { group: NavGroup; unreadCount:
                 {isActive ? (
                   <span
                     className='absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full'
-                    style={{ background: 'linear-gradient(180deg, #6366f1, #8b5cf6)' }}
+                    style={{ background: 'linear-gradient(180deg, var(--color-primary-light), var(--color-accent-light))' }}
                   />
                 ) : null}
                 <i
                   className={`bx ${item.icon} text-base shrink-0`}
-                  style={{ color: isActive ? '#818cf8' : undefined }}
+                  style={{ color: isActive ? 'var(--color-primary-light)' : undefined }}
                   aria-hidden='true'
                 />
                 <span className='flex-1 truncate'>{item.label}</span>
                 {badge > 0 ? (
-                  <span className='flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white shadow-sm'>
+                  <span className='flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-error px-1 text-[9px] font-bold text-white shadow-sm'>
                     {badge > 9 ? '9+' : badge}
                   </span>
                 ) : null}
@@ -140,21 +140,21 @@ const AdminSidebar = () => {
     <aside
       className='fixed left-0 top-0 z-40 flex h-screen w-60 flex-col'
       style={{
-        background: 'linear-gradient(180deg, #0e0c1e 0%, #13112a 60%, #111827 100%)',
-        borderRight: '1px solid rgba(99, 102, 241, 0.12)',
+        background: 'linear-gradient(180deg, #1c1108 0%, #241608 55%, #2b1b12 100%)',
+        borderRight: '1px solid rgba(255, 107, 53, 0.12)',
       }}
     >
       {/* Brand */}
       <div className='flex items-center gap-3 px-4 py-5'>
         <div
           className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl shadow-lg'
-          style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.45)' }}
+          style={{ background: 'linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-accent-light) 100%)', boxShadow: '0 4px 12px rgba(255, 107, 53, 0.45)' }}
         >
           <i className='bx bxs-crown text-lg text-white' aria-hidden='true' />
         </div>
         <div className='min-w-0 flex-1'>
           <p className='text-[13px] font-bold leading-tight text-white'>Merku</p>
-          <p className='mt-0.5 text-[10px] font-medium uppercase tracking-widest' style={{ color: '#6366f1' }}>
+          <p className='mt-0.5 text-[10px] font-medium uppercase tracking-widest' style={{ color: 'var(--color-highlight)' }}>
             {isAdmin ? 'Administrador' : 'Vendedor'}
           </p>
         </div>
@@ -164,7 +164,7 @@ const AdminSidebar = () => {
       </div>
 
       {/* Divider */}
-      <div className='mx-4 mb-1' style={{ height: '1px', background: 'linear-gradient(90deg, rgba(99,102,241,0.25) 0%, transparent 100%)' }} />
+      <div className='mx-4 mb-1' style={{ height: '1px', background: 'linear-gradient(90deg, rgba(255,107,53,0.25) 0%, transparent 100%)' }} />
 
 
       {/* Navigation */}
@@ -180,12 +180,12 @@ const AdminSidebar = () => {
               <button
                 type='button'
                 onClick={() => setStoresOpen((v) => !v)}
-                className='flex w-full items-center gap-2 rounded-xl px-3 py-2 text-[13px] font-medium text-slate-400 transition-all duration-150 hover:bg-white/[0.05] hover:text-slate-200'
+                className='flex w-full items-center gap-2 rounded-xl px-3 py-2 text-[13px] font-medium text-white/40 transition-all duration-150 hover:bg-white/[0.05] hover:text-white/75'
               >
                 <i className='bx bx-store text-base shrink-0' aria-hidden='true' />
                 <span className='flex-1 text-left'>Tiendas</span>
                 {unreadCount > 0 && !storesOpen ? (
-                  <span className='flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white shadow-sm'>
+                  <span className='flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-error px-1 text-[9px] font-bold text-white shadow-sm'>
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 ) : null}
@@ -201,7 +201,7 @@ const AdminSidebar = () => {
               {storesOpen ? (
                 <div
                   className='mt-1 overflow-hidden rounded-xl px-1 py-2'
-                  style={{ background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.1)' }}
+                  style={{ background: 'rgba(255,107,53,0.05)', border: '1px solid rgba(255,107,53,0.12)' }}
                 >
                   <div className='px-2 pb-2 pt-1'>
                     <StoreSearchSelector dropdownClassName='left-0' />
@@ -227,36 +227,36 @@ const AdminSidebar = () => {
 
       {/* Footer */}
       <div className='px-3 pb-4 pt-2'>
-        <div className='mb-2' style={{ height: '1px', background: 'rgba(99, 102, 241, 0.12)' }} />
+        <div className='mb-2' style={{ height: '1px', background: 'rgba(255, 107, 53, 0.12)' }} />
 
         <Link
           to={ROUTES.PRIVATE.PROFILE}
-          className='flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-slate-400 transition hover:bg-white/[0.06] hover:text-slate-200'
+          className='flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/40 transition hover:bg-white/[0.06] hover:text-white/75'
         >
           <div
             className='flex h-7 w-7 shrink-0 items-center justify-center rounded-lg'
-            style={{ background: 'rgba(99,102,241,0.18)', border: '1px solid rgba(99,102,241,0.25)' }}
+            style={{ background: 'rgba(255,107,53,0.18)', border: '1px solid rgba(255,107,53,0.25)' }}
           >
-            <i className='bx bx-user text-sm text-indigo-300' aria-hidden='true' />
+            <i className='bx bx-user text-sm' style={{ color: 'var(--color-primary-light)' }} aria-hidden='true' />
           </div>
           <span className='flex-1 truncate'>Mi perfil</span>
         </Link>
         <Link
           to={ROUTES.PUBLIC.HELP}
-          className='flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-slate-400 transition hover:bg-white/[0.06] hover:text-slate-200'
+          className='flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/40 transition hover:bg-white/[0.06] hover:text-white/75'
         >
           <div
             className='flex h-7 w-7 shrink-0 items-center justify-center rounded-lg'
-            style={{ background: 'rgba(99,102,241,0.18)', border: '1px solid rgba(99,102,241,0.25)' }}
+            style={{ background: 'rgba(255,107,53,0.18)', border: '1px solid rgba(255,107,53,0.25)' }}
           >
-            <i className='bx bx-help-circle text-sm text-indigo-300' aria-hidden='true' />
+            <i className='bx bx-help-circle text-sm' style={{ color: 'var(--color-primary-light)' }} aria-hidden='true' />
           </div>
           <span className='flex-1 truncate'>Ayuda</span>
         </Link>
         <button
           type='button'
           onClick={handleLogout}
-          className='mt-0.5 flex w-full items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-slate-500 transition hover:bg-red-500/10 hover:text-red-400'
+          className='mt-0.5 flex w-full items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium text-white/50 transition hover:bg-error/10 hover:text-error'
         >
           <i className='bx bx-log-out text-base' aria-hidden='true' />
           Cerrar sesión

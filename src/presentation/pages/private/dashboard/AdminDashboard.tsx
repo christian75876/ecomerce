@@ -34,7 +34,7 @@ const AdminDashboard = () => {
         scale: 2,
         useCORS: true,
         logging: false,
-        backgroundColor: '#f8fafc',
+        backgroundColor: '#fbf3e7',
         windowWidth: dashboardRef.current.scrollWidth,
         windowHeight: dashboardRef.current.scrollHeight,
       });
@@ -65,15 +65,15 @@ const AdminDashboard = () => {
 
   if (error || !summary) {
     return (
-      <Box className='flex min-h-[40vh] flex-col items-center justify-center gap-4 rounded-[1.8rem] border border-red-200 bg-red-50 px-8 py-10 text-center'>
-        <Box className='flex h-12 w-12 items-center justify-center rounded-2xl bg-red-100'>
-          <svg className='h-6 w-6 text-red-500' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+      <Box className='flex min-h-[40vh] flex-col items-center justify-center gap-4 rounded-[1.8rem] border border-error/25 bg-error-light px-8 py-10 text-center'>
+        <Box className='flex h-12 w-12 items-center justify-center rounded-2xl bg-error-light'>
+          <svg className='h-6 w-6 text-error' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
             <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z' />
           </svg>
         </Box>
         <Box>
-          <Typography variant='h3' className='text-red-700'>{error || 'Error al cargar el dashboard'}</Typography>
-          <Typography className='mt-1 text-sm text-red-500'>Verifica tu conexión e intenta de nuevo.</Typography>
+          <Typography variant='h3' className='text-error'>{error || 'Error al cargar el dashboard'}</Typography>
+          <Typography className='mt-1 text-sm text-error/80'>Verifica tu conexión e intenta de nuevo.</Typography>
         </Box>
       </Box>
     );
@@ -91,7 +91,7 @@ const AdminDashboard = () => {
       {/* Header */}
       <Box className='flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between'>
         <Box>
-          <Typography variant='h1' className='text-3xl md:text-4xl'>
+          <Typography variant='h1' className='font-display text-3xl font-extrabold md:text-4xl'>
             {selectedStore ? selectedStore.name : 'Todas las tiendas'}
           </Typography>
           <Typography className='mt-1 text-neutral-dark/60'>

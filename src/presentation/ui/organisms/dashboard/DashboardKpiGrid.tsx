@@ -27,18 +27,18 @@ const DashboardKpiGrid = ({ summary }: { summary: IDashboardAnalytics }) => {
       value: formatCurrency(summary.kpis.salesThisPeriod),
       detail: `${summary.kpis.totalTransactions} transacciones`,
       icon: 'bx-trending-up',
-      iconColor: '#6366f1',
-      iconBg: 'rgba(99,102,241,0.10)',
-      shadowColor: 'rgba(99,102,241,0.12)',
+      iconColor: '#ff6b35',
+      iconBg: 'rgba(255,107,53,0.10)',
+      shadowColor: 'rgba(255,107,53,0.12)',
     },
     {
       title: 'Ticket promedio',
       value: formatCurrency(summary.kpis.averageTicket),
       detail: `POS ${formatCurrency(summary.kpis.posRevenue)} · Online ${formatCurrency(summary.kpis.onlineRevenue)}`,
       icon: 'bx-receipt',
-      iconColor: '#8b5cf6',
-      iconBg: 'rgba(139,92,246,0.10)',
-      shadowColor: 'rgba(139,92,246,0.12)',
+      iconColor: '#e93e7d',
+      iconBg: 'rgba(233,62,125,0.10)',
+      shadowColor: 'rgba(233,62,125,0.12)',
     },
     {
       title: 'Inventario',
@@ -113,13 +113,13 @@ const DashboardKpiGrid = ({ summary }: { summary: IDashboardAnalytics }) => {
           >
             <i className={`bx ${metric.icon} text-xl`} style={{ color: metric.iconColor }} aria-hidden='true' />
           </div>
-          <p className='mt-4 text-2xl font-bold tracking-tight text-slate-800'>
+          <p className='mt-4 text-2xl font-bold tracking-tight text-neutral-dark'>
             {metric.value}
           </p>
-          <p className='mt-0.5 text-[13px] font-medium text-slate-600'>
+          <p className='mt-0.5 text-[13px] font-medium text-neutral-dark/70'>
             {metric.title}
           </p>
-          <p className='mt-1.5 text-xs text-slate-400'>
+          <p className='mt-1.5 text-xs text-neutral-dark/40'>
             {metric.detail}
           </p>
         </Box>
