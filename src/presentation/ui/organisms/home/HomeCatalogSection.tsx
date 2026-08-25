@@ -302,6 +302,34 @@ const HomeCatalogSection = ({
       </>
 
       <div className='content-container space-y-6'>
+        {/* ── Sticky compact search — the hero's search box scrolls away with
+            it, so once the user scrolls past it this takes over. Sits right
+            below the fixed desktop header (lg:top-20 matches useIsMobile's
+            1024px breakpoint); on mobile there's no fixed header, so top-0. */}
+        <div className='sticky top-0 z-30 -mx-4 border-b border-slate-100 bg-white/95 px-4 py-3 backdrop-blur-sm sm:-mx-6 sm:px-6 lg:-mx-8 lg:top-20 lg:px-8'>
+          <div className='flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 transition-all focus-within:border-primary/40 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary/10'>
+            <i className='bx bx-search text-lg text-slate-400' aria-hidden='true' />
+            <input
+              type='text'
+              value={search}
+              onChange={e => onSearchChange(e.target.value)}
+              placeholder='Buscar en Merku...'
+              className='flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none'
+              aria-label='Buscar productos'
+            />
+            {search ? (
+              <button
+                type='button'
+                onClick={() => onSearchChange('')}
+                className='text-slate-400 hover:text-slate-600'
+                aria-label='Limpiar búsqueda'
+              >
+                <i className='bx bx-x text-lg' aria-hidden='true' />
+              </button>
+            ) : null}
+          </div>
+        </div>
+
         {/* ── Controls ── */}
         <div className='flex flex-col gap-3'>
           <div className='flex items-center gap-2'>

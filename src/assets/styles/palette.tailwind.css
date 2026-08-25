@@ -324,10 +324,20 @@
   to   { transform: translateX(-100%); }
 }
 
+/* fill-mode: backwards, not both — "both" also holds the *ending* keyframe
+   forever once the animation finishes, and `transform: translateY(0)` /
+   `translateX(0)` is not the same as no transform at all: a lingering
+   non-none transform silently becomes a new containing block for every
+   position:fixed/sticky descendant (e.g. the sticky search bars broke
+   sitewide on any page whose root used animate-fade-up). "backwards" still
+   holds the *starting* keyframe during any delay (no flash-of-unanimated-
+   content), but lets the element revert to its own un-animated computed
+   style once done — which for every one of these keyframes is visually
+   identical to the "to" state anyway, so nothing looks different. */
 @layer utilities {
-  .animate-fade-up          { animation: fade-up 0.30s cubic-bezier(0.16, 1, 0.3, 1) both; }
-  .animate-fade-in          { animation: fade-in 0.22s ease both; }
-  .animate-slide-in-left    { animation: slide-in-left 0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .animate-fade-up          { animation: fade-up 0.30s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+  .animate-fade-in          { animation: fade-in 0.22s ease backwards; }
+  .animate-slide-in-left    { animation: slide-in-left 0.28s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
   .animate-marquee-track    { animation: marquee-track 32s linear infinite; }
   .animate-spin-slow        { animation: spin 3s linear infinite; }
 }

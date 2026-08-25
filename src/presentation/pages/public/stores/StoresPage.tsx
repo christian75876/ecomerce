@@ -133,6 +133,34 @@ const StoresPage = () => {
       </div>
 
       <div className='content-container space-y-6'>
+        {/* Sticky compact search — takes over once the hero (with its own
+            search box) scrolls out of view. lg:top-20 matches the fixed
+            desktop header (useIsMobile's 1024px breakpoint); no fixed header
+            on mobile, so top-0 there. */}
+        <div className='sticky top-0 z-30 -mx-4 border-b border-slate-100 bg-white/95 px-4 py-3 backdrop-blur-sm sm:-mx-6 sm:px-6 lg:-mx-8 lg:top-20 lg:px-8'>
+          <div className='flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 transition-all focus-within:border-primary/40 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary/10'>
+            <i className='bx bx-search text-lg text-slate-400' aria-hidden='true' />
+            <input
+              type='text'
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder='Buscar tiendas...'
+              className='flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none'
+              aria-label='Buscar tiendas'
+            />
+            {search ? (
+              <button
+                type='button'
+                onClick={() => setSearch('')}
+                className='text-slate-400 hover:text-slate-600'
+                aria-label='Limpiar búsqueda'
+              >
+                <i className='bx bx-x text-lg' aria-hidden='true' />
+              </button>
+            ) : null}
+          </div>
+        </div>
+
         {/* Tabs */}
         {showTabs ? (
           <div className='flex gap-2 overflow-x-auto pb-1 scrollbar-hide'>

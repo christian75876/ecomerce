@@ -348,7 +348,7 @@ const StoreDetailPage = () => {
                   mantiene visible mientras haya una búsqueda activa, para que
                   una búsqueda con pocos resultados no oculte la barra */}
               {catalogSize > 3 || storeSearch ? (
-                <div className='flex items-center gap-2'>
+                <div className='sticky top-0 z-30 -mx-4 flex items-center gap-2 border-b border-slate-100 bg-white/95 px-4 py-3 backdrop-blur-sm sm:-mx-6 sm:px-6 lg:-mx-8 lg:top-20 lg:px-8'>
                   <div className='flex flex-1 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm transition focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10'>
                     <i className='bx bx-search shrink-0 text-lg text-slate-400' aria-hidden='true' />
                     <input
