@@ -127,7 +127,7 @@ export const PosManagementView = ({
       )}
 
       <Box>
-        <Typography variant="h1" className="text-3xl font-bold">
+        <Typography variant="h1" className="font-display text-3xl font-extrabold">
           POS
         </Typography>
         <Typography className="mt-2 text-neutral-dark/70">

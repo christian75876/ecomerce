@@ -94,14 +94,14 @@ export const PosGuestModal = ({
             {/* Nombre */}
             <div>
               <label className='mb-1 block text-xs font-semibold text-slate-500'>
-                Nombre completo <span className='text-red-400'>*</span>
+                Nombre completo <span className='text-error'>*</span>
               </label>
               <input
                 type='text'
                 placeholder='Ej. Juan García'
                 value={guestName}
                 onChange={(e) => { onGuestNameChange(e.target.value); setValidationError(null); }}
-                className={`${field} ${validationError && !guestName.trim() ? 'border-red-300 focus:border-red-400 focus:ring-red-100' : ''}`}
+                className={`${field} ${validationError && !guestName.trim() ? 'border-error/40 focus:border-error focus:ring-error/15' : ''}`}
               />
             </div>
 
@@ -134,7 +134,7 @@ export const PosGuestModal = ({
                 Teléfono <span className='font-normal text-slate-400'>(para enviar comprobante)</span>
               </label>
               <div className='flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20'>
-                <i className='bx bxl-whatsapp shrink-0 text-lg text-green-500' />
+                <i className='bx bxl-whatsapp shrink-0 text-lg text-whatsapp' />
                 <input
                   type='tel'
                   placeholder='Ej. 3001234567'
@@ -172,8 +172,8 @@ export const PosGuestModal = ({
 
             {/* Shipping fields */}
             {deliveryType === 'SHIPPING' && (
-              <div className='space-y-3 rounded-xl border border-blue-100 bg-blue-50/60 p-3'>
-                <p className='flex items-center gap-1.5 text-xs font-semibold text-blue-600'>
+              <div className='space-y-3 rounded-xl border border-info/20 bg-info-light/60 p-3'>
+                <p className='flex items-center gap-1.5 text-xs font-semibold text-info'>
                   <i className='bx bx-map-pin' /> Datos de envío
                 </p>
                 <input
@@ -202,7 +202,7 @@ export const PosGuestModal = ({
 
             {/* Error */}
             {(validationError ?? error) && (
-              <div className='flex items-center gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2.5 text-sm text-red-600'>
+              <div className='flex items-center gap-2 rounded-xl border border-error/20 bg-error-light px-3 py-2.5 text-sm text-error'>
                 <i className='bx bx-error-circle shrink-0' />
                 {validationError ?? error}
               </div>

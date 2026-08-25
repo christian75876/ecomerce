@@ -72,8 +72,11 @@
   --color-neutral-gray: #d8c4ac;
   --color-neutral-muted: #7a6552;
 
-  /* ── Brand-external: WhatsApp (contact links, floating button) ── */
+  /* ── Brand-external: WhatsApp (contact links, floating button). The bright
+       logo green is for the icon only — as text it's ~2:1 and fails AA, so
+       -dark (WhatsApp's own darker brand teal) is what small labels use. ── */
   --color-whatsapp: #25d366;
+  --color-whatsapp-dark: #075e54;
 
   /* ── Semantic (kept legible/conventional — success=green, error=red — so
        status meaning isn't lost inside a maximalist palette). Same AA rule

@@ -181,7 +181,7 @@ export const PosReceiptModal = ({ sale, guestInfo, onClose }: Props) => {
               <button
                 type='button'
                 onClick={handleWhatsApp}
-                className='flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-green-300 bg-green-50 px-4 py-2.5 text-sm font-semibold text-green-700 transition hover:bg-green-100'
+                className='flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-whatsapp/30 bg-whatsapp/10 px-4 py-2.5 text-sm font-semibold text-whatsapp-dark transition hover:bg-whatsapp/15'
               >
                 <i className='bx bxl-whatsapp text-base' />
                 WhatsApp
