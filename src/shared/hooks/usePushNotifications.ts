@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { isAuthenticated } from '@/shared/utils/checkIsUserAuthenticated.util';
+import { authenticatedClientHTTP } from '@/infrastructure/repositories/api/ClientHTTP';
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY as string;
 
@@ -33,19 +34,12 @@ async function registerPush(): Promise<void> {
 }
 
 async function sendSubscriptionToServer(sub: PushSubscription): Promise<void> {
-  const token = localStorage.getItem('authToken') ?? sessionStorage.getItem('authToken');
-  if (!token) return;
-
   const json = sub.toJSON() as { endpoint: string; keys: { p256dh: string; auth: string } };
-
-  await fetch('/api/push/subscribe', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ endpoint: json.endpoint, keys: json.keys }),
-  });
+  // authenticatedClientHTTP ya apunta al backend correcto (VITE_API_URL) y
+  // adjunta el Authorization automáticamente — un fetch('/api/...') relativo
+  // aquí resolvía contra el propio dominio del frontend, no el backend, así
+  // que esta suscripción nunca llegaba a guardarse.
+  await authenticatedClientHTTP.post('/push/subscribe', { endpoint: json.endpoint, keys: json.keys });
 }
 
 export function usePushNotifications() {
