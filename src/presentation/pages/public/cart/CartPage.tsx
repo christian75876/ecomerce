@@ -111,9 +111,19 @@ const CartPage = () => {
       setError('Tu sesión expiró. Vuelve a iniciar sesión.');
       return;
     }
-    if (deliveryMethod === 'DELIVERY' && !deliveryStreet.trim()) {
-      setError('Ingresa la dirección de entrega');
-      return;
+    if (deliveryMethod === 'DELIVERY') {
+      if (!deliveryStreet.trim()) {
+        setError('Ingresa la dirección de entrega');
+        return;
+      }
+      if (!deliveryCity.trim()) {
+        setError('Ingresa la ciudad de entrega');
+        return;
+      }
+      if (!deliveryDepartment.trim()) {
+        setError('Ingresa el departamento de entrega');
+        return;
+      }
     }
 
     setSubmitting(true);
@@ -377,12 +387,12 @@ const CartPage = () => {
                 />
                 <Box className='grid grid-cols-2 gap-2'>
                   <Input
-                    placeholder='Ciudad'
+                    placeholder='Ciudad *'
                     value={deliveryCity}
                     onChange={(e) => setDeliveryCity(e.target.value)}
                   />
                   <Input
-                    placeholder='Departamento'
+                    placeholder='Departamento *'
                     value={deliveryDepartment}
                     onChange={(e) => setDeliveryDepartment(e.target.value)}
                   />
