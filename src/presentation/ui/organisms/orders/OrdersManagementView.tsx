@@ -369,64 +369,63 @@ export const OrdersManagementView = ({
                     key={order.id}
                     className={`overflow-hidden rounded-2xl border transition-all ${isOpen ? 'border-primary/30 shadow-md' : 'border-neutral-gray/20'}`}
                   >
-                    {/* Card header — always visible. Row 1 (id + badges + price + chevron)
-                        stays a fixed, top-aligned row; customer info lives in its own row
-                        below so a long name/email/phone can wrap to several lines without
-                        dragging the price/chevron down into the middle of the card. */}
+                    {/* Card header — always visible, redistributed into 3 clear rows so
+                        nothing on mobile competes for the same line:
+                        (1) status + id (left) vs. price + chevron (right) — always short,
+                            always fits, always aligned to the top;
+                        (2) customer name + delivery method + date — secondary, can wrap freely;
+                        (3) email + WhatsApp — tertiary, only grows the card, never displaces (1). */}
                     <button
                       type='button'
                       className='flex w-full flex-col gap-1.5 px-4 py-3 text-left transition hover:bg-slate-50'
                       onClick={() => setExpandedId(isOpen ? null : order.id)}
                     >
-                      <div className='flex min-w-0 items-start gap-2'>
-                        <span
-                          className={`mt-1.5 h-2 w-2 flex-shrink-0 rounded-full ${cfg.dot}`}
-                        />
-                        <div className='min-w-0 flex-1 flex flex-wrap items-center gap-2 overflow-hidden'>
-                          {' '}
-                          <span className='font-semibold text-slate-800'>
-                            #{order.id.slice(0, 8).toUpperCase()}
-                          </span>
+                      <div className='flex items-center justify-between gap-3'>
+                        <div className='flex min-w-0 items-center gap-2'>
                           <span
                             className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${cfg.badge}`}
                           >
                             {cfg.label}
                           </span>
-                          {order.deliveryMethod === 'DELIVERY' ? (
-                            <span className='rounded-full border border-cyan-200 bg-cyan-50 px-2 py-0.5 text-[10px] font-semibold text-cyan-700'>
-                              Domicilio
-                            </span>
-                          ) : order.deliveryMethod === 'PICKUP' ? (
-                            <span className='rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold text-slate-600'>
-                              Recogida
-                            </span>
-                          ) : null}
+                          <span className='truncate font-mono text-xs text-slate-400'>
+                            #{order.id.slice(0, 8).toUpperCase()}
+                          </span>
                         </div>
-                        <div className='w-auto max-w-[90px] flex-shrink-0 text-right sm:max-w-none'>
-                          {' '}
-                          <div className='text-sm font-bold text-slate-800'>
+                        <div className='flex flex-shrink-0 items-center gap-2'>
+                          <span className='text-base font-bold text-slate-800'>
                             {formatCurrencyCOP(order.total)}
-                          </div>
-                          <div className='text-xs text-slate-400'>
-                            {new Date(order.createdAt).toLocaleDateString(
-                              'es-CO',
-                              { day: '2-digit', month: 'short' }
-                            )}
-                          </div>
+                          </span>
+                          <i
+                            className={`bx ${isOpen ? 'bx-chevron-up' : 'bx-chevron-down'} text-lg text-slate-400`}
+                            aria-hidden='true'
+                          />
                         </div>
-                        <i
-                          className={`bx ${isOpen ? 'bx-chevron-up' : 'bx-chevron-down'} mt-0.5 flex-shrink-0 text-lg text-slate-400`}
-                          aria-hidden='true'
-                        />
                       </div>
 
-                      <div className='min-w-0 flex flex-wrap items-center gap-x-2 gap-y-0.5 pl-5 text-xs text-slate-500'>
-                        {' '}
-                        <span>
+                      <div className='flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-500'>
+                        <span className='font-medium text-slate-700'>
                           {order.customer.firstName} {order.customer.lastName}
                         </span>
+                        {order.deliveryMethod === 'DELIVERY' ? (
+                          <span className='rounded-full border border-cyan-200 bg-cyan-50 px-2 py-0.5 text-[10px] font-semibold text-cyan-700'>
+                            Domicilio
+                          </span>
+                        ) : order.deliveryMethod === 'PICKUP' ? (
+                          <span className='rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold text-slate-600'>
+                            Recogida
+                          </span>
+                        ) : null}
                         <span className='text-slate-300'>·</span>
-                        <span className='truncate'>{order.customer.email}</span>
+                        <span>
+                          {new Date(order.createdAt).toLocaleDateString('es-CO', {
+                            day: '2-digit',
+                            month: 'short',
+                          })}
+                        </span>
+                      </div>
+
+                      <div className='flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-400'>
+                        <span className='min-w-0 truncate'>{order.customer.email}</span>
                         {order.customer.phone ? (
                           <>
                             <span className='text-slate-300'>·</span>
@@ -435,7 +434,7 @@ export const OrdersManagementView = ({
                               target='_blank'
                               rel='noopener noreferrer'
                               onClick={e => e.stopPropagation()}
-                              className='inline-flex items-center gap-1 font-medium text-green-600 hover:text-green-700 hover:underline'
+                              className='inline-flex flex-shrink-0 items-center gap-1 font-medium text-green-600 hover:text-green-700 hover:underline'
                             >
                               <i className='bx bxl-whatsapp text-sm' />
                               {order.customer.phone}
