@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import type { TurnstileInstance } from '@marsidev/react-turnstile';
 import FormField from '@/presentation/ui/molecules/forms/FormField';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
@@ -22,6 +23,17 @@ const CustomerRegisterForm = ({
 }: CustomerRegisterFormProps) => {
   const [cfToken, setCfToken] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const turnstileRef = useRef<TurnstileInstance>(undefined);
+
+  // El token de Turnstile es de un solo uso — tras un intento fallido (por
+  // ejemplo, correo ya registrado) el widget sigue mostrando su check verde
+  // pero el token ya está muerto ante Cloudflare, así que hay que renovarlo
+  // o el siguiente intento fallará también, aunque los datos ya estén bien.
+  useEffect(() => {
+    if (!error) return;
+    turnstileRef.current?.reset();
+    setCfToken('');
+  }, [error]);
   const {
     control,
     handleSubmit,
@@ -116,7 +128,7 @@ const CustomerRegisterForm = ({
           </Link>
         </span>
       </label>
-      <TurnstileWidget onVerify={setCfToken} className='flex justify-center' />
+      <TurnstileWidget ref={turnstileRef} onVerify={setCfToken} className='flex justify-center' />
       <Button
         type='submit'
         variant='primary'

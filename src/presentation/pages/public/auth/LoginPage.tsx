@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import type { TurnstileInstance } from '@marsidev/react-turnstile';
 import TurnstileWidget from '@/presentation/ui/molecules/common/TurnstileWidget';
 
 import { useLogin } from '@/application/useCases/auth/useLogin';
@@ -26,7 +27,20 @@ const LoginPage = () => {
   const passwordReset = searchParams.get('reset') === '1';
   const [mode, setMode] = useState<'login' | 'register' | 'verify'>('login');
   const [cfToken, setCfToken] = useState('');
+  const turnstileRef = useRef<TurnstileInstance>(undefined);
   const { handleLogin, isloading, error } = useLogin();
+
+  // Un token de Turnstile es de un solo uso — Cloudflare lo invalida en
+  // cuanto se verifica una vez, sea el login exitoso o no. Sin este reset,
+  // tras una contraseña incorrecta el widget sigue mostrando el check verde
+  // de "verificado" pero el token ya está muerto, así que el siguiente
+  // intento (incluso con la contraseña correcta) falla igual, ahora con
+  // "verificación de seguridad fallida" en vez del error real.
+  useEffect(() => {
+    if (!error) return;
+    turnstileRef.current?.reset();
+    setCfToken('');
+  }, [error]);
   const {
     handleRegisterCustomer: _handleRegisterCustomer,
     isLoading: isCustomerRegisterLoading,
@@ -252,7 +266,7 @@ const LoginPage = () => {
                     </Link>
                   </div>
 
-                  <TurnstileWidget onVerify={setCfToken} className='flex justify-center' />
+                  <TurnstileWidget ref={turnstileRef} onVerify={setCfToken} className='flex justify-center' />
                   <Button
                     type='submit'
                     variant='primary'
