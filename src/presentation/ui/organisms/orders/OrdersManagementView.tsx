@@ -369,15 +369,18 @@ export const OrdersManagementView = ({
                     key={order.id}
                     className={`overflow-hidden rounded-2xl border transition-all ${isOpen ? 'border-primary/30 shadow-md' : 'border-neutral-gray/20'}`}
                   >
-                    {/* Card header — always visible */}
+                    {/* Card header — always visible. Row 1 (id + badges + price + chevron)
+                        stays a fixed, top-aligned row; customer info lives in its own row
+                        below so a long name/email/phone can wrap to several lines without
+                        dragging the price/chevron down into the middle of the card. */}
                     <button
                       type='button'
-                      className='flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-slate-50'
+                      className='flex w-full flex-col gap-1.5 px-4 py-3 text-left transition hover:bg-slate-50'
                       onClick={() => setExpandedId(isOpen ? null : order.id)}
                     >
-                      <span className={`h-2 w-2 flex-shrink-0 rounded-full ${cfg.dot}`} />
-                      <Box className='min-w-0 flex-1'>
-                        <div className='flex items-center gap-2'>
+                      <div className='flex items-start gap-3'>
+                        <span className={`mt-1.5 h-2 w-2 flex-shrink-0 rounded-full ${cfg.dot}`} />
+                        <div className='flex min-w-0 flex-1 flex-wrap items-center gap-2'>
                           <span className='font-semibold text-slate-800'>
                             #{order.id.slice(0, 8).toUpperCase()}
                           </span>
@@ -394,34 +397,35 @@ export const OrdersManagementView = ({
                             </span>
                           ) : null}
                         </div>
-                        <div className='mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-500'>
-                          <span>{order.customer.firstName} {order.customer.lastName}</span>
-                          <span className='text-slate-300'>·</span>
-                          <span className='truncate'>{order.customer.email}</span>
-                          {order.customer.phone ? (
-                            <>
-                              <span className='text-slate-300'>·</span>
-                              <a
-                                href={`https://wa.me/${order.customer.phone.replace(/\D/g, '')}`}
-                                target='_blank'
-                                rel='noopener noreferrer'
-                                onClick={(e) => e.stopPropagation()}
-                                className='inline-flex items-center gap-1 font-medium text-green-600 hover:text-green-700 hover:underline'
-                              >
-                                <i className='bx bxl-whatsapp text-sm' />
-                                {order.customer.phone}
-                              </a>
-                            </>
-                          ) : null}
+                        <div className='flex-shrink-0 text-right'>
+                          <div className='text-sm font-bold text-slate-800'>{formatCurrencyCOP(order.total)}</div>
+                          <div className='text-xs text-slate-400'>
+                            {new Date(order.createdAt).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })}
+                          </div>
                         </div>
-                      </Box>
-                      <Box className='flex-shrink-0 text-right'>
-                        <div className='text-sm font-bold text-slate-800'>{formatCurrencyCOP(order.total)}</div>
-                        <div className='text-xs text-slate-400'>
-                          {new Date(order.createdAt).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })}
-                        </div>
-                      </Box>
-                      <i className={`bx ${isOpen ? 'bx-chevron-up' : 'bx-chevron-down'} flex-shrink-0 text-lg text-slate-400`} aria-hidden='true' />
+                        <i className={`bx ${isOpen ? 'bx-chevron-up' : 'bx-chevron-down'} mt-0.5 flex-shrink-0 text-lg text-slate-400`} aria-hidden='true' />
+                      </div>
+
+                      <div className='flex flex-wrap items-center gap-x-2 gap-y-0.5 pl-5 text-xs text-slate-500'>
+                        <span>{order.customer.firstName} {order.customer.lastName}</span>
+                        <span className='text-slate-300'>·</span>
+                        <span className='truncate'>{order.customer.email}</span>
+                        {order.customer.phone ? (
+                          <>
+                            <span className='text-slate-300'>·</span>
+                            <a
+                              href={`https://wa.me/${order.customer.phone.replace(/\D/g, '')}`}
+                              target='_blank'
+                              rel='noopener noreferrer'
+                              onClick={(e) => e.stopPropagation()}
+                              className='inline-flex items-center gap-1 font-medium text-green-600 hover:text-green-700 hover:underline'
+                            >
+                              <i className='bx bxl-whatsapp text-sm' />
+                              {order.customer.phone}
+                            </a>
+                          </>
+                        ) : null}
+                      </div>
                     </button>
 
                     {/* Expanded detail */}
