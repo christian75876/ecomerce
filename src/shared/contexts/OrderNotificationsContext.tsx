@@ -262,11 +262,33 @@ export const OrderNotificationsProvider = ({ children }: { children: ReactNode }
     void loadInitialOrders();
     connect();
 
+    // En móvil, el navegador suspende la pestaña en segundo plano (pantalla
+    // apagada, cambio de app) y suele cerrar el socket del EventSource sin
+    // disparar `onerror` — la reconexión con backoff nunca se activa porque
+    // ese evento simplemente no llega. Antes, la única forma de volver a ver
+    // alertas era recargar la página entera. Al volver a foco, se refresca
+    // el pedido más reciente por API (siempre funciona) y, si el stream ya
+    // no está abierto, se reconecta de una vez en vez de esperar un error
+    // que puede no llegar nunca.
+    const handleVisible = () => {
+      if (document.visibilityState !== 'visible' || !mountedRef.current) return;
+      void loadInitialOrders();
+      if (esRef.current?.readyState !== EventSource.OPEN) {
+        connect();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisible);
+    window.addEventListener('focus', handleVisible);
+    window.addEventListener('online', handleVisible);
+
     return () => {
       mountedRef.current = false;
       esRef.current?.close();
       esRef.current = null;
       if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+      document.removeEventListener('visibilitychange', handleVisible);
+      window.removeEventListener('focus', handleVisible);
+      window.removeEventListener('online', handleVisible);
     };
   }, [connect, loadInitialOrders]);
 

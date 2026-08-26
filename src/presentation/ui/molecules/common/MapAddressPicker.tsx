@@ -214,8 +214,11 @@ const MapAddressPicker = ({ value, onChange }: MapAddressPickerProps) => {
         ) : null}
       </div>
 
-      {/* Map */}
-      <div className='overflow-hidden rounded-2xl border border-slate-200 shadow-sm' style={{ height: 260 }}>
+      {/* Map — "isolate" contiene los z-index internos de Leaflet (sus
+          controles/popups usan valores muy altos, hasta 1000) dentro de este
+          contenedor, para que nunca puedan quedar por encima de un modal que
+          esté abierto sobre la página. */}
+      <div className='isolate h-72 overflow-hidden rounded-2xl border border-slate-200 shadow-sm sm:h-96'>
         <MapContainer
           center={BOGOTA}
           zoom={value ? 16 : 6}

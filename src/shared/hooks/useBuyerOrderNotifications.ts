@@ -75,11 +75,29 @@ export function useBuyerOrderNotifications() {
   useEffect(() => {
     mountedRef.current = true;
     connect();
+
+    // En móvil el navegador suele cerrar el socket del EventSource cuando la
+    // pestaña queda en segundo plano (pantalla apagada, cambio de app) sin
+    // disparar `onerror` — el backoff de reconexión nunca se activa porque
+    // ese evento no llega. Al volver a foco, se reconecta directamente si el
+    // stream ya no está abierto, en vez de depender de un error que puede no
+    // llegar nunca (antes solo se arreglaba recargando la página entera).
+    const handleVisible = () => {
+      if (document.visibilityState !== 'visible' || !mountedRef.current) return;
+      if (esRef.current?.readyState !== EventSource.OPEN) connect();
+    };
+    document.addEventListener('visibilitychange', handleVisible);
+    window.addEventListener('focus', handleVisible);
+    window.addEventListener('online', handleVisible);
+
     return () => {
       mountedRef.current = false;
       esRef.current?.close();
       esRef.current = null;
       if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+      document.removeEventListener('visibilitychange', handleVisible);
+      window.removeEventListener('focus', handleVisible);
+      window.removeEventListener('online', handleVisible);
     };
   }, [connect]);
 }
