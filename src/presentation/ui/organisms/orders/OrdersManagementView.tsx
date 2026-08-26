@@ -15,6 +15,7 @@ import Label from '@/presentation/ui/atoms/label/SimpleLabel';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import { resolveEvidenceUrl } from '@/shared/utils/buildEvidenceUrl';
+import { truncateText } from '@/shared/utils/truncateText';
 import PaginationControls from '@/presentation/ui/molecules/common/PaginationControls';
 import SelectDropdown from '@/presentation/ui/molecules/common/SelectDropdown';
 
@@ -247,7 +248,7 @@ export const OrdersManagementView = ({
                     value={row.productId}
                     options={products.map((p) => ({
                       value: p.id,
-                      label: `${p.name} · ${formatCurrencyCOP(p.price)}`,
+                      label: `${truncateText(p.name, 35)} · ${formatCurrencyCOP(p.price)}`,
                     }))}
                     placeholder='Selecciona un producto'
                     onChange={(v) => onCartRowChange(index, { productId: v })}
@@ -461,8 +462,8 @@ export const OrdersManagementView = ({
                                     className='border-b border-slate-100 last:border-0'
                                   >
                                     <td className='py-2 pr-3'>
-                                      <div className='font-medium text-slate-700'>
-                                        {item.product.name}
+                                      <div className='font-medium text-slate-700' title={item.product.name}>
+                                        {truncateText(item.product.name, 35)}
                                       </div>
                                       <div className='text-xs text-slate-400'>
                                         {item.product.sku}
