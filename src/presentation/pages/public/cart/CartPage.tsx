@@ -205,6 +205,7 @@ const CartPage = () => {
         </Box>
       </Box>
 
+      {!createdOrder && (
       <Box className='grid gap-6 xl:grid-cols-[minmax(0,1fr)_400px]'>
         {/* Products */}
         <Box className='surface-elevated rounded-2xl p-4 sm:rounded-[1.75rem] sm:p-6'>
@@ -541,6 +542,7 @@ const CartPage = () => {
           </>) : null}
         </Box>
       </Box>
+      )}
 
       {/* Payment panel — shown after successful order creation */}
       {createdOrder ? (

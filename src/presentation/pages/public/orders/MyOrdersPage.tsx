@@ -8,7 +8,7 @@ import { formatDate } from '@/shared/utils/formatDate';
 import type { IOrder } from '@/application/dtos/orders/response/OrderResponse';
 import { OrderInvoiceModal } from '@/presentation/ui/organisms/orders/OrderInvoiceModal';
 import { OrdersRepository } from '@/infrastructure/repositories/api/orders/OrdersRepository';
-import { appendEvidenceToken } from '@/shared/utils/buildEvidenceUrl';
+import { resolveEvidenceUrl } from '@/shared/utils/buildEvidenceUrl';
 
 const BASE_URL = (import.meta.env.VITE_API_URL as string ?? import.meta.env.VITE_API_BASE_URL as string ?? 'http://127.0.0.1:3000/api/').replace(/\/api\/?$/, '');
 
@@ -340,12 +340,12 @@ const PaymentUploadSection = ({ order, onSuccess }: { order: IOrder; onSuccess: 
         )}
         {order.paymentEvidenceImagePath && (
           <a
-            href={appendEvidenceToken(`${BASE_URL}/${order.paymentEvidenceImagePath}`)}
+            href={resolveEvidenceUrl(order.paymentEvidenceImagePath!, BASE_URL)}
             target='_blank'
             rel='noopener noreferrer'
             className='mt-1 block overflow-hidden rounded-xl border border-emerald-200'
           >
-            <img src={appendEvidenceToken(`${BASE_URL}/${order.paymentEvidenceImagePath}`)} alt='Comprobante' className='max-h-48 w-full object-contain bg-white' />
+            <img src={resolveEvidenceUrl(order.paymentEvidenceImagePath!, BASE_URL)} alt='Comprobante' className='max-h-48 w-full object-contain bg-white' />
           </a>
         )}
         <p className='flex items-center gap-1 text-xs text-emerald-600'>
@@ -372,12 +372,12 @@ const PaymentUploadSection = ({ order, onSuccess }: { order: IOrder; onSuccess: 
         )}
         {order.paymentEvidenceImagePath && (
           <a
-            href={appendEvidenceToken(`${BASE_URL}/${order.paymentEvidenceImagePath}`)}
+            href={resolveEvidenceUrl(order.paymentEvidenceImagePath!, BASE_URL)}
             target='_blank'
             rel='noopener noreferrer'
             className='mt-1 block overflow-hidden rounded-xl border border-blue-200'
           >
-            <img src={appendEvidenceToken(`${BASE_URL}/${order.paymentEvidenceImagePath}`)} alt='Comprobante' className='max-h-48 w-full object-contain bg-white' />
+            <img src={resolveEvidenceUrl(order.paymentEvidenceImagePath!, BASE_URL)} alt='Comprobante' className='max-h-48 w-full object-contain bg-white' />
           </a>
         )}
       </div>

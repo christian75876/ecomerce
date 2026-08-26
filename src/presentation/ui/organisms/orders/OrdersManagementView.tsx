@@ -14,7 +14,7 @@ import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Label from '@/presentation/ui/atoms/label/SimpleLabel';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
-import { appendEvidenceToken } from '@/shared/utils/buildEvidenceUrl';
+import { resolveEvidenceUrl } from '@/shared/utils/buildEvidenceUrl';
 import PaginationControls from '@/presentation/ui/molecules/common/PaginationControls';
 import SelectDropdown from '@/presentation/ui/molecules/common/SelectDropdown';
 
@@ -517,13 +517,13 @@ export const OrdersManagementView = ({
                             )}
                             {order.paymentEvidenceImagePath && (
                               <a
-                                href={appendEvidenceToken(`${BASE_URL}/${order.paymentEvidenceImagePath}`)}
+                                href={resolveEvidenceUrl(order.paymentEvidenceImagePath!, BASE_URL)}
                                 target='_blank'
                                 rel='noopener noreferrer'
                                 className='mt-1 block overflow-hidden rounded-lg border border-emerald-200'
                               >
                                 <img
-                                  src={appendEvidenceToken(`${BASE_URL}/${order.paymentEvidenceImagePath}`)}
+                                  src={resolveEvidenceUrl(order.paymentEvidenceImagePath!, BASE_URL)}
                                   alt='Comprobante'
                                   className='max-h-48 w-full object-contain bg-white'
                                 />
@@ -550,13 +550,13 @@ export const OrdersManagementView = ({
                             )}
                             {order.paymentEvidenceImagePath && (
                               <a
-                                href={appendEvidenceToken(`${BASE_URL}/${order.paymentEvidenceImagePath}`)}
+                                href={resolveEvidenceUrl(order.paymentEvidenceImagePath!, BASE_URL)}
                                 target='_blank'
                                 rel='noopener noreferrer'
                                 className='mt-1 block overflow-hidden rounded-lg border border-blue-200'
                               >
                                 <img
-                                  src={appendEvidenceToken(`${BASE_URL}/${order.paymentEvidenceImagePath}`)}
+                                  src={resolveEvidenceUrl(order.paymentEvidenceImagePath!, BASE_URL)}
                                   alt='Comprobante'
                                   className='max-h-48 w-full object-contain bg-white'
                                 />
