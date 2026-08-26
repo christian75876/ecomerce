@@ -4,7 +4,7 @@ import { ROUTES } from '@/shared/constants/routes';
 
 const APP_URL = import.meta.env.VITE_APP_URL ?? '';
 
-const LAST_UPDATED = '1 de agosto de 2025';
+const LAST_UPDATED = '25 de agosto de 2026';
 
 const PrivacyPage = () => (
   <div className='mx-auto max-w-3xl space-y-8 px-4 py-10'>
@@ -81,7 +81,7 @@ const PrivacyPage = () => (
       <ul className='mt-2 list-disc space-y-1 pl-5'>
         <li><strong>Conocer:</strong> Los datos que tenemos sobre usted y para qué fines se utilizan.</li>
         <li><strong>Actualizar y rectificar:</strong> Corregir datos inexactos, incompletos o desactualizados.</li>
-        <li><strong>Suprimir:</strong> Solicitar la eliminación de sus datos cuando no sean necesarios para las finalidades declaradas, salvo que exista obligación legal de conservarlos.</li>
+        <li><strong>Suprimir:</strong> Eliminar su cuenta directamente desde "Mi perfil" en la Plataforma, o solicitarlo por correo, cuando sus datos no sean necesarios para las finalidades declaradas. Si su cuenta tiene pedidos o transacciones asociadas, sus datos de identificación se anonimizan (en vez de borrarse por completo) para conservar el registro contable y fiscal que exige la ley, sin que puedan volver a vincularse a usted.</li>
         <li><strong>Revocar el consentimiento:</strong> Retirar el consentimiento dado para tratamientos que no sean necesarios para la ejecución del contrato.</li>
         <li><strong>Acceder gratuitamente:</strong> Conocer de forma gratuita sus datos personales al menos una vez al mes.</li>
         <li><strong>Presentar quejas:</strong> Ante la Superintendencia de Industria y Comercio (SIC) si considera que sus derechos han sido vulnerados (<a href='https://www.sic.gov.co' target='_blank' rel='noopener noreferrer' className='text-primary hover:underline'>www.sic.gov.co</a>).</li>

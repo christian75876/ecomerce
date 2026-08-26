@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import PhoneInputCO from '@/presentation/ui/molecules/common/PhoneInputCO';
 import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import { AuthRepository } from '@/infrastructure/repositories/api/auth/AuthRepository';
@@ -54,6 +54,9 @@ const ProfilePage = () => {
   const [appConfig, setAppConfig] = useState<IAppConfig | null>(null);
   const [blockMsg, setBlockMsg] = useState('');
   const [savingConfig, setSavingConfig] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let cancelled = false;
@@ -145,6 +148,23 @@ const ProfilePage = () => {
       SnackbarUtilities.error('No se pudo actualizar el perfil');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeletingAccount(true);
+    try {
+      const res = await AuthRepository.deleteAccount();
+      SnackbarUtilities.success(res.message);
+      authSession.clear();
+      navigate(ROUTES.PUBLIC.HOME);
+    } catch (err) {
+      SnackbarUtilities.error(
+        err instanceof Error ? err.message : 'No fue posible eliminar tu cuenta',
+      );
+    } finally {
+      setDeletingAccount(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -372,6 +392,60 @@ const ProfilePage = () => {
               )}
             </Box>
           </Box>
+
+          {/* ── Zona de peligro: eliminar cuenta ── */}
+          <div className='rounded-[1.75rem] border border-red-200 bg-red-50/60 p-6 shadow-sm'>
+            <div className='flex items-center gap-3'>
+              <div className='flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-red-100'>
+                <i className='bx bx-trash text-xl text-red-600' aria-hidden='true' />
+              </div>
+              <div>
+                <h2 className='text-base font-semibold text-slate-800'>Eliminar mi cuenta</h2>
+                <p className='text-xs text-slate-500'>
+                  Borra tu cuenta y tus datos personales de Merku de forma permanente.
+                </p>
+              </div>
+            </div>
+
+            {!showDeleteConfirm ? (
+              <button
+                type='button'
+                onClick={() => setShowDeleteConfirm(true)}
+                className='mt-4 rounded-xl border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-100'
+              >
+                Eliminar mi cuenta
+              </button>
+            ) : (
+              <div className='mt-4 space-y-3 rounded-2xl border border-red-200 bg-white p-4'>
+                <p className='text-sm text-slate-700'>
+                  Esta acción no se puede deshacer. Si tienes tiendas activas, primero debes contactar a soporte para transferirlas o cerrarlas — no podrás eliminar tu cuenta mientras existan.
+                </p>
+                <div className='flex flex-wrap gap-2'>
+                  <button
+                    type='button'
+                    onClick={() => void handleDeleteAccount()}
+                    disabled={deletingAccount}
+                    className='flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-red-700 disabled:opacity-50'
+                  >
+                    {deletingAccount ? (
+                      <i className='bx bx-loader-alt animate-spin text-base' />
+                    ) : (
+                      <i className='bx bx-check text-base' />
+                    )}
+                    Sí, eliminar definitivamente
+                  </button>
+                  <button
+                    type='button'
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={deletingAccount}
+                    className='rounded-xl px-4 py-2 text-sm font-medium text-slate-500 transition hover:bg-slate-100 disabled:opacity-40'
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* ── App Access Control (admin only) ── */}
           {isAdmin && appConfig ? (

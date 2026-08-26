@@ -82,6 +82,18 @@ export class AuthRepository {
   }
 
   /**
+   * Self-service "delete my account" (Habeas Data). Throws with a specific
+   * message (e.g. active stores must be closed first) if the deletion is
+   * blocked — the caller shows that message to the user.
+   */
+  static async deleteAccount(): Promise<{ message: string }> {
+    return ErrorHandler.handleApiErrors(
+      () => authenticatedClientHTTP.delete('/auth/me'),
+      () => {},
+    );
+  }
+
+  /**
    * Logs out the user, revoking the refresh token server-side.
    */
   static async logout(refreshToken?: string | null) {
