@@ -238,67 +238,96 @@ const CartPage = () => {
               items.map((item) => (
                 <Box
                   key={item.productId}
-                  className='flex items-center gap-3 rounded-2xl border border-neutral-gray/20 bg-white p-3 transition-all hover:border-primary/20 hover:shadow-soft sm:gap-4 sm:p-4'
+                  className='rounded-2xl border border-neutral-gray/20 bg-white p-3 transition-all hover:border-primary/20 hover:shadow-soft sm:p-4'
                 >
-                  {/* Imagen */}
-                  <img
-                    src={item.imageUrl || fallbackImage}
-                    alt={item.name}
-                    className='h-12 w-12 flex-shrink-0 rounded-xl object-cover sm:h-16 sm:w-16'
-                  />
+                  {/* Fila 1: imagen + nombre/precio + (en sm+) cantidad y total en la
+                      misma línea. En mobile esta fila solo carga imagen+nombre+eliminar,
+                      dejando el nombre con todo el ancho disponible — antes competía en
+                      una sola línea contra los controles de cantidad y el total, dejándole
+                      apenas ~40px de ancho real en un teléfono angosto. */}
+                  <Box className='flex items-center gap-3 sm:gap-4'>
+                    <img
+                      src={item.imageUrl || fallbackImage}
+                      alt={item.name}
+                      className='h-12 w-12 flex-shrink-0 rounded-xl object-cover sm:h-16 sm:w-16'
+                    />
 
-                  {/* Nombre + precio */}
-                  <Box className='min-w-0 flex-1'>
-                    <Typography className='truncate text-sm font-semibold sm:text-base'>{item.name}</Typography>
-                    <Typography className='mt-0.5 text-xs font-medium text-primary sm:text-sm'>
-                      {formatCurrencyCOP(item.price)} c/u
+                    <Box className='min-w-0 flex-1'>
+                      <Typography className='truncate text-sm font-semibold sm:text-base'>{item.name}</Typography>
+                      <Typography className='mt-0.5 text-xs font-medium text-primary sm:text-sm'>
+                        {formatCurrencyCOP(item.price)} c/u
+                      </Typography>
+                    </Box>
+
+                    {/* Total — solo sm+; en mobile vive en la fila 2 */}
+                    <Typography className='hidden w-24 flex-shrink-0 text-right text-sm font-bold tabular-nums text-neutral-dark sm:block'>
+                      {formatCurrencyCOP(item.price * item.quantity)}
                     </Typography>
-                    {/* Total inline — solo visible en mobile */}
-                    <Typography className='mt-0.5 text-xs font-bold tabular-nums text-neutral-dark sm:hidden'>
+
+                    {/* Controles de cantidad — solo sm+; en mobile viven en la fila 2 */}
+                    <Box className='hidden items-center gap-2 sm:flex'>
+                      <button
+                        type='button'
+                        aria-label='Reducir cantidad'
+                        onClick={() => updateQuantity(item.productId, Math.max(1, item.quantity - 1))}
+                        className='flex h-7 w-7 items-center justify-center rounded-full border border-neutral-gray/40 bg-white text-neutral-dark/70 transition hover:border-primary/30 hover:bg-primary/5 hover:text-primary'
+                      >
+                        <Icon name='bx-minus' className='text-xs' />
+                      </button>
+                      <span className='w-6 text-center text-sm font-semibold tabular-nums'>
+                        {item.quantity}
+                      </span>
+                      <button
+                        type='button'
+                        aria-label='Aumentar cantidad'
+                        onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                        disabled={item.maxStock !== undefined && item.quantity >= item.maxStock}
+                        className='flex h-7 w-7 items-center justify-center rounded-full border border-neutral-gray/40 bg-white text-neutral-dark/70 transition hover:border-primary/30 hover:bg-primary/5 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40'
+                      >
+                        <Icon name='bx-plus' className='text-xs' />
+                      </button>
+                    </Box>
+
+                    {typeof removeItem === 'function' ? (
+                      <button
+                        type='button'
+                        aria-label='Eliminar producto'
+                        onClick={() => removeItem(item.productId)}
+                        className='flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-neutral-dark/30 transition hover:bg-error-light hover:text-error'
+                      >
+                        <Icon name='bx-trash' className='text-sm' />
+                      </button>
+                    ) : null}
+                  </Box>
+
+                  {/* Fila 2 — solo mobile: cantidad a la izquierda, total a la derecha */}
+                  <Box className='mt-3 flex items-center justify-between sm:hidden'>
+                    <Box className='flex items-center gap-1'>
+                      <button
+                        type='button'
+                        aria-label='Reducir cantidad'
+                        onClick={() => updateQuantity(item.productId, Math.max(1, item.quantity - 1))}
+                        className='flex h-7 w-7 items-center justify-center rounded-full border border-neutral-gray/40 bg-white text-neutral-dark/70 transition hover:border-primary/30 hover:bg-primary/5 hover:text-primary'
+                      >
+                        <Icon name='bx-minus' className='text-xs' />
+                      </button>
+                      <span className='w-6 text-center text-sm font-semibold tabular-nums'>
+                        {item.quantity}
+                      </span>
+                      <button
+                        type='button'
+                        aria-label='Aumentar cantidad'
+                        onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                        disabled={item.maxStock !== undefined && item.quantity >= item.maxStock}
+                        className='flex h-7 w-7 items-center justify-center rounded-full border border-neutral-gray/40 bg-white text-neutral-dark/70 transition hover:border-primary/30 hover:bg-primary/5 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40'
+                      >
+                        <Icon name='bx-plus' className='text-xs' />
+                      </button>
+                    </Box>
+                    <Typography className='text-sm font-bold tabular-nums text-neutral-dark'>
                       {formatCurrencyCOP(item.price * item.quantity)}
                     </Typography>
                   </Box>
-
-                  {/* Controles de cantidad */}
-                  <Box className='flex items-center gap-1 sm:gap-2'>
-                    <button
-                      type='button'
-                      aria-label='Reducir cantidad'
-                      onClick={() => updateQuantity(item.productId, Math.max(1, item.quantity - 1))}
-                      className='flex h-6 w-6 items-center justify-center rounded-full border border-neutral-gray/40 bg-white text-neutral-dark/70 transition hover:border-primary/30 hover:bg-primary/5 hover:text-primary sm:h-7 sm:w-7'
-                    >
-                      <Icon name='bx-minus' className='text-[10px] sm:text-xs' />
-                    </button>
-                    <span className='w-5 text-center text-sm font-semibold tabular-nums sm:w-6'>
-                      {item.quantity}
-                    </span>
-                    <button
-                      type='button'
-                      aria-label='Aumentar cantidad'
-                      onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                      disabled={item.maxStock !== undefined && item.quantity >= item.maxStock}
-                      className='flex h-6 w-6 items-center justify-center rounded-full border border-neutral-gray/40 bg-white text-neutral-dark/70 transition hover:border-primary/30 hover:bg-primary/5 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 sm:h-7 sm:w-7'
-                    >
-                      <Icon name='bx-plus' className='text-[10px] sm:text-xs' />
-                    </button>
-                  </Box>
-
-                  {/* Total — oculto en mobile, visible en sm+ */}
-                  <Typography className='hidden w-24 text-right text-sm font-bold tabular-nums text-neutral-dark sm:block'>
-                    {formatCurrencyCOP(item.price * item.quantity)}
-                  </Typography>
-
-                  {/* Eliminar — siempre visible en mobile (no hay hover), hover-only en desktop */}
-                  {typeof removeItem === 'function' ? (
-                    <button
-                      type='button'
-                      aria-label='Eliminar producto'
-                      onClick={() => removeItem(item.productId)}
-                      className='flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-neutral-dark/30 transition hover:bg-error-light hover:text-error'
-                    >
-                      <Icon name='bx-trash' className='text-sm' />
-                    </button>
-                  ) : null}
                 </Box>
               ))
             )}
@@ -450,7 +479,7 @@ const CartPage = () => {
             <Box className='space-y-2 text-sm'>
               {items.map((item) => (
                 <Box key={item.productId} className='flex justify-between text-neutral-dark/70'>
-                  <span className='truncate pr-2'>{item.name} × {item.quantity}</span>
+                  <span className='min-w-0 flex-1 truncate pr-2'>{item.name} × {item.quantity}</span>
                   <span className='flex-shrink-0 tabular-nums'>{formatCurrencyCOP(item.price * item.quantity)}</span>
                 </Box>
               ))}
