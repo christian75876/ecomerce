@@ -216,7 +216,7 @@ const CartPage = () => {
       </Box>
 
       {!createdOrder && (
-      <Box className='grid gap-6 xl:grid-cols-[minmax(0,1fr)_400px]'>
+      <Box className='grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_400px]'>
         {/* Products */}
         <Box className='surface-elevated rounded-2xl p-4 sm:rounded-[1.75rem] sm:p-6'>
           <Typography variant='h2' className='text-base font-semibold sm:text-lg'>
