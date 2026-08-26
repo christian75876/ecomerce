@@ -378,13 +378,18 @@ export const OrdersManagementView = ({
                       className='flex w-full flex-col gap-1.5 px-4 py-3 text-left transition hover:bg-slate-50'
                       onClick={() => setExpandedId(isOpen ? null : order.id)}
                     >
-                      <div className='flex items-start gap-3'>
-                        <span className={`mt-1.5 h-2 w-2 flex-shrink-0 rounded-full ${cfg.dot}`} />
-                        <div className='flex min-w-0 flex-1 flex-wrap items-center gap-2'>
+                      <div className='flex min-w-0 items-start gap-2'>
+                        <span
+                          className={`mt-1.5 h-2 w-2 flex-shrink-0 rounded-full ${cfg.dot}`}
+                        />
+                        <div className='min-w-0 flex-1 flex flex-wrap items-center gap-2 overflow-hidden'>
+                          {' '}
                           <span className='font-semibold text-slate-800'>
                             #{order.id.slice(0, 8).toUpperCase()}
                           </span>
-                          <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${cfg.badge}`}>
+                          <span
+                            className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${cfg.badge}`}
+                          >
                             {cfg.label}
                           </span>
                           {order.deliveryMethod === 'DELIVERY' ? (
@@ -397,17 +402,29 @@ export const OrdersManagementView = ({
                             </span>
                           ) : null}
                         </div>
-                        <div className='flex-shrink-0 text-right'>
-                          <div className='text-sm font-bold text-slate-800'>{formatCurrencyCOP(order.total)}</div>
+                        <div className='w-auto max-w-[90px] flex-shrink-0 text-right sm:max-w-none'>
+                          {' '}
+                          <div className='text-sm font-bold text-slate-800'>
+                            {formatCurrencyCOP(order.total)}
+                          </div>
                           <div className='text-xs text-slate-400'>
-                            {new Date(order.createdAt).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })}
+                            {new Date(order.createdAt).toLocaleDateString(
+                              'es-CO',
+                              { day: '2-digit', month: 'short' }
+                            )}
                           </div>
                         </div>
-                        <i className={`bx ${isOpen ? 'bx-chevron-up' : 'bx-chevron-down'} mt-0.5 flex-shrink-0 text-lg text-slate-400`} aria-hidden='true' />
+                        <i
+                          className={`bx ${isOpen ? 'bx-chevron-up' : 'bx-chevron-down'} mt-0.5 flex-shrink-0 text-lg text-slate-400`}
+                          aria-hidden='true'
+                        />
                       </div>
 
-                      <div className='flex flex-wrap items-center gap-x-2 gap-y-0.5 pl-5 text-xs text-slate-500'>
-                        <span>{order.customer.firstName} {order.customer.lastName}</span>
+                      <div className='min-w-0 flex flex-wrap items-center gap-x-2 gap-y-0.5 pl-5 text-xs text-slate-500'>
+                        {' '}
+                        <span>
+                          {order.customer.firstName} {order.customer.lastName}
+                        </span>
                         <span className='text-slate-300'>·</span>
                         <span className='truncate'>{order.customer.email}</span>
                         {order.customer.phone ? (
@@ -417,7 +434,7 @@ export const OrdersManagementView = ({
                               href={`https://wa.me/${order.customer.phone.replace(/\D/g, '')}`}
                               target='_blank'
                               rel='noopener noreferrer'
-                              onClick={(e) => e.stopPropagation()}
+                              onClick={e => e.stopPropagation()}
                               className='inline-flex items-center gap-1 font-medium text-green-600 hover:text-green-700 hover:underline'
                             >
                               <i className='bx bxl-whatsapp text-sm' />
@@ -437,44 +454,78 @@ export const OrdersManagementView = ({
                             Productos ({order.items.length})
                           </p>
                           <Box className='overflow-x-auto'>
-                          <table className='w-full text-sm'>
-                            <tbody>
-                              {order.items.map((item) => (
-                                <tr key={item.id} className='border-b border-slate-100 last:border-0'>
-                                  <td className='py-2 pr-3'>
-                                    <div className='font-medium text-slate-700'>{item.product.name}</div>
-                                    <div className='text-xs text-slate-400'>{item.product.sku}</div>
+                            <table className='w-full text-sm'>
+                              <tbody>
+                                {order.items.map(item => (
+                                  <tr
+                                    key={item.id}
+                                    className='border-b border-slate-100 last:border-0'
+                                  >
+                                    <td className='py-2 pr-3'>
+                                      <div className='font-medium text-slate-700'>
+                                        {item.product.name}
+                                      </div>
+                                      <div className='text-xs text-slate-400'>
+                                        {item.product.sku}
+                                      </div>
+                                    </td>
+                                    <td className='py-2 text-center text-xs text-slate-500'>
+                                      × {item.quantity}
+                                    </td>
+                                    <td className='py-2 text-right text-xs text-slate-500'>
+                                      {formatCurrencyCOP(item.unitPrice)}
+                                    </td>
+                                    <td className='py-2 pl-3 text-right font-semibold text-slate-700'>
+                                      {formatCurrencyCOP(item.lineTotal)}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                              <tfoot>
+                                <tr>
+                                  <td
+                                    colSpan={3}
+                                    className='pt-2 text-right text-xs font-semibold text-slate-500'
+                                  >
+                                    Total
                                   </td>
-                                  <td className='py-2 text-center text-xs text-slate-500'>× {item.quantity}</td>
-                                  <td className='py-2 text-right text-xs text-slate-500'>{formatCurrencyCOP(item.unitPrice)}</td>
-                                  <td className='py-2 pl-3 text-right font-semibold text-slate-700'>{formatCurrencyCOP(item.lineTotal)}</td>
+                                  <td className='pt-2 pl-3 text-right font-bold text-slate-800'>
+                                    {formatCurrencyCOP(order.total)}
+                                  </td>
                                 </tr>
-                              ))}
-                            </tbody>
-                            <tfoot>
-                              <tr>
-                                <td colSpan={3} className='pt-2 text-right text-xs font-semibold text-slate-500'>Total</td>
-                                <td className='pt-2 pl-3 text-right font-bold text-slate-800'>{formatCurrencyCOP(order.total)}</td>
-                              </tr>
-                            </tfoot>
-                          </table>
+                              </tfoot>
+                            </table>
                           </Box>
                         </Box>
 
                         {/* Delivery info */}
-                        {order.deliveryMethod === 'DELIVERY' && order.deliveryAddress ? (
+                        {order.deliveryMethod === 'DELIVERY' &&
+                        order.deliveryAddress ? (
                           <Box>
                             <p className='mb-2 text-xs font-bold uppercase tracking-wide text-slate-400'>
                               Dirección de entrega
                             </p>
                             <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm'>
                               <div className='flex items-start gap-2'>
-                                <i className='bx bx-map-pin mt-0.5 flex-shrink-0 text-primary' aria-hidden='true' />
+                                <i
+                                  className='bx bx-map-pin mt-0.5 flex-shrink-0 text-primary'
+                                  aria-hidden='true'
+                                />
                                 <div>
-                                  <span className='font-medium text-slate-700'>{order.deliveryAddress}</span>
-                                  {(order.deliveryCity || order.deliveryDepartment) ? (
+                                  <span className='font-medium text-slate-700'>
+                                    {order.deliveryAddress}
+                                  </span>
+                                  {order.deliveryCity ||
+                                  order.deliveryDepartment ? (
                                     <span className='text-slate-500'>
-                                      {' '}— {[order.deliveryCity, order.deliveryDepartment].filter(Boolean).join(', ')}
+                                      {' '}
+                                      —{' '}
+                                      {[
+                                        order.deliveryCity,
+                                        order.deliveryDepartment
+                                      ]
+                                        .filter(Boolean)
+                                        .join(', ')}
                                     </span>
                                   ) : null}
                                   {order.deliveryNotes ? (
@@ -489,9 +540,15 @@ export const OrdersManagementView = ({
 
                             {/* Delivery map */}
                             {order.deliveryLat && order.deliveryLng ? (
-                              <Box className='mt-2 overflow-hidden rounded-xl border border-slate-200' style={{ height: 180 }}>
+                              <Box
+                                className='mt-2 overflow-hidden rounded-xl border border-slate-200'
+                                style={{ height: 180 }}
+                              >
                                 <MapContainer
-                                  center={[order.deliveryLat, order.deliveryLng]}
+                                  center={[
+                                    order.deliveryLat,
+                                    order.deliveryLng
+                                  ]}
                                   zoom={15}
                                   style={{ height: '100%', width: '100%' }}
                                   scrollWheelZoom={false}
@@ -501,7 +558,12 @@ export const OrdersManagementView = ({
                                     url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
                                     attribution='&copy; OpenStreetMap'
                                   />
-                                  <Marker position={[order.deliveryLat, order.deliveryLng]} />
+                                  <Marker
+                                    position={[
+                                      order.deliveryLat,
+                                      order.deliveryLng
+                                    ]}
+                                  />
                                 </MapContainer>
                               </Box>
                             ) : null}
@@ -514,22 +576,35 @@ export const OrdersManagementView = ({
                             <p className='text-xs font-bold uppercase tracking-wide text-emerald-600'>
                               Pago confirmado
                             </p>
-                            {(order.paymentMethodType || order.paymentReference) && (
+                            {(order.paymentMethodType ||
+                              order.paymentReference) && (
                               <p className='text-sm text-emerald-800'>
-                                {order.paymentMethodType && <span className='font-medium'>{order.paymentMethodType}</span>}
-                                {order.paymentMethodType && order.paymentReference && ' — '}
+                                {order.paymentMethodType && (
+                                  <span className='font-medium'>
+                                    {order.paymentMethodType}
+                                  </span>
+                                )}
+                                {order.paymentMethodType &&
+                                  order.paymentReference &&
+                                  ' — '}
                                 {order.paymentReference}
                               </p>
                             )}
                             {order.paymentEvidenceImagePath && (
                               <a
-                                href={resolveEvidenceUrl(order.paymentEvidenceImagePath!, BASE_URL)}
+                                href={resolveEvidenceUrl(
+                                  order.paymentEvidenceImagePath!,
+                                  BASE_URL
+                                )}
                                 target='_blank'
                                 rel='noopener noreferrer'
                                 className='mt-1 block overflow-hidden rounded-lg border border-emerald-200'
                               >
                                 <img
-                                  src={resolveEvidenceUrl(order.paymentEvidenceImagePath!, BASE_URL)}
+                                  src={resolveEvidenceUrl(
+                                    order.paymentEvidenceImagePath!,
+                                    BASE_URL
+                                  )}
                                   alt='Comprobante'
                                   className='max-h-48 w-full object-contain bg-white'
                                 />
@@ -547,22 +622,35 @@ export const OrdersManagementView = ({
                             <p className='text-xs font-bold uppercase tracking-wide text-blue-600'>
                               Comprobante enviado — pendiente de verificación
                             </p>
-                            {(order.paymentMethodType || order.paymentReference) && (
+                            {(order.paymentMethodType ||
+                              order.paymentReference) && (
                               <p className='text-sm text-blue-800'>
-                                {order.paymentMethodType && <span className='font-medium'>{order.paymentMethodType}</span>}
-                                {order.paymentMethodType && order.paymentReference && ' — '}
+                                {order.paymentMethodType && (
+                                  <span className='font-medium'>
+                                    {order.paymentMethodType}
+                                  </span>
+                                )}
+                                {order.paymentMethodType &&
+                                  order.paymentReference &&
+                                  ' — '}
                                 {order.paymentReference}
                               </p>
                             )}
                             {order.paymentEvidenceImagePath && (
                               <a
-                                href={resolveEvidenceUrl(order.paymentEvidenceImagePath!, BASE_URL)}
+                                href={resolveEvidenceUrl(
+                                  order.paymentEvidenceImagePath!,
+                                  BASE_URL
+                                )}
                                 target='_blank'
                                 rel='noopener noreferrer'
                                 className='mt-1 block overflow-hidden rounded-lg border border-blue-200'
                               >
                                 <img
-                                  src={resolveEvidenceUrl(order.paymentEvidenceImagePath!, BASE_URL)}
+                                  src={resolveEvidenceUrl(
+                                    order.paymentEvidenceImagePath!,
+                                    BASE_URL
+                                  )}
                                   alt='Comprobante'
                                   className='max-h-48 w-full object-contain bg-white'
                                 />
@@ -586,7 +674,9 @@ export const OrdersManagementView = ({
                               Sin comprobante de pago
                             </p>
                             <p className='text-xs text-amber-700'>
-                              El cliente aún no ha enviado comprobante. El pedido se cancelará automáticamente a los 5 días si no hay pago.
+                              El cliente aún no ha enviado comprobante. El
+                              pedido se cancelará automáticamente a los 5 días
+                              si no hay pago.
                             </p>
                             {onConfirmPayment && (
                               <button
@@ -605,18 +695,34 @@ export const OrdersManagementView = ({
                         {/* Status change */}
                         <Box className='flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3'>
                           <Box className='flex items-center gap-3'>
-                            <p className='flex-shrink-0 text-xs font-bold uppercase tracking-wide text-slate-400'>Estado</p>
+                            <p className='flex-shrink-0 text-xs font-bold uppercase tracking-wide text-slate-400'>
+                              Estado
+                            </p>
                             <Box className='w-40 flex-shrink-0 sm:w-48'>
                               <SelectDropdown
                                 value={order.status}
                                 options={getStatusOptions(order.status)}
-                                disabled={order.status === 'DELIVERED' || order.status === 'CANCELLED'}
-                                onChange={(v) => { if (v && v !== order.status) void onStatusChange(order.id, v as (typeof ORDER_STATUSES)[number]); }}
+                                disabled={
+                                  order.status === 'DELIVERED' ||
+                                  order.status === 'CANCELLED'
+                                }
+                                onChange={v => {
+                                  if (v && v !== order.status)
+                                    void onStatusChange(
+                                      order.id,
+                                      v as (typeof ORDER_STATUSES)[number]
+                                    );
+                                }}
                               />
                             </Box>
                           </Box>
                           <span className='text-xs text-slate-400'>
-                            Actualizado: {new Date(order.updatedAt).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Bogota' })}
+                            Actualizado:{' '}
+                            {new Date(order.updatedAt).toLocaleString('es-CO', {
+                              dateStyle: 'short',
+                              timeStyle: 'short',
+                              timeZone: 'America/Bogota'
+                            })}
                           </span>
                         </Box>
                       </Box>
