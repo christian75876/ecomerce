@@ -26,7 +26,7 @@ export class SalesRepository {
     if (params.limit)        query.set('limit',         String(params.limit));
     const qs = query.toString();
     return ErrorHandler.handleApiErrors(() =>
-      authenticatedClientHTTP.get<ISalesHistoryResp>(`/sales${qs ? `?${qs}` : ''}`),
+      authenticatedClientHTTP.get<ISalesHistoryResp>(`/sales/unified-history${qs ? `?${qs}` : ''}`),
     );
   }
 

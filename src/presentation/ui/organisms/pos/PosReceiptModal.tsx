@@ -9,6 +9,12 @@ interface Props {
   onClose: () => void;
 }
 
+function paymentMethodLabel(sale: ISale): string {
+  if (sale.paymentMethod === 'CASH') return 'Efectivo';
+  if (sale.paymentMethod === 'CREDIT') return 'Crédito';
+  return sale.paymentMethodLabel ?? 'Pago en línea';
+}
+
 function buildWhatsAppText(sale: ISale, guest?: PosGuestInfo): string {
   const clientName = sale.customer
     ? `${sale.customer.firstName} ${sale.customer.lastName}`
@@ -26,7 +32,7 @@ function buildWhatsAppText(sale: ISale, guest?: PosGuestInfo): string {
     ),
     `---`,
     `💰 *Total: ${formatCurrencyCOP(sale.total)}*`,
-    `Método: ${sale.paymentMethod === 'CASH' ? 'Efectivo' : 'Crédito'}`,
+    `Método: ${paymentMethodLabel(sale)}`,
     clientName ? `👤 Cliente: ${clientName}` : '',
     guest?.doc ? `📄 Documento: ${guest.docType} ${guest.doc}` : '',
     guest?.phone ? `📱 Tel: ${guest.phone}` : '',
@@ -115,7 +121,7 @@ export const PosReceiptModal = ({ sale, guestInfo, onClose }: Props) => {
             </div>
             <div className='mt-1 flex justify-between text-xs text-slate-500'>
               <span>Método de pago</span>
-              <span>{sale.paymentMethod === 'CASH' ? 'Efectivo' : 'Crédito'}</span>
+              <span>{paymentMethodLabel(sale)}</span>
             </div>
 
             {(sale.customer || guestInfo?.name || guestInfo?.phone || guestInfo?.doc) && (

@@ -26,7 +26,7 @@ const ORDERS_PER_PAGE = 20;
 
 export const useOrdersManagement = () => {
   const { selectedStoreId: contextStoreId } = useAdminStore();
-  const { notifications } = useOrderNotifications();
+  const { notifications, markRead } = useOrderNotifications();
   const [customers, setCustomers] = useState<ICustomer[]>([]);
   const [products, setProducts] = useState<IProduct[]>([]);
   const [orders, setOrders] = useState<IOrder[]>([]);
@@ -210,6 +210,7 @@ export const useOrdersManagement = () => {
     setError(null);
     try {
       await OrdersRepository.updateOrderStatus(orderId, { status });
+      markRead(orderId);
       await loadScreen();
       return true;
     } catch (err) {
@@ -235,6 +236,7 @@ export const useOrdersManagement = () => {
     try {
       const resp = await OrdersRepository.confirmPayment(orderId);
       setOrders((prev) => prev.map((o) => (o.id === orderId ? resp.data : o)));
+      markRead(orderId);
       return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo confirmar el pago');

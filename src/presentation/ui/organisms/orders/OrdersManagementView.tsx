@@ -432,6 +432,7 @@ export const OrdersManagementView = ({
                           <p className='mb-2 text-xs font-bold uppercase tracking-wide text-slate-400'>
                             Productos ({order.items.length})
                           </p>
+                          <Box className='overflow-x-auto'>
                           <table className='w-full text-sm'>
                             <tbody>
                               {order.items.map((item) => (
@@ -453,6 +454,7 @@ export const OrdersManagementView = ({
                               </tr>
                             </tfoot>
                           </table>
+                          </Box>
                         </Box>
 
                         {/* Delivery info */}
@@ -597,14 +599,18 @@ export const OrdersManagementView = ({
                         ) : null}
 
                         {/* Status change */}
-                        <Box className='flex items-center gap-3'>
-                          <p className='text-xs font-bold uppercase tracking-wide text-slate-400'>Estado</p>
-                          <SelectDropdown
-                            value={order.status}
-                            options={getStatusOptions(order.status)}
-                            disabled={order.status === 'DELIVERED' || order.status === 'CANCELLED'}
-                            onChange={(v) => { if (v && v !== order.status) void onStatusChange(order.id, v as (typeof ORDER_STATUSES)[number]); }}
-                          />
+                        <Box className='flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3'>
+                          <Box className='flex items-center gap-3'>
+                            <p className='flex-shrink-0 text-xs font-bold uppercase tracking-wide text-slate-400'>Estado</p>
+                            <Box className='w-40 flex-shrink-0 sm:w-48'>
+                              <SelectDropdown
+                                value={order.status}
+                                options={getStatusOptions(order.status)}
+                                disabled={order.status === 'DELIVERED' || order.status === 'CANCELLED'}
+                                onChange={(v) => { if (v && v !== order.status) void onStatusChange(order.id, v as (typeof ORDER_STATUSES)[number]); }}
+                              />
+                            </Box>
+                          </Box>
                           <span className='text-xs text-slate-400'>
                             Actualizado: {new Date(order.updatedAt).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Bogota' })}
                           </span>

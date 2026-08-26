@@ -2,7 +2,11 @@ import { IApiResponse, IFlatPaginatedData } from '@/application/dtos/common/Http
 
 export interface ISale {
   id: string;
-  paymentMethod: 'CASH' | 'CREDIT';
+  /** Ausente o 'POS' para ventas de caja (siempre así antes de esta versión); 'ONLINE' para pedidos pagados de la tienda en línea. */
+  source?: 'POS' | 'ONLINE';
+  paymentMethod: 'CASH' | 'CREDIT' | null;
+  /** Método de pago en texto libre para ventas ONLINE (Nequi, Bancolombia…), donde paymentMethod no aplica. */
+  paymentMethodLabel?: string | null;
   customerId: string | null;
   storeId: string | null;
   cashSessionId: string | null;

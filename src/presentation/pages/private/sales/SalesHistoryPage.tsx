@@ -16,6 +16,12 @@ function clientName(sale: ISale): string {
   return 'Sin nombre';
 }
 
+function paymentMethodLabel(sale: ISale): string {
+  if (sale.paymentMethod === 'CASH') return 'Efectivo';
+  if (sale.paymentMethod === 'CREDIT') return 'Crédito';
+  return sale.paymentMethodLabel ?? 'Pago en línea';
+}
+
 function buildWhatsAppUrl(sale: ISale): string {
   const guest = saleToGuestInfo(sale);
   const name = clientName(sale);
@@ -28,7 +34,7 @@ function buildWhatsAppUrl(sale: ISale): string {
     ...sale.items.map((i) => `• ${i.product.name} ×${i.quantity} = ${formatCurrencyCOP(i.lineTotal)}`),
     `---`,
     `💰 *Total: ${formatCurrencyCOP(sale.total)}*`,
-    `Método: ${sale.paymentMethod === 'CASH' ? 'Efectivo' : 'Crédito'}`,
+    `Método: ${paymentMethodLabel(sale)}`,
     name !== 'Sin nombre' ? `👤 ${name}` : '',
     guest?.doc ? `📄 ${guest.docType} ${guest.doc}` : '',
     guest?.phone ? `📱 ${guest.phone}` : '',
@@ -62,14 +68,33 @@ function DeliveryBadge({ type }: { type: string | null | undefined }) {
   return null;
 }
 
-function PaymentBadge({ method }: { method: string }) {
-  return method === 'CREDIT' ? (
-    <span className='rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-semibold text-violet-600'>
-      Crédito
+function PaymentBadge({ sale }: { sale: ISale }) {
+  if (sale.paymentMethod === 'CREDIT') {
+    return (
+      <span className='rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-semibold text-violet-600'>
+        Crédito
+      </span>
+    );
+  }
+  if (sale.paymentMethod === 'CASH') {
+    return (
+      <span className='rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500'>
+        Efectivo
+      </span>
+    );
+  }
+  return (
+    <span className='rounded-full bg-cyan-50 px-2 py-0.5 text-[10px] font-semibold text-cyan-700'>
+      {paymentMethodLabel(sale)}
     </span>
-  ) : (
-    <span className='rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500'>
-      Efectivo
+  );
+}
+
+function SourceBadge({ source }: { source: ISale['source'] }) {
+  if (source !== 'ONLINE') return null;
+  return (
+    <span className='inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary'>
+      <i className='bx bx-globe text-xs' /> En línea
     </span>
   );
 }
@@ -99,7 +124,8 @@ function SaleCard({
             <span className='font-mono text-xs font-bold text-slate-400'>
               #{sale.id.slice(0, 8).toUpperCase()}
             </span>
-            <PaymentBadge method={sale.paymentMethod} />
+            <SourceBadge source={sale.source} />
+            <PaymentBadge sale={sale} />
             <DeliveryBadge type={sale.deliveryType} />
           </div>
           <p className='mt-1.5 truncate text-sm font-semibold text-slate-800'>{clientName(sale)}</p>
@@ -138,9 +164,12 @@ function SaleDetail({
       {/* Header */}
       <div className='flex items-start justify-between border-b border-slate-100 px-5 py-4'>
         <div>
-          <p className='font-mono text-xs font-bold text-slate-400'>
-            #{sale.id.slice(0, 8).toUpperCase()}
-          </p>
+          <div className='flex items-center gap-1.5'>
+            <p className='font-mono text-xs font-bold text-slate-400'>
+              #{sale.id.slice(0, 8).toUpperCase()}
+            </p>
+            <SourceBadge source={sale.source} />
+          </div>
           <p className='mt-0.5 text-sm font-semibold text-slate-700'>
             {sale.store?.name ?? 'Venta POS'}
           </p>
@@ -191,7 +220,7 @@ function SaleDetail({
               </div>
               <div className='mt-1 flex items-center justify-between text-xs text-slate-500'>
                 <span>Método de pago</span>
-                <PaymentBadge method={sale.paymentMethod} />
+                <PaymentBadge sale={sale} />
               </div>
             </div>
           </div>
