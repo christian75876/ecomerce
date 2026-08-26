@@ -46,7 +46,12 @@ registerRoute(
 );
 
 registerRoute(
-  ({ url }) => url.pathname.startsWith('/api/'),
+  // El SSE de notificaciones (/api/notifications/stream) es una conexión que
+  // se queda abierta a propósito — NetworkFirst intenta clonar y cachear el
+  // cuerpo completo de la respuesta, lo cual nunca "termina" en un stream, y
+  // eso rompe la entrega de eventos posteriores al primero. Se excluye para
+  // que el navegador maneje ese fetch directamente, sin pasar por el SW.
+  ({ url }) => url.pathname.startsWith('/api/') && !url.pathname.startsWith('/api/notifications/stream'),
   new NetworkFirst({
     cacheName: 'api-cache',
     networkTimeoutSeconds: 8,
