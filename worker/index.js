@@ -45,6 +45,21 @@ export default {
       return Response.redirect(url.toString(), 301);
     }
 
+    // El sitemap real vive en el backend (sus <loc> ya apuntan a merku.co) y
+    // robots.txt lo declara ahí — pero /sitemap.xml en el dominio principal
+    // caía en el catch-all de la SPA, devolviendo el HTML del index en vez del
+    // XML: cualquier herramienta o crawler que lo pida directo en este dominio
+    // (en vez de seguir robots.txt) recibía contenido inválido.
+    if (url.pathname === '/sitemap.xml') {
+      const res = await fetch(`${API_URL}/sitemap.xml`);
+      if (res.ok) {
+        return new Response(res.body, {
+          status: 200,
+          headers: { 'Content-Type': 'application/xml; charset=utf-8' },
+        });
+      }
+    }
+
     const userAgent = request.headers.get('user-agent') ?? '';
     if (BOT_UA.test(userAgent)) {
       const productMatch = url.pathname.match(/^\/product\/([^/]+)$/);
