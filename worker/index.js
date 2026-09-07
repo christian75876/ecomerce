@@ -19,6 +19,26 @@ const BOT_UA =
 const CANONICAL_HOST = 'merku.co';
 const API_URL = 'https://api.merku.co';
 
+// Rutas estáticas cuyo <link rel="canonical"> en el index.html servido es
+// SIEMPRE "https://merku.co/" (viene fijo del build, VITE_APP_URL + "/") —
+// cada página lo corrige del lado del cliente con react-helmet-async, pero
+// eso depende de que el renderizador de Google ejecute el JS y capture el
+// DOM ya actualizado antes de tomar la señal de canonical. Cuando no coincide
+// con el HTML crudo, Search Console reporta "Página alternativa con etiqueta
+// canónica adecuada" (deja de indexar la página porque cree que su versión
+// canónica es la raíz) — y como "/" a su vez redirige de vuelta a "/home",
+// eso también se vio como Soft 404 para "/" y "www./". Se corrige el href
+// directo en el HTML de respuesta, sin depender de que el JS llegue a correr.
+const STATIC_CANONICAL_PATHS = new Set([
+  '/bienvenida',
+  '/home',
+  '/stores',
+  '/stores/map',
+  '/ayuda',
+  '/terminos',
+  '/privacidad',
+]);
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -74,7 +94,23 @@ export default {
       }
     }
 
-    return env.ASSETS.fetch(request);
+    const response = await env.ASSETS.fetch(request);
+
+    if (
+      STATIC_CANONICAL_PATHS.has(url.pathname) &&
+      (response.headers.get('content-type') ?? '').includes('text/html')
+    ) {
+      const canonicalUrl = `https://${CANONICAL_HOST}${url.pathname}`;
+      return new HTMLRewriter()
+        .on('link[rel="canonical"]', {
+          element(el) {
+            el.setAttribute('href', canonicalUrl);
+          },
+        })
+        .transform(response);
+    }
+
+    return response;
   },
 };
 
