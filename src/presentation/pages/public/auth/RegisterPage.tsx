@@ -105,7 +105,9 @@ const RegisterPage = () => {
           ...res.data.user,
           customer: customer ? { ...customer, phone: customer.phone ?? null } : null,
         });
-        navigate(ROUTES.PUBLIC.HOME);
+        // Esta invitación es para vendedores — nunca debe caer en el
+        // marketplace de comprador (home/catálogo), sino directo a su panel.
+        navigate(ROUTES.PRIVATE.DASHBOARD);
         return;
       }
 

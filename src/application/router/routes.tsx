@@ -151,49 +151,50 @@ export const routes: AppRoute[] = [
     layout: DashboardLayout,
     publicOnly: false
   },
+  // Marketplace de comprador: a propósito SIN publicOnly:false — deben pasar
+  // por PublicRoute para que un admin/seller autenticado sea redirigido a su
+  // dashboard en vez de quedarse viendo (con su propio AdminSidebar, ya que
+  // DashboardLayout elige el chrome por rol, no por ruta) la vista de
+  // comprador. Anónimos y customers siguen entrando normal — PublicRoute
+  // solo redirige cuando canAccessAdminPanel() es true.
   {
     path: ROUTES.PUBLIC.HOME,
     element: <HomePage />,
     layout: DashboardLayout,
     hasGradient: true,
-    publicOnly: false
   },
   {
     path: ROUTES.PUBLIC.CART,
     element: <CartPage />,
     layout: DashboardLayout,
-    publicOnly: false
   },
   {
     path: ROUTES.PUBLIC.STORES,
     element: <StoresPage />,
     layout: DashboardLayout,
-    publicOnly: false
   },
   {
     path: ROUTES.PUBLIC.STORE_MAP,
     element: <StoreMapPage />,
     layout: DashboardLayout,
-    publicOnly: false
   },
   {
     path: ROUTES.PUBLIC.STORE_DETAILS,
     element: <StoreDetailPage />,
     layout: DashboardLayout,
-    publicOnly: false
   },
   {
     path: ROUTES.PUBLIC.FAVORITES,
     element: <FavoritesPage />,
     layout: DashboardLayout,
-    publicOnly: false
   },
   {
     path: ROUTES.PUBLIC.MY_ORDERS,
     element: <MyOrdersPage />,
     layout: DashboardLayout,
-    publicOnly: false
   },
+  // Mi Perfil sí es universal (todos los roles lo usan, con secciones según
+  // rol), por eso mantiene publicOnly:false.
   {
     path: ROUTES.PRIVATE.PROFILE,
     element: <ProfilePage />,
@@ -204,13 +205,11 @@ export const routes: AppRoute[] = [
     path: ROUTES.PUBLIC.MY_ORDER_DETAILS,
     element: <MyOrdersPage />,
     layout: DashboardLayout,
-    publicOnly: false
   },
   {
     path: ROUTES.PUBLIC.PRODUCT_DETAILS,
     element: <ProductDetailPage />,
     layout: DashboardLayout,
-    publicOnly: false
   },
 
   {
