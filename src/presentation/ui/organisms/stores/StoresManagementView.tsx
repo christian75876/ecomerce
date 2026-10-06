@@ -773,7 +773,7 @@ export const StoresManagementView = ({
                   />
                 </Box>
 
-                <Box className='grid gap-4 sm:grid-cols-3'>
+                <Box className='grid gap-4 sm:grid-cols-2'>
                   <Box>
                     <Label htmlFor='store-phone'>Teléfono</Label>
                     <Input
@@ -781,16 +781,6 @@ export const StoresManagementView = ({
                       value={form.phone}
                       onChange={(e) => onFormChange('phone', e.target.value)}
                       disabled={submitting}
-                    />
-                  </Box>
-                  <Box>
-                    <Label htmlFor='store-whatsapp'>WhatsApp</Label>
-                    <Input
-                      id='store-whatsapp'
-                      value={form.whatsappNumber}
-                      onChange={(e) => onFormChange('whatsappNumber', e.target.value)}
-                      disabled={submitting}
-                      placeholder='573001234567'
                     />
                   </Box>
                   <Box>

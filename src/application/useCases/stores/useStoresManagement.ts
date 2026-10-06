@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
 import { StoresRepository } from '@/infrastructure/repositories/api/stores/StoresRepository';
 import { getAuthenticatedRole } from '@/shared/utils/checkIsUserAuthenticated.util';
+import { useAdminStore } from '@/shared/contexts/AdminStoreContext';
 
 export type StoreFormState = {
   name: string;
@@ -18,8 +19,9 @@ export type StoreFormState = {
   buttonStyle: 'ROUNDED' | 'SHARP' | 'PILL';
   layoutStyle: 'GRID' | 'LIST';
   coverStyle: 'GRADIENT' | 'SOLID' | 'MINIMAL';
+  // whatsappNumber vive solo en Mi Perfil (junto al API key de CallMeBot) —
+  // editarlo también aquí duplicaba la UI para el mismo campo del backend.
   phone: string;
-  whatsappNumber: string;
   email: string;
   isActive: boolean;
   isAdultContent: boolean;
@@ -50,7 +52,6 @@ const initialStoreForm: StoreFormState = {
   layoutStyle: 'GRID',
   coverStyle: 'GRADIENT',
   phone: '',
-  whatsappNumber: '',
   email: '',
   isActive: true,
   isAdultContent: false,
@@ -75,7 +76,6 @@ function storeToForm(store: IStore): StoreFormState {
     primaryColor: store.primaryColor ?? '#6366f1',
     secondaryColor: store.secondaryColor ?? '#a5b4fc',
     phone: store.phone ?? '',
-    whatsappNumber: store.whatsappNumber ?? '',
     email: store.email ?? '',
     isActive: store.isActive,
     isAdultContent: store.isAdultContent ?? false,
@@ -102,6 +102,7 @@ function storeToForm(store: IStore): StoreFormState {
 
 export const useStoresManagement = () => {
   const isSeller = getAuthenticatedRole() === 'seller';
+  const { selectedStoreId, setSelectedStoreId } = useAdminStore();
   const [stores, setStores] = useState<IStore[]>([]);
   const [form, setForm] = useState<StoreFormState>(initialStoreForm);
   const [savedForm, setSavedForm] = useState<StoreFormState>(initialStoreForm);
@@ -138,6 +139,28 @@ export const useStoresManagement = () => {
     void loadStores();
   }, []);
 
+  // Un admin gestiona muchas tiendas — la tienda elegida en el selector del
+  // sidebar (useAdminStore) y la que se está editando aquí deben ser la
+  // misma, para no mostrar el formulario de "Nueva tienda" vacío mientras el
+  // sidebar ya muestra una tienda específica seleccionada. Los sellers no
+  // usan ese selector (solo tienen su propia tienda, ya precargada arriba).
+  useEffect(() => {
+    if (isSeller) return;
+    if (!selectedStoreId) {
+      setForm(initialStoreForm);
+      setSavedForm(initialStoreForm);
+      setEditingId(null);
+      return;
+    }
+    const match = stores.find((s) => s.id === selectedStoreId);
+    if (!match || match.id === editingId) return;
+    const f = storeToForm(match);
+    setEditingId(match.id);
+    setForm(f);
+    setSavedForm(f);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStoreId, stores, isSeller]);
+
   const updateForm = <K extends keyof StoreFormState>(
     key: K,
     value: StoreFormState[K],
@@ -169,7 +192,6 @@ export const useStoresManagement = () => {
         primaryColor: form.primaryColor.trim() || undefined,
         secondaryColor: form.secondaryColor.trim() || undefined,
         phone: form.phone.trim() || undefined,
-        whatsappNumber: form.whatsappNumber.trim() || undefined,
         email: form.email.trim() || undefined,
         isActive: form.isActive,
         isAdultContent: form.isAdultContent,
@@ -214,6 +236,7 @@ export const useStoresManagement = () => {
     setEditingId(store.id);
     setForm(f);
     setSavedForm(f);
+    if (!isSeller) setSelectedStoreId(store.id);
   };
 
   const toggleActive = async (store: IStore) => {
