@@ -5,8 +5,10 @@ import { ISupplier } from '@/application/dtos/suppliers/response/SupplierRespons
 import { CategoriesRepository } from '@/infrastructure/repositories/api/categories/CategoriesRepository';
 import { StoresRepository } from '@/infrastructure/repositories/api/stores/StoresRepository';
 import { SuppliersRepository } from '@/infrastructure/repositories/api/suppliers/SuppliersRepository';
+import { getAuthenticatedRole } from '@/shared/utils/checkIsUserAuthenticated.util';
 
 export const usePurchaseReferenceData = () => {
+  const isSeller = getAuthenticatedRole() === 'seller';
   const [suppliers, setSuppliers] = useState<ISupplier[]>([]);
   const [stores, setStores] = useState<IStore[]>([]);
   const [categories, setCategories] = useState<ICategory[]>([]);
@@ -21,8 +23,8 @@ export const usePurchaseReferenceData = () => {
       const [suppliersResponse, storesResponse, categoriesResponse] =
         await Promise.all([
           SuppliersRepository.getSuppliers(),
-          StoresRepository.getStores(),
-          CategoriesRepository.getCategories(true),
+          isSeller ? StoresRepository.getMyStores() : StoresRepository.getStores(),
+          CategoriesRepository.getMyCategories(true),
         ]);
 
       setSuppliers(suppliersResponse.data.items.filter((item) => item.isActive));
@@ -42,6 +44,7 @@ export const usePurchaseReferenceData = () => {
   };
 
   return {
+    isSeller,
     suppliers,
     stores,
     categories,

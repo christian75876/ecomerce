@@ -33,6 +33,7 @@ export const usePurchaseRegistrationSection = () => {
   const purchases = usePurchasesModule();
 
   return {
+    isSeller: purchases.isSeller,
     stores: purchases.stores,
     supplierId: purchases.supplierId,
     selectedSupplierOption: purchases.selectedSupplierOption,

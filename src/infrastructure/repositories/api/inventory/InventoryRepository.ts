@@ -22,8 +22,11 @@ export class InventoryRepository {
     );
   }
 
-  static async getMovements(productId?: string): Promise<IInventoryMovementsResp> {
-    const suffix = productId ? `?productId=${productId}` : '';
+  static async getMovements(productId?: string, storeId?: string): Promise<IInventoryMovementsResp> {
+    const params = new URLSearchParams();
+    if (productId) params.set('productId', productId);
+    if (storeId) params.set('storeId', storeId);
+    const suffix = params.toString() ? `?${params.toString()}` : '';
 
     return ErrorHandler.handleApiErrors(() =>
       authenticatedClientHTTP.get<IInventoryMovementsResp>(`/inventory/movements${suffix}`),

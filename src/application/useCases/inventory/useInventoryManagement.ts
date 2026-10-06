@@ -51,10 +51,10 @@ export const useInventoryManagement = () => {
         expiringResponse,
       ] =
         await Promise.all([
-          ProductRepository.getProducts(),
+          ProductRepository.getMyProducts(),
           SuppliersRepository.getSuppliers(),
           InventoryRepository.getInventory(contextStoreId),
-          InventoryRepository.getMovements(),
+          InventoryRepository.getMovements(undefined, contextStoreId),
           InventoryRepository.getBatches({ storeId: contextStoreId }),
           InventoryRepository.getExpiring(30, contextStoreId),
         ]);

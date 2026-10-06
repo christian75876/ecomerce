@@ -12,6 +12,7 @@ import PurchaseItemCard from './PurchaseItemCard';
 
 const PurchaseRegistrationForm = () => {
   const {
+    isSeller,
     stores,
     supplierId,
     selectedSupplierOption,
@@ -76,16 +77,23 @@ const PurchaseRegistrationForm = () => {
           />
         </Box>
 
-        <Box>
-          <Label>Tienda</Label>
-          <SelectDropdown
-            value={storeId}
-            options={stores.map((s) => ({ value: s.id, label: s.name }))}
-            placeholder='Selecciona tienda'
-            disabled={submitting}
-            onChange={(v) => setStoreId(v)}
-          />
-        </Box>
+        {!isSeller ? (
+          <Box>
+            <Label>Tienda</Label>
+            <SelectDropdown
+              value={storeId}
+              options={stores.map((s) => ({ value: s.id, label: s.name }))}
+              placeholder='Selecciona tienda'
+              disabled={submitting}
+              onChange={(v) => setStoreId(v)}
+            />
+          </Box>
+        ) : (
+          <Box className='rounded-xl border border-neutral-gray/20 bg-background px-4 py-3 text-sm text-neutral-dark'>
+            <span className='text-neutral-dark/55'>Tienda: </span>
+            {stores[0]?.name ?? '—'}
+          </Box>
+        )}
 
         <Box className='grid gap-4 md:grid-cols-2'>
           <Box>

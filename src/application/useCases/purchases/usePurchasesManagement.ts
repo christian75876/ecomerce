@@ -35,7 +35,17 @@ export const usePurchasesManagement = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Un seller nunca elige tienda manualmente — se asigna automáticamente a
+  // la suya en cuanto carga (igual que en productos/inventario).
+  useEffect(() => {
+    if (referenceData.isSeller && referenceData.stores.length > 0 && !registration.storeId) {
+      registration.setStoreId(referenceData.stores[0].id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [referenceData.isSeller, referenceData.stores]);
+
   return {
+    isSeller: referenceData.isSeller,
     purchases: collection.purchases,
     suppliers: referenceData.suppliers,
     stores: referenceData.stores,

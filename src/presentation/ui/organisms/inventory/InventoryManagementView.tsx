@@ -58,7 +58,7 @@ const QuickCreateProductModal = ({
       setDataLoading(true);
       try {
         const [catResp, storeResp] = await Promise.all([
-          CategoriesRepository.getCategories(true),
+          CategoriesRepository.getMyCategories(true),
           isSeller
             ? StoresRepository.getMyStores()
             : StoresRepository.getStores({ active: true }),
