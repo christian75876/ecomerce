@@ -86,7 +86,15 @@ const CartPage = () => {
     setCouponError(null);
     setAppliedCoupon(null);
     try {
-      const result = await CouponsRepository.validateCoupon(couponInput.trim().toUpperCase(), total);
+      // Un cupón de tienda solo aplica si el carrito es enteramente de esa
+      // tienda — igual que en el backend al crear el pedido (customerStoreId).
+      const cartStoreIds = [...new Set(items.map((i) => i.storeId).filter(Boolean))];
+      const cartStoreId = cartStoreIds.length === 1 ? cartStoreIds[0] : undefined;
+      const result = await CouponsRepository.validateCoupon(
+        couponInput.trim().toUpperCase(),
+        total,
+        cartStoreId,
+      );
       if (result.valid) {
         setAppliedCoupon(result);
       } else {

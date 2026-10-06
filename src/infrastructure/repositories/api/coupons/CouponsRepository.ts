@@ -26,8 +26,13 @@ export class CouponsRepository {
     );
   }
 
-  static async validateCoupon(code: string, orderAmount: number): Promise<ICouponValidation> {
+  static async validateCoupon(
+    code: string,
+    orderAmount: number,
+    storeId?: string,
+  ): Promise<ICouponValidation> {
     const params = new URLSearchParams({ code, orderAmount: String(orderAmount) });
+    if (storeId) params.set('storeId', storeId);
     return ErrorHandler.handleApiErrors(() =>
       publicClientHTTP.get<ICouponValidation>(`/coupons/validate?${params.toString()}`),
     );

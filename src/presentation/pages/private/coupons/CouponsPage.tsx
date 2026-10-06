@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react';
 import { CouponsRepository } from '@/infrastructure/repositories/api/coupons/CouponsRepository';
+import { StoresRepository } from '@/infrastructure/repositories/api/stores/StoresRepository';
 import type { ICoupon, ICreateCouponRequest, CouponType } from '@/application/dtos/coupons/CouponDtos';
+import type { IStore } from '@/application/dtos/stores/response/StoreResponse';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import { formatDate } from '@/shared/utils/formatDate';
 import { SnackbarUtilities } from '@/shared/utils/SnackbarManager';
+import { getAuthenticatedRole } from '@/shared/utils/checkIsUserAuthenticated.util';
 import SelectDropdown from '@/presentation/ui/molecules/common/SelectDropdown';
 
 const EMPTY_FORM: ICreateCouponRequest = {
   code: '',
+  storeId: undefined,
   type: 'PERCENTAGE',
   value: 0,
   minOrderAmount: undefined,
@@ -25,7 +29,9 @@ const statusBadge = (coupon: ICoupon) => {
 };
 
 const CouponsPage = () => {
+  const isSeller = getAuthenticatedRole() === 'seller';
   const [coupons, setCoupons] = useState<ICoupon[]>([]);
+  const [stores, setStores] = useState<IStore[]>([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState<ICreateCouponRequest>(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
@@ -34,8 +40,12 @@ const CouponsPage = () => {
   const load = async () => {
     setLoading(true);
     try {
-      const res = await CouponsRepository.getCoupons();
-      setCoupons(res.data);
+      const [couponsRes, storesRes] = await Promise.all([
+        CouponsRepository.getCoupons(),
+        isSeller ? StoresRepository.getMyStores() : StoresRepository.getStores({ active: true }),
+      ]);
+      setCoupons(couponsRes.data);
+      setStores(storesRes.data);
     } catch {
       SnackbarUtilities.error('No se pudieron cargar los cupones');
     } finally {
@@ -44,6 +54,13 @@ const CouponsPage = () => {
   };
 
   useEffect(() => { void load(); }, []);
+
+  // Un seller siempre crea el cupón en su propia tienda — nunca elige.
+  useEffect(() => {
+    if (isSeller && stores.length > 0) {
+      setForm((prev) => prev.storeId ? prev : { ...prev, storeId: stores[0].id });
+    }
+  }, [isSeller, stores]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +77,7 @@ const CouponsPage = () => {
         maxUses: form.maxUses || undefined,
         expiresAt: form.expiresAt || undefined,
       });
-      setForm(EMPTY_FORM);
+      setForm({ ...EMPTY_FORM, storeId: isSeller ? form.storeId : undefined });
       await load();
       SnackbarUtilities.success('Cupón creado');
     } catch (err) {
@@ -112,6 +129,25 @@ const CouponsPage = () => {
               />
               <p className='mt-1 text-[11px] text-slate-400'>Solo mayúsculas, números, - y _</p>
             </div>
+
+            {!isSeller ? (
+              <div>
+                <label className='mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500'>Tienda</label>
+                <SelectDropdown
+                  value={form.storeId ?? ''}
+                  options={[
+                    { value: '', label: 'Global — todas las tiendas' },
+                    ...stores.map((s) => ({ value: s.id, label: s.name })),
+                  ]}
+                  onChange={(v) => setForm((f) => ({ ...f, storeId: v || undefined }))}
+                />
+              </div>
+            ) : (
+              <div className='rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600'>
+                <span className='text-slate-400'>Tienda: </span>
+                {stores[0]?.name ?? '—'}
+              </div>
+            )}
 
             <div className='grid grid-cols-2 gap-3'>
               <div>
@@ -219,6 +255,11 @@ const CouponsPage = () => {
                       <div className='flex items-center gap-2'>
                         <span className='font-mono text-sm font-bold tracking-wider text-slate-800'>{c.code}</span>
                         <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${badge.cls}`}>{badge.label}</span>
+                        {!isSeller ? (
+                          <span className='rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500'>
+                            {c.storeId ? (stores.find((s) => s.id === c.storeId)?.name ?? 'Tienda') : 'Global'}
+                          </span>
+                        ) : null}
                       </div>
                       <div className='mt-1 flex flex-wrap gap-3 text-xs text-slate-500'>
                         <span>

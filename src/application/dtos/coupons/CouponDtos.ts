@@ -5,6 +5,7 @@ export type CouponType = 'PERCENTAGE' | 'FIXED';
 export interface ICoupon {
   id: string;
   code: string;
+  storeId: string | null;
   type: CouponType;
   value: number;
   minOrderAmount: number | null;
@@ -25,6 +26,7 @@ export interface ICouponValidation {
 
 export interface ICreateCouponRequest {
   code: string;
+  storeId?: string;
   type: CouponType;
   value: number;
   minOrderAmount?: number;
