@@ -346,22 +346,26 @@ export const InventoryManagementView = ({
 
       <Box className='grid grid-cols-1 gap-6 xl:grid-cols-[430px_minmax(0,1fr)]'>
         <FeaturePanel
-          title={movementType === 'IN' ? 'Nuevo ingreso por lote' : 'Ajuste de inventario'}
+          title={
+            movementType === 'IN'
+              ? 'Nuevo ingreso por lote'
+              : 'Ajuste de inventario'
+          }
         >
           <form onSubmit={handleSubmit} className='mt-6 space-y-4'>
             <Box>
               <Label htmlFor='inventory-product'>Producto</Label>
               <SelectDropdown
                 value={productId}
-                options={products.map((p) => ({
+                options={products.map(p => ({
                   value: p.id,
-                  label: `${p.name}${p.sku ? ` (${p.sku})` : ''}`,
+                  label: `${p.name}${p.sku ? ` (${p.sku})` : ''}`
                 }))}
                 placeholder='Selecciona un producto'
                 disabled={submitting}
                 onCreateClick={() => setShowCreateProductModal(true)}
                 createLabel='+ Nuevo producto'
-                onChange={(v) => onProductChange(v)}
+                onChange={v => onProductChange(v)}
               />
             </Box>
 
@@ -372,22 +376,23 @@ export const InventoryManagementView = ({
                   value={movementType}
                   options={[
                     { value: 'IN', label: 'Ingreso' },
-                    { value: 'ADJUSTMENT', label: 'Ajuste' },
+                    { value: 'ADJUSTMENT', label: 'Ajuste' }
                   ]}
                   disabled={submitting}
-                  onChange={(v) => onMovementTypeChange(v as 'IN' | 'ADJUSTMENT')}
+                  onChange={v => onMovementTypeChange(v as 'IN' | 'ADJUSTMENT')}
                 />
               </Box>
 
               <Box>
                 <Label htmlFor='movement-quantity'>
-                  Cantidad {movementType === 'ADJUSTMENT' ? '(negativa o positiva)' : ''}
+                  Cantidad{' '}
+                  {movementType === 'ADJUSTMENT' ? '(negativa o positiva)' : ''}
                 </Label>
                 <Input
                   id='movement-quantity'
                   type='number'
                   value={quantity}
-                  onChange={(event) => onQuantityChange(event.target.value)}
+                  onChange={event => onQuantityChange(event.target.value)}
                   disabled={submitting}
                 />
               </Box>
@@ -399,13 +404,19 @@ export const InventoryManagementView = ({
                   <Box>
                     <Label htmlFor='entry-unit-cost'>Costo unitario</Label>
                     <div className='relative'>
-                      <span className='pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 select-none text-sm text-slate-400'>$</span>
+                      <span className='pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 select-none text-sm text-slate-400'>
+                        $
+                      </span>
                       <input
                         id='entry-unit-cost'
                         type='text'
                         inputMode='numeric'
                         value={formatThousands(unitCost)}
-                        onChange={(event) => onUnitCostChange(event.target.value.replace(/\D/g, ''))}
+                        onChange={event =>
+                          onUnitCostChange(
+                            event.target.value.replace(/\D/g, '')
+                          )
+                        }
                         disabled={submitting}
                         placeholder='0'
                         className='w-full rounded-xl border border-neutral-gray/30 py-2.5 pl-7 pr-4 text-sm text-neutral-dark placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-60'
@@ -417,7 +428,7 @@ export const InventoryManagementView = ({
                     <Input
                       id='entry-batch-code'
                       value={batchCode}
-                      onChange={(event) => onBatchCodeChange(event.target.value)}
+                      onChange={event => onBatchCodeChange(event.target.value)}
                       disabled={submitting}
                       placeholder='Ej. R57-240730'
                     />
@@ -429,24 +440,30 @@ export const InventoryManagementView = ({
                     <Label htmlFor='entry-supplier'>Proveedor</Label>
                     <SelectDropdown
                       value={supplierId}
-                      options={suppliers.map((s) => ({ value: s.id, label: s.name }))}
+                      options={suppliers.map(s => ({
+                        value: s.id,
+                        label: s.name
+                      }))}
                       placeholder='Sin proveedor específico'
                       disabled={submitting}
                       onCreateClick={() => setShowCreateSupplierModal(true)}
-                      createLabel='+ Nuevo proveedor'
-                      onChange={(v) => onSupplierChange(v)}
+                      createLabel='Nuevo proveedor'
+                      onChange={v => onSupplierChange(v)}
                     />
                   </Box>
 
                   <Box>
                     <Label htmlFor='entry-expires-at'>
-                      Vencimiento {selectedProduct?.isPerishable ? '(obligatorio)' : '(opcional)'}
+                      Vencimiento{' '}
+                      {selectedProduct?.isPerishable
+                        ? '(obligatorio)'
+                        : '(opcional)'}
                     </Label>
                     <Input
                       id='entry-expires-at'
                       type='date'
                       value={expiresAt}
-                      onChange={(event) => onExpiresAtChange(event.target.value)}
+                      onChange={event => onExpiresAtChange(event.target.value)}
                       disabled={submitting}
                     />
                   </Box>
@@ -459,7 +476,7 @@ export const InventoryManagementView = ({
               <Input
                 id='movement-note'
                 value={note}
-                onChange={(event) => onNoteChange(event.target.value)}
+                onChange={event => onNoteChange(event.target.value)}
                 disabled={submitting}
                 placeholder='Motivo del movimiento'
               />
@@ -475,15 +492,23 @@ export const InventoryManagementView = ({
                   />
                 ) : (
                   <div className='flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-neutral-gray/15'>
-                    <i className='bx bx-image text-2xl text-neutral-dark/30' aria-hidden='true' />
+                    <i
+                      className='bx bx-image text-2xl text-neutral-dark/30'
+                      aria-hidden='true'
+                    />
                   </div>
                 )}
                 <div className='min-w-0'>
-                  <strong className='block truncate'>{selectedProduct.name}</strong>
+                  <strong className='block truncate'>
+                    {selectedProduct.name}
+                  </strong>
                   <div>SKU: {selectedProduct.sku}</div>
                   <div>
-                    Tipo: {selectedProduct.isPerishable ? 'Perecedero' : 'No perecedero'} ·
-                    Lotes: {selectedProduct.trackBatches ? ' Sí' : ' No'}
+                    Tipo:{' '}
+                    {selectedProduct.isPerishable
+                      ? 'Perecedero'
+                      : 'No perecedero'}{' '}
+                    · Lotes: {selectedProduct.trackBatches ? ' Sí' : ' No'}
                   </div>
                 </div>
               </Box>
@@ -496,7 +521,11 @@ export const InventoryManagementView = ({
             ) : null}
 
             <Button type='submit' variant='primary' disabled={submitting}>
-              {submitting ? 'Guardando...' : movementType === 'IN' ? 'Registrar lote' : 'Aplicar ajuste'}
+              {submitting
+                ? 'Guardando...'
+                : movementType === 'IN'
+                  ? 'Registrar lote'
+                  : 'Aplicar ajuste'}
             </Button>
           </form>
         </FeaturePanel>
@@ -505,21 +534,30 @@ export const InventoryManagementView = ({
           <Box className='grid min-w-0 grid-cols-2 gap-4 lg:grid-cols-4'>
             <FeatureMetricCard
               label='Productos con stock'
-              value={inventory.filter((item) => item.stock > 0).length}
+              value={inventory.filter(item => item.stock > 0).length}
             />
             <FeatureMetricCard
               label='Lotes activos'
-              value={batches.filter((batch) => batch.availableQuantity > 0).length}
+              value={
+                batches.filter(batch => batch.availableQuantity > 0).length
+              }
             />
             <FeatureMetricCard
               label='Próximos vencimientos'
               value={expiringBatches.length}
             />
-            <Box className={`rounded-2xl border px-5 py-4 ${lowStockAlerts.length > 0 ? 'border-red-200 bg-red-50' : 'border-neutral-gray/20 bg-white'}`}>
-              <Typography className={`text-xs font-medium ${lowStockAlerts.length > 0 ? 'text-red-500' : 'text-neutral-dark/55'}`}>
+            <Box
+              className={`rounded-2xl border px-5 py-4 ${lowStockAlerts.length > 0 ? 'border-red-200 bg-red-50' : 'border-neutral-gray/20 bg-white'}`}
+            >
+              <Typography
+                className={`text-xs font-medium ${lowStockAlerts.length > 0 ? 'text-red-500' : 'text-neutral-dark/55'}`}
+              >
                 Alertas de stock bajo
               </Typography>
-              <Typography variant='h2' className={`mt-1 text-3xl font-bold ${lowStockAlerts.length > 0 ? 'text-red-600' : 'text-neutral-dark'}`}>
+              <Typography
+                variant='h2'
+                className={`mt-1 text-3xl font-bold ${lowStockAlerts.length > 0 ? 'text-red-600' : 'text-neutral-dark'}`}
+              >
                 {lowStockAlerts.length}
               </Typography>
             </Box>
@@ -529,11 +567,14 @@ export const InventoryManagementView = ({
             {/* Search + filters */}
             <div className='mt-4 flex flex-col gap-3 sm:flex-row sm:items-center'>
               <div className='relative flex-1'>
-                <i className='bx bx-search absolute left-3.5 top-1/2 -translate-y-1/2 text-base text-neutral-dark/40' aria-hidden='true' />
+                <i
+                  className='bx bx-search absolute left-3.5 top-1/2 -translate-y-1/2 text-base text-neutral-dark/40'
+                  aria-hidden='true'
+                />
                 <input
                   type='text'
                   value={invSearch}
-                  onChange={(e) => setInvSearch(e.target.value)}
+                  onChange={e => setInvSearch(e.target.value)}
                   placeholder='Buscar por nombre, SKU o categoría...'
                   className='w-full rounded-2xl border border-neutral-gray/80 bg-white/90 py-2.5 pl-9 pr-9 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/20'
                 />
@@ -556,7 +597,7 @@ export const InventoryManagementView = ({
                     { key: 'all', label: 'Todos' },
                     { key: 'with', label: 'Con stock' },
                     { key: 'low', label: 'Stock bajo' },
-                    { key: 'out', label: 'Sin stock' },
+                    { key: 'out', label: 'Sin stock' }
                   ] as const
                 ).map(({ key, label }) => (
                   <button
@@ -580,7 +621,7 @@ export const InventoryManagementView = ({
                   [
                     { key: 'all', label: 'Todos' },
                     { key: 'perishable', label: 'Perecedero' },
-                    { key: 'non-perishable', label: 'No perecedero' },
+                    { key: 'non-perishable', label: 'No perecedero' }
                   ] as const
                 ).map(({ key, label }) => (
                   <button
@@ -620,8 +661,10 @@ export const InventoryManagementView = ({
                 <>
                   {/* Mobile — tarjetas apiladas */}
                   <div className='space-y-2.5 md:hidden'>
-                    {filteredInventory.map((item) => {
-                      const isLow = item.lowStockThreshold != null && item.stock <= item.lowStockThreshold;
+                    {filteredInventory.map(item => {
+                      const isLow =
+                        item.lowStockThreshold != null &&
+                        item.stock <= item.lowStockThreshold;
                       return (
                         <Box
                           key={item.productId}
@@ -629,10 +672,15 @@ export const InventoryManagementView = ({
                         >
                           <div
                             className={`mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl ${
-                              isLow ? 'bg-red-100 text-red-600' : 'bg-neutral-gray/10 text-neutral-dark/50'
+                              isLow
+                                ? 'bg-red-100 text-red-600'
+                                : 'bg-neutral-gray/10 text-neutral-dark/50'
                             }`}
                           >
-                            <i className='bx bx-package text-lg' aria-hidden='true' />
+                            <i
+                              className='bx bx-package text-lg'
+                              aria-hidden='true'
+                            />
                           </div>
 
                           <div className='min-w-0 flex-1'>
@@ -656,21 +704,37 @@ export const InventoryManagementView = ({
                             <div className='mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-neutral-dark/60'>
                               <span>
                                 Stock:{' '}
-                                <strong className={isLow ? 'font-bold text-red-600' : 'font-semibold text-neutral-dark'}>
+                                <strong
+                                  className={
+                                    isLow
+                                      ? 'font-bold text-red-600'
+                                      : 'font-semibold text-neutral-dark'
+                                  }
+                                >
                                   {item.stock}
                                 </strong>
                                 {item.lowStockThreshold != null ? (
-                                  <span className='text-neutral-dark/40'> /mín {item.lowStockThreshold}</span>
+                                  <span className='text-neutral-dark/40'>
+                                    {' '}
+                                    /mín {item.lowStockThreshold}
+                                  </span>
                                 ) : null}
                               </span>
                               <span>
-                                Lotes: <strong className='font-semibold text-neutral-dark'>{item.activeBatchCount}</strong>
+                                Lotes:{' '}
+                                <strong className='font-semibold text-neutral-dark'>
+                                  {item.activeBatchCount}
+                                </strong>
                               </span>
                               <span>
                                 Vence:{' '}
                                 <strong className='font-semibold text-neutral-dark'>
                                   {item.nextExpiration
-                                    ? new Date(item.nextExpiration).toLocaleDateString('es-CO', { timeZone: 'America/Bogota' })
+                                    ? new Date(
+                                        item.nextExpiration
+                                      ).toLocaleDateString('es-CO', {
+                                        timeZone: 'America/Bogota'
+                                      })
                                     : '—'}
                                 </strong>
                               </span>
@@ -699,39 +763,61 @@ export const InventoryManagementView = ({
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredInventory.map((item) => {
-                          const isLow = item.lowStockThreshold != null && item.stock <= item.lowStockThreshold;
+                        {filteredInventory.map(item => {
+                          const isLow =
+                            item.lowStockThreshold != null &&
+                            item.stock <= item.lowStockThreshold;
                           return (
-                          <tr key={item.productId} className={`border-b border-neutral-gray/30 last:border-b-0 ${isLow ? 'bg-red-50/60' : ''}`}>
-                            <td className='px-3 py-3'>
-                              <div className='flex items-center gap-2 font-semibold'>
-                                {item.productName}
-                                {isLow ? (
-                                  <span className='inline-flex items-center gap-0.5 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600'>
-                                    <i className='bx bx-error-circle' />
-                                    Stock bajo
+                            <tr
+                              key={item.productId}
+                              className={`border-b border-neutral-gray/30 last:border-b-0 ${isLow ? 'bg-red-50/60' : ''}`}
+                            >
+                              <td className='px-3 py-3'>
+                                <div className='flex items-center gap-2 font-semibold'>
+                                  {item.productName}
+                                  {isLow ? (
+                                    <span className='inline-flex items-center gap-0.5 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600'>
+                                      <i className='bx bx-error-circle' />
+                                      Stock bajo
+                                    </span>
+                                  ) : null}
+                                </div>
+                                <div className='text-neutral-dark/60'>
+                                  {item.sku} ·{' '}
+                                  {item.isPerishable
+                                    ? 'Perecedero'
+                                    : 'No perecedero'}
+                                </div>
+                              </td>
+                              <td className='px-3 py-3 text-neutral-dark/65'>
+                                {item.category ?? '—'}
+                              </td>
+                              <td
+                                className={`px-3 py-3 font-semibold tabular-nums ${isLow ? 'text-red-600' : ''}`}
+                              >
+                                {item.stock}
+                                {item.lowStockThreshold != null ? (
+                                  <span className='ml-1 text-xs font-normal text-slate-400'>
+                                    / mín {item.lowStockThreshold}
                                   </span>
                                 ) : null}
-                              </div>
-                              <div className='text-neutral-dark/60'>
-                                {item.sku} · {item.isPerishable ? 'Perecedero' : 'No perecedero'}
-                              </div>
-                            </td>
-                            <td className='px-3 py-3 text-neutral-dark/65'>{item.category ?? '—'}</td>
-                            <td className={`px-3 py-3 font-semibold tabular-nums ${isLow ? 'text-red-600' : ''}`}>
-                              {item.stock}
-                              {item.lowStockThreshold != null ? (
-                                <span className='ml-1 text-xs font-normal text-slate-400'>/ mín {item.lowStockThreshold}</span>
-                              ) : null}
-                            </td>
-                            <td className='px-3 py-3'>{item.activeBatchCount}</td>
-                            <td className='px-3 py-3'>
-                              {item.nextExpiration
-                                ? new Date(item.nextExpiration).toLocaleDateString('es-CO', { timeZone: 'America/Bogota' })
-                                : 'Sin vencimiento'}
-                            </td>
-                            <td className='px-3 py-3'>{formatCurrencyCOP(item.inventoryValue)}</td>
-                          </tr>
+                              </td>
+                              <td className='px-3 py-3'>
+                                {item.activeBatchCount}
+                              </td>
+                              <td className='px-3 py-3'>
+                                {item.nextExpiration
+                                  ? new Date(
+                                      item.nextExpiration
+                                    ).toLocaleDateString('es-CO', {
+                                      timeZone: 'America/Bogota'
+                                    })
+                                  : 'Sin vencimiento'}
+                              </td>
+                              <td className='px-3 py-3'>
+                                {formatCurrencyCOP(item.inventoryValue)}
+                              </td>
+                            </tr>
                           );
                         })}
                       </tbody>
@@ -749,20 +835,30 @@ export const InventoryManagementView = ({
 
           {/* Low stock alerts panel */}
           {lowStockAlerts.length > 0 ? (
-            <FeaturePanel title={`Alertas de stock bajo (${lowStockAlerts.length})`}>
+            <FeaturePanel
+              title={`Alertas de stock bajo (${lowStockAlerts.length})`}
+            >
               <Box className='mt-5 space-y-2'>
-                {lowStockAlerts.map((item) => (
+                {lowStockAlerts.map(item => (
                   <Box
                     key={item.productId}
                     className='flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3'
                   >
-                    <i className='bx bx-error-circle flex-shrink-0 text-xl text-red-500' aria-hidden='true' />
+                    <i
+                      className='bx bx-error-circle flex-shrink-0 text-xl text-red-500'
+                      aria-hidden='true'
+                    />
                     <Box className='min-w-0 flex-1'>
-                      <Typography className='truncate font-semibold text-red-700' title={item.productName}>
+                      <Typography
+                        className='truncate font-semibold text-red-700'
+                        title={item.productName}
+                      >
                         {truncateText(item.productName, 35)}
                       </Typography>
                       <Typography className='text-xs text-red-500'>
-                        SKU: {item.sku} · Stock actual: <strong>{item.stock}</strong> · Mínimo: {item.lowStockThreshold}
+                        SKU: {item.sku} · Stock actual:{' '}
+                        <strong>{item.stock}</strong> · Mínimo:{' '}
+                        {item.lowStockThreshold}
                       </Typography>
                     </Box>
                     <span className='flex-shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-600'>
@@ -779,35 +875,62 @@ export const InventoryManagementView = ({
               <Box className='mt-5 space-y-3'>
                 {batches.length === 0 && !loading ? (
                   <Box className='flex flex-col items-center rounded-2xl border border-dashed border-neutral-gray/30 py-12 text-center'>
-                    <i className='bx bx-package mb-3 text-4xl text-neutral-dark/20' aria-hidden='true' />
-                    <Typography className='font-semibold text-neutral-dark/50'>Sin lotes registrados</Typography>
-                    <Typography className='mt-1 text-sm text-neutral-dark/35'>Los lotes aparecerán aquí al agregarlos al inventario.</Typography>
+                    <i
+                      className='bx bx-package mb-3 text-4xl text-neutral-dark/20'
+                      aria-hidden='true'
+                    />
+                    <Typography className='font-semibold text-neutral-dark/50'>
+                      Sin lotes registrados
+                    </Typography>
+                    <Typography className='mt-1 text-sm text-neutral-dark/35'>
+                      Los lotes aparecerán aquí al agregarlos al inventario.
+                    </Typography>
                   </Box>
-                ) : batches.slice(0, 10).map((batch) => (
-                  <Box key={batch.id} className='rounded-2xl border border-neutral-gray/20 px-4 py-4'>
-                    <Box className='flex items-start justify-between gap-4'>
-                      <Box className='min-w-0 flex-1'>
-                        <Typography variant='h3' className='truncate' title={batch.product.name}>
-                          {truncateText(batch.product.name, 35)}
-                        </Typography>
-                        <Typography className='text-sm text-neutral-dark/65'>
-                          Lote: {batch.batchCode || 'Sin código'}
-                        </Typography>
+                ) : (
+                  batches.slice(0, 10).map(batch => (
+                    <Box
+                      key={batch.id}
+                      className='rounded-2xl border border-neutral-gray/20 px-4 py-4'
+                    >
+                      <Box className='flex items-start justify-between gap-4'>
+                        <Box className='min-w-0 flex-1'>
+                          <Typography
+                            variant='h3'
+                            className='truncate'
+                            title={batch.product.name}
+                          >
+                            {truncateText(batch.product.name, 35)}
+                          </Typography>
+                          <Typography className='text-sm text-neutral-dark/65'>
+                            Lote: {batch.batchCode || 'Sin código'}
+                          </Typography>
+                        </Box>
+                        <span className='rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary'>
+                          {{
+                            ACTIVE: 'Activo',
+                            DEPLETED: 'Agotado',
+                            EXPIRED: 'Vencido'
+                          }[batch.status as string] ?? batch.status}
+                        </span>
                       </Box>
-                      <span className='rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary'>
-                        {{ ACTIVE: 'Activo', DEPLETED: 'Agotado', EXPIRED: 'Vencido' }[batch.status as string] ?? batch.status}
-                      </span>
+                      <Typography className='mt-2 text-sm text-neutral-dark/70'>
+                        Disponible: {batch.availableQuantity}/
+                        {batch.initialQuantity} · Costo:{' '}
+                        {formatCurrencyCOP(batch.unitCost)}
+                      </Typography>
+                      <Typography className='mt-1 text-sm text-neutral-dark/65'>
+                        Vence:{' '}
+                        {batch.expiresAt
+                          ? new Date(batch.expiresAt).toLocaleDateString(
+                              'es-CO',
+                              { timeZone: 'America/Bogota' }
+                            )
+                          : 'No aplica'}{' '}
+                        · Proveedor: {batch.supplier?.name ?? 'No definido'}
+                      </Typography>
                     </Box>
-                    <Typography className='mt-2 text-sm text-neutral-dark/70'>
-                      Disponible: {batch.availableQuantity}/{batch.initialQuantity} ·
-                      Costo: {formatCurrencyCOP(batch.unitCost)}
-                    </Typography>
-                    <Typography className='mt-1 text-sm text-neutral-dark/65'>
-                      Vence: {batch.expiresAt ? new Date(batch.expiresAt).toLocaleDateString('es-CO', { timeZone: 'America/Bogota' }) : 'No aplica'} ·
-                      Proveedor: {batch.supplier?.name ?? 'No definido'}
-                    </Typography>
-                  </Box>
-                ))}
+                  ))
+                )}
               </Box>
             </FeaturePanel>
 
@@ -816,15 +939,25 @@ export const InventoryManagementView = ({
                 {expiringBatches.length === 0 ? (
                   <Typography>No hay lotes próximos a vencer.</Typography>
                 ) : (
-                  expiringBatches.slice(0, 8).map((batch) => (
-                    <Box key={batch.id} className='rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4'>
-                      <Typography variant='h3' className='truncate' title={batch.product.name}>
+                  expiringBatches.slice(0, 8).map(batch => (
+                    <Box
+                      key={batch.id}
+                      className='rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4'
+                    >
+                      <Typography
+                        variant='h3'
+                        className='truncate'
+                        title={batch.product.name}
+                      >
                         {truncateText(batch.product.name, 35)}
                       </Typography>
                       <Typography className='mt-1 text-sm text-neutral-dark/70'>
                         {batch.availableQuantity} unidades · vence el{' '}
                         {batch.expiresAt
-                          ? new Date(batch.expiresAt).toLocaleDateString('es-CO', { timeZone: 'America/Bogota' })
+                          ? new Date(batch.expiresAt).toLocaleDateString(
+                              'es-CO',
+                              { timeZone: 'America/Bogota' }
+                            )
                           : 'sin fecha'}
                       </Typography>
                     </Box>
@@ -845,8 +978,11 @@ export const InventoryManagementView = ({
               ) : movements.length === 0 ? (
                 <Typography>No hay movimientos registrados todavía.</Typography>
               ) : (
-                movements.slice(0, 12).map((movement) => (
-                  <Box key={movement.id} className='rounded-2xl border border-neutral-gray/20 px-5 py-4'>
+                movements.slice(0, 12).map(movement => (
+                  <Box
+                    key={movement.id}
+                    className='rounded-2xl border border-neutral-gray/20 px-5 py-4'
+                  >
                     <Box className='flex items-center justify-between gap-3'>
                       <Typography
                         variant='h3'
@@ -856,12 +992,21 @@ export const InventoryManagementView = ({
                         {truncateText(movement.product.name, 35)}
                       </Typography>
                       <span className='flex-shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary'>
-                        {{ IN: 'Ingreso', OUT: 'Salida', ADJUSTMENT: 'Ajuste', SALE: 'Venta', ORDER: 'Pedido', RETURN: 'Devolución' }[movement.movementType as string] ?? movement.movementType}
+                        {{
+                          IN: 'Ingreso',
+                          OUT: 'Salida',
+                          ADJUSTMENT: 'Ajuste',
+                          SALE: 'Venta',
+                          ORDER: 'Pedido',
+                          RETURN: 'Devolución'
+                        }[movement.movementType as string] ??
+                          movement.movementType}
                       </span>
                     </Box>
                     <Typography className='mt-2 text-sm text-neutral-dark/70'>
                       Delta: {movement.quantityDelta > 0 ? '+' : ''}
-                      {movement.quantityDelta} · Lote: {movement.batch?.batchCode || 'N/D'}
+                      {movement.quantityDelta} · Lote:{' '}
+                      {movement.batch?.batchCode || 'N/D'}
                     </Typography>
                     <Typography className='mt-1 text-sm text-neutral-dark/65'>
                       {movement.note || 'Sin nota'}
@@ -877,7 +1022,7 @@ export const InventoryManagementView = ({
       {showCreateProductModal ? (
         <QuickCreateProductModal
           onClose={() => setShowCreateProductModal(false)}
-          onConfirm={async (payload) => {
+          onConfirm={async payload => {
             const created = await onQuickCreateProduct(payload);
             if (created) onProductChange(created.id);
             setShowCreateProductModal(false);
@@ -890,7 +1035,7 @@ export const InventoryManagementView = ({
           title='Nuevo proveedor'
           placeholder='Ej. Distribuidora ABC'
           onClose={() => setShowCreateSupplierModal(false)}
-          onConfirm={async (name) => {
+          onConfirm={async name => {
             const created = await onQuickCreateSupplier(name);
             if (created) onSupplierChange(created.id);
             setShowCreateSupplierModal(false);
