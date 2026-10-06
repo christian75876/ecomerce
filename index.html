@@ -3,12 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <!-- Título y meta description por defecto: solo se usan como fallback antes de
+         que React monte y react-helmet-async inyecte los reales de cada ruta. NO
+         agregar aquí <link rel="canonical">, og:url, og:title, og:description ni
+         twitter:title/description — cada página pública ya los define vía <Helmet>,
+         y react-helmet-async NO reemplaza tags estáticos del HTML, solo añade los
+         suyos: tenerlos aquí también produce tags duplicados y contradictorios
+         (p. ej. dos <link rel="canonical"> con URLs distintas), lo que confundió a
+         Google y causó los "Soft 404" / "Descubierta: actualmente sin indexar". -->
     <title>Merku — Gestión de tienda, inventario y ventas</title>
-    <meta name="description" content="Plataforma integral para gestionar tu tienda online: catálogo, inventario, pedidos, POS, caja y analítica en un solo panel." />
     <meta name="keywords" content="marketplace Colombia, tiendas online, vender en línea, gestión de inventario, punto de venta, POS, catálogo digital, Merku" />
     <meta name="author" content="Merku" />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="%VITE_APP_URL%/" />
     <meta name="theme-color" content="#FF6B35" />
 
     <!-- PWA (manifest injected by VitePWA at build time as manifest.webmanifest) -->
@@ -23,13 +29,10 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
 
-    <!-- Open Graph -->
+    <!-- Open Graph (solo campos que ninguna página sobreescribe vía Helmet) -->
     <meta property="og:type"        content="website" />
     <meta property="og:site_name"   content="Merku" />
     <meta property="og:locale"      content="es_CO" />
-    <meta property="og:url"         content="%VITE_APP_URL%/" />
-    <meta property="og:title"       content="Merku — Marketplace y gestión de tienda" />
-    <meta property="og:description" content="Encuentra productos de tiendas locales o gestiona tu propio negocio: catálogo, inventario, pedidos, POS y más desde un solo panel." />
     <meta property="og:image"       content="%VITE_APP_URL%/og-image.png" />
     <meta property="og:image:width"  content="1200" />
     <meta property="og:image:height" content="630" />
@@ -37,8 +40,6 @@
 
     <!-- Twitter / X Card -->
     <meta name="twitter:card"        content="summary_large_image" />
-    <meta name="twitter:title"       content="Merku — Marketplace y gestión de tienda" />
-    <meta name="twitter:description" content="Encuentra productos de tiendas locales o gestiona tu propio negocio desde un solo panel." />
     <meta name="twitter:image"       content="%VITE_APP_URL%/og-image.png" />
     <meta name="twitter:image:alt"   content="Merku — Tu mercado local, en un solo lugar" />
 

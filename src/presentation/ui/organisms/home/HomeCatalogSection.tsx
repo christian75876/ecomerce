@@ -211,19 +211,15 @@ const HomeCatalogSection = ({
           default (this whole page is wrapped in .section-full-bleed at
           the root), its content re-centers via .content-container. ── */}
       <>
-        <div className='gradient-hero relative overflow-hidden pb-10 pt-12 text-neutral-dark sm:pb-8 sm:pt-8 '>
+        <div className='gradient-hero relative pb-10 pt-12 text-neutral-dark sm:pb-8 sm:pt-8 '>
           <div
-            className='pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full bg-white/10 blur-2xl'
+            className='pointer-events-none absolute inset-0 overflow-hidden'
             aria-hidden='true'
-          />
-          <div
-            className='pointer-events-none absolute -bottom-24 left-4 h-64 w-64 rounded-full bg-highlight/20 blur-2xl'
-            aria-hidden='true'
-          />
-          <div
-            className='pointer-events-none absolute right-1/3 top-1/2 h-40 w-40 -translate-y-1/2 rounded-full bg-secondary/20 blur-2xl'
-            aria-hidden='true'
-          />
+          >
+            <div className='absolute -right-20 -top-24 h-80 w-80 rounded-full bg-white/10 blur-2xl' />
+            <div className='absolute -bottom-24 left-4 h-64 w-64 rounded-full bg-highlight/20 blur-2xl' />
+            <div className='absolute right-1/3 top-1/2 h-40 w-40 -translate-y-1/2 rounded-full bg-secondary/20 blur-2xl' />
+          </div>
 
           <Reveal effect='fade-up' slow>
             <div className='content-container relative z-10'>
@@ -270,7 +266,7 @@ const HomeCatalogSection = ({
                       <p className='px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400'>
                         Búsquedas recientes
                       </p>
-                      {searchSuggestions.map(term => (
+                      {searchSuggestions.slice(0, 3).map(term => (
                         <button
                           key={term}
                           type='button'
@@ -302,34 +298,6 @@ const HomeCatalogSection = ({
       </>
 
       <div className='content-container space-y-6'>
-        {/* ── Sticky compact search — the hero's search box scrolls away with
-            it, so once the user scrolls past it this takes over. Sits right
-            below the fixed desktop header (lg:top-20 matches useIsMobile's
-            1024px breakpoint); on mobile there's no fixed header, so top-0. */}
-        <div className='sticky top-0 z-30 -mx-4 border-b border-slate-100 bg-white/95 px-4 py-3 backdrop-blur-sm sm:-mx-6 sm:px-6 lg:-mx-8 lg:top-20 lg:px-8'>
-          <div className='flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 transition-all focus-within:border-primary/40 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary/10'>
-            <i className='bx bx-search text-lg text-slate-400' aria-hidden='true' />
-            <input
-              type='text'
-              value={search}
-              onChange={e => onSearchChange(e.target.value)}
-              placeholder='Buscar en Merku...'
-              className='flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none'
-              aria-label='Buscar productos'
-            />
-            {search ? (
-              <button
-                type='button'
-                onClick={() => onSearchChange('')}
-                className='text-slate-400 hover:text-slate-600'
-                aria-label='Limpiar búsqueda'
-              >
-                <i className='bx bx-x text-lg' aria-hidden='true' />
-              </button>
-            ) : null}
-          </div>
-        </div>
-
         {/* ── Controls ── */}
         <div className='flex flex-col gap-3'>
           <div className='flex items-center gap-2'>

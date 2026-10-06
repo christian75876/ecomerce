@@ -17,6 +17,7 @@ Disallow: /invitations
 Disallow: /cart
 Disallow: /my-orders
 Disallow: /profile
+Disallow: /favorites
 Disallow: /verify-email
 
 Sitemap: https://api.merku.co/sitemap.xml
