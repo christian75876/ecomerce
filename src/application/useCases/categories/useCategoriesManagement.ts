@@ -23,7 +23,7 @@ export const useCategoriesManagement = () => {
     setError(null);
 
     try {
-      const response = await CategoriesRepository.getCategories();
+      const response = await CategoriesRepository.getMyCategories();
       setCategories(response.data);
     } catch (err) {
       setError(
@@ -108,7 +108,7 @@ export const useCategoriesManagement = () => {
   const loadCategoryProducts = async (categoryId: string) => {
     setProductsLoading(true);
     try {
-      const response = await ProductRepository.getProducts({ categoryId, limit: 500 });
+      const response = await ProductRepository.getMyProducts({ categoryId, limit: 500 });
       setCategoryProducts(response.data.items);
     } catch {
       setCategoryProducts([]);

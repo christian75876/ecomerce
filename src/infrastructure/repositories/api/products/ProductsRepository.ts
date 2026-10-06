@@ -28,7 +28,7 @@ import {
 import { ErrorHandler } from '@/infrastructure/repositories/api/errors/ErrorHandler';
 
 export class ProductRepository {
-  static async getProducts(query: IProductsQuery = {}): Promise<IProductsResp> {
+  private static buildProductsQuery(query: IProductsQuery): string {
     const params = new URLSearchParams();
 
     if (query.search) {
@@ -79,10 +79,26 @@ export class ProductRepository {
       params.set('page', String(query.page));
     }
 
-    const suffix = params.toString() ? `?${params.toString()}` : '';
+    return params.toString() ? `?${params.toString()}` : '';
+  }
+
+  static async getProducts(query: IProductsQuery = {}): Promise<IProductsResp> {
+    const suffix = this.buildProductsQuery(query);
 
     return ErrorHandler.handleApiErrors(() =>
       publicClientHTTP.get<IProductsResp>(`/products${suffix}`),
+    );
+  }
+
+  // Panel de gestión (seller/admin): a diferencia de getProducts (catálogo
+  // público), el backend SIEMPRE restringe a las tiendas del usuario
+  // autenticado — necesario para que un seller no vea/gestione productos de
+  // otras tiendas.
+  static async getMyProducts(query: IProductsQuery = {}): Promise<IProductsResp> {
+    const suffix = this.buildProductsQuery(query);
+
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.get<IProductsResp>(`/products/mine${suffix}`),
     );
   }
 

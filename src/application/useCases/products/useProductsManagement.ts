@@ -194,7 +194,7 @@ export const useProductsManagement = () => {
   const [variantCombinations, setVariantCombinations] = useState<VariantCombination[]>([]);
 
   const loadCategories = useCallback(async () => {
-    const response = await CategoriesRepository.getCategories(true);
+    const response = await CategoriesRepository.getMyCategories(true);
     setCategories(response.data);
   }, []);
 
@@ -218,7 +218,7 @@ export const useProductsManagement = () => {
     setError(null);
 
     try {
-      const response = await ProductRepository.getProducts({
+      const response = await ProductRepository.getMyProducts({
         search: search || undefined,
         categoryId: selectedCategoryId || undefined,
         storeId: isAdmin ? contextStoreId : undefined,

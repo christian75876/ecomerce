@@ -21,6 +21,18 @@ export class CategoriesRepository {
     );
   }
 
+  // Panel de gestión (seller/admin): a diferencia de getCategories (catálogo
+  // público), el backend SIEMPRE restringe a las tiendas del usuario
+  // autenticado (más las categorías globales) — necesario para que un
+  // seller no vea/edite categorías de otras tiendas.
+  static async getMyCategories(active?: boolean): Promise<ICategoriesResp> {
+    const query = typeof active === 'boolean' ? `?active=${active}` : '';
+
+    return ErrorHandler.handleApiErrors(() =>
+      authenticatedClientHTTP.get<ICategoriesResp>(`/categories/mine${query}`),
+    );
+  }
+
   static async createCategory(
     payload: ICreateCategoryRequest,
   ): Promise<ICategoryResp> {
