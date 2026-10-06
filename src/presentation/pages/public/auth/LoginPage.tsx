@@ -9,6 +9,7 @@ import { useRegisterCustomer } from '@/application/useCases/auth/useRegisterCust
 import { useFormValidation } from '@/shared/hooks/useFormValidation';
 import { loginSchema } from '@/domain/validations/auth/LoginValidation';
 import { ROUTES } from '@/shared/constants/routes';
+import { ADMIN_WHATSAPP } from '@/shared/config/appContact';
 
 import FormField from '@/presentation/ui/molecules/forms/FormField';
 import Button from '@/presentation/ui/atoms/button/SimpleButton';
@@ -295,9 +296,14 @@ const LoginPage = () => {
                   </button>
                   <p className='mt-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-500'>
                     ¿Quieres vender?{' '}
-                    <Link to={ROUTES.PUBLIC.REGISTER} className='font-semibold text-primary hover:underline'>
-                      Registro de vendedor →
-                    </Link>
+                    <a
+                      href={`https://wa.me/${ADMIN_WHATSAPP}`}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='font-semibold text-primary hover:underline'
+                    >
+                      Contáctanos →
+                    </a>
                   </p>
                 </div>
               )}
@@ -305,9 +311,14 @@ const LoginPage = () => {
               {mode === 'login' ? (
                 <p className='mt-6 text-center text-xs text-slate-400'>
                   ¿Tienes tienda?{' '}
-                  <Link to={ROUTES.PUBLIC.REGISTER} className='font-semibold text-primary hover:underline'>
-                    Regístrate como vendedor
-                  </Link>
+                  <a
+                    href={`https://wa.me/${ADMIN_WHATSAPP}`}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='font-semibold text-primary hover:underline'
+                  >
+                    Contáctanos
+                  </a>
                 </p>
               ) : null}
             </div>

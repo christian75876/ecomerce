@@ -258,7 +258,7 @@ const RegisterPage = () => {
             <p className='mt-1 text-xs text-slate-400'>El correo viene fijo en tu invitación.</p>
           </div>
 
-          <FormField name='phone' label='Teléfono *' control={control} type='text' placeholder='300 123 4567' showLabel boxClassName='w-full' />
+          <FormField name='phone' label='Teléfono *' control={control} type='tel' placeholder='3001234567' onlyDigits maxLength={10} showLabel boxClassName='w-full' />
 
           <FormField
             name='password'

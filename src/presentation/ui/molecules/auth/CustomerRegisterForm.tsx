@@ -82,8 +82,10 @@ const CustomerRegisterForm = ({
         name='phone'
         label='Teléfono *'
         control={control}
-        type='text'
-        placeholder='300 123 4567'
+        type='tel'
+        placeholder='3001234567'
+        onlyDigits
+        maxLength={10}
         showLabel
         boxClassName='w-full'
       />

@@ -15,6 +15,9 @@ interface FormFieldProps<T extends FieldValues> {
   showLabel?: boolean;
   inputClassName?: string;
   boxClassName?: string;
+  /** Descarta todo lo que no sea dígito a medida que se escribe (teléfonos, etc). */
+  onlyDigits?: boolean;
+  maxLength?: number;
 }
 
 const FormField = <T extends FieldValues>({
@@ -25,7 +28,9 @@ const FormField = <T extends FieldValues>({
   placeholder,
   showLabel = false,
   inputClassName = '',
-  boxClassName = 'w-full mb-5'
+  boxClassName = 'w-full mb-5',
+  onlyDigits = false,
+  maxLength,
 }: FormFieldProps<T>) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -55,8 +60,16 @@ const FormField = <T extends FieldValues>({
           <div className='relative'>
             <Input
               {...field}
+              onChange={(e) => {
+                let next = e.target.value;
+                if (onlyDigits) next = next.replace(/\D/g, '');
+                if (maxLength) next = next.slice(0, maxLength);
+                field.onChange(next);
+              }}
               id={name}
               type={inputType}
+              inputMode={onlyDigits ? 'numeric' : undefined}
+              maxLength={maxLength}
               placeholder={placeholder}
               error={fieldState.error?.message}
               className={`${inputClassName} ${isPassword ? 'pr-10' : ''}`}
