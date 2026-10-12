@@ -19,21 +19,18 @@ const BOT_UA =
 const CANONICAL_HOST = 'merku.co';
 const API_URL = 'https://api.merku.co';
 
-// El index.html servido trae siempre el MISMO <title>/<meta description>
-// genéricos y el mismo <link rel="canonical"> apuntando a "https://merku.co/"
-// para CUALQUIER ruta (vienen fijos del build) — cada página los corrige del
-// lado del cliente con react-helmet-async, pero eso depende de que el
-// renderizador de Google ejecute el JS y capture el DOM ya actualizado antes
-// de tomar esas señales. Si Google se queda con el HTML crudo (sin renderizar,
-// que es lo que pasa en su primera pasada de rastreo), ve literalmente el
-// mismo título/descripción/canonical en /home, /stores, /ayuda, etc. — y con
-// el tiempo empezó a marcar cada vez más de esas páginas como "Soft 404"
-// (parecen todas la misma página) y "Página alternativa con etiqueta
-// canónica adecuada" (cree que la versión real de cada una es la raíz, que a
-// su vez redirige de vuelta). Se corrige directo en el HTML de respuesta acá,
-// con los mismos valores que ya usa cada página vía Helmet, para que el
-// contenido sea correcto desde el primer byte sin depender de que el JS
-// llegue a correr.
+// El <title> del index.html servido venía siempre fijo/genérico para
+// CUALQUIER ruta — cada página lo corrige del lado del cliente con
+// react-helmet-async, pero eso depende de que el renderizador de Google
+// ejecute el JS y capture el DOM ya actualizado antes de tomar esa señal. Si
+// Google se queda con el HTML crudo (sin renderizar, que es lo que pasa en su
+// primera pasada de rastreo), veía literalmente el mismo título en /home,
+// /stores, /ayuda, etc. — y empezó a marcar cada vez más de esas páginas como
+// "Soft 404" (parecen todas la misma página). <link rel="canonical"> y
+// <meta name="description"> tuvieron el mismo problema en su momento, pero
+// un commit posterior (index.html) los QUITÓ del HTML estático por completo
+// (para no duplicarlos con los que ya inyecta Helmet) — así que ahora no
+// basta con reescribirlos si existen: hay que insertarlos cuando faltan.
 const STATIC_PAGE_META = new Map([
   ['/bienvenida', {
     title: 'Merku — Abre tu tienda online y vende más',
@@ -64,6 +61,14 @@ const STATIC_PAGE_META = new Map([
     description: 'Conoce cómo Merku recopila, usa y protege tus datos personales conforme a la Ley 1581 de 2012 de Colombia.',
   }],
 ]);
+
+function escapeHtmlAttr(value) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
 
 export default {
   async fetch(request, env) {
@@ -125,20 +130,21 @@ export default {
 
     if (meta && (response.headers.get('content-type') ?? '').includes('text/html')) {
       const canonicalUrl = `https://${CANONICAL_HOST}${url.pathname}`;
+      // index.html ya no trae <link rel="canonical"> ni <meta name="description">
+      // estáticos (se quitaron para no duplicar los que agrega Helmet) — hay que
+      // insertarlos en <head>, no reescribirlos, porque ya no existen de entrada.
+      const injected =
+        `<meta name="description" content="${escapeHtmlAttr(meta.description)}">` +
+        `<link rel="canonical" href="${canonicalUrl}">`;
       return new HTMLRewriter()
         .on('title', {
           element(el) {
             el.setInnerContent(meta.title);
           },
         })
-        .on('meta[name="description"]', {
+        .on('head', {
           element(el) {
-            el.setAttribute('content', meta.description);
-          },
-        })
-        .on('link[rel="canonical"]', {
-          element(el) {
-            el.setAttribute('href', canonicalUrl);
+            el.append(injected, { html: true });
           },
         })
         .transform(response);
