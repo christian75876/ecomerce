@@ -13,6 +13,13 @@ const PrivacyPage = () => (
       <meta name='description' content='Conoce cómo Merku recopila, usa y protege tus datos personales conforme a la Ley 1581 de 2012 de Colombia.' />
       <link rel='canonical' href={`${APP_URL}/privacidad`} />
       <meta name='robots' content='index, follow' />
+      <meta property='og:type' content='website' />
+      <meta property='og:site_name' content='Merku' />
+      <meta property='og:url' content={`${APP_URL}/privacidad`} />
+      <meta property='og:title' content='Política de privacidad — Merku' />
+      <meta property='og:description' content='Conoce cómo Merku recopila, usa y protege tus datos personales conforme a la Ley 1581 de 2012 de Colombia.' />
+      <meta property='og:image' content={`${APP_URL}/og-image.png`} />
+      <meta name='twitter:card' content='summary_large_image' />
     </Helmet>
 
     {/* Header */}

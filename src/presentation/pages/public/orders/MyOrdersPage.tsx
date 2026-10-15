@@ -9,6 +9,7 @@ import type { IOrder } from '@/application/dtos/orders/response/OrderResponse';
 import { OrderInvoiceModal } from '@/presentation/ui/organisms/orders/OrderInvoiceModal';
 import { OrdersRepository } from '@/infrastructure/repositories/api/orders/OrdersRepository';
 import { resolveEvidenceUrl } from '@/shared/utils/buildEvidenceUrl';
+import { buildProductPath } from '@/shared/utils/productUrl';
 
 const BASE_URL = (import.meta.env.VITE_API_URL as string ?? import.meta.env.VITE_API_BASE_URL as string ?? 'http://127.0.0.1:3000/api/').replace(/\/api\/?$/, '');
 
@@ -58,7 +59,7 @@ const ProductThumb = ({
   const text = size === 'lg' ? 'text-xl' : 'text-sm';
   return (
     <Link
-      to={ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', productId)}
+      to={buildProductPath(productId, name)}
       onClick={(e) => e.stopPropagation()}
       className={`${dim} shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-50 transition hover:opacity-80 hover:shadow-md`}
       title={name}
@@ -544,7 +545,7 @@ const DetailPanel = ({
                       />
                       <div className='min-w-0 flex-1'>
                         <Link
-                          to={ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', item.productId)}
+                          to={buildProductPath(item.productId, item.product?.name)}
                           className='block truncate text-sm font-semibold text-slate-800 hover:text-primary hover:underline'
                         >
                           {item.product?.name ?? 'Producto'}

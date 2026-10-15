@@ -190,7 +190,7 @@ const ProductInformation = ({ product, gallery = [], footer }: ProductInformatio
           ) : null}
         </Box>
 
-        <Typography variant='h2' className='text-4xl font-bold text-balance'>
+        <Typography variant='h1' className='text-4xl font-bold tracking-[-0.03em] text-balance md:text-3xl'>
           {product.name}
         </Typography>
 

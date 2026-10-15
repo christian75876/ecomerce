@@ -4,7 +4,7 @@ import ProductCard from '../../molecules/products/ProductCard';
 import Box from '../../atoms/box/SimpleBox';
 import Typography from '../../atoms/typography/SimpleTypography';
 import { Reveal } from '../../molecules/common/Reveal';
-import { ROUTES } from '@/shared/constants/routes';
+import { buildProductPath } from '@/shared/utils/productUrl';
 
 /** Stagger delay per grid position, capped so a long grid doesn't leave the
  * last rows waiting seconds to reveal — only the first "page" staggers,
@@ -76,7 +76,7 @@ const ProductBody = ({
         addToCartLabel={product.hasVariants ? 'Ver opciones' : 'Agregar'}
         onAddToCart={() => {
           if (product.hasVariants) {
-            navigate(ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', product.id));
+            navigate(buildProductPath(product.id, product.name));
           } else {
             onAddToCart?.(product.id);
           }
@@ -134,7 +134,7 @@ const ProductBody = ({
                 addToCartLabel={product.hasVariants ? 'Ver opciones' : 'Agregar'}
                 onAddToCart={() => {
                   if (product.hasVariants) {
-                    navigate(ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', product.id));
+                    navigate(buildProductPath(product.id, product.name));
                   } else {
                     onAddToCart?.(product.id);
                   }

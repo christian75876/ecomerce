@@ -11,7 +11,10 @@ Disallow: /pos
 Disallow: /cash
 Disallow: /purchases
 Disallow: /suppliers
+Disallow: /customers
 Disallow: /categories
+Disallow: /coupons
+Disallow: /sales-history
 Disallow: /audit
 Disallow: /invitations
 Disallow: /cart
@@ -20,4 +23,10 @@ Disallow: /profile
 Disallow: /favorites
 Disallow: /verify-email
 
-Sitemap: https://api.merku.co/sitemap.xml
+# El sitemap se sirve desde este mismo dominio (el Worker lo trae del backend).
+# No apuntar a api.merku.co: el robots.txt de ese host bloquea todo (Disallow: /)
+# y Google no puede leer un sitemap alojado en una URL bloqueada.
+Sitemap: https://merku.co/sitemap.xml
+
+# Resumen del sitio para asistentes de IA (ChatGPT, Claude, Perplexity…)
+# llms.txt: https://merku.co/llms.txt

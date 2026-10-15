@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants/routes';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import { buildAssetUrl, buildResponsiveSrcSet, cloudinaryTransform } from '@/shared/utils/buildAssetUrl';
+import { buildProductPath } from '@/shared/utils/productUrl';
 
 const RESPONSIVE_WIDTHS = [320, 480, 640, 960];
 const CARD_IMAGE_SIZES = '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 240px';
@@ -76,7 +77,7 @@ const ProductCard = ({
     <article className={`group relative flex h-full overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card transition-all duration-250 ease-spring hover:-translate-y-1.5 hover:-rotate-1 hover:border-primary/25 hover:shadow-panel ${layoutStyle === 'LIST' ? 'flex-row hover:rotate-0' : 'flex-col'}`}>
       {/* ── Image ── */}
       <Link
-        to={ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', id)}
+        to={buildProductPath(id, name)}
         className={`block shrink-0 ${layoutStyle === 'LIST' ? 'w-40 sm:w-56' : ''}`}
         tabIndex={-1}
         aria-label={name}
@@ -152,7 +153,7 @@ const ProductCard = ({
           </div>
         ) : null}
 
-        <Link to={ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', id)}>
+        <Link to={buildProductPath(id, name)}>
           <h3 className='line-clamp-2 text-sm font-semibold leading-snug text-slate-800 transition-colors group-hover:text-primary'>
             {name}
           </h3>

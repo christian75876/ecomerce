@@ -78,7 +78,8 @@ const LoginPage = () => {
       <Helmet>
         <title>Iniciar sesión — Merku</title>
         <meta name='description' content='Ingresa a tu cuenta de Merku para comprar en tiendas locales o gestionar tu negocio: catálogo, inventario, POS y más.' />
-        <link rel='canonical' href={`${import.meta.env.VITE_APP_URL ?? ''}/auth`} />
+        {/* Formulario sin contenido indexable: fuera del índice, pero sus enlaces se siguen. */}
+        <meta name='robots' content='noindex, follow' />
         <meta property='og:type' content='website' />
         <meta property='og:site_name' content='Merku' />
         <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/auth`} />

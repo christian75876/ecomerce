@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '@/shared/constants/routes';
 import { IProduct } from '@/application/dtos/products/response/ProductResponse';
 import { IMenuCategory } from '@/application/dtos/menu-categories/response/MenuCategoryResponse';
 import MenuItemRow from '@/presentation/ui/molecules/products/MenuItemRow';
 import ProductQuickViewModal from '@/presentation/ui/molecules/products/ProductQuickViewModal';
 import PdfViewerModal from '@molecules/common/PdfViewerModal';
+import { buildProductPath } from '@/shared/utils/productUrl';
 
 interface RestaurantMenuViewProps {
   products: IProduct[];
@@ -175,7 +175,7 @@ const RestaurantMenuView = ({
           onClose={() => setQuickViewProduct(null)}
           onAddToCart={() => {
             if (quickViewProduct.hasVariants) {
-              navigate(ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', quickViewProduct.id));
+              navigate(buildProductPath(quickViewProduct.id, quickViewProduct.name));
             } else {
               onAddToCart(quickViewProduct.id);
             }

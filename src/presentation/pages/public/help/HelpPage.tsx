@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useId } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants/routes';
@@ -56,20 +56,29 @@ const Code = ({ children }: { children: React.ReactNode }) => (
 
 const Accordion = ({ title, icon, children, defaultOpen = false }: AccordionProps) => {
   const [open, setOpen] = useState(defaultOpen);
+  const panelId = useId();
+  // El contenido se renderiza siempre y se oculta con `hidden`: si solo se
+  // montaba al abrir, Google (que no hace clic) nunca veía el texto de las guías.
   return (
     <div className='rounded-2xl border border-slate-200 bg-white overflow-hidden'>
-      <button
-        type='button'
-        onClick={() => setOpen((o) => !o)}
-        className='flex w-full items-center justify-between gap-3 px-5 py-4 text-left'
-      >
-        <div className='flex items-center gap-3'>
-          <i className={`bx ${icon} text-xl text-primary`} aria-hidden='true' />
-          <span className='font-semibold text-slate-800'>{title}</span>
-        </div>
-        <i className={`bx bx-chevron-down text-lg text-slate-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} aria-hidden='true' />
-      </button>
-      {open ? <div className='border-t border-slate-100 px-5 py-5 space-y-4'>{children}</div> : null}
+      <h2>
+        <button
+          type='button'
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          aria-controls={panelId}
+          className='flex w-full items-center justify-between gap-3 px-5 py-4 text-left'
+        >
+          <span className='flex items-center gap-3'>
+            <i className={`bx ${icon} text-xl text-primary`} aria-hidden='true' />
+            <span className='font-semibold text-slate-800'>{title}</span>
+          </span>
+          <i className={`bx bx-chevron-down text-lg text-slate-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} aria-hidden='true' />
+        </button>
+      </h2>
+      <div id={panelId} hidden={!open} className='border-t border-slate-100 px-5 py-5 space-y-4'>
+        {children}
+      </div>
     </div>
   );
 };
@@ -462,7 +471,9 @@ const HelpPage = () => {
         <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/ayuda`} />
         <meta property='og:title' content='Centro de ayuda — Merku' />
         <meta property='og:description' content='Encuentra respuestas sobre cómo usar Merku.' />
-        <meta name='twitter:card' content='summary' />
+        <meta property='og:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
+        <meta name='twitter:card' content='summary_large_image' />
+        <meta name='twitter:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
         <meta name='twitter:title' content='Centro de ayuda — Merku' />
         <meta name='twitter:description' content='Encuentra respuestas sobre cómo usar Merku.' />
       </Helmet>

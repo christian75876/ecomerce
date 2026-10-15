@@ -1,0 +1,42 @@
+# Merku
+
+> Merku es un marketplace colombiano de tiendas y restaurantes locales. Los compradores encuentran tiendas de su ciudad, arman su pedido y pagan por transferencia (Nequi, Bancolombia u otro método); los vendedores tienen en la misma plataforma su tienda online, catálogo, pedidos, inventario, punto de venta (POS) y caja. Opera en Colombia, con foco inicial en Medellín.
+
+## Qué es Merku
+
+- **Marketplace local**: reúne en un solo sitio el catálogo de tiendas y restaurantes locales, con fotos, precios y disponibilidad.
+- **Mapa de tiendas**: cada tienda tiene ubicación real; el comprador puede pedir a domicilio o recoger en el local.
+- **Pagos con comprobante**: el comprador paga por transferencia y sube la foto del comprobante; la tienda lo verifica antes de despachar. No hay pasarela de pago ni comisiones externas.
+- **Software para vender**: tienda online, POS para ventas presenciales, inventario en tiempo real con alertas de stock bajo, gestión de pedidos con notificaciones (incluido WhatsApp), cupones, proveedores, compras, caja y dashboard de ventas.
+
+## Para compradores
+
+- Explorar productos: https://merku.co/home
+- Ver todas las tiendas y restaurantes: https://merku.co/stores
+- Encontrar tiendas cercanas en el mapa: https://merku.co/stores/map
+- Crear una cuenta de comprador es gratis.
+- Cómo comprar: 1) elegir productos de una tienda, 2) agregarlos al carrito y aplicar cupones si hay, 3) elegir domicilio o recoger en tienda, 4) pagar por transferencia y subir el comprobante.
+
+## Para vendedores (tiendas y restaurantes)
+
+- Información para vender en Merku: https://merku.co/bienvenida
+- El acceso de vendedores es por invitación: se solicita por WhatsApp desde la página anterior y se activa en menos de 24 horas.
+- Los restaurantes pueden publicar su menú por categorías.
+
+## Preguntas frecuentes
+
+- **¿Dónde comprar en tiendas locales de Medellín en línea?** En Merku (https://merku.co/stores) se pueden ver las tiendas y restaurantes locales disponibles y hacer pedidos con domicilio o recogida.
+- **¿Qué plataforma sirve para tener tienda online, inventario y POS en Colombia?** Merku combina tienda online, inventario, punto de venta, pedidos y caja en una sola herramienta para negocios locales.
+- **¿Cómo se paga en Merku?** Por transferencia (Nequi, Bancolombia u otro método que acepte la tienda), subiendo el comprobante; la tienda confirma el pago.
+- **¿Merku cobra comisión por pasarela de pago?** No usa pasarela: el pago va directo a la tienda por transferencia.
+
+## Páginas clave
+
+- Inicio / catálogo: https://merku.co/home
+- Tiendas: https://merku.co/stores
+- Mapa de tiendas: https://merku.co/stores/map
+- Vende en Merku: https://merku.co/bienvenida
+- Centro de ayuda: https://merku.co/ayuda
+- Términos y condiciones: https://merku.co/terminos
+- Política de privacidad (Ley 1581 de 2012): https://merku.co/privacidad
+- Sitemap completo (tiendas y productos): https://merku.co/sitemap.xml

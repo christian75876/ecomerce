@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
-import { ROUTES } from '@/shared/constants/routes';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import { buildAssetUrl } from '@/shared/utils/buildAssetUrl';
+import { buildProductPath } from '@/shared/utils/productUrl';
 
 const fallbackImage =
   'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80';
@@ -100,7 +100,7 @@ const ProductQuickViewModal = ({
               Agregar al carrito
             </button>
             <Link
-              to={ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', id)}
+              to={buildProductPath(id, name)}
               className='flex h-11 items-center justify-center rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-600 transition hover:border-primary/30 hover:text-primary'
             >
               Ver más

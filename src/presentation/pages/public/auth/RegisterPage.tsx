@@ -126,7 +126,8 @@ const RegisterPage = () => {
         <Helmet>
           <title>Crea tu cuenta — Merku</title>
           <meta name='description' content='Regístrate gratis en Merku para comprar en tiendas y restaurantes locales.' />
-          <link rel='canonical' href={`${import.meta.env.VITE_APP_URL ?? ''}/register`} />
+          {/* Formulario sin contenido indexable: fuera del índice, pero sus enlaces se siguen. */}
+          <meta name='robots' content='noindex, follow' />
           <meta property='og:type' content='website' />
           <meta property='og:site_name' content='Merku' />
           <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/register`} />

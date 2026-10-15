@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { buildAssetUrl } from '@/shared/utils/buildAssetUrl';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -168,11 +169,11 @@ const StoreDetailPage = () => {
         <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/stores/${store.slug}`} />
         <meta property='og:title' content={`${store.name} — Merku`} />
         <meta property='og:description' content={store.description || `Explora los productos de ${store.name} en Merku.`} />
-        <meta property='og:image' content={store.bannerUrl || store.logoUrl || `${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
+        <meta property='og:image' content={buildAssetUrl(store.bannerUrl) || buildAssetUrl(store.logoUrl) || `${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
         <meta name='twitter:card' content='summary_large_image' />
         <meta name='twitter:title' content={`${store.name} — Merku`} />
         <meta name='twitter:description' content={store.description || `Explora los productos de ${store.name} en Merku.`} />
-        <meta name='twitter:image' content={store.bannerUrl || store.logoUrl || `${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
+        <meta name='twitter:image' content={buildAssetUrl(store.bannerUrl) || buildAssetUrl(store.logoUrl) || `${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
       </Helmet>
 
       <div className={`section-full-bleed space-y-8 ${font}`} style={themeVars}>

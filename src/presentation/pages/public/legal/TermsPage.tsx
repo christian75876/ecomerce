@@ -13,6 +13,13 @@ const TermsPage = () => (
       <meta name='description' content='Consulta los términos y condiciones de uso de Merku, la plataforma de marketplace y gestión de tiendas locales en Colombia.' />
       <link rel='canonical' href={`${APP_URL}/terminos`} />
       <meta name='robots' content='index, follow' />
+      <meta property='og:type' content='website' />
+      <meta property='og:site_name' content='Merku' />
+      <meta property='og:url' content={`${APP_URL}/terminos`} />
+      <meta property='og:title' content='Términos y condiciones — Merku' />
+      <meta property='og:description' content='Consulta los términos y condiciones de uso de Merku, la plataforma de marketplace y gestión de tiendas locales en Colombia.' />
+      <meta property='og:image' content={`${APP_URL}/og-image.png`} />
+      <meta name='twitter:card' content='summary_large_image' />
     </Helmet>
 
     {/* Header */}

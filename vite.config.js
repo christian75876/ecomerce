@@ -28,13 +28,17 @@ export default defineConfig({
 
       injectManifest: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff,woff2}'],
+        // draco/ (decodificadores 3D, sin uso en la app) y la fuente SVG de
+        // boxicons (1,2 MB; los navegadores modernos usan la woff2) inflaban
+        // el precache del service worker en la primera visita.
+        globIgnores: ['draco/**', 'assets/boxicons-*.svg'],
       },
 
       manifest: {
         name: 'Merku',
         short_name: 'Merku',
         description: 'Marketplace con tiendas, restaurantes, catálogo, pedidos y más.',
-        lang: 'es-ES',
+        lang: 'es-CO',
         start_url: '/',
         scope: '/',
         display: 'standalone',
@@ -93,11 +97,33 @@ export default defineConfig({
         // vendor chunks so a change to app code doesn't invalidate the cache
         // for these, and pages that don't use maps/charts don't pay for them
         // in the main bundle.
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-leaflet': ['leaflet', 'react-leaflet'],
-          'vendor-recharts': ['recharts'],
-          'vendor-motion': ['framer-motion'],
+        //
+        // Forma de función (no objeto): con la forma objeto, Rollup metía en
+        // vendor-recharts dependencias compartidas (p. ej. clsx) que el entry
+        // también usa, así que los ~410 KB de recharts se precargaban en TODAS
+        // las páginas públicas aunque solo los usa el dashboard privado.
+        manualChunks(id) {
+          // Utilidades compartidas que usan tanto la app como recharts/leaflet:
+          // Rollup mete las dependencias no asignadas dentro del primer chunk
+          // manual que las importa, así que sin esto arrastraban ese chunk
+          // completo a la carga inicial. Van con vendor-react, que ya es eager.
+          if (id.includes('commonjsHelpers') || /[\\/]node_modules[\\/](clsx|tailwind-merge)[\\/]/.test(id)) {
+            return 'vendor-react';
+          }
+          if (!id.includes('node_modules')) return undefined;
+          if (/[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/.test(id)) {
+            return 'vendor-react';
+          }
+          if (/[\\/]node_modules[\\/](leaflet|react-leaflet|@react-leaflet[\\/][^\\/]+)[\\/]/.test(id)) {
+            return 'vendor-leaflet';
+          }
+          if (/[\\/]node_modules[\\/](recharts|recharts-scale|victory-vendor|d3-[^\\/]+|internmap|decimal\.js-light)[\\/]/.test(id)) {
+            return 'vendor-recharts';
+          }
+          if (/[\\/]node_modules[\\/](framer-motion|motion-dom|motion-utils)[\\/]/.test(id)) {
+            return 'vendor-motion';
+          }
+          return undefined;
         },
       },
     },

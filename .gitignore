@@ -29,3 +29,6 @@ dist-ssr
 *.sln
 *.sw?
 *.txt
+# Archivos públicos que SÍ deben versionarse pese a *.txt
+!public/robots.txt
+!public/llms.txt

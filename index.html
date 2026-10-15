@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="es">
+<html lang="es-CO">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Título y meta description por defecto: solo se usan como fallback antes de
          que React monte y react-helmet-async inyecte los reales de cada ruta. NO
          agregar aquí <link rel="canonical">, og:url, og:title, og:description ni
@@ -10,11 +10,13 @@
          y react-helmet-async NO reemplaza tags estáticos del HTML, solo añade los
          suyos: tenerlos aquí también produce tags duplicados y contradictorios
          (p. ej. dos <link rel="canonical"> con URLs distintas), lo que confundió a
-         Google y causó los "Soft 404" / "Descubierta: actualmente sin indexar". -->
+         Google y causó los "Soft 404" / "Descubierta: actualmente sin indexar".
+         Los tags de abajo que llevan data-rh="true" son valores por defecto que
+         Helmet SÍ reemplaza (los reconoce como suyos) cuando una página define
+         los propios — sin ese atributo quedarían duplicados. -->
     <title>Merku — Gestión de tienda, inventario y ventas</title>
-    <meta name="keywords" content="marketplace Colombia, tiendas online, vender en línea, gestión de inventario, punto de venta, POS, catálogo digital, Merku" />
     <meta name="author" content="Merku" />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content="index, follow" data-rh="true" />
     <meta name="theme-color" content="#FF6B35" />
 
     <!-- PWA (manifest injected by VitePWA at build time as manifest.webmanifest) -->
@@ -29,30 +31,56 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
 
-    <!-- Open Graph (solo campos que ninguna página sobreescribe vía Helmet) -->
-    <meta property="og:type"        content="website" />
-    <meta property="og:site_name"   content="Merku" />
+    <!-- Open Graph por defecto (data-rh: Helmet los reemplaza en cada página) -->
+    <meta property="og:type"        content="website" data-rh="true" />
+    <meta property="og:site_name"   content="Merku" data-rh="true" />
     <meta property="og:locale"      content="es_CO" />
-    <meta property="og:image"       content="%VITE_APP_URL%/og-image.png" />
-    <meta property="og:image:width"  content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt"   content="Merku — Tu mercado local, en un solo lugar" />
+    <meta property="og:image"       content="%VITE_APP_URL%/og-image.png" data-rh="true" />
+    <meta property="og:image:width"  content="1200" data-rh="true" />
+    <meta property="og:image:height" content="630" data-rh="true" />
+    <meta property="og:image:alt"   content="Merku — Tu mercado local, en un solo lugar" data-rh="true" />
 
     <!-- Twitter / X Card -->
-    <meta name="twitter:card"        content="summary_large_image" />
-    <meta name="twitter:image"       content="%VITE_APP_URL%/og-image.png" />
-    <meta name="twitter:image:alt"   content="Merku — Tu mercado local, en un solo lugar" />
+    <meta name="twitter:card"        content="summary_large_image" data-rh="true" />
+    <meta name="twitter:image"       content="%VITE_APP_URL%/og-image.png" data-rh="true" />
+    <meta name="twitter:image:alt"   content="Merku — Tu mercado local, en un solo lugar" data-rh="true" />
 
-    <!-- Structured data — Organization -->
+    <!-- Structured data — Organization + WebSite (sin data-rh: deben quedarse
+         en todas las páginas, aunque una página agregue su propio JSON-LD).
+         Pendiente: agregar "sameAs" con las URLs de las redes oficiales. -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Merku",
-      "url": "%VITE_APP_URL%",
-      "logo": "%VITE_APP_URL%/icons/icon-512x512.png",
-      "description": "Marketplace y plataforma de gestión de tiendas locales en Colombia.",
-      "sameAs": []
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "%VITE_APP_URL%/#organization",
+          "name": "Merku",
+          "url": "%VITE_APP_URL%",
+          "logo": "%VITE_APP_URL%/icons/icon-512x512.png",
+          "image": "%VITE_APP_URL%/og-image.png",
+          "description": "Merku es un marketplace colombiano donde tiendas y restaurantes locales publican su catálogo, reciben pedidos y gestionan inventario, ventas y punto de venta (POS) en una sola plataforma.",
+          "slogan": "Tu mercado local, en un solo lugar",
+          "areaServed": { "@type": "Country", "name": "Colombia" },
+          "location": {
+            "@type": "Place",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Medellín",
+              "addressRegion": "Antioquia",
+              "addressCountry": "CO"
+            }
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "%VITE_APP_URL%/#website",
+          "name": "Merku",
+          "url": "%VITE_APP_URL%",
+          "inLanguage": "es-CO",
+          "publisher": { "@id": "%VITE_APP_URL%/#organization" }
+        }
+      ]
     }
     </script>
 

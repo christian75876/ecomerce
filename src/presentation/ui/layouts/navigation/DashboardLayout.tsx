@@ -7,6 +7,7 @@ import MobileHeaderLayout from '@presentation/ui/layouts/navigation/MobileHeader
 import DesktopHeaderLayout from '@presentation/ui/layouts/navigation/DesktopHeaderLayout';
 import AdminSidebar from '@presentation/ui/layouts/navigation/AdminSidebar';
 import RouteFallback from '@organisms/navigation/RouteFallback';
+import PublicFooter from '@organisms/navigation/PublicFooter';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -40,10 +41,12 @@ const DashboardLayout = ({
       {isMobile ? <MobileHeaderLayout /> : <DesktopHeaderLayout />}
 
       <main
-        className={`mx-auto flex-1 w-full max-w-[1440px] px-4 sm:px-6 lg:px-8 ${isMobile ? 'py-6 pb-24' : 'pt-20 pb-10'}`}
+        className={`mx-auto flex-1 w-full max-w-[1440px] px-4 sm:px-6 lg:px-8 ${isMobile ? `py-6 ${isAdminUser ? 'pb-24' : 'pb-6'}` : 'pt-20 pb-10'}`}
       >
         <Suspense fallback={<RouteFallback />}>{children}</Suspense>
       </main>
+
+      {isAdminUser ? null : <PublicFooter isMobile={isMobile} />}
     </Box>
   );
 };

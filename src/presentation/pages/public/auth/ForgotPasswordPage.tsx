@@ -151,7 +151,8 @@ const ForgotPasswordPage = () => {
         <Helmet>
           <title>Recuperar contraseña — Merku</title>
           <meta name='description' content='Recupera el acceso a tu cuenta de Merku en unos pocos pasos.' />
-          <link rel='canonical' href={`${import.meta.env.VITE_APP_URL ?? ''}/forgot-password`} />
+          {/* Formulario sin contenido indexable: fuera del índice, pero sus enlaces se siguen. */}
+          <meta name='robots' content='noindex, follow' />
         </Helmet>
         <div className={CARD}>
           <Link

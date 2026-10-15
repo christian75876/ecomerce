@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '@/shared/constants/routes';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import { buildAssetUrl } from '@/shared/utils/buildAssetUrl';
+import { buildProductPath } from '@/shared/utils/productUrl';
 
 const fallbackImage =
   'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80';
@@ -48,7 +48,7 @@ const MenuItemRow = ({
 
   const handleAddClick = () => {
     if (hasVariants) {
-      navigate(ROUTES.PUBLIC.PRODUCT_DETAILS.replace(':productId', id));
+      navigate(buildProductPath(id, name));
     } else {
       onAddToCart();
     }

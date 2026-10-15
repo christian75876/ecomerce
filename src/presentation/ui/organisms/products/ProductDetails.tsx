@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Typography from '../../atoms/typography/SimpleTypography';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import ProductInformation from '../../molecules/products/ProductInformation';
 import { usePublicProductDetail } from '@/application/useCases/products/usePublicProductDetail';
 import Box from '../../atoms/box/SimpleBox';
@@ -14,6 +14,11 @@ import WhatsAppFloat from '../../atoms/whatsapp/WhatsAppFloat';
 import InstagramEmbed from '../../atoms/video/InstagramEmbed';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import AgeGate, { isStoreVerified, markStoreVerified } from '@/presentation/ui/molecules/common/AgeGate';
+import { buildProductPath, extractProductId } from '@/shared/utils/productUrl';
+import { buildAssetUrl } from '@/shared/utils/buildAssetUrl';
+import { serializeJsonLd, toMetaDescription } from '@/shared/utils/jsonLd';
+
+const APP_URL = import.meta.env.VITE_APP_URL ?? '';
 
 function getYouTubeEmbedUrl(url: string): string | null {
   const match = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]+)/);
@@ -30,8 +35,10 @@ function getFacebookEmbedUrl(url: string): string {
 }
 
 const ProductDetails = () => {
-  const { productId } = useParams<{ productId: string }>();
+  const { productId: productParam } = useParams<{ productId: string }>();
+  const productId = extractProductId(productParam);
   const navigate = useNavigate();
+  const location = useLocation();
   const { product, relatedProducts, gallery, videos, loading, error } = usePublicProductDetail(productId);
   const { addItem } = useCart();
   const [added, setAdded] = useState(false);
@@ -43,6 +50,15 @@ const ProductDetails = () => {
     if (!product?.store) return;
     setAgeVerified(!product.store.isAdultContent || isStoreVerified(product.store.id));
   }, [product?.store]);
+
+  // URLs viejas (/product/<uuid>) o con un slug desactualizado: se reemplazan
+  // por la canónica /product/<slug>-<uuid> sin agregar entrada al historial.
+  const canonicalPath = product ? buildProductPath(product.id, product.name) : null;
+  useEffect(() => {
+    if (canonicalPath && location.pathname !== canonicalPath) {
+      navigate({ pathname: canonicalPath, search: location.search, hash: location.hash }, { replace: true });
+    }
+  }, [canonicalPath, location.pathname, location.search, location.hash, navigate]);
 
   const isOutOfStock = (product?.availableQuantity ?? 1) === 0;
   const handleAddToCart = () => {
@@ -93,30 +109,44 @@ const ProductDetails = () => {
   }
 
 
+  const productUrl = `${APP_URL}${canonicalPath}`;
+  const metaDescription = toMetaDescription(
+    product.description,
+    product.store
+      ? `${product.name} a ${formatCurrencyCOP(Number(product.price))} en ${product.store.name}. Pide en línea en Merku.`
+      : `${product.name} a ${formatCurrencyCOP(Number(product.price))}. Pide en línea en Merku.`,
+  );
+  const productImages = [product.imageUrl, ...gallery.map((img) => img.imageUrl)]
+    .map((src) => buildAssetUrl(src))
+    .filter((src, i, all): src is string => !!src && all.indexOf(src) === i);
+  const ogImage = productImages[0] ?? `${APP_URL}/og-image.png`;
+
   return (
     <>
       <Helmet>
         <title>{`${product.name} — Merku`}</title>
-        <meta name='description' content={product.description.slice(0, 155)} />
-        <link rel='canonical' href={`${import.meta.env.VITE_APP_URL ?? ''}/product/${product.id}`} />
+        <meta name='description' content={metaDescription} />
+        <link rel='canonical' href={productUrl} />
         <meta property='og:type' content='product' />
         <meta property='og:site_name' content='Merku' />
-        <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/product/${product.id}`} />
+        <meta property='og:url' content={productUrl} />
         <meta property='og:title' content={`${product.name} — Merku`} />
-        <meta property='og:description' content={product.description.slice(0, 155)} />
-        <meta property='og:image' content={product.imageUrl || `${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
+        <meta property='og:description' content={metaDescription} />
+        <meta property='og:image' content={ogImage} />
         <meta name='twitter:card' content='summary_large_image' />
         <meta name='twitter:title' content={`${product.name} — Merku`} />
-        <meta name='twitter:description' content={product.description.slice(0, 155)} />
-        <meta name='twitter:image' content={product.imageUrl || `${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
-        <script type='application/ld+json'>{JSON.stringify({
+        <meta name='twitter:description' content={metaDescription} />
+        <meta name='twitter:image' content={ogImage} />
+        <script type='application/ld+json'>{serializeJsonLd({
           '@context': 'https://schema.org',
           '@type': 'Product',
           name: product.name,
-          description: product.description.slice(0, 500),
-          image: product.imageUrl ?? undefined,
-          sku: product.sku ?? undefined,
+          description: product.description ? product.description.slice(0, 5000) : metaDescription,
+          url: productUrl,
+          image: productImages.length ? productImages : undefined,
+          sku: product.sku || undefined,
           brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
+          category: product.category?.name || undefined,
           offers: {
             '@type': 'Offer',
             priceCurrency: 'COP',
@@ -124,8 +154,35 @@ const ProductDetails = () => {
             availability: product.availableQuantity > 0
               ? 'https://schema.org/InStock'
               : 'https://schema.org/OutOfStock',
-            url: `${import.meta.env.VITE_APP_URL ?? ''}/product/${product.id}`,
+            itemCondition: 'https://schema.org/NewCondition',
+            url: productUrl,
+            seller: product.store
+              ? { '@type': 'Organization', name: product.store.name, url: `${APP_URL}/stores/${product.store.slug}` }
+              : undefined,
           },
+          aggregateRating: product.averageRating && product.reviewCount > 0
+            ? {
+                '@type': 'AggregateRating',
+                ratingValue: Number(product.averageRating),
+                reviewCount: product.reviewCount,
+                bestRating: 5,
+                worstRating: 1,
+              }
+            : undefined,
+        })}</script>
+        <script type='application/ld+json'>{serializeJsonLd({
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { name: 'Inicio', item: `${APP_URL}/home` },
+            ...(product.store
+              ? [
+                  { name: 'Tiendas', item: `${APP_URL}/stores` },
+                  { name: product.store.name, item: `${APP_URL}/stores/${product.store.slug}` },
+                ]
+              : []),
+            { name: product.name, item: productUrl },
+          ].map((crumb, i) => ({ '@type': 'ListItem', position: i + 1, ...crumb })),
         })}</script>
       </Helmet>
 

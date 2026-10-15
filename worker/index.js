@@ -13,8 +13,24 @@
 //      por el backend (/og/product/:id, /og/store/:slug) en vez de la SPA vacía.
 //   3. Cualquier otra request sigue el flujo normal (assets estáticos / SPA).
 
+// Incluye los rastreadores de buscadores con IA (ChatGPT, Claude, Perplexity,
+// DuckDuckGo): ninguno ejecuta JS, así que sin esto veían solo
+// `<div id="root"></div>` y no podían citar productos ni tiendas.
 const BOT_UA =
-  /facebookexternalhit|facebot|twitterbot|whatsapp|telegrambot|slackbot|linkedinbot|discordbot|googlebot|bingbot|yandexbot|applebot/i;
+  /facebookexternalhit|facebot|twitterbot|whatsapp|telegrambot|slackbot|linkedinbot|discordbot|googlebot|google-inspectiontool|bingbot|yandexbot|applebot|duckduckbot|gptbot|oai-searchbot|chatgpt-user|claudebot|claude-searchbot|claude-user|perplexitybot|perplexity-user|ccbot|amazonbot/i;
+
+// Rutas que existen en la SPA (espejo de src/shared/constants/routes.ts —
+// mantener sincronizado). Cualquier otra URL se sirve con la SPA (que pinta
+// NotFoundPage) pero con status 404 real: antes respondía 200 y Google las
+// marcaba como "Soft 404".
+const KNOWN_ROUTES = [
+  /^\/(home|bienvenida|auth|register|verify-email|forgot-password|stores|cart|favorites|my-orders|ayuda|terminos|privacidad)$/,
+  /^\/stores\/[^/]+$/,
+  /^\/my-orders\/[^/]+$/,
+  /^\/product\/[^/]+$/,
+  /^\/(dashboard|categories|inventory|pos|orders|suppliers|purchases|customers|cash|audit|tracking|products|profile|coupons|sales-history)$/,
+  /^\/admin\/(stores|store|invitations|users|subscriptions|advertising)$/,
+];
 
 const CANONICAL_HOST = 'merku.co';
 const API_URL = 'https://api.merku.co';
@@ -109,6 +125,12 @@ export default {
           headers: { 'Content-Type': 'application/xml; charset=utf-8' },
         });
       }
+      // Nunca caer al HTML de la SPA: un 503 le dice a Google "reintenta luego"
+      // en vez de hacerle leer un sitemap inválido.
+      return new Response('Sitemap temporalmente no disponible', {
+        status: 503,
+        headers: { 'Retry-After': '300' },
+      });
     }
 
     const userAgent = request.headers.get('user-agent') ?? '';
@@ -137,16 +159,27 @@ export default {
     }
 
     const response = await env.ASSETS.fetch(request);
+    const isHtml = (response.headers.get('content-type') ?? '').includes('text/html');
+
+    if (isHtml && !KNOWN_ROUTES.some((re) => re.test(url.pathname))) {
+      return new Response(response.body, {
+        status: 404,
+        headers: response.headers,
+      });
+    }
+
     const meta = STATIC_PAGE_META.get(url.pathname);
 
-    if (meta && (response.headers.get('content-type') ?? '').includes('text/html')) {
+    if (meta && isHtml) {
       const canonicalUrl = `https://${CANONICAL_HOST}${url.pathname}`;
       // index.html ya no trae <link rel="canonical"> ni <meta name="description">
       // estáticos (se quitaron para no duplicar los que agrega Helmet) — hay que
       // insertarlos en <head>, no reescribirlos, porque ya no existen de entrada.
+      // data-rh="true" los marca como propios de react-helmet-async: al montar,
+      // Helmet los reemplaza en vez de añadir un segundo canonical/description.
       const injected =
-        `<meta name="description" content="${escapeHtmlAttr(meta.description)}">` +
-        `<link rel="canonical" href="${canonicalUrl}">`;
+        `<meta name="description" content="${escapeHtmlAttr(meta.description)}" data-rh="true">` +
+        `<link rel="canonical" href="${canonicalUrl}" data-rh="true">`;
       return new HTMLRewriter()
         .on('title', {
           element(el) {
@@ -171,6 +204,20 @@ async function fetchOg(ogUrl, userAgent) {
       headers: { 'user-agent': userAgent },
       redirect: 'manual',
     });
+    // 301 = el backend pide la URL canónica (p. ej. /product/<uuid> ->
+    // /product/<slug>-<uuid>): se propaga tal cual.
+    if (res.status === 301) {
+      const location = res.headers.get('location');
+      if (location) return Response.redirect(location, 301);
+    }
+    // 404/410 = producto o tienda inexistente o inactivo: se propaga el status
+    // real (antes caía a la SPA con 200 y Google lo marcaba como Soft 404).
+    if (res.status === 404 || res.status === 410) {
+      return new Response(res.body, {
+        status: res.status,
+        headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      });
+    }
     // El endpoint devuelve 302 hacia la página real para visitantes normales
     // (sin user-agent de bot) — si eso pasa aquí es que no reconoció el bot,
     // así que dejamos que la SPA normal se sirva en vez de seguir el redirect.
