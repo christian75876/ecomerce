@@ -122,6 +122,17 @@ export default {
       } else if (storeMatch && url.pathname !== '/stores/map') {
         const ogResponse = await fetchOg(`${API_URL}/og/store/${storeMatch[1]}`, userAgent);
         if (ogResponse) return ogResponse;
+      } else if (url.pathname === '/home') {
+        // El <body> de la SPA está vacío hasta que corre el JS — Search Console
+        // marcó /home como Soft 404 porque evalúa el contenido visible, no solo
+        // los metadatos (que ya se corrigen más abajo para el resto de visitas).
+        // A Googlebot (y demás bots) se les sirve una versión con productos
+        // reales en vez de la SPA vacía.
+        const ogResponse = await fetchOg(`${API_URL}/og/home`, userAgent);
+        if (ogResponse) return ogResponse;
+      } else if (url.pathname === '/stores') {
+        const ogResponse = await fetchOg(`${API_URL}/og/stores`, userAgent);
+        if (ogResponse) return ogResponse;
       }
     }
 
