@@ -17,7 +17,10 @@ precacheAndRoute(self.__WB_MANIFEST);
 // SPA navigation fallback: serve index.html for all client-side routes
 registerRoute(
   new NavigationRoute(createHandlerBoundToURL('/index.html'), {
-    denylist: [/^\/api\//],
+    // Rutas con extensión (/sitemap.xml, /robots.txt, /llms.txt…) son
+    // archivos, no rutas de la SPA: sin esto, abrirlas en el navegador
+    // mostraba la página "no existe" de la app.
+    denylist: [/^\/api\//, /\/[^/]+\.[a-z0-9]+$/i],
   }),
 );
 
