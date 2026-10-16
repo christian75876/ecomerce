@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { PAGE_META } from '@/shared/constants/pageMeta';
 import { useMarketplaceHome } from '@/application/useCases/products/useMarketplaceHome';
 import { usePublicCatalog } from '@/application/useCases/products/usePublicCatalog';
 import Box from '@/presentation/ui/atoms/box/SimpleBox';
@@ -61,18 +62,18 @@ export const HomePage = () => {
   return (
     <Box className='section-full-bleed space-y-8'>
       <Helmet>
-        <title>Merku — Encuentra lo que buscas</title>
-        <meta name='description' content='Merku: explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.' />
+        <title>{PAGE_META['/home'].title}</title>
+        <meta name='description' content={PAGE_META['/home'].description} />
         <link rel='canonical' href={`${import.meta.env.VITE_APP_URL ?? ''}/home`} />
         <meta property='og:type' content='website' />
         <meta property='og:site_name' content='Merku' />
         <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/home`} />
-        <meta property='og:title' content='Merku — Encuentra lo que buscas' />
-        <meta property='og:description' content='Merku: explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.' />
+        <meta property='og:title' content={PAGE_META['/home'].title} />
+        <meta property='og:description' content={PAGE_META['/home'].description} />
         <meta property='og:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
         <meta name='twitter:card' content='summary_large_image' />
-        <meta name='twitter:title' content='Merku — Encuentra lo que buscas' />
-        <meta name='twitter:description' content='Merku: explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.' />
+        <meta name='twitter:title' content={PAGE_META['/home'].title} />
+        <meta name='twitter:description' content={PAGE_META['/home'].description} />
         <meta name='twitter:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
       </Helmet>
       <HomeCatalogSection

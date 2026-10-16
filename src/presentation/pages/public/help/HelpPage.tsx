@@ -1,5 +1,6 @@
 import { useState, useMemo, useId } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { PAGE_META } from '@/shared/constants/pageMeta';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants/routes';
 import { getAuthenticatedRole } from '@/shared/utils/checkIsUserAuthenticated.util';
@@ -463,19 +464,19 @@ const HelpPage = () => {
   return (
     <div className='space-y-6 animate-fade-up'>
       <Helmet>
-        <title>Centro de ayuda — Merku</title>
-        <meta name='description' content='Encuentra respuestas sobre cómo usar Merku: gestión de tienda, pedidos, inventario, POS y más.' />
+        <title>{PAGE_META['/ayuda'].title}</title>
+        <meta name='description' content={PAGE_META['/ayuda'].description} />
         <link rel='canonical' href={`${import.meta.env.VITE_APP_URL ?? ''}/ayuda`} />
         <meta property='og:type' content='website' />
         <meta property='og:site_name' content='Merku' />
         <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/ayuda`} />
-        <meta property='og:title' content='Centro de ayuda — Merku' />
-        <meta property='og:description' content='Encuentra respuestas sobre cómo usar Merku.' />
+        <meta property='og:title' content={PAGE_META['/ayuda'].title} />
+        <meta property='og:description' content={PAGE_META['/ayuda'].description} />
         <meta property='og:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
         <meta name='twitter:card' content='summary_large_image' />
         <meta name='twitter:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
-        <meta name='twitter:title' content='Centro de ayuda — Merku' />
-        <meta name='twitter:description' content='Encuentra respuestas sobre cómo usar Merku.' />
+        <meta name='twitter:title' content={PAGE_META['/ayuda'].title} />
+        <meta name='twitter:description' content={PAGE_META['/ayuda'].description} />
       </Helmet>
       {/* Hero — full-bleed background only; the rest of this page is a
           text-heavy doc, so it stays at the site's normal reading width

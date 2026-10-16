@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { productPageTitle } from '@/shared/constants/pageMeta';
 import Typography from '../../atoms/typography/SimpleTypography';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import ProductInformation from '../../molecules/products/ProductInformation';
@@ -120,21 +121,22 @@ const ProductDetails = () => {
     .map((src) => buildAssetUrl(src))
     .filter((src, i, all): src is string => !!src && all.indexOf(src) === i);
   const ogImage = productImages[0] ?? `${APP_URL}/og-image.png`;
+  const pageTitle = productPageTitle(product.name, product.store?.name);
 
   return (
     <>
       <Helmet>
-        <title>{`${product.name} — Merku`}</title>
+        <title>{pageTitle}</title>
         <meta name='description' content={metaDescription} />
         <link rel='canonical' href={productUrl} />
         <meta property='og:type' content='product' />
         <meta property='og:site_name' content='Merku' />
         <meta property='og:url' content={productUrl} />
-        <meta property='og:title' content={`${product.name} — Merku`} />
+        <meta property='og:title' content={pageTitle} />
         <meta property='og:description' content={metaDescription} />
         <meta property='og:image' content={ogImage} />
         <meta name='twitter:card' content='summary_large_image' />
-        <meta name='twitter:title' content={`${product.name} — Merku`} />
+        <meta name='twitter:title' content={pageTitle} />
         <meta name='twitter:description' content={metaDescription} />
         <meta name='twitter:image' content={ogImage} />
         <script type='application/ld+json'>{serializeJsonLd({

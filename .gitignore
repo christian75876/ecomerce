@@ -32,3 +32,9 @@ dist-ssr
 # Archivos públicos que SÍ deben versionarse pese a *.txt
 !public/robots.txt
 !public/llms.txt
+
+# Generado en cada build por scripts/prerender.mjs
+worker/prerendered.generated.js
+
+# Estado local de wrangler dev
+.wrangler/

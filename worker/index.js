@@ -11,7 +11,15 @@
 //      con un 301 antes de que nada más se ejecute.
 //   2. Para bots que no ejecutan JS, servir el HTML con OG tags ya generado
 //      por el backend (/og/product/:id, /og/store/:slug) en vez de la SPA vacía.
-//   3. Cualquier otra request sigue el flujo normal (assets estáticos / SPA).
+//   3. Para esos mismos bots, servir /bienvenida, /ayuda, /terminos y
+//      /privacidad con el HTML prerenderizado en build (scripts/prerender.mjs)
+//      dentro de #root, en vez de la SPA vacía.
+//   4. Cualquier otra request sigue el flujo normal (assets estáticos / SPA).
+
+import { PAGE_META } from '../src/shared/constants/pageMeta.ts';
+// Lo genera `npm run build` (scripts/prerender.mjs): sin build previo, el
+// deploy falla aquí, igual que fallaría por no existir dist/.
+import PRERENDERED from './prerendered.generated.js';
 
 // Incluye los rastreadores de buscadores con IA (ChatGPT, Claude, Perplexity,
 // DuckDuckGo): ninguno ejecuta JS, así que sin esto veían solo
@@ -47,36 +55,23 @@ const API_URL = 'https://api.merku.co';
 // un commit posterior (index.html) los QUITÓ del HTML estático por completo
 // (para no duplicarlos con los que ya inyecta Helmet) — así que ahora no
 // basta con reescribirlos si existen: hay que insertarlos cuando faltan.
-const STATIC_PAGE_META = new Map([
-  ['/bienvenida', {
-    title: 'Merku — Abre tu tienda online y vende más',
-    description: 'Merku es la plataforma para abrir tu tienda online, gestionar inventario, recibir pedidos y vender más. Gratis para empezar.',
-  }],
-  ['/home', {
-    title: 'Merku — Encuentra lo que buscas',
-    description: 'Merku: explora cientos de productos de tiendas locales. Encuentra lo que necesitas al mejor precio.',
-  }],
-  ['/stores', {
-    title: 'Tiendas disponibles — Merku',
-    description: 'Explora todas las tiendas y restaurantes disponibles en Merku. Encuentra productos locales y realiza tu pedido.',
-  }],
-  ['/stores/map', {
-    title: 'Mapa de tiendas — Merku',
-    description: 'Encuentra tiendas cercanas, obtén indicaciones y explora el catálogo de cada tienda.',
-  }],
-  ['/ayuda', {
-    title: 'Centro de ayuda — Merku',
-    description: 'Encuentra respuestas sobre cómo usar Merku: gestión de tienda, pedidos, inventario, POS y más.',
-  }],
-  ['/terminos', {
-    title: 'Términos y condiciones — Merku',
-    description: 'Consulta los términos y condiciones de uso de Merku, la plataforma de marketplace y gestión de tiendas locales en Colombia.',
-  }],
-  ['/privacidad', {
-    title: 'Política de privacidad — Merku',
-    description: 'Conoce cómo Merku recopila, usa y protege tus datos personales conforme a la Ley 1581 de 2012 de Colombia.',
-  }],
-]);
+// Los textos viven en src/shared/constants/pageMeta.ts (los mismos del
+// <Helmet> de cada página).
+const STATIC_PAGE_META = new Map(Object.entries(PAGE_META));
+
+// Las respuestas del backend para bots (y el sitemap) se cachean en el edge
+// de Cloudflare: sin esto, cada visita de un bot hacía un viaje completo
+// hasta el servidor en Alemania (~0.8 s de TTFB). 5 minutos de desfase en un
+// listado de productos no le importa a un buscador.
+const OG_CACHE = { cacheTtlByStatus: { '200-299': 300, 301: 300, 404: 60, '500-599': 0 } };
+const SITEMAP_CACHE = { cacheTtlByStatus: { '200-299': 600, '500-599': 0 } };
+
+// Mismo nav/footer que el HTML para bots del backend (og-preview.controller.ts):
+// las páginas que en la app viven dentro del layout no traen el suyo.
+const BOT_NAV =
+  '<header><nav aria-label="Principal"><a href="https://merku.co/home">Merku</a> · <a href="https://merku.co/home">Productos</a> · <a href="https://merku.co/stores">Tiendas</a> · <a href="https://merku.co/stores/map">Mapa de tiendas</a> · <a href="https://merku.co/bienvenida">Vende en Merku</a> · <a href="https://merku.co/ayuda">Ayuda</a></nav></header>';
+const BOT_FOOTER =
+  '<footer><p>Merku — marketplace de tiendas y restaurantes locales en Colombia.</p><p><a href="https://merku.co/bienvenida">Vende en Merku</a> · <a href="https://merku.co/ayuda">Centro de ayuda</a> · <a href="https://merku.co/terminos">Términos y condiciones</a> · <a href="https://merku.co/privacidad">Política de privacidad</a></p></footer>';
 
 function escapeHtmlAttr(value) {
   return value
@@ -118,7 +113,7 @@ export default {
     // XML: cualquier herramienta o crawler que lo pida directo en este dominio
     // (en vez de seguir robots.txt) recibía contenido inválido.
     if (url.pathname === '/sitemap.xml') {
-      const res = await fetch(`${API_URL}/sitemap.xml`);
+      const res = await fetch(`${API_URL}/sitemap.xml`, { cf: SITEMAP_CACHE });
       if (res.ok) {
         return new Response(res.body, {
           status: 200,
@@ -155,11 +150,21 @@ export default {
       } else if (url.pathname === '/stores') {
         const ogResponse = await fetchOg(`${API_URL}/og/stores`, userAgent);
         if (ogResponse) return ogResponse;
+      } else if (url.pathname === '/stores/map') {
+        // El mapa (Leaflet) no tiene versión en texto: su contenido real es el
+        // listado de tiendas, el mismo de /og/stores, con los metadatos del mapa.
+        const ogResponse = await fetchOg(`${API_URL}/og/stores`, userAgent);
+        if (ogResponse && ogResponse.status === 200) return withPageMeta(ogResponse, url.pathname);
       }
     }
 
     const response = await env.ASSETS.fetch(request);
     const isHtml = (response.headers.get('content-type') ?? '').includes('text/html');
+
+    const prerendered = PRERENDERED[url.pathname];
+    if (prerendered && isHtml && BOT_UA.test(userAgent)) {
+      return servePrerendered(response, prerendered);
+    }
 
     if (isHtml && !KNOWN_ROUTES.some((re) => re.test(url.pathname))) {
       return new Response(response.body, {
@@ -198,11 +203,46 @@ export default {
   },
 };
 
+// index.html real (estilos, scripts y JSON-LD de Organization incluidos) con
+// el contenido de la página ya renderizado dentro de #root y los metadatos de
+// su <Helmet>. Al ejecutar el JS, React reemplaza #root con lo mismo.
+function servePrerendered(response, { head, body, standalone }) {
+  const content = standalone ? body : `${BOT_NAV}<main>${body}</main>${BOT_FOOTER}`;
+  return new HTMLRewriter()
+    // Los valores por defecto del index.html (title y tags data-rh) se
+    // reemplazan por los de la página: si no, quedarían duplicados.
+    .on('title', { element: (el) => el.remove() })
+    .on('[data-rh="true"]', { element: (el) => el.remove() })
+    .on('head', { element: (el) => el.append(head, { html: true }) })
+    .on('#root', { element: (el) => el.setInnerContent(content, { html: true }) })
+    .transform(response);
+}
+
+// Reescribe título, descripción y URL canónica de un HTML del backend con los
+// de otra ruta (PAGE_META).
+function withPageMeta(response, pathname) {
+  const meta = STATIC_PAGE_META.get(pathname);
+  const canonicalUrl = `https://${CANONICAL_HOST}${pathname}`;
+  const setContent = (value) => ({ element: (el) => el.setAttribute('content', value) });
+  return new HTMLRewriter()
+    .on('title', { element: (el) => el.setInnerContent(meta.title) })
+    .on('h1', { element: (el) => el.setInnerContent(meta.title.replace(/ — Merku$/, '')) })
+    .on('meta[name="description"]', setContent(meta.description))
+    .on('meta[property="og:description"]', setContent(meta.description))
+    .on('meta[name="twitter:description"]', setContent(meta.description))
+    .on('meta[property="og:title"]', setContent(meta.title))
+    .on('meta[name="twitter:title"]', setContent(meta.title))
+    .on('meta[property="og:url"]', setContent(canonicalUrl))
+    .on('link[rel="canonical"]', { element: (el) => el.setAttribute('href', canonicalUrl) })
+    .transform(response);
+}
+
 async function fetchOg(ogUrl, userAgent) {
   try {
     const res = await fetch(ogUrl, {
       headers: { 'user-agent': userAgent },
       redirect: 'manual',
+      cf: OG_CACHE,
     });
     // 301 = el backend pide la URL canónica (p. ej. /product/<uuid> ->
     // /product/<slug>-<uuid>): se propaga tal cual.

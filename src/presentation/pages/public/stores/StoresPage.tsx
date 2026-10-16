@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { PAGE_META } from '@/shared/constants/pageMeta';
 import { Link, useSearchParams } from 'react-router-dom';
 import { usePublicStores } from '@/application/useCases/stores/usePublicStores';
 import { ROUTES } from '@/shared/constants/routes';
@@ -53,10 +54,10 @@ const StoresPage = () => {
   return (
     <div className='section-full-bleed space-y-6 animate-fade-up'>
       <Helmet>
-        <title>Tiendas disponibles — Merku</title>
+        <title>{PAGE_META['/stores'].title}</title>
         <meta
           name='description'
-          content='Explora todas las tiendas y restaurantes disponibles en Merku. Encuentra productos locales y realiza tu pedido.'
+          content={PAGE_META['/stores'].description}
         />
         <link
           rel='canonical'
@@ -68,20 +69,20 @@ const StoresPage = () => {
           property='og:url'
           content={`${import.meta.env.VITE_APP_URL ?? ''}/stores`}
         />
-        <meta property='og:title' content='Tiendas disponibles — Merku' />
+        <meta property='og:title' content={PAGE_META['/stores'].title} />
         <meta
           property='og:description'
-          content='Explora todas las tiendas y restaurantes disponibles en Merku.'
+          content={PAGE_META['/stores'].description}
         />
         <meta
           property='og:image'
           content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`}
         />
         <meta name='twitter:card' content='summary_large_image' />
-        <meta name='twitter:title' content='Tiendas disponibles — Merku' />
+        <meta name='twitter:title' content={PAGE_META['/stores'].title} />
         <meta
           name='twitter:description'
-          content='Explora todas las tiendas y restaurantes disponibles en Merku.'
+          content={PAGE_META['/stores'].description}
         />
       </Helmet>
       {/* Header — full-bleed background, content re-centers via .content-container */}

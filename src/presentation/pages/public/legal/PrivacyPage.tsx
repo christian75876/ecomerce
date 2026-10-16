@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { PAGE_META } from '@/shared/constants/pageMeta';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants/routes';
 
@@ -9,15 +10,15 @@ const LAST_UPDATED = '25 de agosto de 2026';
 const PrivacyPage = () => (
   <div className='mx-auto max-w-3xl space-y-8 px-4 py-10'>
     <Helmet>
-      <title>Política de privacidad — Merku</title>
-      <meta name='description' content='Conoce cómo Merku recopila, usa y protege tus datos personales conforme a la Ley 1581 de 2012 de Colombia.' />
+      <title>{PAGE_META['/privacidad'].title}</title>
+      <meta name='description' content={PAGE_META['/privacidad'].description} />
       <link rel='canonical' href={`${APP_URL}/privacidad`} />
       <meta name='robots' content='index, follow' />
       <meta property='og:type' content='website' />
       <meta property='og:site_name' content='Merku' />
       <meta property='og:url' content={`${APP_URL}/privacidad`} />
-      <meta property='og:title' content='Política de privacidad — Merku' />
-      <meta property='og:description' content='Conoce cómo Merku recopila, usa y protege tus datos personales conforme a la Ley 1581 de 2012 de Colombia.' />
+      <meta property='og:title' content={PAGE_META['/privacidad'].title} />
+      <meta property='og:description' content={PAGE_META['/privacidad'].description} />
       <meta property='og:image' content={`${APP_URL}/og-image.png`} />
       <meta name='twitter:card' content='summary_large_image' />
     </Helmet>

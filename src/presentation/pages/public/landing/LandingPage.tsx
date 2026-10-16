@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { PAGE_META } from '@/shared/constants/pageMeta';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants/routes';
 import { ADMIN_WHATSAPP } from '@/shared/config/appContact';
@@ -386,18 +387,18 @@ const Footer = () => (
 const LandingPage = () => (
   <>
     <Helmet>
-      <title>Merku — Abre tu tienda online y vende más</title>
-      <meta name='description' content='Merku es la plataforma para abrir tu tienda online, gestionar inventario, recibir pedidos y vender más. Gratis para empezar.' />
+      <title>{PAGE_META['/bienvenida'].title}</title>
+      <meta name='description' content={PAGE_META['/bienvenida'].description} />
       <link rel='canonical' href={`${import.meta.env.VITE_APP_URL ?? ''}/bienvenida`} />
       <meta property='og:type' content='website' />
       <meta property='og:site_name' content='Merku' />
       <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/bienvenida`} />
-      <meta property='og:title' content='Merku — Abre tu tienda online y vende más' />
-      <meta property='og:description' content='Merku es la plataforma para abrir tu tienda online, gestionar inventario, recibir pedidos y vender más.' />
+      <meta property='og:title' content={PAGE_META['/bienvenida'].title} />
+      <meta property='og:description' content={PAGE_META['/bienvenida'].description} />
       <meta property='og:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
       <meta name='twitter:card' content='summary_large_image' />
-      <meta name='twitter:title' content='Merku — Abre tu tienda online y vende más' />
-      <meta name='twitter:description' content='Abre tu tienda, gestiona inventario y recibe pedidos con Merku.' />
+      <meta name='twitter:title' content={PAGE_META['/bienvenida'].title} />
+      <meta name='twitter:description' content={PAGE_META['/bienvenida'].description} />
       <meta name='twitter:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
     </Helmet>
     <div className='min-h-screen bg-white'>

@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { PAGE_META } from '@/shared/constants/pageMeta';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants/routes';
 
@@ -9,15 +10,15 @@ const LAST_UPDATED = '25 de agosto de 2026';
 const TermsPage = () => (
   <div className='mx-auto max-w-3xl space-y-8 px-4 py-10'>
     <Helmet>
-      <title>Términos y condiciones — Merku</title>
-      <meta name='description' content='Consulta los términos y condiciones de uso de Merku, la plataforma de marketplace y gestión de tiendas locales en Colombia.' />
+      <title>{PAGE_META['/terminos'].title}</title>
+      <meta name='description' content={PAGE_META['/terminos'].description} />
       <link rel='canonical' href={`${APP_URL}/terminos`} />
       <meta name='robots' content='index, follow' />
       <meta property='og:type' content='website' />
       <meta property='og:site_name' content='Merku' />
       <meta property='og:url' content={`${APP_URL}/terminos`} />
-      <meta property='og:title' content='Términos y condiciones — Merku' />
-      <meta property='og:description' content='Consulta los términos y condiciones de uso de Merku, la plataforma de marketplace y gestión de tiendas locales en Colombia.' />
+      <meta property='og:title' content={PAGE_META['/terminos'].title} />
+      <meta property='og:description' content={PAGE_META['/terminos'].description} />
       <meta property='og:image' content={`${APP_URL}/og-image.png`} />
       <meta name='twitter:card' content='summary_large_image' />
     </Helmet>

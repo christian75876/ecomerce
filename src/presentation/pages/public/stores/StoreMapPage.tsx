@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { PAGE_META } from '@/shared/constants/pageMeta';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -277,18 +278,18 @@ const StoreMapPage = () => {
   return (
     <div className='section-full-bleed'>
       <Helmet>
-        <title>Mapa de tiendas — Merku</title>
-        <meta name='description' content='Encuentra tiendas cercanas, obtén indicaciones y explora el catálogo de cada tienda.' />
+        <title>{PAGE_META['/stores/map'].title}</title>
+        <meta name='description' content={PAGE_META['/stores/map'].description} />
         <link rel='canonical' href={`${import.meta.env.VITE_APP_URL ?? ''}/stores/map`} />
         <meta property='og:type' content='website' />
         <meta property='og:site_name' content='Merku' />
         <meta property='og:url' content={`${import.meta.env.VITE_APP_URL ?? ''}/stores/map`} />
-        <meta property='og:title' content='Mapa de tiendas — Merku' />
-        <meta property='og:description' content='Encuentra tiendas cercanas, obtén indicaciones y explora el catálogo de cada tienda.' />
+        <meta property='og:title' content={PAGE_META['/stores/map'].title} />
+        <meta property='og:description' content={PAGE_META['/stores/map'].description} />
         <meta property='og:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
         <meta name='twitter:card' content='summary_large_image' />
-        <meta name='twitter:title' content='Mapa de tiendas — Merku' />
-        <meta name='twitter:description' content='Encuentra tiendas cercanas, obtén indicaciones y explora el catálogo de cada tienda.' />
+        <meta name='twitter:title' content={PAGE_META['/stores/map'].title} />
+        <meta name='twitter:description' content={PAGE_META['/stores/map'].description} />
         <meta name='twitter:image' content={`${import.meta.env.VITE_APP_URL ?? ''}/og-image.png`} />
       </Helmet>
 
