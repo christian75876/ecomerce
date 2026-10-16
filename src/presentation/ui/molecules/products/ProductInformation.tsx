@@ -3,6 +3,8 @@ import type React from 'react';
 import Box from '../../atoms/box/SimpleBox';
 import Typography from '../../atoms/typography/SimpleTypography';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
+import { taxModeLabel } from '@/shared/utils/taxModeLabel';
+import type { ProductTaxMode } from '@/application/dtos/products/response/ProductResponse';
 
 interface GalleryImage {
   id: string;
@@ -33,6 +35,8 @@ interface ProductInformationProps {
     name: string;
     price: string;
     compareAtPrice?: number | null;
+    taxMode?: ProductTaxMode | null;
+    taxRate?: number | string;
     availableQuantity?: number;
     showStock?: boolean;
     description: string;
@@ -222,6 +226,11 @@ const ProductInformation = ({ product, gallery = [], footer }: ProductInformatio
               </Box>
             ) : null}
           </Box>
+          {taxModeLabel(product.taxMode, product.taxRate) ? (
+            <Typography variant='span' className='mt-1 block text-sm font-medium text-neutral-dark/60'>
+              {taxModeLabel(product.taxMode, product.taxRate)}
+            </Typography>
+          ) : null}
         </Box>
 
         {/* Size selector */}

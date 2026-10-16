@@ -44,6 +44,9 @@ function buildWhatsAppUrl(order: IOrder): string {
     order.discountAmount > 0
       ? `Descuento${order.couponCode ? ` (${order.couponCode})` : ''}: -${formatCurrencyCOP(order.discountAmount)}`
       : '',
+    Number(order.taxTotal ?? 0) > 0
+      ? `Base sin IVA: ${formatCurrencyCOP(Number(order.total) - Number(order.taxTotal))}\nIVA: ${formatCurrencyCOP(Number(order.taxTotal))}`
+      : '',
     `💰 *Total: ${formatCurrencyCOP(order.total)}*`,
     isDelivery && order.deliveryAddress
       ? `\n📍 Dirección: ${order.deliveryAddress}`
@@ -61,6 +64,7 @@ function buildWhatsAppUrl(order: IOrder): string {
 }
 
 export const OrderInvoiceModal = ({ order, onClose }: Props) => {
+  const taxTotal = Number(order.taxTotal ?? 0);
   const handlePrint = () => window.print();
   const handleWhatsApp = () => window.open(buildWhatsAppUrl(order), '_blank');
 
@@ -157,6 +161,7 @@ export const OrderInvoiceModal = ({ order, onClose }: Props) => {
                       </p>
                       <p className='text-xs text-slate-400'>
                         {item.quantity} × {formatCurrencyCOP(item.unitPrice)}
+                        {Number(item.taxRate ?? 0) > 0 ? ` · IVA ${Number(item.taxRate)}%` : ''}
                       </p>
                     </div>
                     <p className='ml-3 shrink-0 font-semibold text-slate-700'>
@@ -174,7 +179,7 @@ export const OrderInvoiceModal = ({ order, onClose }: Props) => {
               <>
                 <div className='flex justify-between text-sm text-slate-500'>
                   <span>Subtotal</span>
-                  <span>{formatCurrencyCOP(Number(order.total) + order.discountAmount)}</span>
+                  <span>{formatCurrencyCOP(Number(order.total) + Number(order.discountAmount))}</span>
                 </div>
                 <div className='flex justify-between text-sm text-emerald-600'>
                   <span className='flex items-center gap-1'>
@@ -186,6 +191,19 @@ export const OrderInvoiceModal = ({ order, onClose }: Props) => {
                     )}
                   </span>
                   <span>−{formatCurrencyCOP(order.discountAmount)}</span>
+                </div>
+                <div className='my-2 border-t border-slate-100' />
+              </>
+            )}
+            {taxTotal > 0 && (
+              <>
+                <div className='flex justify-between text-sm text-slate-500'>
+                  <span>Base sin IVA</span>
+                  <span>{formatCurrencyCOP(Number(order.total) - taxTotal)}</span>
+                </div>
+                <div className='flex justify-between text-sm text-slate-500'>
+                  <span>IVA</span>
+                  <span>{formatCurrencyCOP(taxTotal)}</span>
                 </div>
                 <div className='my-2 border-t border-slate-100' />
               </>

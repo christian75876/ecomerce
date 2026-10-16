@@ -4,7 +4,7 @@ import { ICategory } from '@/application/dtos/categories/response/CategoryRespon
 import {
   ICreateProductRequest,
 } from '@/application/dtos/products/request/ProductRequest';
-import { IProduct, IProductImage, IProductVariant, IProductVideo } from '@/application/dtos/products/response/ProductResponse';
+import { IProduct, IProductImage, IProductVariant, IProductVideo, ProductTaxMode } from '@/application/dtos/products/response/ProductResponse';
 import type { ICreateProductVariantRequest } from '@/application/dtos/products/request/ProductRequest';
 import { IStore } from '@/application/dtos/stores/response/StoreResponse';
 import { IMenuCategory } from '@/application/dtos/menu-categories/response/MenuCategoryResponse';
@@ -26,6 +26,8 @@ export type ProductFormState = {
   price: string;
   cost: string;
   compareAtPrice: string;
+  taxMode: '' | ProductTaxMode;
+  taxRate: string;
   categoryId: string;
   storeId: string;
   menuCategoryId: string;
@@ -55,6 +57,8 @@ export const initialProductFormState: ProductFormState = {
   price: '',
   cost: '',
   compareAtPrice: '',
+  taxMode: '',
+  taxRate: '19',
   categoryId: '',
   storeId: '',
   menuCategoryId: '',
@@ -105,6 +109,13 @@ function buildCombinations(
     const found = existing.find((e) => e.size === pair.size && e.color === pair.color);
     return found ?? { ...pair, sku: '', price: '', stock: '0', isActive: true };
   });
+}
+
+// El backend devuelve los montos como decimal ("2700000.00"). Los inputs de
+// precio quitan todo lo que no sea dígito, así que sin esto el ".00" se
+// convertía en dos ceros más (2.700.000 → 270.000.000) al editar.
+function toWholeAmount(value: number | string): string {
+  return String(Math.round(Number(value)));
 }
 
 const optionalNonNegative = z
@@ -456,6 +467,8 @@ export const useProductsManagement = () => {
       supplierId: currentForm.supplierId || undefined,
       cost: currentForm.cost ? Number(currentForm.cost) : undefined,
       compareAtPrice: currentForm.compareAtPrice ? Number(currentForm.compareAtPrice) : undefined,
+      taxMode: currentForm.taxMode || null,
+      taxRate: Number(currentForm.taxRate),
       initialStock: currentForm.initialStock ? Number(currentForm.initialStock) : undefined,
       imageUrl: currentForm.imageUrl.trim() || undefined,
       showStock: currentForm.showStock,
@@ -476,8 +489,10 @@ export const useProductsManagement = () => {
     };
   };
 
-  const submitForm = async () => {
-    const payload = buildPayload(form);
+  // `overrides` permite ajustar el formulario justo al enviar (ej. el aviso de
+  // stock en cero desactiva trackBatches) sin esperar a que React aplique el setForm.
+  const submitForm = async (overrides?: Partial<ProductFormState>) => {
+    const payload = buildPayload(overrides ? { ...form, ...overrides } : form);
     if (!payload) {
       return false;
     }
@@ -567,9 +582,11 @@ export const useProductsManagement = () => {
       name: product.name,
       description: product.description,
       sku: product.sku,
-      price: String(product.price),
-      cost: product.cost ? String(product.cost) : '',
-      compareAtPrice: product.compareAtPrice ? String(product.compareAtPrice) : '',
+      price: toWholeAmount(product.price),
+      cost: product.cost ? toWholeAmount(product.cost) : '',
+      compareAtPrice: product.compareAtPrice ? toWholeAmount(product.compareAtPrice) : '',
+      taxMode: product.taxMode ?? '',
+      taxRate: String(Number(product.taxRate ?? 19)),
       categoryId: product.categoryId,
       storeId: product.storeId ?? '',
       menuCategoryId: product.menuCategoryId ?? '',

@@ -9,6 +9,7 @@ import { useCart } from '@/shared/hooks/useCart';
 import { OrdersRepository } from '@/infrastructure/repositories/api/orders/OrdersRepository';
 import { CouponsRepository } from '@/infrastructure/repositories/api/coupons/CouponsRepository';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
+import { summarizeTax } from '@/shared/utils/tax';
 import { isAuthenticated, getAuthenticatedUser } from '@/shared/utils/checkIsUserAuthenticated.util';
 import { ROUTES } from '@/shared/constants/routes';
 import type { ICouponValidation } from '@/application/dtos/coupons/CouponDtos';
@@ -18,7 +19,8 @@ const fallbackImage =
   'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80';
 
 const CartPage = () => {
-  const { items, total, updateQuantity, removeItem, clear } = useCart();
+  const { items, lines, total, updateQuantity, removeItem, clear } = useCart();
+  const lineByProduct = new Map(items.map((item, index) => [item.productId, lines[index]]));
   const authenticated = isAuthenticated();
   const sessionUser = getAuthenticatedUser();
 
@@ -108,7 +110,9 @@ const CartPage = () => {
   };
 
   const discountAmount = appliedCoupon?.discountAmount ?? 0;
-  const finalTotal = Math.max(0, total - discountAmount);
+  // Mismo cálculo que el backend al crear el pedido: el cupón también reduce
+  // el IVA en proporción.
+  const { total: finalTotal, taxTotal: finalTaxTotal } = summarizeTax(lines, discountAmount);
 
   const handleCheckout = async () => {
     if (items.length === 0) {
@@ -263,13 +267,13 @@ const CartPage = () => {
                     <Box className='min-w-0 flex-1'>
                       <Typography className='truncate text-sm font-semibold sm:text-base'>{item.name}</Typography>
                       <Typography className='mt-0.5 text-xs font-medium text-primary sm:text-sm'>
-                        {formatCurrencyCOP(item.price)} c/u
+                        {formatCurrencyCOP(lineByProduct.get(item.productId)?.unitPrice ?? item.price)} c/u
                       </Typography>
                     </Box>
 
                     {/* Total — solo sm+; en mobile vive en la fila 2 */}
                     <Typography className='hidden w-24 flex-shrink-0 text-right text-sm font-bold tabular-nums text-neutral-dark sm:block'>
-                      {formatCurrencyCOP(item.price * item.quantity)}
+                      {formatCurrencyCOP(lineByProduct.get(item.productId)?.lineTotal ?? 0)}
                     </Typography>
 
                     {/* Controles de cantidad — solo sm+; en mobile viven en la fila 2 */}
@@ -333,7 +337,7 @@ const CartPage = () => {
                       </button>
                     </Box>
                     <Typography className='text-sm font-bold tabular-nums text-neutral-dark'>
-                      {formatCurrencyCOP(item.price * item.quantity)}
+                      {formatCurrencyCOP(lineByProduct.get(item.productId)?.lineTotal ?? 0)}
                     </Typography>
                   </Box>
                 </Box>
@@ -488,7 +492,7 @@ const CartPage = () => {
               {items.map((item) => (
                 <Box key={item.productId} className='flex justify-between text-neutral-dark/70'>
                   <span className='min-w-0 flex-1 truncate pr-2'>{item.name} × {item.quantity}</span>
-                  <span className='flex-shrink-0 tabular-nums'>{formatCurrencyCOP(item.price * item.quantity)}</span>
+                  <span className='flex-shrink-0 tabular-nums'>{formatCurrencyCOP(lineByProduct.get(item.productId)?.lineTotal ?? 0)}</span>
                 </Box>
               ))}
             </Box>
@@ -546,6 +550,18 @@ const CartPage = () => {
                   <span>Descuento ({appliedCoupon?.coupon?.code})</span>
                   <span>-{formatCurrencyCOP(discountAmount)}</span>
                 </div>
+              ) : null}
+              {finalTaxTotal > 0 ? (
+                <>
+                  <div className='flex items-center justify-between text-sm text-neutral-dark/65'>
+                    <span>Base sin IVA</span>
+                    <span>{formatCurrencyCOP(finalTotal - finalTaxTotal)}</span>
+                  </div>
+                  <div className='flex items-center justify-between text-sm text-neutral-dark/65'>
+                    <span>IVA</span>
+                    <span>{formatCurrencyCOP(finalTaxTotal)}</span>
+                  </div>
+                </>
               ) : null}
               <div className='flex items-center justify-between'>
                 <Typography className='text-sm font-medium text-neutral-dark/65'>Total del pedido</Typography>

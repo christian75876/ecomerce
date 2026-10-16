@@ -3,6 +3,8 @@ import { ROUTES } from '@/shared/constants/routes';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import { buildAssetUrl, buildResponsiveSrcSet, cloudinaryTransform } from '@/shared/utils/buildAssetUrl';
 import { buildProductPath } from '@/shared/utils/productUrl';
+import { taxModeLabel } from '@/shared/utils/taxModeLabel';
+import type { ProductTaxMode } from '@/application/dtos/products/response/ProductResponse';
 
 const RESPONSIVE_WIDTHS = [320, 480, 640, 960];
 const CARD_IMAGE_SIZES = '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 240px';
@@ -12,6 +14,8 @@ interface ProductCardProps {
   name: string;
   price: string | number;
   compareAtPrice?: number | null;
+  taxMode?: ProductTaxMode | null;
+  taxRate?: number | string;
   availableQuantity?: number;
   showStock?: boolean;
   description?: string;
@@ -44,6 +48,8 @@ const ProductCard = ({
   name,
   price,
   compareAtPrice,
+  taxMode,
+  taxRate,
   availableQuantity,
   showStock = false,
   id,
@@ -170,6 +176,11 @@ const ProductCard = ({
             <span className={`text-lg font-extrabold leading-none tracking-tight ${isOutOfStock ? 'text-slate-400' : 'text-accent'}`}>
               {formatCurrencyCOP(price)}
             </span>
+            {taxModeLabel(taxMode, taxRate) ? (
+              <span className='mt-1 text-[11px] font-medium leading-none text-slate-500'>
+                {taxModeLabel(taxMode, taxRate)}
+              </span>
+            ) : null}
           </div>
 
           <button

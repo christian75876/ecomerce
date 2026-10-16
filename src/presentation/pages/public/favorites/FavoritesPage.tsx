@@ -54,6 +54,8 @@ const FavoritesPage = () => {
             productId: product.id,
             name: product.name,
             price: Number(product.price),
+            taxMode: product.taxMode ?? null,
+            taxRate: product.taxRate ?? null,
             imageUrl: product.imageUrl,
             storeId: product.storeId ?? undefined,
             storeAddressText: product.store?.addressText ?? null,

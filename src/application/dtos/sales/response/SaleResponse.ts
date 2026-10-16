@@ -11,6 +11,8 @@ export interface ISale {
   storeId: string | null;
   cashSessionId: string | null;
   total: number;
+  /** IVA contenido en total. Base sin IVA = total - taxTotal. */
+  taxTotal?: number | string;
   createdAt: string;
   customer?: {
     id: string;
@@ -37,6 +39,8 @@ export interface ISale {
     quantity: number;
     unitPrice: number;
     lineTotal: number;
+    taxRate?: number | string;
+    taxAmount?: number | string;
     product: {
       id: string;
       name: string;

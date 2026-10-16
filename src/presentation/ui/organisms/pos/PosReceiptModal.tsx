@@ -20,6 +20,7 @@ function buildWhatsAppText(sale: ISale, guest?: PosGuestInfo): string {
     ? `${sale.customer.firstName} ${sale.customer.lastName}`
     : guest?.name || '';
 
+  const taxTotal = Number(sale.taxTotal ?? 0);
   const text = [
     `🧾 *Comprobante de Venta POS*`,
     sale.store?.name ? `📍 Tienda: ${sale.store.name}` : '',
@@ -31,6 +32,8 @@ function buildWhatsAppText(sale: ISale, guest?: PosGuestInfo): string {
         `• ${item.product.name} ×${item.quantity} = ${formatCurrencyCOP(item.lineTotal)}`,
     ),
     `---`,
+    taxTotal > 0 ? `Base sin IVA: ${formatCurrencyCOP(Number(sale.total) - taxTotal)}` : '',
+    taxTotal > 0 ? `IVA: ${formatCurrencyCOP(taxTotal)}` : '',
     `💰 *Total: ${formatCurrencyCOP(sale.total)}*`,
     `Método: ${paymentMethodLabel(sale)}`,
     clientName ? `👤 Cliente: ${clientName}` : '',
@@ -51,6 +54,7 @@ function buildWhatsAppText(sale: ISale, guest?: PosGuestInfo): string {
 }
 
 export const PosReceiptModal = ({ sale, guestInfo, onClose }: Props) => {
+  const taxTotal = Number(sale.taxTotal ?? 0);
   const handlePrint = () => window.print();
   const handleWhatsApp = () => window.open(buildWhatsAppText(sale, guestInfo), '_blank');
 
@@ -104,6 +108,7 @@ export const PosReceiptModal = ({ sale, guestInfo, onClose }: Props) => {
                     <p className='truncate font-medium text-slate-800'>{item.product.name}</p>
                     <p className='text-xs text-slate-400'>
                       {item.quantity} × {formatCurrencyCOP(item.unitPrice)}
+                      {Number(item.taxRate ?? 0) > 0 ? ` · IVA ${Number(item.taxRate)}%` : ''}
                     </p>
                   </div>
                   <p className='ml-3 shrink-0 font-semibold text-slate-700'>
@@ -114,6 +119,19 @@ export const PosReceiptModal = ({ sale, guestInfo, onClose }: Props) => {
             </div>
 
             <div className='my-3 border-t border-dashed border-slate-200' />
+
+            {taxTotal > 0 ? (
+              <div className='mb-1.5 space-y-1 text-xs text-slate-500'>
+                <div className='flex justify-between'>
+                  <span>Base sin IVA</span>
+                  <span>{formatCurrencyCOP(Number(sale.total) - taxTotal)}</span>
+                </div>
+                <div className='flex justify-between'>
+                  <span>IVA</span>
+                  <span>{formatCurrencyCOP(taxTotal)}</span>
+                </div>
+              </div>
+            ) : null}
 
             <div className='flex justify-between font-bold text-slate-800'>
               <span>Total</span>

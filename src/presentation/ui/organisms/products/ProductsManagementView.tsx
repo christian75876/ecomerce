@@ -24,6 +24,7 @@ import InstagramEmbed from '@/presentation/ui/atoms/video/InstagramEmbed';
 import ProductPreviewModal from '@/presentation/ui/organisms/products/ProductPreviewModal';
 import ProductRestockModal from '@/presentation/ui/organisms/products/ProductRestockModal';
 import { formatThousands } from '@/shared/utils/formatThousands';
+import { computeLineTax } from '@/shared/utils/tax';
 
 interface ProductsManagementViewProps {
   isSeller: boolean;
@@ -81,7 +82,7 @@ interface ProductsManagementViewProps {
   onAddVideo: () => Promise<void>;
   onRemovePendingVideo: (index: number) => void;
   onRemoveVideo: (videoId: string) => Promise<void>;
-  onSubmit: () => Promise<boolean>;
+  onSubmit: (overrides?: Partial<ProductFormState>) => Promise<boolean>;
   onEdit: (product: IProduct) => void;
   onToggleStatus: (product: IProduct) => Promise<void>;
   restockingProduct: IProduct | null;
@@ -249,10 +250,47 @@ export const ProductsManagementView = ({
     setIsFormOpen(false);
   };
 
+  const [zeroStockConfirmOpen, setZeroStockConfirmOpen] = useState(false);
+
+  // Un producto con inventario por lotes y sin unidades no aparece en el
+  // catálogo público (filtro onlyAvailable), así que se avisa antes de crearlo.
+  const hasVariantCombinations = variantCombinations.length > 0;
+  const startsWithoutStock = hasVariantCombinations
+    ? !variantCombinations.some((combo) => Number(combo.stock) > 0)
+    : !(Number(form.initialStock) > 0);
+  const needsZeroStockConfirm = !editingId && form.trackBatches && startsWithoutStock;
+
+  const submitAndClose = async (overrides?: Partial<ProductFormState>) => {
+    const success = await onSubmit(overrides);
+    if (success) setIsFormOpen(false);
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const success = await onSubmit();
-    if (success) setIsFormOpen(false);
+    if (needsZeroStockConfirm && isFormReady) {
+      setZeroStockConfirmOpen(true);
+      return;
+    }
+    await submitAndClose();
+  };
+
+  const handleZeroStockAddStock = () => {
+    setZeroStockConfirmOpen(false);
+    // Con variantes el stock se edita en la tabla de combinaciones, no aquí.
+    if (!hasVariantCombinations) {
+      setTimeout(() => document.getElementById('product-stock')?.focus(), 0);
+    }
+  };
+
+  const handleZeroStockWithoutInventory = async () => {
+    setZeroStockConfirmOpen(false);
+    onFormChange('trackBatches', false);
+    await submitAndClose({ trackBatches: false });
+  };
+
+  const handleZeroStockCreateAnyway = async () => {
+    setZeroStockConfirmOpen(false);
+    await submitAndClose();
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -407,6 +445,66 @@ export const ProductsManagementView = ({
                   />
                 </div>
               </Box>
+            </Box>
+
+            <Box className="rounded-2xl border border-neutral-gray/20 px-4 py-3">
+              <label className="flex items-center gap-3 text-sm text-neutral-dark">
+                <input
+                  type="checkbox"
+                  checked={form.taxMode !== ''}
+                  onChange={(event) => onFormChange('taxMode', event.target.checked ? 'INCLUDED' : '')}
+                  disabled={submitting}
+                />
+                Este producto tiene IVA
+              </label>
+
+              {form.taxMode !== '' ? (
+                <div className="mt-3 space-y-3">
+                  <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Cómo se aplica el IVA">
+                    {([
+                      { value: 'INCLUDED', label: 'Incluido en el precio' },
+                      { value: 'EXCLUDED', label: 'Sumar al precio (+ IVA)' },
+                    ] as const).map((option) => {
+                      const selected = form.taxMode === option.value;
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          role="radio"
+                          aria-checked={selected}
+                          onClick={() => onFormChange('taxMode', option.value)}
+                          disabled={submitting}
+                          className={`rounded-xl border px-3 py-2.5 text-sm font-medium transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60 ${selected ? 'border-indigo-400 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-200'}`}
+                        >
+                          {option.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <label htmlFor="product-tax-rate" className="text-sm text-neutral-dark">Tarifa</label>
+                    <select
+                      id="product-tax-rate"
+                      value={form.taxRate}
+                      onChange={(event) => onFormChange('taxRate', event.target.value)}
+                      disabled={submitting}
+                      className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20"
+                    >
+                      <option value="19">19% (general)</option>
+                      <option value="5">5% (diferencial)</option>
+                    </select>
+                  </div>
+                  {Number(form.price) > 0 ? (() => {
+                    const line = computeLineTax(form.price, 1, form.taxMode, form.taxRate);
+                    return (
+                      <p className="rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-600">
+                        El cliente paga <strong>{formatCurrencyCOP(line.lineTotal)}</strong>
+                        {' '}(base {formatCurrencyCOP(line.lineTotal - line.taxAmount)} + IVA {formatCurrencyCOP(line.taxAmount)})
+                      </p>
+                    );
+                  })() : null}
+                </div>
+              ) : null}
             </Box>
 
             {isRestaurantStore ? (
@@ -1398,6 +1496,43 @@ export const ProductsManagementView = ({
                   Cancelar
                 </Button>
               </Box>
+            </div>
+          </div>
+        </div>,
+        document.body
+      ) : null}
+
+      {zeroStockConfirmOpen ? createPortal(
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4" aria-modal="true" role="alertdialog" aria-labelledby="zero-stock-title">
+          <div className="absolute inset-0 bg-neutral-dark/50 backdrop-blur-sm" onClick={() => setZeroStockConfirmOpen(false)} />
+          <div className="relative z-10 w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="flex items-start gap-3">
+              <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+                <i className="bx bx-error text-xl" aria-hidden="true" />
+              </span>
+              <div>
+                <h3 id="zero-stock-title" className="text-base font-bold text-neutral-dark">
+                  ¿Seguro que quieres crear el producto con stock 0?
+                </h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-neutral-dark/70">
+                  Los compradores <strong>no verán este producto</strong> en tu tienda hasta que registres unidades en el inventario.
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 flex flex-col gap-2">
+              <Button type="button" onClick={handleZeroStockAddStock}>
+                {hasVariantCombinations ? 'Agregar stock a las variantes' : 'Agregar stock'}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => void handleZeroStockWithoutInventory()}>
+                Vender sin control de inventario (siempre visible)
+              </Button>
+              <button
+                type="button"
+                onClick={() => void handleZeroStockCreateAnyway()}
+                className="py-2 text-sm font-medium text-neutral-dark/60 underline-offset-2 hover:underline"
+              >
+                Crear de todas formas (quedará oculto)
+              </button>
             </div>
           </div>
         </div>,

@@ -19,6 +19,8 @@ export interface IProductVariant {
   updatedAt: string;
 }
 
+export type ProductTaxMode = 'INCLUDED' | 'EXCLUDED';
+
 export interface IProduct {
   id: string;
   name: string;
@@ -27,6 +29,9 @@ export interface IProduct {
   price: number;
   cost: number | null;
   compareAtPrice: number | null;
+  taxMode?: ProductTaxMode | null;
+  /** Porcentaje (19 o 5); llega como string decimal desde la API. */
+  taxRate?: number | string;
   imageUrl: string | null;
   isActive: boolean;
   showStock: boolean;

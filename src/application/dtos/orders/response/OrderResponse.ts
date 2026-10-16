@@ -5,6 +5,8 @@ export interface IOrder {
   customerId: string;
   status: 'PENDING' | 'PAID' | 'PREPARING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
   total: number;
+  /** IVA contenido en total. Base sin IVA = total - taxTotal. Ausente en pedidos anteriores al IVA. */
+  taxTotal?: number | string;
   createdAt: string;
   updatedAt: string;
   deliveryMethod: 'DELIVERY' | 'PICKUP' | null;
@@ -36,6 +38,8 @@ export interface IOrder {
     quantity: number;
     unitPrice: number;
     lineTotal: number;
+    taxRate?: number | string;
+    taxAmount?: number | string;
     product: {
       id: string;
       name: string;

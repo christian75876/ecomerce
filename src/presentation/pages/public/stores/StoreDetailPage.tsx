@@ -337,7 +337,7 @@ const StoreDetailPage = () => {
               onAddToCart={(productId) => {
                 const product = products.find((item) => item.id === productId);
                 if (!product) return;
-                addItem({ productId: product.id, name: product.name, price: Number(product.price), imageUrl: product.imageUrl, storeId: store.id, storeAddressText: store.addressText, storeDeliveryOptions: store.deliveryOptions, maxStock: product.availableQuantity });
+                addItem({ productId: product.id, name: product.name, price: Number(product.price), taxMode: product.taxMode ?? null, taxRate: product.taxRate ?? null, imageUrl: product.imageUrl, storeId: store.id, storeAddressText: store.addressText, storeDeliveryOptions: store.deliveryOptions, maxStock: product.availableQuantity });
                 const label = product.name.length > 28 ? `${product.name.slice(0, 28)}…` : product.name;
                 SnackbarUtilities.success(`${label} agregado al carrito`, 'top', 'center');
               }}
@@ -418,7 +418,7 @@ const StoreDetailPage = () => {
                 onAddToCart={(productId) => {
                   const product = products.find((item) => item.id === productId);
                   if (!product) return;
-                  addItem({ productId: product.id, name: product.name, price: Number(product.price), imageUrl: product.imageUrl, storeId: store.id, storeAddressText: store.addressText, storeDeliveryOptions: store.deliveryOptions, maxStock: product.availableQuantity });
+                  addItem({ productId: product.id, name: product.name, price: Number(product.price), taxMode: product.taxMode ?? null, taxRate: product.taxRate ?? null, imageUrl: product.imageUrl, storeId: store.id, storeAddressText: store.addressText, storeDeliveryOptions: store.deliveryOptions, maxStock: product.availableQuantity });
                   const label = product.name.length > 28 ? `${product.name.slice(0, 28)}…` : product.name;
                   SnackbarUtilities.success(`${label} agregado al carrito`, 'top', 'center');
                 }}

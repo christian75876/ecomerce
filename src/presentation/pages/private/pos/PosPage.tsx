@@ -17,6 +17,8 @@ const PosPage = () => {
       submitting={posManagement.submitting}
       error={posManagement.error}
       total={posManagement.total}
+      taxTotal={posManagement.taxTotal}
+      cartLines={posManagement.cartLines}
       onSearchChange={posManagement.setSearch}
       onCustomerChange={posManagement.setSelectedCustomerId}
       onPaymentMethodChange={posManagement.setPaymentMethod}

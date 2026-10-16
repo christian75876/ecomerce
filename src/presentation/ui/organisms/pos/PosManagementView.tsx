@@ -9,6 +9,7 @@ import Input from '@/presentation/ui/atoms/input/SimpleInput';
 import Typography from '@/presentation/ui/atoms/typography/SimpleTypography';
 import SelectDropdown from '@/presentation/ui/molecules/common/SelectDropdown';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
+import type { LineTax } from '@/shared/utils/tax';
 import { PosGuestModal } from './PosGuestModal';
 import { PosReceiptModal } from './PosReceiptModal';
 
@@ -24,6 +25,8 @@ interface PosManagementViewProps {
   submitting: boolean;
   error: string | null;
   total: number;
+  taxTotal: number;
+  cartLines: LineTax[];
   lastSale: ISale | null;
   lastSaleGuestInfo: PosGuestInfo | null;
   guestName: string;
@@ -63,6 +66,8 @@ export const PosManagementView = ({
   submitting,
   error,
   total,
+  taxTotal,
+  cartLines,
   lastSale,
   lastSaleGuestInfo,
   guestName,
@@ -213,7 +218,7 @@ export const PosManagementView = ({
               {cart.length === 0 ? (
                 <Typography>No hay productos en el carrito.</Typography>
               ) : (
-                cart.map((item) => (
+                cart.map((item, index) => (
                   <Box
                     key={item.product.id}
                     className="rounded-2xl border border-neutral-gray/20 p-4"
@@ -235,7 +240,7 @@ export const PosManagementView = ({
                         className="max-w-24"
                       />
                       <Typography className="text-sm text-neutral-dark/70">
-                        {formatCurrencyCOP(item.product.price)} c/u
+                        {formatCurrencyCOP(cartLines[index]?.unitPrice ?? item.product.price)} c/u
                       </Typography>
                     </Box>
                   </Box>
@@ -244,6 +249,18 @@ export const PosManagementView = ({
             </Box>
 
             <Box className="mt-6 border-t border-neutral-gray/20 pt-4">
+              {taxTotal > 0 ? (
+                <Box className="mb-2 space-y-1 text-sm text-neutral-dark/65">
+                  <div className="flex justify-between">
+                    <span>Base sin IVA</span>
+                    <span className="tabular-nums">{formatCurrencyCOP(total - taxTotal)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>IVA</span>
+                    <span className="tabular-nums">{formatCurrencyCOP(taxTotal)}</span>
+                  </div>
+                </Box>
+              ) : null}
               <Typography className="text-sm text-neutral-dark/65">
                 Total · {paymentMethod === 'CREDIT' ? 'Crédito' : 'Efectivo'}
               </Typography>

@@ -8,6 +8,7 @@ import { SalesRepository } from '@/infrastructure/repositories/api/sales/SalesRe
 import { StoresRepository } from '@/infrastructure/repositories/api/stores/StoresRepository';
 import { getAuthenticatedRole } from '@/shared/utils/checkIsUserAuthenticated.util';
 import { useAdminStore } from '@/shared/contexts/AdminStoreContext';
+import { computeLineTax, summarizeTax } from '@/shared/utils/tax';
 
 export type PosCartItem = {
   product: IProduct;
@@ -141,14 +142,15 @@ export const usePosManagement = () => {
     );
   };
 
-  const total = useMemo(
+  // Vista previa con IVA; el valor definitivo lo devuelve el backend al crear la venta.
+  const cartLines = useMemo(
     () =>
-      cart.reduce(
-        (acc, item) => acc + Number(item.product.price) * item.quantity,
-        0,
+      cart.map((item) =>
+        computeLineTax(item.product.price, item.quantity, item.product.taxMode, item.product.taxRate),
       ),
     [cart],
   );
+  const { total, taxTotal } = useMemo(() => summarizeTax(cartLines), [cartLines]);
 
   const confirmSale = async () => {
     if (cart.length === 0) {
@@ -219,7 +221,8 @@ export const usePosManagement = () => {
         customerId: customerIdSnapshot || null,
         storeId: selectedStoreId,
         cashSessionId: saleFromApi?.cashSessionId ?? null,
-        total,
+        total: saleFromApi?.total ?? total,
+        taxTotal: saleFromApi?.taxTotal ?? taxTotal,
         createdAt: saleFromApi?.createdAt ?? new Date().toISOString(),
         store: storeInfo,
         customer: customerInfo,
@@ -229,8 +232,7 @@ export const usePosManagement = () => {
               id: `cart-${idx}`,
               productId: cartItem.product.id,
               quantity: cartItem.quantity,
-              unitPrice: Number(cartItem.product.price),
-              lineTotal: Number(cartItem.product.price) * cartItem.quantity,
+              ...cartLines[idx],
               product: { id: cartItem.product.id, name: cartItem.product.name, sku: cartItem.product.sku ?? '' },
             })),
       };
@@ -276,6 +278,8 @@ export const usePosManagement = () => {
     submitting,
     error,
     total,
+    taxTotal,
+    cartLines,
     lastSale,
     lastSaleGuestInfo,
     guestName,

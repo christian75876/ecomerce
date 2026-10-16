@@ -1,4 +1,6 @@
 import { useSyncExternalStore } from 'react';
+import type { ProductTaxMode } from '@/application/dtos/products/response/ProductResponse';
+import { computeLineTax, LineTax, summarizeTax } from '@/shared/utils/tax';
 
 export interface CartItem {
   productId: string;
@@ -10,6 +12,10 @@ export interface CartItem {
   storeAddressText?: string | null;
   storeDeliveryOptions?: 'DELIVERY' | 'PICKUP' | 'BOTH';
   maxStock?: number;
+  // Ausentes en carritos guardados antes del IVA: se tratan como sin IVA hasta
+  // que el producto se vuelva a agregar. El cobro real lo calcula el backend.
+  taxMode?: ProductTaxMode | null;
+  taxRate?: number | string | null;
 }
 
 const CART_KEY = 'public_cart';
@@ -70,10 +76,11 @@ export const useCart = () => {
     if (existing) {
       const cap = existing.maxStock ?? Infinity;
       if (existing.quantity >= cap) return;
+      // Se refrescan precio e IVA con lo último que ve el comprador.
       writeItems(
         current.map((entry) =>
           entry.productId === item.productId
-            ? { ...entry, quantity: Math.min(entry.quantity + qty, cap) }
+            ? { ...entry, ...item, quantity: Math.min(entry.quantity + qty, cap) }
             : entry,
         ),
       );
@@ -102,11 +109,17 @@ export const useCart = () => {
 
   const clear = () => writeItems([]);
 
-  const total = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const lines: LineTax[] = items.map((item) =>
+    computeLineTax(item.price, item.quantity, item.taxMode, item.taxRate),
+  );
+  // total = lo que paga el cliente (con IVA, antes de cupón); taxTotal = IVA contenido.
+  const { total, taxTotal } = summarizeTax(lines);
 
   return {
     items,
+    lines,
     total,
+    taxTotal,
     addItem,
     updateQuantity,
     removeItem,

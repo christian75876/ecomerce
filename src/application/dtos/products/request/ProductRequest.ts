@@ -1,3 +1,5 @@
+import type { ProductTaxMode } from '@/application/dtos/products/response/ProductResponse';
+
 export interface IProductsQuery {
   search?: string;
   categoryId?: string;
@@ -26,6 +28,8 @@ export interface ICreateProductRequest {
   supplierId?: string;
   imageUrl?: string;
   compareAtPrice?: number;
+  taxMode?: ProductTaxMode | null;
+  taxRate?: number;
   showStock?: boolean;
   isActive?: boolean;
   isPerishable?: boolean;
