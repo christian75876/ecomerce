@@ -10,10 +10,17 @@
     "directory": "./dist",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    // Las navegaciones de navegador (Sec-Fetch-Mode: navigate) a rutas que no
-    // son archivos reciben el index.html de la SPA sin pasar por el Worker;
-    // /sitemap.xml lo genera el Worker, así que debe correr primero.
-    "run_worker_first": ["/sitemap.xml", "/merchant-feed.xml"],
+    // true, no una lista de rutas: con run_worker_first como array, CUALQUIER
+    // request a una ruta no listada (sea bot o navegador — esto no depende del
+    // user-agent ni de Sec-Fetch-Mode) se servía directo desde el fallback SPA
+    // de Cloudflare sin pasar por worker/index.js. Eso dejó sin efecto, en
+    // producción, todo el bloque de detección de bots/OG/404 reales del Worker
+    // para cualquier ruta salvo /sitemap.xml y /merchant-feed.xml (verificado
+    // con curl: /home, /product/:id y /categorias/:slug con UA de Googlebot
+    // devolvían el shell vacío de la SPA, no el HTML para bots). El propio
+    // Worker ya hace env.ASSETS.fetch(request) como fallback, así que correr
+    // siempre no cambia el comportamiento normal, solo lo hace alcanzable.
+    "run_worker_first": true,
     "html_handling": "none"
   }
 }
