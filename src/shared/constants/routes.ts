@@ -10,6 +10,8 @@ export const ROUTES = {
     STORES: '/stores',
     STORE_MAP: '/stores/map',
     STORE_DETAILS: '/stores/:slug',
+    CATEGORIES: '/categorias',
+    CATEGORY_DETAILS: '/categorias/:slug',
     CART: '/cart',
     FAVORITES: '/favorites',
     MY_ORDERS: '/my-orders',

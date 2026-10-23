@@ -13,7 +13,7 @@
     // Las navegaciones de navegador (Sec-Fetch-Mode: navigate) a rutas que no
     // son archivos reciben el index.html de la SPA sin pasar por el Worker;
     // /sitemap.xml lo genera el Worker, así que debe correr primero.
-    "run_worker_first": ["/sitemap.xml"],
+    "run_worker_first": ["/sitemap.xml", "/merchant-feed.xml"],
     "html_handling": "none"
   }
 }

@@ -31,6 +31,12 @@ const StoreDetailPage = lazy(
 const StoreMapPage = lazy(
   () => import('@presentation/pages/public/stores/StoreMapPage')
 );
+const PublicCategoriesPage = lazy(
+  () => import('@presentation/pages/public/categories/CategoriesPage')
+);
+const CategoryDetailPage = lazy(
+  () => import('@presentation/pages/public/categories/CategoryDetailPage')
+);
 const FavoritesPage = lazy(
   () => import('@presentation/pages/public/favorites/FavoritesPage')
 );
@@ -181,6 +187,16 @@ export const routes: AppRoute[] = [
   {
     path: ROUTES.PUBLIC.STORE_DETAILS,
     element: <StoreDetailPage />,
+    layout: DashboardLayout,
+  },
+  {
+    path: ROUTES.PUBLIC.CATEGORIES,
+    element: <PublicCategoriesPage />,
+    layout: DashboardLayout,
+  },
+  {
+    path: ROUTES.PUBLIC.CATEGORY_DETAILS,
+    element: <CategoryDetailPage />,
     layout: DashboardLayout,
   },
   {

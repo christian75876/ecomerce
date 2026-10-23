@@ -24,16 +24,21 @@ import PRERENDERED from './prerendered.generated.js';
 // Incluye los rastreadores de buscadores con IA (ChatGPT, Claude, Perplexity,
 // DuckDuckGo): ninguno ejecuta JS, así que sin esto veían solo
 // `<div id="root"></div>` y no podían citar productos ni tiendas.
+// storebot-google es el rastreador de Google Shopping (fichas de producto) y
+// meta-externalagent el de Meta AI; viber/skype/iframely/embedly arman la
+// previsualización al compartir un enlace. Mantener en sync con isBot() de
+// og-preview.controller.ts (el backend tampoco responde a UAs que no reconoce).
 const BOT_UA =
-  /facebookexternalhit|facebot|twitterbot|whatsapp|telegrambot|slackbot|linkedinbot|discordbot|googlebot|google-inspectiontool|bingbot|yandexbot|applebot|duckduckbot|gptbot|oai-searchbot|chatgpt-user|claudebot|claude-searchbot|claude-user|perplexitybot|perplexity-user|ccbot|amazonbot/i;
+  /facebookexternalhit|facebot|twitterbot|whatsapp|telegrambot|slackbot|linkedinbot|discordbot|pinterestbot|googlebot|storebot-google|googleother|adsbot-google|google-inspectiontool|bingbot|bingpreview|yandexbot|applebot|duckduckbot|gptbot|oai-searchbot|chatgpt-user|claudebot|claude-searchbot|claude-user|perplexitybot|perplexity-user|meta-externalagent|mistralai-user|ccbot|amazonbot|viber|skypeuripreview|iframely|embedly/i;
 
 // Rutas que existen en la SPA (espejo de src/shared/constants/routes.ts —
 // mantener sincronizado). Cualquier otra URL se sirve con la SPA (que pinta
 // NotFoundPage) pero con status 404 real: antes respondía 200 y Google las
 // marcaba como "Soft 404".
 const KNOWN_ROUTES = [
-  /^\/(home|bienvenida|auth|register|verify-email|forgot-password|stores|cart|favorites|my-orders|ayuda|terminos|privacidad)$/,
+  /^\/(home|bienvenida|auth|register|verify-email|forgot-password|stores|categorias|cart|favorites|my-orders|ayuda|terminos|privacidad)$/,
   /^\/stores\/[^/]+$/,
+  /^\/categorias\/[^/]+$/,
   /^\/my-orders\/[^/]+$/,
   /^\/product\/[^/]+$/,
   /^\/(dashboard|categories|inventory|pos|orders|suppliers|purchases|customers|cash|audit|tracking|products|profile|coupons|sales-history)$/,
@@ -65,11 +70,12 @@ const STATIC_PAGE_META = new Map(Object.entries(PAGE_META));
 // listado de productos no le importa a un buscador.
 const OG_CACHE = { cacheTtlByStatus: { '200-299': 300, 301: 300, 404: 60, '500-599': 0 } };
 const SITEMAP_CACHE = { cacheTtlByStatus: { '200-299': 600, '500-599': 0 } };
+const MERCHANT_FEED_CACHE = { cacheTtlByStatus: { '200-299': 900, '500-599': 0 } };
 
 // Mismo nav/footer que el HTML para bots del backend (og-preview.controller.ts):
 // las páginas que en la app viven dentro del layout no traen el suyo.
 const BOT_NAV =
-  '<header><nav aria-label="Principal"><a href="https://merku.co/home">Merku</a> · <a href="https://merku.co/home">Productos</a> · <a href="https://merku.co/stores">Tiendas</a> · <a href="https://merku.co/stores/map">Mapa de tiendas</a> · <a href="https://merku.co/bienvenida">Vende en Merku</a> · <a href="https://merku.co/ayuda">Ayuda</a></nav></header>';
+  '<header><nav aria-label="Principal"><a href="https://merku.co/home">Merku</a> · <a href="https://merku.co/home">Productos</a> · <a href="https://merku.co/categorias">Categorías</a> · <a href="https://merku.co/stores">Tiendas</a> · <a href="https://merku.co/stores/map">Mapa de tiendas</a> · <a href="https://merku.co/bienvenida">Vende en Merku</a> · <a href="https://merku.co/ayuda">Ayuda</a></nav></header>';
 const BOT_FOOTER =
   '<footer><p>Merku — marketplace de tiendas y restaurantes locales en Colombia.</p><p><a href="https://merku.co/bienvenida">Vende en Merku</a> · <a href="https://merku.co/ayuda">Centro de ayuda</a> · <a href="https://merku.co/terminos">Términos y condiciones</a> · <a href="https://merku.co/privacidad">Política de privacidad</a></p></footer>';
 
@@ -128,12 +134,36 @@ export default {
       });
     }
 
+    // Feed de Google Merchant Center: se registra en Merchant Center con esta
+    // URL (mismo dominio que las fichas). Igual que el sitemap, nunca cae a la
+    // SPA: un 503 hace que Merchant Center reintente en vez de vaciar el catálogo.
+    if (url.pathname === '/merchant-feed.xml') {
+      const res = await fetch(`${API_URL}/merchant-feed.xml`, { cf: MERCHANT_FEED_CACHE });
+      if (res.ok) {
+        return new Response(res.body, {
+          status: 200,
+          headers: { 'Content-Type': 'application/xml; charset=utf-8' },
+        });
+      }
+      return new Response('Feed temporalmente no disponible', {
+        status: 503,
+        headers: { 'Retry-After': '600' },
+      });
+    }
+
     const userAgent = request.headers.get('user-agent') ?? '';
     if (BOT_UA.test(userAgent)) {
       const productMatch = url.pathname.match(/^\/product\/([^/]+)$/);
       const storeMatch = url.pathname.match(/^\/stores\/([^/]+)$/);
+      const categoryMatch = url.pathname.match(/^\/categorias\/([^/]+)$/);
 
-      if (productMatch) {
+      if (categoryMatch) {
+        const ogResponse = await fetchOg(`${API_URL}/og/category/${categoryMatch[1]}`, userAgent);
+        if (ogResponse) return ogResponse;
+      } else if (url.pathname === '/categorias') {
+        const ogResponse = await fetchOg(`${API_URL}/og/categories`, userAgent);
+        if (ogResponse) return ogResponse;
+      } else if (productMatch) {
         const ogResponse = await fetchOg(`${API_URL}/og/product/${productMatch[1]}`, userAgent);
         if (ogResponse) return ogResponse;
       } else if (storeMatch && url.pathname !== '/stores/map') {
@@ -158,8 +188,10 @@ export default {
       }
     }
 
-    const response = await env.ASSETS.fetch(request);
-    const isHtml = (response.headers.get('content-type') ?? '').includes('text/html');
+    const assetResponse = await env.ASSETS.fetch(request);
+    const isHtml = (assetResponse.headers.get('content-type') ?? '').includes('text/html');
+    // El HTML de estas rutas cambia según el user-agent (bots vs. navegadores).
+    const response = isHtml ? withVaryUserAgent(assetResponse) : assetResponse;
 
     const prerendered = PRERENDERED[url.pathname];
     if (prerendered && isHtml && BOT_UA.test(userAgent)) {
@@ -202,6 +234,12 @@ export default {
     return response;
   },
 };
+
+function withVaryUserAgent(response) {
+  const res = new Response(response.body, response);
+  res.headers.append('Vary', 'User-Agent');
+  return res;
+}
 
 // index.html real (estilos, scripts y JSON-LD de Organization incluidos) con
 // el contenido de la página ya renderizado dentro de #root y los metadatos de
@@ -255,16 +293,18 @@ async function fetchOg(ogUrl, userAgent) {
     if (res.status === 404 || res.status === 410) {
       return new Response(res.body, {
         status: res.status,
-        headers: { 'Content-Type': 'text/html; charset=utf-8' },
+        headers: { 'Content-Type': 'text/html; charset=utf-8', Vary: 'User-Agent' },
       });
     }
     // El endpoint devuelve 302 hacia la página real para visitantes normales
     // (sin user-agent de bot) — si eso pasa aquí es que no reconoció el bot,
     // así que dejamos que la SPA normal se sirva en vez de seguir el redirect.
     if (!res.ok) return null;
+    // Vary: la misma URL entrega HTML distinto a bots y a navegadores; sin esto
+    // una caché intermedia podría servirle a un usuario la versión para bots.
     return new Response(res.body, {
       status: 200,
-      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      headers: { 'Content-Type': 'text/html; charset=utf-8', Vary: 'User-Agent' },
     });
   } catch {
     return null;

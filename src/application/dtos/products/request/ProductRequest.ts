@@ -3,6 +3,8 @@ import type { ProductTaxMode } from '@/application/dtos/products/response/Produc
 export interface IProductsQuery {
   search?: string;
   categoryId?: string;
+  /** Página /categorias/:slug: categorías de todas las tiendas con ese nombre. */
+  categorySlug?: string;
   storeId?: string;
   active?: boolean;
   sortBy?: 'newest' | 'price_asc' | 'price_desc' | 'name_asc' | 'random';

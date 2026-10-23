@@ -15,7 +15,7 @@ import WhatsAppFloat from '../../atoms/whatsapp/WhatsAppFloat';
 import InstagramEmbed from '../../atoms/video/InstagramEmbed';
 import { formatCurrencyCOP } from '@/shared/utils/formatCurrencyCOP';
 import AgeGate, { isStoreVerified, markStoreVerified } from '@/presentation/ui/molecules/common/AgeGate';
-import { buildProductPath, extractProductId } from '@/shared/utils/productUrl';
+import { buildProductPath, extractProductId, slugify } from '@/shared/utils/productUrl';
 import { buildAssetUrl } from '@/shared/utils/buildAssetUrl';
 import { serializeJsonLd, toMetaDescription } from '@/shared/utils/jsonLd';
 
@@ -124,6 +124,10 @@ const ProductDetails = () => {
     .filter((src, i, all): src is string => !!src && all.indexOf(src) === i);
   const ogImage = productImages[0] ?? `${APP_URL}/og-image.png`;
   const pageTitle = productPageTitle(product.name, product.store?.name);
+  // Inicio › Categoría › Producto, igual que el HTML para bots
+  // (og-preview.controller.ts). Las tiendas +18 no salen en páginas de categoría.
+  const categorySlug = product.category?.name && !product.store?.isAdultContent ? slugify(product.category.name) : '';
+  const categoryPath = categorySlug ? ROUTES.PUBLIC.CATEGORY_DETAILS.replace(':slug', categorySlug) : null;
 
   return (
     <>
@@ -179,12 +183,14 @@ const ProductDetails = () => {
           '@type': 'BreadcrumbList',
           itemListElement: [
             { name: 'Inicio', item: `${APP_URL}/home` },
-            ...(product.store
-              ? [
-                  { name: 'Tiendas', item: `${APP_URL}/stores` },
-                  { name: product.store.name, item: `${APP_URL}/stores/${product.store.slug}` },
-                ]
-              : []),
+            ...(categoryPath
+              ? [{ name: product.category!.name, item: `${APP_URL}${categoryPath}` }]
+              : product.store
+                ? [
+                    { name: 'Tiendas', item: `${APP_URL}/stores` },
+                    { name: product.store.name, item: `${APP_URL}/stores/${product.store.slug}` },
+                  ]
+                : []),
             { name: product.name, item: productUrl },
           ].map((crumb, i) => ({ '@type': 'ListItem', position: i + 1, ...crumb })),
         })}</script>
@@ -200,6 +206,14 @@ const ProductDetails = () => {
               Merku
             </Link>
             <span>/</span>
+            {categoryPath ? (
+              <>
+                <Link to={categoryPath} className='font-medium text-neutral-dark/60'>
+                  {product.category!.name}
+                </Link>
+                <span>/</span>
+              </>
+            ) : null}
             {product.store?.slug ? (
               <>
                 <Link

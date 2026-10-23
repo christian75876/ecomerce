@@ -12,6 +12,7 @@
 ## Para compradores
 
 - Explorar productos: https://merku.co/home
+- Explorar por categoría (impresoras, accesorios, portátiles…): https://merku.co/categorias
 - Ver todas las tiendas y restaurantes: https://merku.co/stores
 - Encontrar tiendas cercanas en el mapa: https://merku.co/stores/map
 - Crear una cuenta de comprador es gratis.
@@ -33,6 +34,7 @@
 ## Páginas clave
 
 - Inicio / catálogo: https://merku.co/home
+- Categorías: https://merku.co/categorias
 - Tiendas: https://merku.co/stores
 - Mapa de tiendas: https://merku.co/stores/map
 - Vende en Merku: https://merku.co/bienvenida

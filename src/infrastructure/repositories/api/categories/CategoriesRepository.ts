@@ -4,6 +4,8 @@ import {
 } from '@/application/dtos/categories/request/CategoryRequest';
 import {
   ICategoriesResp,
+  ICategoryCollectionResp,
+  ICategoryCollectionsResp,
   ICategoryResp,
 } from '@/application/dtos/categories/response/CategoryResponse';
 import {
@@ -18,6 +20,18 @@ export class CategoriesRepository {
 
     return ErrorHandler.handleApiErrors(() =>
       publicClientHTTP.get<ICategoriesResp>(`/categories${query}`),
+    );
+  }
+
+  static async getCollections(): Promise<ICategoryCollectionsResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      publicClientHTTP.get<ICategoryCollectionsResp>('/categories/collections'),
+    );
+  }
+
+  static async getCollection(slug: string): Promise<ICategoryCollectionResp> {
+    return ErrorHandler.handleApiErrors(() =>
+      publicClientHTTP.get<ICategoryCollectionResp>(`/categories/collections/${encodeURIComponent(slug)}`),
     );
   }
 

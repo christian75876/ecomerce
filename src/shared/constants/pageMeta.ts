@@ -36,6 +36,11 @@ export const PAGE_META = {
     description:
       'Encuentra en el mapa las tiendas y restaurantes de Merku más cercanos a ti, traza la ruta para llegar y explora el catálogo de cada tienda antes de ir.',
   },
+  '/categorias': {
+    title: 'Categorías de productos en tiendas locales — Merku',
+    description:
+      'Explora por categoría los productos de las tiendas locales de Medellín en Merku y encuentra lo que buscas. Pide a domicilio o recoge en la tienda.',
+  },
   '/ayuda': {
     title: 'Centro de ayuda: cómo comprar y vender — Merku',
     description:
@@ -59,4 +64,34 @@ export const PAGE_META = {
 export const productPageTitle = (productName: string, storeName?: string | null): string => {
   const withStore = storeName ? `${productName} en ${storeName} — Merku` : null;
   return withStore && withStore.length <= 60 ? withStore : `${productName} — Merku`;
+};
+
+// "<Categoría> en Medellín — Merku" (búsqueda local) si cabe en 60
+// caracteres. Mantener igual a categoryTitle() de og-preview.controller.ts.
+export const categoryPageTitle = (categoryName: string): string => {
+  const withCity = `${categoryName} en Medellín — Merku`;
+  return withCity.length <= 60 ? withCity : `${categoryName} — Merku`;
+};
+
+const formatCOP = (value: number): string =>
+  new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(value);
+
+// Párrafo de introducción con datos reales de la categoría. Mantener igual a
+// categoryIntro() de og-preview.controller.ts (lo que ven los bots).
+export const categoryIntro = (c: {
+  name: string;
+  productCount: number;
+  storeCount: number;
+  minPrice: number | null;
+  maxPrice: number | null;
+}): string => {
+  const stores = c.storeCount === 1 ? '1 tienda local' : `${c.storeCount} tiendas locales`;
+  const products = c.productCount === 1 ? '1 producto' : `${c.productCount} productos`;
+  const prices =
+    c.minPrice != null && c.maxPrice != null
+      ? c.minPrice === c.maxPrice
+        ? ` a ${formatCOP(c.minPrice)}`
+        : `, con precios desde ${formatCOP(c.minPrice)} hasta ${formatCOP(c.maxPrice)} (IVA incluido)`
+      : '';
+  return `En Merku encuentras ${products} de ${c.name.toLocaleLowerCase('es-CO')} de ${stores} de Medellín${prices}. Pide a domicilio o recoge en la tienda y paga directamente al vendedor por transferencia.`;
 };

@@ -20,7 +20,7 @@ export const buildAssetUrl = (path?: string | null) => {
 const CLOUDINARY_UPLOAD_MARKER = '/upload/';
 
 const isCloudinaryUrl = (url: string): boolean =>
-  /(^|\.)res\.cloudinary\.com\//.test(url) && url.includes(CLOUDINARY_UPLOAD_MARKER);
+  /^https?:\/\/res\.cloudinary\.com\//.test(url) && url.includes(CLOUDINARY_UPLOAD_MARKER);
 
 /**
  * Injects a Cloudinary transformation (e.g. "f_auto,q_auto,w_480") right
@@ -33,6 +33,9 @@ export const cloudinaryTransform = (url: string, transformation: string): string
     ? url.replace(CLOUDINARY_UPLOAD_MARKER, `${CLOUDINARY_UPLOAD_MARKER}${transformation}/`)
     : url;
 
-/** Builds a `srcset` string of Cloudinary width variants; a no-op (same URL repeated) for non-Cloudinary images. */
+/**
+ * Builds a `srcset` string of Cloudinary width variants; a no-op (same URL repeated) for non-Cloudinary images.
+ * c_limit: never upscale past the uploaded size (product images are stored at 800px).
+ */
 export const buildResponsiveSrcSet = (url: string, widths: number[]): string =>
-  widths.map((w) => `${cloudinaryTransform(url, `f_auto,q_auto,w_${w}`)} ${w}w`).join(', ');
+  widths.map((w) => `${cloudinaryTransform(url, `f_auto,q_auto,c_limit,w_${w}`)} ${w}w`).join(', ');

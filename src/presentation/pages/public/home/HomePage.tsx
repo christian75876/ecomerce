@@ -7,6 +7,8 @@ import { useCart } from '@/shared/hooks/useCart';
 import { SnackbarUtilities } from '@/shared/utils/SnackbarManager';
 import HomeCatalogSection from '@/presentation/ui/organisms/home/HomeCatalogSection';
 import HomeFeaturedStores from '@/presentation/ui/organisms/home/HomeFeaturedStores';
+import HomeFeaturedCategories from '@/presentation/ui/organisms/home/HomeFeaturedCategories';
+import { usePublicCategories } from '@/application/useCases/categories/usePublicCategory';
 import HomeProductRail from '@/presentation/ui/organisms/home/HomeProductRail';
 
 export const HomePage = () => {
@@ -37,6 +39,7 @@ export const HomePage = () => {
     loading: homeLoading,
     error: homeError,
   } = useMarketplaceHome();
+  const { collections } = usePublicCategories();
   const { addItem } = useCart();
 
   const addProductToCart = (
@@ -109,6 +112,12 @@ export const HomePage = () => {
               {homeError}
             </Box>
           ) : null}
+
+          {/* Enlaces rastreables a /categorias/:slug (Google descubre las
+              páginas de categoría desde aquí). */}
+          <Box className='content-container'>
+            <HomeFeaturedCategories categories={collections.slice(0, 12)} showAllLink />
+          </Box>
 
           <Box className='content-container grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)] [&>*]:min-w-0'>
             <HomeProductRail

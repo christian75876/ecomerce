@@ -39,6 +39,10 @@ export class ProductRepository {
       params.set('categoryId', query.categoryId);
     }
 
+    if (query.categorySlug) {
+      params.set('categorySlug', query.categorySlug);
+    }
+
     if (query.storeId) {
       params.set('storeId', query.storeId);
     }
